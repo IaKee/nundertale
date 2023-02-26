@@ -29,6 +29,10 @@ nUndertale is written in C, using the Allegro graphics library to handle renderi
 
 At the moment, there is no actual gameplay in nUndertale, just functional menus. To start a new game, select "New Game" from the main menu. To load a saved game, select "Load Game". The game settings menu allows the player to adjust the volume and screen resolution. To quit the game, select "Quit".
 
+## Origin
+
+The idea for Nundertale was born during a late-night Discord call, when the creator decided to remake Undertale from scratch using C programming language and the Allegro graphics library. The concept quickly evolved into a parody game that would poke fun at the original's gameplay mechanics and story.
+
 ## Conclusion
 
 nUndertale is a fun and lighthearted parody of Undertale that will have players laughing and enjoying themselves. While still in early development, the functional menus provide a glimpse into what the game will eventually become.
