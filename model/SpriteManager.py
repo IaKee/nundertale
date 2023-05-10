@@ -46,7 +46,7 @@ class SpriteManager:
         Else raises an exception"""
         
         for sprite in self.__sprite_lib:
-            if(sprite['name'+] == target):
+            if(sprite['name'] == target):
                 return sprite['raw']
         else:
             raise FileNotFoundError(f'could not find {target}')
