@@ -1,0 +1,10 @@
+A critical error has ocurred while running the game!Error type: <class 'TypeError'>
+What happened: GameView.__init__() missing 1 required positional argument: 'sprite_model'
+Where it happened:  file 'c:\Coding\Python\nundertale\main.py', at line 26Why it happned: Bad coding xD
+
+Full error traceback:
+ Traceback (most recent call last):
+  File "c:\Coding\Python\nundertale\main.py", line 26, in main
+    game_view = GameView()
+                ^^^^^^^^^^
+TypeError: GameView.__init__() missing 1 required positional argument: 'sprite_model'

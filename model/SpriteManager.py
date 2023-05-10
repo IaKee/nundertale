@@ -8,7 +8,7 @@ from os import listdir
 
 # local modules
 from CONSTANTS import SPRITE_DIR
-from utils import is_valid_target
+from model.utils import is_valid_target
 
 class SpriteManager:
     def __init__(self):
