@@ -1,5 +1,6 @@
 # model constants
 SPRITE_DIR = "assets\\sprites"
+CRASH_REPORT_DIR = "crash reports"
 
 # view constans
 SCREEN_WIDTH = 640
