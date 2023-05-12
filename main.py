@@ -38,7 +38,7 @@ def main():
         error_file = str(exc_tb.tb_frame).split(',')[1].replace('\\\\', '\\')
         
         # error message body
-        error_description = f'A critical error has ocurred while running the game!'\
+        error_description = f'A critical error has ocurred while running the game!\n'\
             f'Error type: {exc_type}\n'\
             f'What happened: {exc_obj}\n'\
             f"Where it happened: {error_file}, at line {exc_tb.tb_lineno}"\
