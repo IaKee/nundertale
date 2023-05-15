@@ -1,0 +1,12 @@
+A critical error has ocurred while running the game!
+Error type: <class 'AttributeError'>
+What happened: 'tuple' object has no attribute 'KEYDOWN'
+Where it happened:  file 'd:\Documentos\Programas\C\nundertale\main.py', at line 29Why it happned: Bad coding xD
+
+Full error traceback:
+ Traceback (most recent call last):
+  File "d:\Documentos\Programas\C\nundertale\main.py", line 29, in main
+    controller.link_view(game_view)
+  File "d:\Documentos\Programas\C\nundertale\controller\GameController.py", line 24, in link_view
+    self.__event_keydown_code = self.view.game.KEYDOWN
+AttributeError: 'tuple' object has no attribute 'KEYDOWN'

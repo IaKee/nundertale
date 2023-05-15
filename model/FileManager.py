@@ -8,13 +8,15 @@ from os import listdir
 
 # local modules
 from CONSTANTS import SPRITE_DIR
+from log.logger import flog
 from model.utils import is_valid_target
+from model.FileData import FileData
 
-class SpriteManager:
+class FileManager:
     def __init__(self):
-        self.__sprite_lib = {}  # sprites currently open
+        self.__file_lib = {}  # files currently open
 
-    def load_sprite(self, target):
+    def load_file(self, target, log=False):
         """Loads image files from given target path and stores it on local sprite lib
         Returns raw sprite data
 
@@ -27,22 +29,17 @@ class SpriteManager:
             file_name = target.rsplit('.')[0]
             
             # reads file contents to local variable, then closes file
-            with open(target_path, mode='rb') as sprite_file:
-                raw_file_data = sprite_file.read()
-        
-            self.__sprite_lib[file_name] = raw_file_data
-            return raw_file_data
+            with open(target_path, mode='rb') as rfile:
+                raw_file_data = rfile.read()
+                self.__file_lib[file_name] = FileData(file_name, raw_file_data)
+                
+                if(log):
+                    flog(f"sprite {file_name} loaded!")
+            return raw_file_data  # optional
         else:
             raise FileNotFoundError(f'could not find file {target}')  
-    def unload_sprite(self, target):
-        self.__sprite_lib.pop(target)
-    def get_sprite_raw(self, target):
-        return self.__sprite_lib[target]
-
-def test():
-    
-    dummy = SpriteManager()
-    dummy.load_sprite('player.png')
-
-test()
+    def unload(self, target):
+        self.__file_lib.pop(target)
+    def get_file_raw(self, target):
+        return self.__file_lib[target]
 
