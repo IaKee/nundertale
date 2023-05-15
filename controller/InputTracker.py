@@ -2,14 +2,14 @@ from pygame import KEYDOWN
 
 # movement key constants
 from pygame import K_UP, K_LEFT, K_DOWN, K_RIGHT
-from pygame import K_W, K_A, K_S, K_D  # alt
+from pygame import K_w, K_a, K_s, K_d  # alt
 
 # interaction key constants
-from pygame import K_Z, K_X, K_C
-from pygame import K_E, K_Q, K_F
+from pygame import K_z, K_x, K_c
+from pygame import K_e, K_q, K_f
 
 # other key constants
-from pygame import K_ESCAPE, K_P
+from pygame import K_ESCAPE, K_p
 
 
 class InputTracker():

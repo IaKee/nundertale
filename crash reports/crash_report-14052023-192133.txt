@@ -1,0 +1,10 @@
+A critical error has ocurred while running the game!
+Error type: <class 'TypeError'>
+What happened: __init__() takes 2 positional arguments but 3 were given
+Where it happened:  file 'd:\Documentos\Programas\C\nundertale\main.py', at line 21Why it happned: Bad coding xD
+
+Full error traceback:
+ Traceback (most recent call last):
+  File "d:\Documentos\Programas\C\nundertale\main.py", line 21, in main
+    level1 = GameLevel(level1_sprites, fileio)
+TypeError: __init__() takes 2 positional arguments but 3 were given

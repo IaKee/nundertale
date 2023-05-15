@@ -1,6 +1,6 @@
 from sys import exit
 
-from InputTracker import InputTracker
+from .InputTracker import InputTracker
 
 from CONSTANTS import *
 class GameController:
@@ -16,12 +16,10 @@ class GameController:
         self.__events = self.view.get_events()
     def process_events(self):
         """Reads keyboard/controller input from internal events variable"""
-        self.movement, self.action = self.input_tracker.process_keypresses(events)
+        self.movement, self.action = self.input_tracker.process_keypresses(self.__events)
 
     def link_view(self, reference):
         self.view = reference
-
-        self.__event_keydown_code = self.view.game.KEYDOWN
 
     def link_sprite_model(self, reference):
         self.sprite_model = reference

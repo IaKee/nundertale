@@ -1,5 +1,6 @@
 # local imports
-from model.SpriteManager import SpriteManager
+from model.FileManager import FileManager
+from model.GameLevel import GameLevel
 from view.GameView import GameView
 from controller.GameController import GameController
 
@@ -9,21 +10,20 @@ from log.ErrorHandler import *
 from sys import exit, exc_info
 from traceback import format_exc
 
+from CONSTANTS import lore_sprites
+
 def main():
     error_handler = ErrorHandler()
 
     try:
-        # instantiates models
-        sprites = SpriteManager()
-        #sounds = SoundManager()
-        #music = MusicManager()
-        #images = ImageManager()
+        # instantiates game levels
+        initial_lore_level = GameLevel(lore_sprites)
 
         # instantiates controller
         controller = GameController()
 
         # instantiates view
-        game_view = GameView(sprites)
+        game_view = GameView()
 
         # links controller to the view module
         controller.link_view(game_view)

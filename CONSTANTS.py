@@ -2,7 +2,20 @@
 SPRITE_DIR = "assets\\sprites"
 CRASH_REPORT_DIR = "crash reports"
 
-# view constans
+lore_sprites = [
+    "assets\img\icon.png",
+    "assets\img\lore1.bmp",
+    "assets\img\lore2.bmp",
+    "assets\img\lore3.bmp",
+    "assets\img\lore4.bmp",
+    "assets\img\lore5.bmp",
+    "assets\img\lore6.bmp",
+    "assets\img\lore7.bmp",
+    "assets\img\lore8.bmp",
+    "assets\img\lore9.bmp",
+    "assets\img\lore10gif.gif"]
+
+# screen constans
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 INITIAL_FPS = 60

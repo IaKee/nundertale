@@ -1,0 +1,10 @@
+A critical error has ocurred while running the game!
+Error type: <class 'NameError'>
+What happened: name 'sprites' is not defined
+Where it happened:  file 'd:\Documentos\Programas\C\nundertale\main.py', at line 26Why it happned: Bad coding xD
+
+Full error traceback:
+ Traceback (most recent call last):
+  File "d:\Documentos\Programas\C\nundertale\main.py", line 26, in main
+    game_view = GameView(sprites)
+NameError: name 'sprites' is not defined
