@@ -24,10 +24,11 @@ def main():
 
         # instantiates view
         game_view = GameView()
+        game_view.start()
 
         # links controller to the view module
         controller.link_view(game_view)
-        controller.link_sprite_model(sprites)
+        controller.link_model(initial_lore_level)
 
         # initializes main game loop
         controller.main_loop()

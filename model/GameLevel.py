@@ -7,12 +7,13 @@ class GameLevel:
         self.sprite_path_list = sprite_path_list
         self.initial_player_position = {"x": 0, "y": 0} 
         self.sprite_list = []
+
+        self.load_level_sprites()
     
     def load_level_sprites(self):
         for sprite in self.sprite_path_list:
-            raw = self.file_manager.load_file(sprite)
-            width, height = raw.shape
-            self.sprite_list.append(GameSprite(raw, width, height))
+            sprite_data = self.file_manager.load_image(sprite)
+            self.sprite_list.append(GameSprite(sprite_data))
 
     def set_initial_player_pos(self, x: int, y: int):
         self.initial_player_position = {x, y}

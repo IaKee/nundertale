@@ -1,0 +1,14 @@
+A critical error has ocurred while running the game!
+Error type: <class 'TypeError'>
+What happened: __init__() missing 1 required positional argument: 'name'
+Where it happened:  file 'd:\Documentos\Programas\C\nundertale\main.py', at line 20Why it happned: Bad coding xD
+
+Full error traceback:
+ Traceback (most recent call last):
+  File "d:\Documentos\Programas\C\nundertale\main.py", line 20, in main
+    initial_lore_level = GameLevel(lore_sprites)
+  File "d:\Documentos\Programas\C\nundertale\model\GameLevel.py", line 11, in __init__
+    self.load_level_sprites()
+  File "d:\Documentos\Programas\C\nundertale\model\GameLevel.py", line 16, in load_level_sprites
+    self.sprite_list.append(GameSprite(sprite_data))
+TypeError: __init__() missing 1 required positional argument: 'name'
