@@ -2,6 +2,8 @@
 from sys import path
 path.insert(1, '.')
 
+from PIL import Image
+
 # system modules
 from os import path as ospath
 from os import listdir
@@ -16,7 +18,7 @@ class FileManager:
     def __init__(self):
         self.__file_lib = {}  # files currently open
 
-    def load_file(self, target, log=False):
+    def load_image(self, target, log=True):
         """Loads image files from given target path and stores it on local sprite lib
         Returns raw sprite data
 
@@ -24,22 +26,22 @@ class FileManager:
         
         # checks for valid file name
 
-        target_path = SPRITE_DIR + '\\' + target
-        if(is_valid_target(target_path)):
+        if(is_valid_target(target)):
             file_name = target.rsplit('.')[0]
             
             # reads file contents to local variable, then closes file
-            with open(target_path, mode='rb') as rfile:
-                raw_file_data = rfile.read()
-                self.__file_lib[file_name] = FileData(file_name, raw_file_data)
-                
+            with Image.open(target) as rfile:
+                self.__file_lib[file_name] = FileData(
+                    file_path = target, 
+                    raw_data = rfile.tobytes(), 
+                    geometry = rfile.size,
+                    mode = rfile.mode)
+    
                 if(log):
                     flog(f"sprite {file_name} loaded!")
-            return raw_file_data  # optional
+            return self.__file_lib[file_name]   # optional
         else:
             raise FileNotFoundError(f'could not find file {target}')  
     def unload(self, target):
         self.__file_lib.pop(target)
-    def get_file_raw(self, target):
-        return self.__file_lib[target]
 

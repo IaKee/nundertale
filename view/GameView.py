@@ -3,6 +3,7 @@ from sys import path
 path.insert(1, '.')
 
 from os import environ
+import os
 # hides the default 'hello world' message from the pygame module
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
@@ -40,11 +41,10 @@ class GameView:
     def get_events(self):
         return pygame.event.get()
     def draw_frame(self):
-        self.display.flip()
+        pygame.display.flip()
     def quit(self):
         # destroys game window and exits
         self.game.quit()
     def draw(self, screen):
         # desenha o jogador na tela
-        self.player_image = pygame.image.load(os.path.join(IMAGE_DIR, "player.png"))
         screen.blit(self.player_image, (self.model.player_x, self.model.player_y))

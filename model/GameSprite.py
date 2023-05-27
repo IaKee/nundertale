@@ -1,11 +1,16 @@
-from pygame import image
+from pygame import Surface, image, mask, SRCALPHA
 
 class GameSprite():
-    def __init__(self, raw_image, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, filedata):
         self.mask_list = []
-        self.loaded_image = image.fromstring(raw_image, (width, height), "RGBA")
+        self.loaded_image = image.fromstring(filedata.get_raw(), filedata.get_geometry(), filedata.get_mode())
+
+    def add_mask(self, mask_rect):
+        mask_surface = Surface((self.width, self.height), SRCALPHA)
+        mask_surface.blit(self.loaded_image, (0, 0))
+        mask_surface.fill((255, 255, 255, 0), mask_rect)
+        mask = mask.from_surface(mask_surface)
+        self.mask_list.append(mask)
 
     def check_mask_colision(self, other_sprite):
         """Checks if any of this sprites masks are coliding with any other sprites masks"""

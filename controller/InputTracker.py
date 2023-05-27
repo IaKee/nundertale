@@ -25,21 +25,21 @@ class InputTracker():
         for event in events:
             if(event.type == KEYDOWN):
                 if(self.__alt_layout):
-                    if(event.key == K_A):
+                    if(event.key == K_a):
                         movement[0] -= 1
-                    elif(event.key == K_D):
+                    elif(event.key == K_d):
                         movement[0] += 1
-                    elif(event.key == K_W):
+                    elif(event.key == K_w):
                         movement[1] -= 1  
-                    elif(event.key == K_S):
+                    elif(event.key == K_s):
                         movement[1] += 1
                     
                     if(self.__allow_action):
-                        if(event.key == K_Q):
+                        if(event.key == K_q):
                             action = 'open'
-                        elif(event.key == K_E):
+                        elif(event.key == K_e):
                             action = 'use'
-                        elif(event.key == K_F):
+                        elif(event.key == K_f):
                             action = 'close'
                 else:
                     if(event.key == K_LEFT):
@@ -52,10 +52,10 @@ class InputTracker():
                         movement[1] += 1
                         
                     if(self.__allow_action):
-                        if(event.key == K_Z):
+                        if(event.key == K_z):
                             action = 'open'
-                        if(event.key == K_X):
+                        if(event.key == K_x):
                             action = 'use'
-                        if(event.key == K_C):
+                        if(event.key == K_c):
                             action = 'close'
         return movement, action
