@@ -1,6 +1,6 @@
 # model constants
 SPRITE_DIR = "assets\\sprites"
-CRASH_REPORT_DIR = "crash reports"
+CRASH_REPORT_DIR = "crash_reports"
 
 lore_sprites = [
     "assets\img\icon.png",
