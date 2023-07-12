@@ -9,7 +9,6 @@ class GameLevel:
         self.sprite_list = []
 
         self.load_level_sprites()
-    
     def load_level_sprites(self):
         for sprite in self.sprite_path_list:
             sprite_data = self.file_manager.load_image(sprite)

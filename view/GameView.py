@@ -36,15 +36,24 @@ class GameView:
       
     def set_title(self, title):
         pygame.display.set_caption(title)
+    def set_icon(self, icon):
+        pygame.display.set_icon(icon)
     def load_sprite(self, sprite_raw, dimensions):
         self.loaded_sprites.append(pygame.image.fromstring(sprite_raw, dimensions, 'RGBA'))
     def get_events(self):
         return pygame.event.get()
     def draw_frame(self):
         pygame.display.flip()
+    def fade_screen_step(self, color, alpha):
+        """Fills the screen with a solid colored Surface object,
+        
+        alpha: object transparency
+        
+        Call this function last to make the fade layer on top""" 
+        screen.fill(self.fade_current_color)
+        self.fade_current_color = [x + delta for x in self.fade_current_color]
+    def screen_sleep(self, duration):
+        pygame.time.wait(duration)
     def quit(self):
         # destroys game window and exits
-        self.game.quit()
-    def draw(self, screen):
-        # desenha o jogador na tela
-        screen.blit(self.player_image, (self.model.player_x, self.model.player_y))
+        pygame.quit()

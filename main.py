@@ -16,6 +16,7 @@ def main():
     error_handler = ErrorHandler()
 
     try:
+
         # instantiates game levels
         initial_lore_level = GameLevel(lore_sprites)
 
@@ -29,6 +30,7 @@ def main():
         # links controller to the view module
         controller.link_view(game_view)
         controller.link_model(initial_lore_level)
+        controller.init_window()
 
         # initializes main game loop
         controller.main_loop()
@@ -42,17 +44,17 @@ def main():
         error_description = f'A critical error has ocurred while running the game!\n'\
             f'Error type: {exc_type}\n'\
             f'What happened: {exc_obj}\n'\
-            f"Where it happened: {error_file}, at line {exc_tb.tb_lineno}"\
+            f"Where it happened: {error_file}, at line {exc_tb.tb_lineno}\n"\
             f"Why it happned: Bad coding xD\n\n"\
             f'Full error traceback:\n {format_exc()}'
         
         # display a pop up message containing error information
-        #error_handler.display_message(
-        #    title = f'Nundertale - Critical error!', 
-        #    description = error_description,
-        #    msg_type = 'error')
+        error_handler.display_message(
+            title = f'Nundertale - Critical error!', 
+            description = error_description,
+            msg_type = 'error')
 
-        # write a crash report file
+        # write a crash report to log file
         error_handler.write_log(error_description)
         
         flog(f'Critical error! Full traceback: {format_exc()}', mtype='error')
