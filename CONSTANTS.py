@@ -15,6 +15,8 @@ lore_sprites = [
     "assets\img\lore9.bmp",
     "assets\img\lore10gif.gif"]
 
+INITIAL_WINDOW_TITLE = "nUndertale"
+
 # screen constans
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480

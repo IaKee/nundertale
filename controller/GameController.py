@@ -1,5 +1,7 @@
-from .InputTracker import InputTracker
+from pygame import QUIT
 
+# local modules
+from .InputTracker import InputTracker
 from CONSTANTS import *
 class GameController:
     def __init__(self):
@@ -9,7 +11,6 @@ class GameController:
 
         self.input_tracker = InputTracker()
         self.__game_should_close = False
-        self.__close_source = None
 
     def get_update_events(self):
         """Updates events from view"""
@@ -18,6 +19,11 @@ class GameController:
     def process_events(self):
         """Reads keyboard/controller input from internal events variable"""
         self.movement, self.action = self.input_tracker.process_keypresses(self.__events)
+        
+        # enables main window controls
+        for event in self.__events:
+            if(event.type == QUIT):
+                self.__game_should_close = True
 
     def link_view(self, reference):
         """References view (mvc) to this level"""
@@ -27,6 +33,10 @@ class GameController:
         """References model (mvc) to this level"""
         self.sprite_model = reference
 
+    def init_window(self):
+        """Sets main window title and icon"""
+        self.view.set_title(INITIAL_WINDOW_TITLE)
+        self.view.set_icon(self.sprite_model.sprite_list[0].loaded_image)
     def main_loop(self):
         """Main logic game loop"""
         while(not self.__game_should_close):
@@ -34,6 +44,8 @@ class GameController:
             self.process_events()
 
             self.view.draw_frame()
+        else:
+            self.view.quit()
     def quit(self):
         """Closes game"""
         self.view.quit()
