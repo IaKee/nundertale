@@ -1,5 +1,6 @@
 # local imports
 from model.FileManager import FileManager
+from model.ConfigManager import ConfigManager
 from model.GameLevel import GameLevel
 from view.GameView import GameView
 from controller.GameController import GameController
@@ -14,8 +15,12 @@ from CONSTANTS import lore_sprites
 
 def main():
     error_handler = ErrorHandler()
+    config_manager = ConfigManager()
 
+    # main code - scope used for error treament
     try:
+        config_manager.load()  # load initial configs
+        flog(config_manager.lang)
 
         # instantiates game levels
         initial_lore_level = GameLevel(lore_sprites)
