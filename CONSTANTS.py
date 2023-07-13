@@ -1,4 +1,7 @@
 # model constants
+ASSETS_DIR = "assets"
+CONFIG_DIR = "config"
+LANG_DIR = "assets\\lang"
 SPRITE_DIR = "assets\\sprites"
 CRASH_REPORT_DIR = "crash_reports"
 

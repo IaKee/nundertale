@@ -39,11 +39,21 @@ class GameController:
         self.view.set_icon(self.sprite_model.sprite_list[0].loaded_image)
     def main_loop(self):
         """Main logic game loop"""
+        self.view.draw_text('ABUBLE', (0, 0), (0, 0, 0))
+        fadeout = True
         while(not self.__game_should_close):
             self.get_update_events()
             self.process_events()
+            if(self.view.get_alpha() > 0 and fadeout):
+                self.view.fade_screen_step(-1)
+            elif(self.view.get_alpha() < 255):
+                fadeout = False
+                self.view.fade_screen_step(1)
+            else:
+                fadeout = True
 
-            self.view.draw_frame()
+            self.view.draw_canvas()
+            self.view.draw_frame((0,0,0))
         else:
             self.view.quit()
     def quit(self):
