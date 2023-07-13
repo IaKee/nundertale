@@ -1,5 +1,6 @@
 # model constants
 ASSETS_DIR = "assets"
+CONFIG_FILE_PATH = "config\\user.json"
 CONFIG_DIR = "config"
 LANG_DIR = "assets\\lang"
 SPRITE_DIR = "assets\\sprites"
