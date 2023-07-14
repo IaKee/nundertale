@@ -5,10 +5,9 @@ path.insert(1, '.')
 from CONSTANTS import ASSETS_DIR
 
 from os import environ
-import os
 # hides the default 'hello world' message from the pygame module
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-
+from time import perf_counter
 import pygame
 
 from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
@@ -28,6 +27,13 @@ class GameView:
         self.curr_alpha = 255
 
         self.frame: pygame.surface.Surface = None
+
+        # fps tracking
+        self.__frame_sample_size = 100
+        self.__tracking_frames = True
+        self.__last_frame = None
+        self.__recent_frames = []
+        self.__has_fps = False
 
     def start(self): 
         """Initializes pygame and the main game window itself"""
@@ -57,9 +63,22 @@ class GameView:
         return pygame.event.get()
     
     def draw_frame(self, fill: tuple[int, int, int]):
+        # if enabled, draws fps on the top right
+        if(self.__tracking_frames):
+            if(self.__has_fps): 
+                # memory leak if removed
+                self.canvas.pop()  
+
+            self.__update_frame_deltas()
+            avg = self.__get_frame_average()
+            frame_avg_text = f"{avg} FPS"
+            self.draw_text(frame_avg_text, (100, 0), (0, 0, 0))
+            self.__has_fps = True
+        
         self.screen.fill(fill)
         self.screen.blit(self.frame, (0, 0))
         pygame.display.flip()
+
     
     def draw_canvas(self, bg: pygame.surface.Surface = None):
         if(bg != None): 
@@ -98,7 +117,34 @@ class GameView:
  
     def screen_sleep(self, duration):
         pygame.time.wait(duration)
-    
+
     def quit(self):
         # destroys game window and exits
         pygame.quit()
+
+    def __update_frame_deltas(self):
+        if(len(self.__recent_frames) >= self.__frame_sample_size):
+            self.__recent_frames.pop(0)  # very inneficient - could be resource intensive (O(n))
+        self.__recent_frames.append(perf_counter())  # updates queue with new frame time
+    def __get_frame_average(self):
+        """Returns framerate average, from the list samples, as a string"""
+        if(len(self.__recent_frames) < 2):  # minimal sample
+            return "NaN"
+
+        try:
+            deltas = []
+            for i in range(1, len(self.__recent_frames)):
+                delta = self.__recent_frames[i] - self.__recent_frames[i-1]
+                #print(f"{delta}")
+                deltas.append(delta)
+            
+            total_sample_time = sum(deltas)
+            sample_lenght = len(deltas)
+            avg = 1/(total_sample_time/sample_lenght)
+            print(avg)  # debug - remove this
+
+            return f"{avg:.2f}"
+        except ZeroDivisionError as e:
+            # probably not enough of a sample
+            return "NaN"
+

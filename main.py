@@ -1,6 +1,7 @@
 # local imports
 from model.FileManager import FileManager
 from model.ConfigManager import ConfigManager
+from model.LangManager import LangManager
 from model.GameLevel import GameLevel
 from view.GameView import GameView
 from controller.GameController import GameController
@@ -20,8 +21,9 @@ def main():
     # main code - scope used for error treament
     try:
         config_manager.load()  # load initial configs
-        flog(config_manager.lang)
-
+        lang_manager = LangManager(config_manager.lang)
+        lang_manager.load_lang_from_json()  # loads lang strings
+        
         # instantiates game levels
         initial_lore_level = GameLevel(lore_sprites)
 
@@ -43,7 +45,7 @@ def main():
     except Exception as e:
         # retrieves error information
         exc_type, exc_obj, exc_tb = exc_info()
-        error_file = str(exc_tb.tb_frame).split(',')[1].replace('\\\\', '\\')
+        error_file = str(exc_tb.tb_frame).split(',')[1].replace('\\\\', '\\')  # script that broke
         
         # error message body
         error_description = f'A critical error has ocurred while running the game!\n'\

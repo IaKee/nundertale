@@ -2,7 +2,7 @@ from json import load
 
 from CONSTANTS import LANG_DIR
 
-class FileData:
+class LangManager:
     def __init__(self, lang_code):
         self.__lang_code = lang_code  
     
@@ -14,12 +14,12 @@ class FileData:
     def load_lang_from_json(self):
         """Reads language files from json and stores as local attributes on this class"""
 
-        def load_data(self, data, prefix=''):
+        def load_data(data, prefix=''):
             """Recursively extracts data from dictionaries to internal attributes"""
             for key, value in data.items():
                 if isinstance(value, dict):
                     # if the found value is a dictionary, recursively calls this method
-                    self.load_data(value, prefix=f"{prefix}{key}_")
+                    load_data(value, prefix=f"{prefix}{key}_")
                 else:
                     # if the found value is in fact a simple value, sets the attribute in the class
                     setattr(self, f"{prefix}{key}", value)
@@ -36,4 +36,4 @@ class FileData:
                 load_data(json_contents)
         except Exception as e:
             # raises
-            raise Exception(e)
+            raise Exception(f"Could not load language files -> {e}")
