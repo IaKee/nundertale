@@ -1,4 +1,5 @@
 from pygame import KEYDOWN
+from pygame import key
 
 # movement key constants
 from pygame import K_UP, K_LEFT, K_DOWN, K_RIGHT
@@ -22,18 +23,10 @@ class InputTracker():
     def process_keypresses(self, events):
         movement = [0, 0]
         action = None
+        
         for event in events:
             if(event.type == KEYDOWN):
                 if(self.__alt_layout):
-                    if(event.key == K_a):
-                        movement[0] -= 1
-                    elif(event.key == K_d):
-                        movement[0] += 1
-                    elif(event.key == K_w):
-                        movement[1] -= 1  
-                    elif(event.key == K_s):
-                        movement[1] += 1
-                    
                     if(self.__allow_action):
                         if(event.key == K_q):
                             action = 'open'
@@ -41,21 +34,36 @@ class InputTracker():
                             action = 'use'
                         elif(event.key == K_f):
                             action = 'close'
+                        else:
+                            action = None
                 else:
-                    if(event.key == K_LEFT):
-                        movement[0] -= 1
-                    if(event.key == K_RIGHT):
-                        movement[0] += 1
-                    if(event.key == K_UP):
-                        movement[1] -= 1  
-                    if(event.key == K_DOWN):
-                        movement[1] += 1
-                        
+                
                     if(self.__allow_action):
                         if(event.key == K_z):
                             action = 'open'
-                        if(event.key == K_x):
+                        elif(event.key == K_x):
                             action = 'use'
-                        if(event.key == K_c):
+                        elif(event.key == K_c):
                             action = 'close'
+                        else:
+                            action = None
+        
+        presses = key.get_pressed()
+        if(presses[K_a]):
+            movement[0] = -1
+        elif(presses[K_LEFT]):
+            movement[0] = -1
+        if(presses[K_d]):
+            movement[0] = 1
+        elif(presses[K_RIGHT]):
+            movement[0] = 1
+        if(presses[K_w]):
+            movement[1] = -1  
+        elif(presses[K_UP]):
+            movement[1] = -1  
+        if(presses[K_s]):
+            movement[1] = 1
+        elif(presses[K_DOWN]):
+            movement[1] = 1
+       
         return movement, action
