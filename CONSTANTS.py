@@ -1,10 +1,11 @@
 # model constants
-ASSETS_DIR = "assets"
+ASSETS_DIR = "assets\\"
 CONFIG_FILE_PATH = "config\\user.json"
-CONFIG_DIR = "config"
-LANG_DIR = "assets\\lang"
-SPRITE_DIR = "assets\\sprites"
-CRASH_REPORT_DIR = "crash_reports"
+CONFIG_DIR = "config\\"
+FONTS_DIR = "assets\\fonts\\"
+LANG_DIR = "assets\\lang\\"
+SPRITE_DIR = "assets\\sprites\\"
+CRASH_REPORT_DIR = "crash_reports\\"
 
 lore_sprites = [
     "assets\img\icon.png",
