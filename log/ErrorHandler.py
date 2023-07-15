@@ -33,7 +33,7 @@ class ErrorHandler(Tk):
         # if crash report folder doesn't exist create it
         if not ospath.exists(CRASH_REPORT_DIR):
             makedirs(CRASH_REPORT_DIR)
-
+    
         file_name = f'{CRASH_REPORT_DIR}\\crash_report-{dt_string}.txt'
         with open(file_name, 'w') as crash_report:
             crash_report.write(content)
@@ -46,7 +46,9 @@ class ErrorHandler(Tk):
         # gets the function from messagebox module given its string name
         selected_function = getattr(messagebox, f'show{msg_type}')
         selected_function(title=title, message=description)
+
     def close(self):
+        """Closes error handler phantom window"""
         self.quit()
         self.destroy()
 

@@ -1,8 +1,8 @@
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-from pygame import Surface, image, mask, SRCALPHA
+from pygame import Surface, image, mask, SRCALPHA, sprite
 
-class GameSprite():
+class GameSprite(sprite.Sprite):
     def __init__(self, filedata):
         self.mask_list = []
         self.loaded_image = image.fromstring(filedata.get_raw(), filedata.get_geometry(), filedata.get_mode())
@@ -22,3 +22,6 @@ class GameSprite():
                     if(mask.overlap(other_mask)):
                         return True
         return False
+    
+    def update(self):
+        pass

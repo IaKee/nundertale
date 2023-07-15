@@ -1,6 +1,11 @@
+# changes path hierachy level to import other modules
+from sys import path
+path.insert(1, '.')
+
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import QUIT
+from model.PlayerModel import PlayerModel
 
 # local modules
 from .InputTracker import InputTracker
@@ -21,7 +26,7 @@ class GameController:
     def process_events(self):
         """Reads keyboard/controller input from internal events variable"""
         self.movement, self.action = self.input_tracker.process_keypresses(self.__events)
-        
+        print(self.movement)
         # enables main window controls
         for event in self.__events:
             if(event.type == QUIT):
@@ -46,9 +51,14 @@ class GameController:
             position = (0, 0), 
             bg = (0, 0, 0))
         fadeout = True
+        player = PlayerModel()
+
+        self.view.draw_sprite(player.sprite, player.position)
         while(not self.__game_should_close):
             self.get_update_events()
             self.process_events()
+            player.mov(self.movement[0], self.movement[1])
+            print(player.position)
             #if(self.view.get_alpha() > 0 and fadeout):
             #    self.view.fade_screen_step(-1)
             #elif(self.view.get_alpha() < 255):
@@ -56,7 +66,7 @@ class GameController:
             #    self.view.fade_screen_step(1)
             #else:
             #    fadeout = True
-      
+            
             self.view.draw_canvas()
             self.view.draw_frame((0,0,0))
             #self.view.fps_tick()

@@ -62,7 +62,7 @@ class GameView:
     def set_icon(self, icon):
         pygame.display.set_icon(icon)
     
-    def load_font(self, name="arial", size=12):
+    def load_font(self, name, size):
         """
         Loads a font and stores it in an internal class variable if it's not already loaded.
         
@@ -75,13 +75,18 @@ class GameView:
         Returns:
             pygame.font.Font: The loaded font object.
         """
-        attr = f"font_{name}_{size}"
+        attr = f"font_{name.replace(' ', '_')}_{size}"
         loaded_font = getattr(self, attr, None)
 
         if not loaded_font:
-            # If the font is not already loaded, create a new font object and store it in the class attribute
-            # TODO: look for default system fonts
-            new_font = pygame.font.Font(FONTS_DIR + name, size) 
+            # If the font is not already loaded, first try to load a default system font
+            try:
+                new_font = pygame.font.SysFont(name, size)
+            except pygame.error:
+                # If the system font is not found, load the font from the specified directory
+                new_font = pygame.font.Font(FONTS_DIR + name, size) 
+
+            # Store the loaded font in the class attribute
             setattr(self, attr, new_font)
             return new_font
         else:
@@ -93,7 +98,7 @@ class GameView:
     
     def get_events(self):
         return pygame.event.get()
-    
+
     def draw_frame(self, fill: tuple[int, int, int]):
         # if enabled, draws fps on the top right
         if(self.__tracking_frames):
@@ -105,7 +110,11 @@ class GameView:
                     self.canvas.pop()  
                 avg = self.__get_frame_average()
                 frame_avg_text = f"{avg} FPS"
-                self.draw_text(frame_avg_text, (100, 0), (255, 255, 255))
+                self.draw_text(
+                    text = frame_avg_text, 
+                    font = ("arial", 12),
+                    position = (SCREEN_WIDTH-55, 5), 
+                    fg = (255, 255, 255))
                 self.__has_fps = True
                 self.__last_update = perf_counter()
         
@@ -113,7 +122,6 @@ class GameView:
         self.screen.blit(self.frame, (0, 0))
         pygame.display.flip()
 
-    
     def draw_canvas(self, bg: pygame.surface.Surface = None):
         if(bg != None): 
             self.frame = bg
@@ -126,25 +134,28 @@ class GameView:
         self, 
         text: str, 
         position: tuple[int, int], 
-        font: tuple = ("arial", 12),
+        font: [None, tuple] = None,
         fg: tuple[int, int, int] = (255, 255, 255),
         bg: tuple[int, int, int] = None, 
         alpha: int = 255
     ):
-        print("aq", font)
         if(font):
-            lfont = self.load_font(font[0], font[1])
+            lfont = self.load_font(
+                name = font[0], 
+                size = font[1])
         else:
             lfont = self.default_font
 
         self.draw_generic(lfont.render(text, False, fg, bg), position, alpha)
     
+    def draw_sprite(self, sprite, pos, alpha = 255):
+        self.draw_generic(sprite.loaded_image, pos, alpha)
+        pass
+
     def draw_generic(
         self, 
-        surface: 
-        pygame.surface.Surface, 
-        position: 
-        tuple[int, int], 
+        surface: pygame.surface.Surface, 
+        position: tuple[int, int], 
         alpha: int = 255
     ):
         """Appends a generic surface object to the canvas frame queue""" 

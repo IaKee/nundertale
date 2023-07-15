@@ -1,6 +1,8 @@
 from model.FileManager import FileManager
 from model.GameSprite import GameSprite
+
 from log.logger import flog
+
 class GameLevel:
     def __init__(self, sprite_path_list):
         self.file_manager = FileManager()
