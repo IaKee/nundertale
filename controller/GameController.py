@@ -4,21 +4,30 @@ path.insert(1, '.')
 
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-from pygame import QUIT
+from pygame import QUIT, math
 from model.PlayerModel import PlayerModel
 
 # local modules
 from .InputTracker import InputTracker
 from CONSTANTS import *
 class GameController:
-    def __init__(self):
-        self.player_coords = {"x": 0, "y": 0}
+    def __init__(self, world_to_screen = 0):
+        self.player_coords = [0, 0]
         self.player_speed = 0
         self.current_level = 0
+        self.world_to_screen = world_to_screen
 
-        self.input_tracker = InputTracker()
         self.__game_should_close = False
 
+        self.player = PlayerModel()
+
+    def adjust_movement(self):
+        # como eu faria
+        if(self.movement[0] * self.movement[1]):
+            self.player_coords_world += 0.7*self.player_speed
+        else:
+            self.player_coords_world += (self.movement*self.player_speed)
+        
     def get_update_events(self):
         """Updates events from view"""
         self.__events = self.view.get_events()
@@ -26,7 +35,8 @@ class GameController:
     def process_events(self):
         """Reads keyboard/controller input from internal events variable"""
         self.movement, self.action = self.input_tracker.process_keypresses(self.__events)
-        print(self.movement)
+        if(self.action == "move"):
+            self.player.mov(self.movement)
         # enables main window controls
         for event in self.__events:
             if(event.type == QUIT):
@@ -35,6 +45,7 @@ class GameController:
     def link_view(self, reference):
         """References view (mvc) to this level"""
         self.view = reference
+        self.input_tracker = InputTracker(self.view, self.player)
 
     def link_model(self, reference):
         """References model (mvc) to this level"""
@@ -51,14 +62,14 @@ class GameController:
             position = (0, 0), 
             bg = (0, 0, 0))
         fadeout = True
-        player = PlayerModel()
+        
 
-        self.view.draw_sprite(player.sprite, player.position)
+        self.view.draw_sprite(self.player.sprite, self.player.position)
         while(not self.__game_should_close):
             self.get_update_events()
             self.process_events()
-            player.mov(self.movement[0], self.movement[1])
-            print(player.position)
+
+            #print(player.position)
             #if(self.view.get_alpha() > 0 and fadeout):
             #    self.view.fade_screen_step(-1)
             #elif(self.view.get_alpha() < 255):

@@ -23,6 +23,7 @@ class GameView:
         self.fade_current_color = [0, 0, 0, 0]  # RGBA
 
         self.loaded_sprites = []
+        self.loaded_fonts = {}
 
         self.canvas: list[tuple[pygame.surface.Surface, tuple[int, int]]] = list()
         
@@ -62,36 +63,53 @@ class GameView:
     def set_icon(self, icon):
         pygame.display.set_icon(icon)
     
-    def load_font(self, name, size):
-        """
-        Loads a font and stores it in an internal class variable if it's not already loaded.
-        
-        The font is identified and stored using the following layout: self.__font_name_size
-        
+    def load_font(self, font_string):
+        """Loads a font and stores it in an internal class variable if it's not already loaded.
+
+        The format_str string should have the format "fontname_size_style", but each part is optional.
+        If the format is invalid, a ValueError will be raised.
+
         Parameters:
-            name (str): The name of the font file to load (default is "arial").
-            size (int): The size of the font to load (default is 12).
-        
+            format_str (str): The string with the font format to be loaded. The default is "arial_12_regular".
+
         Returns:
             pygame.font.Font: The loaded font object.
         """
-        attr = f"font_{name.replace(' ', '_')}_{size}"
-        loaded_font = getattr(self, attr, None)
 
-        if not loaded_font:
-            # If the font is not already loaded, first try to load a default system font
+        # font defaults
+
+        # checks if the font is already loaded, if so, return it
+        if font_string in self.loaded_fonts:
+            return self.loaded_fonts[font_string]
+
+        font_size = 12
+        font_style = ""
+
+        parts = font_string.split("_")
+        n_parts = len(parts)
+        if n_parts == 1:
+            font_name = parts[0]
+        elif n_parts == 2:
             try:
-                new_font = pygame.font.SysFont(name, size)
-            except pygame.error:
-                # If the system font is not found, load the font from the specified directory
-                new_font = pygame.font.Font(FONTS_DIR + name, size) 
+                font_name = parts[0]
+                font_size = int(parts[1])
+            except ValueError:
+                raise ValueError("Invalid font size")
+        elif n_parts == 3:
+            font_name = parts[0]
+            font_size = int(parts[1])
+            font_style = parts[2]
+        elif n_parts > 3:
+            raise ValueError("Invalid font format!")
 
-            # Store the loaded font in the class attribute
-            setattr(self, attr, new_font)
-            return new_font
+        # Load the font and store it in the dictionary of loaded fonts
+        if(pygame.font.match_font(font_name)):
+            font = pygame.font.SysFont(font_name, font_size, bold="bold" in font_style, italic="italic" in font_style)
         else:
-            # If the font is already loaded, return the existing font object
-            return loaded_font
+            font = pygame.font.Font(FONTS_DIR + font_name, font_size,  bold="bold" in font_style, italic="italic" in font_style) 
+        
+        self.loaded_fonts[font_string] = font
+        return font
 
     def load_sprite(self, sprite_raw, dimensions):
         self.loaded_sprites.append(pygame.image.fromstring(sprite_raw, dimensions, 'RGBA'))
@@ -112,7 +130,7 @@ class GameView:
                 frame_avg_text = f"{avg} FPS"
                 self.draw_text(
                     text = frame_avg_text, 
-                    font = ("arial", 12),
+                    font = "arial_12",
                     position = (SCREEN_WIDTH-55, 5), 
                     fg = (255, 255, 255))
                 self.__has_fps = True
@@ -134,15 +152,14 @@ class GameView:
         self, 
         text: str, 
         position: tuple[int, int], 
-        font: [None, tuple] = None,
+        font: str = None,
         fg: tuple[int, int, int] = (255, 255, 255),
         bg: tuple[int, int, int] = None, 
         alpha: int = 255
     ):
+        
         if(font):
-            lfont = self.load_font(
-                name = font[0], 
-                size = font[1])
+            lfont = self.load_font(font)
         else:
             lfont = self.default_font
 
