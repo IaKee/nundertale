@@ -1,2 +1,35 @@
+# Vendor tools & libraries (740MB+)
+vendor/
+
+# Binaries and build artifacts
+*.exe
+*.o
+*.obj
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+build/
+dist/
+
+# Save files & runtime data
+saves/
 crash_reports/
-**/__pycache__
+log/
+logs/
+
+# Python cache & legacy files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Design source files (large assets)
+*.psd
+
+# IDE & OS files
+.vscode/
+.vs/
+.idea/
+Thumbs.db
+Desktop.ini

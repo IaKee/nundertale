@@ -1,38 +1,83 @@
-# nUndertale
+# nUndertale 🐸
 
+> An indie personal RPG comedy project, paying comedic tribute to Toby Fox's classic *Undertale*.
 
-Have you ever played Undertale and thought to yourself, "This is great and all, but what if it was a parody game where instead of a child falling into the underground, it was Pepe the frog and all the monsters were furries that you had to beat the crap out of?" Well, look no further, because that's exactly what nUndertale is!
+---
 
-## Overview
+## 🌟 Overview
 
+**nUndertale** is a comedic parody inspired by *Undertale*. In the game, the player assumes the role of **Pepe the Fallen Gamer**, who plummets into the forgotten underworld of **Mt. Dew** — a subterranean realm inhabited by eccentric internet tribes (Furries, Weeaboos, and Roleplayers).
 
-nUndertale is a comedic parody of the popular game Undertale, developed in C using the Allegro graphics library. In nUndertale, the player takes on the role of Pepe the frog, who has fallen into an underground world filled with furries instead of monsters. Unlike the original game, there is no option to spare the furries, only to fight them. If the player loses a battle, Pepe becomes more and more of a furry until eventually losing the game.
+Unlike the original game, losing all your HP in *nUndertale* does not simply destroy your soul: Pepe succumbs to the surrounding "cringe" and undergoes a gradual metamorphosis into a furry! Your objective is to explore the Ruins, solve ridiculous puzzles, interact with eccentric characters, dodge meme bullets in retro bullet-hell encounters, and find your way back to your gaming PC.
 
-## Screenshots of implemented features
+---
 
-### Main menu
-![Main menu](https://i.imgur.com/jXvvoES.png)
-### Disclaimer
-![Disclaimer](https://i.imgur.com/BEM1zW2.png)
-### Early lore that certaily won't make its way to the final version
-![EarlyLore](https://i.imgur.com/KrJ32aw.png)
-### Name selection
-![NameSelection](https://i.imgur.com/QwTmrYS.png)
+## 🕹️ Playable Minimum Level Features
 
-The game is still in early development, but currently features functional menus that allow the player to start a new game, load a saved game, access game settings, and quit the game. As the game progresses, new features will be added, including battles with furries and branching story paths based on the player's decisions.
+- **Disclaimer Screen:** Nostalgic opening screen with smooth fade-in, authentic fonts (`monster_friend.otf`, `gomarice_shmup_in_the_zone.ttf`), and clean personal indie project attribution (press Z or Enter to skip).
+- **Intro Lore Sequence:** 1:1 Undertale style slideshow across 10 cards (`lore1.bmp` through `lore9.bmp` + animated fall sequence `lore10`), chiptune soundtrack (*Once Upon A Time Remix*), and typewriter sound effects.
+- **Main Title Screen:** Authentic Undertale title font (`monster_friend_fore.otf`), floating logo with red `#` emblem, random quotes, flashing `[Press Z or Enter]`, and menu options with frog-soul selector.
+- **Instruction Manual:** Explains controls and the iconic rule: *"When your HP is 0, you become a furry."*
+- **Character Naming ("Name the fallen gamer"):**
+  - Interactive 4x7 character matrix with subtle authentic pixel-jitter.
+  - Special buttons: `[PRO]`, `[GAMER]`, `[Backspace]`, `[Done]`.
+  - Dynamic Easter Eggs with unique audio/visual reactions for: `CHAD` (golden border), `PEPE`, `SKYRIM`, `SANS`, `FRISK`, `CHARA`, `FLOWEY`, `TORIEL`, `ASGORE`, `RUIVA`, `LOIRA`, `OTOME`, `GOTICA`, `MORENA`, repeated letters, and spamming limits.
+  - Confirmation screen: *"Are you sure about that?"* with animated zooming name, PI angle jitter, and YES/NO choices.
+- **Overworld Exploration (Playable Test Level):**
+  - Full 4-directional walking animations for Pepe using the original spritesheet (`pepe_char.bmp`) with magenta color-key transparency.
+  - Virtual 640x480 retro canvas with pixel-perfect letterboxing on modern high-resolution displays.
+  - Sparkling animated Save Point: heals HP to 20/20, plays sound, and displays Determination text.
+  - Interactive signpost and Barky the Alpha Wolf NPC with typewriter dialogue box and sound bleeps.
+  - Northern exit doorway that triggers the battle encounter!
+- **Battle Encounter System:**
+  - Turn-based parody combat against **Barky the Alpha Wolf**.
+  - Authentic Undertale menu actions: `[ FIGHT ]`, `[ ACT ]`, `[ ITEM ]`, `[ MERCY ]`.
+  - Attack timing bar minigame for critical hits.
+  - Real-time bullet-hell dodge box: control the green soul to dodge cascading "UWU" bullets and bouncing Mountain Dew soda cans.
+  - Furry-meter and HP bar tracking.
 
-## Technical Details
+---
 
-nUndertale is written in C, using the Allegro graphics library to handle rendering and user input. The code is well-organized and includes comments throughout to help with understanding and maintenance. However, some assets may not be included due to licensing issues.
+## 🏗️ Software Architecture & SOLID Principles
 
-## How to Play
+The project was migrated from a legacy procedural singleton structure to **Modern C++20** using the hardware-accelerated **Raylib** library:
 
-At the moment, there is no actual gameplay in nUndertale, just functional menus. To start a new game, select "New Game" from the main menu. To load a saved game, select "Load Game". The game settings menu allows the player to adjust the volume and screen resolution. To quit the game, select "Quit".
+- **S (Single Responsibility Principle):** Each subsystem (`AudioService`, `ResourceService`, `InputService`, `SceneManager`, `DialogBox`, `Player`, `BattleSystem`) has one well-defined responsibility.
+- **O (Open/Closed Principle):** The `IScene` and `IInteractable` interfaces allow adding new rooms, scenes, and mini-games without modifying the engine core loop.
+- **L (Liskov Substitution Principle):** All scenes (`DisclaimerScene`, `LoreScene`, `TitleScene`, `NameSelectScene`, `OverworldScene`, `BattleScene`) are interchangeable and managed uniformly by `SceneManager`.
+- **I (Interface Segregation Principle):** Lightweight, focused abstract contracts (`IScene`, `IAudioService`, `IResourceService`, `IInputService`, `IInteractable`).
+- **D (Dependency Inversion Principle):** High-level scenes depend upon abstractions provided by `GameContext`, completely eliminating brittle global state and singletons.
 
-## Origin
+---
 
-The idea for Nundertale was born during a late-night Discord call, when the creator decided to remake Undertale from scratch using C programming language and the Allegro graphics library. The concept quickly evolved into a parody game that would poke fun at the original's gameplay mechanics and story.
+## 🎮 Controls
 
-## Conclusion
+| Key | Action |
+| :--- | :--- |
+| **Arrow keys / W, A, S, D** | Move Pepe / Menu Navigation / Dodge in Battle Box |
+| **Z / Enter / Space** | Confirm / Interact / Advance Dialogue / Attack |
+| **X / Shift** | Cancel / Run / Backspace / Fast-forward text |
+| **C / Ctrl** | Menu / Inventory |
+| **B** | Quick battle encounter shortcut (in overworld) |
+| **Esc** | Return to Previous Menu / Exit |
 
-nUndertale is a fun and lighthearted parody of Undertale that will have players laughing and enjoying themselves. While still in early development, the functional menus provide a glimpse into what the game will eventually become.
+---
+
+## 🛠️ How to Build and Run
+
+The project includes a portable GCC/G++ compiler and Raylib in the `vendor/` directory, allowing clean native compilation without external dependencies or DLL hell:
+
+### Quick Build on Windows (PowerShell / Command Prompt):
+```powershell
+.\build.bat
+```
+
+### Run Game:
+```powershell
+.\nundertale_modern.exe
+```
+
+---
+
+## 📖 Script & Game Design Document
+For full lore, character dialogue scripts, and design documentation, see [ROTEIRO.md](file:///c:/Users/delux/OneDrive/Documentos/Programas/C/nundertale/ROTEIRO.md).
