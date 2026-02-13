@@ -1,0 +1,8 @@
+{
+  "id": "encounter_barky",
+  "enemies": ["barky"],
+  "introText": "* Barky blocked your path!",
+  "background": "grid",
+  "music": "boss_barky",
+  "canFlee": false
+}
