@@ -24,7 +24,7 @@ void BattleScene::update(float dt, GameContext& context) {
 
         if (m_battleSystem->isFinished()) {
             if (context.input.isConfirmPressed()) {
-                context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.6f);
+                context.scenes.popScene(context);
             }
         }
     }

@@ -14,13 +14,21 @@ void SceneManager::changeScene(std::unique_ptr<IScene> newScene, float fadeDurat
     m_fadeState = FadeState::FadeOut;
 }
 
-void SceneManager::pushScene(std::unique_ptr<IScene> scene) {
+void SceneManager::pushScene(std::unique_ptr<IScene> scene, GameContext& context) {
+    if (!m_scenes.empty()) {
+        m_scenes.back()->onPause(context);
+    }
     m_scenes.push_back(std::move(scene));
+    m_scenes.back()->onEnter(context);
 }
 
-void SceneManager::popScene() {
+void SceneManager::popScene(GameContext& context) {
     if (!m_scenes.empty()) {
+        m_scenes.back()->onExit(context);
         m_scenes.pop_back();
+    }
+    if (!m_scenes.empty()) {
+        m_scenes.back()->onResume(context);
     }
 }
 

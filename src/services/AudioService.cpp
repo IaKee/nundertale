@@ -80,7 +80,7 @@ void AudioService::playSound(const std::string& path, float volume) {
         Sound snd = LoadSound(path.c_str());
         it = m_soundCache.emplace(path, snd).first;
     }
-    SetSoundVolume(it->second, volume * m_masterVolume);
+    SetSoundVolume(it->second, volume);
     PlaySound(it->second);
 }
 

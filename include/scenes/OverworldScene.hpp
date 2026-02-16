@@ -15,6 +15,7 @@ public:
     ~OverworldScene() override = default;
 
     void onEnter(GameContext& context) override;
+    void onResume(GameContext& context) override;
     void update(float dt, GameContext& context) override;
     void render(GameContext& context) override;
     void onExit(GameContext& context) override;

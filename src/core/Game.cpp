@@ -1,6 +1,7 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
 #include <algorithm>
+#include <string>
 
 namespace nundertale {
 
@@ -19,9 +20,8 @@ Game::Game() {
     m_virtualTarget = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(m_virtualTarget.texture, TEXTURE_FILTER_POINT);
 
-    // Initial scene
-    m_sceneManager->pushScene(std::make_unique<DisclaimerScene>());
-    m_sceneManager->update(0.0f, *m_context);
+    // Initial scene: pushScene with context properly executes onEnter (BUG-01)
+    m_sceneManager->pushScene(std::make_unique<DisclaimerScene>(), *m_context);
 }
 
 Game::~Game() {
@@ -33,7 +33,7 @@ void Game::initWindow() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetWindowMinSize(640, 480);
-    SetTargetFPS(60);
+    SetTargetFPS(TARGET_FPS); // 30 FPS Undertale standard (CORE-001)
 
     // Window icon
     if (FileExists("assets/img/icon.png")) {
@@ -44,20 +44,74 @@ void Game::initWindow() {
 }
 
 void Game::run() {
+    float accumulator = 0.0f;
+    float escQuitTimer = 0.0f;
+
     while (!WindowShouldClose() && m_context->isRunning && m_sceneManager->hasScenes()) {
-        float dt = GetFrameTime();
+        float frameDt = GetFrameTime();
+        if (frameDt > 0.2f) frameDt = 0.2f; // prevent spiral of death
+        accumulator += frameDt;
+
+        // F4 toggle fullscreen (CORE-005)
+        if (IsKeyPressed(KEY_F4)) {
+            ToggleFullscreen();
+        }
+
+        // Hold ESC for 1 second to quit (CORE-006, BUG-14)
+        if (IsKeyDown(KEY_ESCAPE)) {
+            escQuitTimer += frameDt;
+            if (escQuitTimer >= 1.0f) {
+                m_context->isRunning = false;
+                break;
+            }
+        } else {
+            escQuitTimer = 0.0f;
+        }
+
+#ifdef NUNDERTALE_DEBUG
+        static bool s_showDebugOverlay = false;
+        if (IsKeyPressed(KEY_F1)) {
+            s_showDebugOverlay = !s_showDebugOverlay;
+        }
+#endif
 
         // 1. Update services
         m_inputService->update();
         m_audioService->updateMusic();
 
-        // 2. Update scenes
-        m_sceneManager->update(dt, *m_context);
+        // 2. Fixed 30 Hz logic update loop (CORE-001)
+        while (accumulator >= LOGIC_TIMESTEP) {
+            m_context->state.playTime += LOGIC_TIMESTEP;
+            m_sceneManager->update(LOGIC_TIMESTEP, *m_context);
+            accumulator -= LOGIC_TIMESTEP;
+        }
 
         // 3. Render into virtual 640x480 canvas
         BeginTextureMode(m_virtualTarget);
             ClearBackground(BLACK);
             m_sceneManager->render(*m_context);
+
+            // Visual feedback for quitting on held ESC (CORE-006)
+            if (escQuitTimer > 0.2f) {
+                int dots = static_cast<int>(escQuitTimer * 4.0f) % 4;
+                std::string quitText = "QUITTING" + std::string(dots, '.');
+                DrawText(quitText.c_str(), 16, 16, 20, WHITE);
+            }
+
+#ifdef NUNDERTALE_DEBUG
+            // Debug overlay on F1 (QA-001)
+            if (s_showDebugOverlay) {
+                DrawRectangle(10, 10, 240, 140, { 0, 0, 0, 210 });
+                DrawRectangleLines(10, 10, 240, 140, COLOR_UNDERTALE_GREEN);
+                DrawText("DEBUG OVERLAY (F1)", 20, 18, 14, COLOR_UNDERTALE_GREEN);
+                DrawText(TextFormat("FPS: %d (Target: %d)", GetFPS(), TARGET_FPS), 20, 36, 14, WHITE);
+                DrawText(TextFormat("Time: %.1fs", m_context->state.playTime), 20, 54, 14, WHITE);
+                DrawText(TextFormat("Player: %s | LV %d", m_context->player.name.c_str(), m_context->player.level), 20, 72, 14, WHITE);
+                DrawText(TextFormat("HP: %d/%d | G: %d", m_context->player.hp, m_context->player.maxHp, m_context->player.gold), 20, 90, 14, WHITE);
+                DrawText(TextFormat("Furry: %.1f%%", m_context->player.furryMeter), 20, 108, 14, WHITE);
+                DrawText(TextFormat("Room: %s", m_context->state.currentRoom.c_str()), 20, 126, 14, WHITE);
+            }
+#endif
         EndTextureMode();
 
         // 4. Draw virtual canvas scaled & letterboxed into window

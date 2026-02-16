@@ -46,13 +46,13 @@ void DialogBox::update(float dt, GameContext& context) {
             }
         }
 
-        // Fast-forward on confirm or cancel
-        if (context.input.isConfirmPressed() || context.input.isCancelPressed()) {
+        // BUG-11 / TXT-004: Only X (Cancel) skips typing instantly; Z waits for page completion
+        if (context.input.isCancelPressed()) {
             m_visibleChars = currentText.size();
             m_isPageComplete = true;
         }
     } else {
-        // Page is complete, waiting for confirm to advance or close
+        // Page is complete, Z (Confirm) advances to the next page or closes (TXT-004)
         if (context.input.isConfirmPressed()) {
             m_currentPage++;
             if (m_currentPage < m_pages.size()) {
@@ -71,14 +71,14 @@ void DialogBox::render(GameContext& context) {
 
     Font font8Bit = context.resources.getFont8Bit(22);
 
-    // Draw dialog frame
+    // Draw dialog frame (white border 5px, black fill)
     DrawRectangleRec(m_boxRect, BLACK);
-    DrawRectangleLinesEx(m_boxRect, 4.0f, WHITE);
+    DrawRectangleLinesEx(m_boxRect, 5.0f, WHITE);
 
     // Draw speaker name if present
     if (!m_speaker.empty()) {
         std::string tag = "* " + m_speaker + ":";
-        context.resources.drawText(font8Bit, tag, { m_boxRect.x + 20, m_boxRect.y + 12 }, 20, COLOR_UNDERTALE_YELLOW, 1.0f);
+        context.resources.drawText(font8Bit, tag, { m_boxRect.x + 20, m_boxRect.y + 12 }, 20, UI_YELLOW, 1.0f);
     }
 
     // Draw visible text
@@ -88,17 +88,7 @@ void DialogBox::render(GameContext& context) {
     float textOffsetY = m_speaker.empty() ? 20.0f : 38.0f;
     context.resources.drawText(font8Bit, visibleText, { m_boxRect.x + 25, m_boxRect.y + textOffsetY }, 22, WHITE, 1.0f);
 
-    // Blinking prompt when waiting for advance
-    if (m_isPageComplete) {
-        if ((int)(GetTime() * 3.0) % 2 == 0) {
-            DrawTriangle(
-                { m_boxRect.x + m_boxRect.width - 25, m_boxRect.y + m_boxRect.height - 15 },
-                { m_boxRect.x + m_boxRect.width - 15, m_boxRect.y + m_boxRect.height - 15 },
-                { m_boxRect.x + m_boxRect.width - 20, m_boxRect.y + m_boxRect.height - 8 },
-                COLOR_UNDERTALE_YELLOW
-            );
-        }
-    }
+    // Undertale 1:1: No yellow triangle indicator (TXT-004)
 }
 
 } // namespace nundertale

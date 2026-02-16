@@ -14,6 +14,8 @@ public:
     std::string getName() const { return m_name; }
     int getHp() const { return m_hp; }
     int getMaxHp() const { return m_maxHp; }
+    int getAtk() const { return m_atk; }
+    int getDef() const { return m_def; }
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
     void setSpareable(bool s) { m_spareable = s; }
