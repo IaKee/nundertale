@@ -10,19 +10,24 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
     m_isMoving = (inputDir.x != 0.0f || inputDir.y != 0.0f);
 
     if (m_isMoving) {
-        // Determine direction
-        if (std::abs(inputDir.x) > std::abs(inputDir.y)) {
+        // OVW-006: Undertale keeps the prior pressed direction if still pressed on diagonal
+        bool dirXMatches = (inputDir.x > 0 && m_direction == Direction::Right) || (inputDir.x < 0 && m_direction == Direction::Left);
+        bool dirYMatches = (inputDir.y > 0 && m_direction == Direction::Down) || (inputDir.y < 0 && m_direction == Direction::Up);
+
+        if (inputDir.x != 0.0f && inputDir.y != 0.0f) {
+            // Diagonal movement: keep current direction if it matches one of the axes
+            if (!dirXMatches && !dirYMatches) {
+                m_direction = (inputDir.x > 0) ? Direction::Right : Direction::Left;
+            }
+        } else if (inputDir.x != 0.0f) {
             m_direction = (inputDir.x > 0) ? Direction::Right : Direction::Left;
-        } else {
+        } else if (inputDir.y != 0.0f) {
             m_direction = (inputDir.y > 0) ? Direction::Down : Direction::Up;
         }
 
-        // Normalize
-        float length = std::sqrt(inputDir.x * inputDir.x + inputDir.y * inputDir.y);
-        Vector2 normalizedDir = { inputDir.x / length, inputDir.y / length };
-
+        // OVW-006: Do NOT normalize diagonal movement in Undertale
         // Move X with collision
-        float newX = m_position.x + normalizedDir.x * PLAYER_SPEED * dt;
+        float newX = m_position.x + inputDir.x * PLAYER_SPEED * dt;
         Rectangle testBoxX = { newX + 5, m_position.y + 38, 28, 18 };
         bool collideX = false;
         for (const auto& obs : obstacles) {
@@ -36,7 +41,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         }
 
         // Move Y with collision
-        float newY = m_position.y + normalizedDir.y * PLAYER_SPEED * dt;
+        float newY = m_position.y + inputDir.y * PLAYER_SPEED * dt;
         Rectangle testBoxY = { m_position.x + 5, newY + 38, 28, 18 };
         bool collideY = false;
         for (const auto& obs : obstacles) {

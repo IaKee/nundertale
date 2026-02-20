@@ -9,6 +9,14 @@
 
 namespace nundertale {
 
+enum class OverworldMenuState {
+    Closed,
+    Main,
+    Item,
+    Stat,
+    Cell
+};
+
 class OverworldScene : public IScene {
 public:
     OverworldScene();
@@ -24,6 +32,10 @@ private:
     void initObstacles();
     void initInteractables();
 
+    void handleMenuInput(GameContext& context);
+    void renderMenu(GameContext& context, Font font);
+    void drawSoul(float x, float y) const;
+
     Player m_player;
     DialogBox m_dialogBox;
 
@@ -31,7 +43,22 @@ private:
     std::vector<std::unique_ptr<IInteractable>> m_interactables;
     std::unique_ptr<SavePoint> m_savePoint;
 
-    bool m_paused = false;
+    // Overworld C Menu (MNU-001)
+    OverworldMenuState m_menuState = OverworldMenuState::Closed;
+    int m_menuIndex = 0;       // 0: ITEM, 1: STAT, 2: CELL
+    int m_itemSubIndex = 0;
+
+    // Save Point Dialog & Box (SAV-002)
+    enum class SaveBoxState {
+        Closed,
+        Active,
+        Saved
+    };
+    SaveBoxState m_saveBoxState = SaveBoxState::Closed;
+    int m_saveBoxChoice = 0; // 0: Save, 1: Return
+
+    void handleSaveBoxInput(GameContext& context);
+    void renderSaveBox(GameContext& context, Font font);
 };
 
 } // namespace nundertale

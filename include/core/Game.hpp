@@ -6,6 +6,7 @@
 #include "services/AudioService.hpp"
 #include "services/ResourceService.hpp"
 #include "services/InputService.hpp"
+#include "services/SaveService.hpp"
 #include <memory>
 
 namespace nundertale {
@@ -24,6 +25,7 @@ private:
     std::unique_ptr<AudioService> m_audioService;
     std::unique_ptr<ResourceService> m_resourceService;
     std::unique_ptr<InputService> m_inputService;
+    std::unique_ptr<SaveService> m_saveService;
     std::unique_ptr<SceneManager> m_sceneManager;
 
     RenderTexture2D m_virtualTarget{};

@@ -41,6 +41,8 @@ public:
     bool isFinished() const { return m_state == BattleState::Victory || m_state == BattleState::Defeat; }
     bool isVictory() const { return m_state == BattleState::Victory; }
     bool isSpared() const { return m_isSpared; }
+    BattleState getState() const { return m_state; }
+    Vector2 getSoulPosition() const { return m_soulPosition; }
 
 private:
     void handleMenuInput(GameContext& context);

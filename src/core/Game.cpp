@@ -11,10 +11,11 @@ Game::Game() {
     m_audioService = std::make_unique<AudioService>();
     m_resourceService = std::make_unique<ResourceService>();
     m_inputService = std::make_unique<InputService>();
+    m_saveService = std::make_unique<SaveService>();
     m_sceneManager = std::make_unique<SceneManager>();
 
     // Wire up context dependencies (Dependency Injection)
-    m_context = std::make_unique<GameContext>(*m_audioService, *m_resourceService, *m_inputService, *m_sceneManager);
+    m_context = std::make_unique<GameContext>(*m_audioService, *m_resourceService, *m_inputService, *m_sceneManager, *m_saveService);
 
     // Create virtual render target for pixel-perfect 640x480 retro rendering
     m_virtualTarget = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);

@@ -1,0 +1,24 @@
+{
+  "expTable": [
+    { "level": 1,  "expRequired": 0,     "maxHp": 20, "at": 0,  "df": 0 },
+    { "level": 2,  "expRequired": 10,    "maxHp": 24, "at": 2,  "df": 0 },
+    { "level": 3,  "expRequired": 30,    "maxHp": 28, "at": 4,  "df": 0 },
+    { "level": 4,  "expRequired": 70,    "maxHp": 32, "at": 6,  "df": 0 },
+    { "level": 5,  "expRequired": 120,   "maxHp": 36, "at": 8,  "df": 1 },
+    { "level": 6,  "expRequired": 200,   "maxHp": 40, "at": 10, "df": 1 },
+    { "level": 7,  "expRequired": 300,   "maxHp": 44, "at": 12, "df": 1 },
+    { "level": 8,  "expRequired": 500,   "maxHp": 48, "at": 14, "df": 1 },
+    { "level": 9,  "expRequired": 800,   "maxHp": 52, "at": 16, "df": 2 },
+    { "level": 10, "expRequired": 1200,  "maxHp": 56, "at": 18, "df": 2 },
+    { "level": 11, "expRequired": 1700,  "maxHp": 60, "at": 20, "df": 2 },
+    { "level": 12, "expRequired": 2500,  "maxHp": 64, "at": 22, "df": 2 },
+    { "level": 13, "expRequired": 3500,  "maxHp": 68, "at": 24, "df": 3 },
+    { "level": 14, "expRequired": 5000,  "maxHp": 72, "at": 26, "df": 3 },
+    { "level": 15, "expRequired": 7000,  "maxHp": 76, "at": 28, "df": 3 },
+    { "level": 16, "expRequired": 10000, "maxHp": 80, "at": 30, "df": 3 },
+    { "level": 17, "expRequired": 15000, "maxHp": 84, "at": 32, "df": 4 },
+    { "level": 18, "expRequired": 25000, "maxHp": 88, "at": 34, "df": 4 },
+    { "level": 19, "expRequired": 50000, "maxHp": 92, "at": 36, "df": 4 },
+    { "level": 20, "expRequired": 99999, "maxHp": 99, "at": 40, "df": 5 }
+  ]
+}
