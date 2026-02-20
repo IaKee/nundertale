@@ -10,11 +10,34 @@ namespace nundertale {
 BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy)
     : m_enemy(std::move(enemy)) {
     m_narratorText = "* " + m_enemy->getName() + " blocked your path!";
+    if (m_enemy) {
+        m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
+    }
 }
 
 void BattleSystem::update(float dt, GameContext& context) {
     if (m_invulnTimer > 0.0f) {
         m_invulnTimer -= dt;
+    }
+    if (m_enemyShakeTimer > 0.0f) {
+        m_enemyShakeTimer = std::max(0.0f, m_enemyShakeTimer - dt);
+    }
+    if (m_damageDisplayTimer > 0.0f) {
+        m_damageDisplayTimer = std::max(0.0f, m_damageDisplayTimer - dt);
+    }
+    if (m_slashAnimTimer > 0.0f) {
+        m_slashAnimTimer = std::max(0.0f, m_slashAnimTimer - dt);
+    }
+
+    updateDust(dt);
+
+    if (m_enemy) {
+        if (m_enemyVisualHp > static_cast<float>(m_enemy->getHp())) {
+            float drainSpeed = std::max(20.0f, (float)m_lastDamage / 0.5f);
+            m_enemyVisualHp = std::max(static_cast<float>(m_enemy->getHp()), m_enemyVisualHp - drainSpeed * dt);
+        } else {
+            m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
+        }
     }
 
     // Box animated resize transition (BHL-001)
@@ -46,6 +69,18 @@ void BattleSystem::update(float dt, GameContext& context) {
         case BattleState::MercySelect:
             handleMercyInput(context);
             break;
+        case BattleState::Fleeing:
+            m_fleeTimer += dt;
+            m_fleeSoulX -= 260.0f * dt;
+            if (static_cast<int>(m_fleeTimer * 30.0f) % 4 == 0) {
+                spawnDust({ m_fleeSoulX + 16.0f, m_fleeSoulY + 12.0f }, 1, LIGHTGRAY);
+            }
+            if (m_fleeSoulX < -30.0f) {
+                m_state = BattleState::Fled;
+            }
+            break;
+        case BattleState::Fled:
+            break;
         case BattleState::DialogMessage:
             if (context.input.isConfirmPressed()) {
                 // BUG-02: Only ends battle if enemy is actually dead or spared via MERCY!
@@ -55,12 +90,14 @@ void BattleSystem::update(float dt, GameContext& context) {
                         context.player.gold += 10;
                         context.state.setFlag("ruins.barky.spared", 1);
                         m_narratorText = "* YOU WON!\n* You earned 0 EXP and 10 gold.";
+                        spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
                     } else {
                         context.player.exp += 20;
                         context.player.gold += 15;
                         context.state.setFlag("ruins.barky.killed", 1);
                         context.state.killsTotal += 1;
                         m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";
+                        spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
 
                         // Check level up (PRG-001, BUG-16)
                         static const int expThresholds[] = {
@@ -144,6 +181,10 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
         if (outOfBounds) {
             m_targetCursorMoving = false;
             m_narratorText = "* You swung wide and missed!";
+            m_lastMiss = true;
+            m_lastDamage = 0;
+            m_damageDisplayTimer = 1.2f;
+            m_enemyShakeTimer = 0.0f;
             m_state = BattleState::DialogMessage;
             context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
         } else if (context.input.isConfirmPressed()) {
@@ -158,17 +199,27 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
             float accuracyMult = (dist <= 12.0f) ? 2.2f : std::max(0.5f, (1.0f - dist / maxDist) * 2.0f);
             int damage = std::max(1, static_cast<int>(std::round((baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
 
+            m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
             m_enemy->takeDamage(damage);
-            context.audio.playSound("assets/sfx/fart_reverb.ogg", 0.8f);
 
+            m_lastMiss = false;
+            m_lastDamage = damage;
+            m_damageDisplayTimer = 1.5f;
+            m_enemyShakeTimer = 0.4f;
+            m_slashAnimTimer = 0.25f;
+
+            // FGT-008: Hitmarker on critical hit, slice sound on normal hit
             if (dist <= 12.0f) {
+                context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
                 m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
             } else {
+                context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
                 m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
             }
 
             if (m_enemy->isDead()) {
                 m_narratorText += "\n* Barky was vaporized into synthetic fluff!";
+                spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
             }
 
             m_state = BattleState::DialogMessage;
@@ -314,14 +365,25 @@ void BattleSystem::handleMercyInput(GameContext& context) {
             if (m_enemy->isSpareable()) {
                 m_isSpared = true;
                 m_narratorText = "* You spared " + m_enemy->getName() + "!\n* Barky happily wags his tail and steps aside.";
+                spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/selection_sound.wav", 1.0f);
             } else {
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
             }
             m_state = BattleState::DialogMessage;
-        } else { // Flee
-            m_narratorText = "* Don't run away! A true gamer faces the cringe head-on!";
-            m_state = BattleState::DialogMessage;
+        } else { // Flee (MRC-002)
+            float fleeChance = 0.5f + 0.1f * static_cast<float>(m_turnCount);
+            bool success = (GetRandomValue(1, 100) <= static_cast<int>(fleeChance * 100.0f));
+            if (success) {
+                m_state = BattleState::Fleeing;
+                m_fleeSoulX = m_arenaRect.x + 35.0f;
+                m_fleeSoulY = m_arenaRect.y + 55.0f + 10.0f;
+                m_fleeTimer = 0.0f;
+                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
+            } else {
+                m_narratorText = "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!";
+                m_state = BattleState::DialogMessage;
+            }
         }
     } else if (context.input.isCancelPressed()) {
         m_state = BattleState::MenuSelect;
@@ -329,6 +391,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
 }
 
 void BattleSystem::startEnemyTurn() {
+    m_turnCount++;
     m_state = BattleState::EnemyTurn;
     m_enemyTurnTimer = 0.0f;
     m_spawnTimer = 0.0f;
@@ -364,7 +427,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 
     // Spawn bullets
     m_spawnTimer += dt;
-    if (m_spawnTimer >= 0.40f) {
+    if (m_spawnTimer >= 0.38f) {
         m_spawnTimer = 0.0f;
         spawnBulletWave();
     }
@@ -373,7 +436,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     Rectangle soulHitbox = { m_soulPosition.x - 4, m_soulPosition.y - 4, 8, 8 };
 
     for (size_t i = 0; i < m_bullets.size(); ) {
-        m_bullets[i].update(dt);
+        m_bullets[i].update(dt, &m_arenaRect);
 
         if (m_bullets[i].isOutOfBounds(m_arenaRect, 40.0f)) {
             m_bullets.erase(m_bullets.begin() + i);
@@ -403,16 +466,47 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 }
 
 void BattleSystem::spawnBulletWave() {
-    float startX = m_arenaRect.x + (float)GetRandomValue(20, (int)m_arenaRect.width - 20);
-    Bullet b;
-    b.position = { startX, m_arenaRect.y - 10 };
-    b.velocity = { (float)GetRandomValue(-25, 25), (float)GetRandomValue(90, 140) };
-    b.type = (GetRandomValue(0, 1) == 0) ? BulletType::UwU : BulletType::SodaCan;
-    b.text = "UWU";
-    b.color = (b.type == BulletType::UwU) ? (Color){ 255, 120, 210, 255 } : COLOR_UNDERTALE_GREEN;
-    b.damage = 3;
-    b.furry = 6.0f;
-    m_bullets.push_back(b);
+    int pattern = m_turnCount % 3;
+
+    if (pattern == 0) {
+        // Pattern 1: UwU Rain (BHL-014: falling letters with slight zigzag)
+        float startX = m_arenaRect.x + (float)GetRandomValue(15, (int)m_arenaRect.width - 25);
+        Bullet b;
+        b.position = { startX, m_arenaRect.y - 12.0f };
+        b.velocity = { (float)GetRandomValue(-20, 20), (float)GetRandomValue(95, 135) };
+        b.type = BulletType::UwU;
+        b.text = "UWU";
+        b.color = (Color){ 255, 120, 210, 255 };
+        b.damage = 3;
+        b.furry = 6.0f;
+        m_bullets.push_back(b);
+    } else if (pattern == 1) {
+        // Pattern 2: Dew Bounce (BHL-014: Mountain Dew cans bouncing off arena walls & floor)
+        float startX = m_arenaRect.x + (float)GetRandomValue(20, (int)m_arenaRect.width - 20);
+        Bullet b;
+        b.position = { startX, m_arenaRect.y - 10.0f };
+        b.velocity = { (float)GetRandomValue(-70, 70), (float)GetRandomValue(40, 75) };
+        b.type = BulletType::SodaCan;
+        b.color = COLOR_UNDERTALE_GREEN;
+        b.gravity = 140.0f;
+        b.bounces = true;
+        b.damage = 4;
+        b.furry = 7.0f;
+        m_bullets.push_back(b);
+    } else {
+        // Pattern 3: Awoo Howl (BHL-014: sound waves expanding downward from Barky)
+        float startX = (GetRandomValue(0, 1) == 0) ? (m_arenaRect.x + 22.0f) : (m_arenaRect.x + m_arenaRect.width - 22.0f);
+        Bullet b;
+        b.position = { startX, m_arenaRect.y - 12.0f };
+        float dirX = (startX < m_arenaRect.x + m_arenaRect.width / 2.0f) ? 35.0f : -35.0f;
+        b.velocity = { dirX, (float)GetRandomValue(85, 120) };
+        b.type = BulletType::Awoo;
+        b.arcRadius = 14.0f;
+        b.color = (Color){ 100, 200, 255, 255 };
+        b.damage = 3;
+        b.furry = 5.0f;
+        m_bullets.push_back(b);
+    }
 }
 
 void BattleSystem::drawBackgroundGrid() const {
@@ -494,6 +588,42 @@ void BattleSystem::drawButtons(GameContext& context, Font font) const {
     }
 }
 
+void BattleSystem::spawnDust(Vector2 center, int count, Color col) {
+    for (int i = 0; i < count; ++i) {
+        DustParticle p;
+        p.pos = center;
+        float angle = (float)GetRandomValue(0, 360) * (3.14159f / 180.0f);
+        float spd = (float)GetRandomValue(30, 130);
+        p.vel = { std::cos(angle) * spd, std::sin(angle) * spd - 35.0f };
+        p.alpha = 1.0f;
+        p.size = (float)GetRandomValue(3, 7);
+        p.color = col;
+        m_dustParticles.push_back(p);
+    }
+}
+
+void BattleSystem::updateDust(float dt) {
+    for (size_t i = 0; i < m_dustParticles.size(); ) {
+        m_dustParticles[i].pos.x += m_dustParticles[i].vel.x * dt;
+        m_dustParticles[i].pos.y += m_dustParticles[i].vel.y * dt;
+        m_dustParticles[i].vel.x *= (1.0f - 1.5f * dt);
+        m_dustParticles[i].alpha -= 1.4f * dt;
+        if (m_dustParticles[i].alpha <= 0.0f) {
+            m_dustParticles.erase(m_dustParticles.begin() + i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+void BattleSystem::drawDust() const {
+    for (const auto& p : m_dustParticles) {
+        Color c = p.color;
+        c.a = (unsigned char)(std::clamp(p.alpha, 0.0f, 1.0f) * 255.0f);
+        DrawRectangle((int)p.pos.x - (int)p.size / 2, (int)p.pos.y - (int)p.size / 2, (int)p.size, (int)p.size, c);
+    }
+}
+
 void BattleSystem::render(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
@@ -502,33 +632,98 @@ void BattleSystem::render(GameContext& context) {
     drawBackgroundGrid();
 
     // 2. Enemy Drawing (Feet aligned at baseline y = 241, BUI-003)
-    int enemyCenterX = VIRTUAL_WIDTH / 2;
     int baselineY = ENEMY_BASELINE_Y;
+    int enemyCenterX = VIRTUAL_WIDTH / 2;
 
-    // Body
-    DrawRectangle(enemyCenterX - 35, baselineY - 80, 70, 70, { 50, 50, 70, 255 });
-    // Head
-    DrawCircle(enemyCenterX, baselineY - 110, 32, { 120, 120, 140, 255 });
-    // Ears
-    DrawTriangle(
-        { (float)enemyCenterX - 30, (float)baselineY - 135 },
-        { (float)enemyCenterX - 10, (float)baselineY - 140 },
-        { (float)enemyCenterX - 20, (float)baselineY - 165 },
-        { 90, 90, 110, 255 }
-    );
-    DrawTriangle(
-        { (float)enemyCenterX + 10, (float)baselineY - 140 },
-        { (float)enemyCenterX + 30, (float)baselineY - 135 },
-        { (float)enemyCenterX + 20, (float)baselineY - 165 },
-        { 90, 90, 110, 255 }
-    );
-    // Eyes
-    DrawCircle(enemyCenterX - 10, baselineY - 114, 5, WHITE);
-    DrawCircle(enemyCenterX + 10, baselineY - 114, 5, WHITE);
-    DrawCircle(enemyCenterX - 10, baselineY - 114, 2, BLACK);
-    DrawCircle(enemyCenterX + 10, baselineY - 114, 2, BLACK);
+    // FGT-006: Enemy shake upon taking damage
+    if (m_enemyShakeTimer > 0.0f) {
+        float shakeProgress = m_enemyShakeTimer / 0.4f;
+        enemyCenterX += static_cast<int>(std::sin(m_enemyShakeTimer * 50.0f) * (8.0f * shakeProgress));
+    }
 
-    // BUI-004: Permanent "Barky HP" is removed! Name only appears in target menus or dialogue.
+    // FGT-007, BND-002, BND-003: Check if enemy should be drawn
+    bool shouldDrawEnemy = true;
+    if (m_enemy->isDead() && m_state == BattleState::Victory) {
+        shouldDrawEnemy = false; // Vaporized into fluff / dust!
+    }
+
+    if (shouldDrawEnemy) {
+        Color bodyColor = { 50, 50, 70, 255 };
+        Color headColor = { 120, 120, 140, 255 };
+        Color earColor  = { 90, 90, 110, 255 };
+
+        if (m_isSpared && m_state == BattleState::Victory) {
+            // Translucent when spared
+            bodyColor.a = 70;
+            headColor.a = 70;
+            earColor.a  = 70;
+        }
+
+        // Body
+        DrawRectangle(enemyCenterX - 35, baselineY - 80, 70, 70, bodyColor);
+        // Head
+        DrawCircle(enemyCenterX, baselineY - 110, 32, headColor);
+        // Ears
+        DrawTriangle(
+            { (float)enemyCenterX - 30, (float)baselineY - 135 },
+            { (float)enemyCenterX - 10, (float)baselineY - 140 },
+            { (float)enemyCenterX - 20, (float)baselineY - 165 },
+            earColor
+        );
+        DrawTriangle(
+            { (float)enemyCenterX + 10, (float)baselineY - 140 },
+            { (float)enemyCenterX + 30, (float)baselineY - 135 },
+            { (float)enemyCenterX + 20, (float)baselineY - 165 },
+            earColor
+        );
+        // Eyes
+        DrawCircle(enemyCenterX - 10, baselineY - 114, 5, WHITE);
+        DrawCircle(enemyCenterX + 10, baselineY - 114, 5, WHITE);
+        DrawCircle(enemyCenterX - 10, baselineY - 114, 2, BLACK);
+        DrawCircle(enemyCenterX + 10, baselineY - 114, 2, BLACK);
+    }
+
+    // FGT-004: Slash Animation
+    if (m_slashAnimTimer > 0.0f) {
+        float slashProg = 1.0f - (m_slashAnimTimer / 0.25f);
+        Vector2 slashStart = { (float)enemyCenterX - 45.0f + slashProg * 15.0f, (float)baselineY - 145.0f + slashProg * 25.0f };
+        Vector2 slashEnd   = { (float)enemyCenterX + 45.0f - slashProg * 15.0f, (float)baselineY - 65.0f + slashProg * 10.0f };
+        DrawLineEx(slashStart, slashEnd, 4.0f, WHITE);
+        DrawCircle(enemyCenterX, baselineY - 105, 8.0f * (1.0f - slashProg), UI_YELLOW);
+    }
+
+    // FGT-005: Floating Damage Number & Enemy HP Bar
+    if (m_damageDisplayTimer > 0.0f) {
+        float hpBarY = (float)baselineY - 145.0f;
+        if (m_lastMiss) {
+            context.resources.drawCenteredText(font8Bit, "MISS", hpBarY - 6.0f, 24, { 190, 190, 190, 255 }, 1.0f);
+        } else {
+            float bounceOffset = (m_damageDisplayTimer > 1.2f) ? -12.0f * std::sin((1.5f - m_damageDisplayTimer) / 0.3f * 3.14159f) : -4.0f;
+            float numY = hpBarY - 26.0f + bounceOffset;
+            std::string dmgStr = std::to_string(m_lastDamage);
+            context.resources.drawCenteredText(font8Bit, dmgStr, numY, 26, { 235, 30, 30, 255 }, 1.0f);
+
+            float barW = 120.0f;
+            float barH = 13.0f;
+            float barX = (float)(VIRTUAL_WIDTH / 2) - barW / 2.0f;
+
+            // Background
+            DrawRectangle((int)barX, (int)hpBarY, (int)barW, (int)barH, { 180, 30, 30, 255 });
+
+            // Green fill proportional to visual HP
+            float maxHp = (float)m_enemy->getMaxHp();
+            float fillRatio = (maxHp > 0.0f) ? std::clamp(m_enemyVisualHp / maxHp, 0.0f, 1.0f) : 0.0f;
+            float fillW = barW * fillRatio;
+            if (fillW > 0.0f) {
+                DrawRectangle((int)barX, (int)hpBarY, (int)fillW, (int)barH, { 0, 255, 0, 255 });
+            }
+
+            DrawRectangleLinesEx({ barX - 1, hpBarY - 1, barW + 2, barH + 2 }, 2.0f, { 20, 20, 20, 255 });
+        }
+    }
+
+    // Dust particles
+    drawDust();
 
     // Enemy Speech Bubble during enemy turn
     if (m_state == BattleState::EnemyTurn && !m_enemySpeechBubble.empty()) {
@@ -679,6 +874,14 @@ void BattleSystem::render(GameContext& context) {
 
     // 6. Action Buttons 1:1 (BUI-006)
     drawButtons(context, font8Bit);
+
+    // 7. Fleeing Soul Animation (MRC-002)
+    if (m_state == BattleState::Fleeing) {
+        drawSoul(m_fleeSoulX, m_fleeSoulY, SOUL_RED);
+        float legCycle = std::sin(m_fleeTimer * 22.0f);
+        DrawLineEx({ m_fleeSoulX - 4.0f, m_fleeSoulY + 7.0f }, { m_fleeSoulX - 4.0f + legCycle * 6.0f, m_fleeSoulY + 16.0f }, 2.0f, WHITE);
+        DrawLineEx({ m_fleeSoulX + 4.0f, m_fleeSoulY + 7.0f }, { m_fleeSoulX + 4.0f - legCycle * 6.0f, m_fleeSoulY + 16.0f }, 2.0f, WHITE);
+    }
 }
 
 } // namespace nundertale

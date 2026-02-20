@@ -9,6 +9,7 @@ enum class BulletType {
     Normal,
     UwU,
     SodaCan,
+    Awoo,
     Bone
 };
 
@@ -22,10 +23,32 @@ struct Bullet {
     int damage = 3;
     float furry = 6.0f;
     bool active = true;
+    float gravity = 0.0f;
+    bool bounces = false;
+    float arcRadius = 14.0f;
 
-    void update(float dt) {
+    void update(float dt, const Rectangle* box = nullptr) {
+        if (gravity > 0.0f) {
+            velocity.y += gravity * dt;
+        }
         position.x += velocity.x * dt;
         position.y += velocity.y * dt;
+
+        if (bounces && box) {
+            // Bounce off left/right sides
+            if (position.x - 5.0f <= box->x + 5.0f && velocity.x < 0.0f) {
+                position.x = box->x + 5.0f;
+                velocity.x = -velocity.x;
+            } else if (position.x + 5.0f >= box->x + box->width - 5.0f && velocity.x > 0.0f) {
+                position.x = box->x + box->width - 5.0f;
+                velocity.x = -velocity.x;
+            }
+            // Bounce off bottom arena floor
+            if (position.y + 8.0f >= box->y + box->height - 5.0f && velocity.y > 0.0f) {
+                position.y = box->y + box->height - 5.0f - 8.0f;
+                velocity.y = -std::abs(velocity.y) * 0.82f;
+            }
+        }
     }
 
     void render() const {
@@ -35,8 +58,10 @@ struct Bullet {
         } else if (type == BulletType::SodaCan) {
             DrawRectangle((int)position.x - 5, (int)position.y - 8, 10, 16, color);
             DrawRectangleLines((int)position.x - 5, (int)position.y - 8, 10, 16, { 0, 0, 0, 255 });
-            // Can tab detail
             DrawRectangle((int)position.x - 2, (int)position.y - 10, 4, 3, LIGHTGRAY);
+        } else if (type == BulletType::Awoo) {
+            DrawCircleLines((int)position.x, (int)position.y, arcRadius, color);
+            DrawCircleLines((int)position.x, (int)position.y, std::max(1.0f, arcRadius - 2.0f), color);
         } else {
             DrawCircle((int)position.x, (int)position.y, radius, color);
         }
@@ -45,9 +70,11 @@ struct Bullet {
     // Accurate hitbox per bullet type (BHL-003, BUG-10)
     Rectangle getBounds() const {
         if (type == BulletType::UwU) {
-            return { position.x - 12, position.y - 8, 24, 16 };
+            return { position.x - 10, position.y - 7, 20, 14 };
         } else if (type == BulletType::SodaCan) {
             return { position.x - 5, position.y - 8, 10, 16 };
+        } else if (type == BulletType::Awoo) {
+            return { position.x - arcRadius * 0.7f, position.y - arcRadius * 0.7f, arcRadius * 1.4f, arcRadius * 1.4f };
         }
         return { position.x - radius, position.y - radius, radius * 2, radius * 2 };
     }

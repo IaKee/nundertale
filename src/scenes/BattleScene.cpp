@@ -30,6 +30,10 @@ void BattleScene::update(float dt, GameContext& context) {
         }
 
         if (m_battleSystem->isFinished()) {
+            if (m_battleSystem->isFled()) {
+                context.scenes.popScene(context);
+                return;
+            }
             if (context.input.isConfirmPressed()) {
                 context.scenes.popScene(context);
             }
@@ -43,7 +47,7 @@ void BattleScene::render(GameContext& context) {
     if (m_battleSystem) {
         m_battleSystem->render(context);
 
-        if (m_battleSystem->isFinished()) {
+        if (m_battleSystem->isFinished() && !m_battleSystem->isFled()) {
             Font font8Bit = context.resources.getFont8Bit(20);
             context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to continue]", 400, 20, COLOR_UNDERTALE_YELLOW, 1.0f);
         }
