@@ -122,17 +122,21 @@ Music ResourceService::getMusic(const std::string& path) {
 }
 
 void ResourceService::drawText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float spacing) {
-    DrawTextEx(font, text.c_str(), pos, fontSize, spacing, color);
+    // BUG-15 & GFX-003: Render at exact font.baseSize to prevent POINT distortion
+    float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
+    DrawTextEx(font, text.c_str(), pos, effectiveSize, spacing, color);
 }
 
 void ResourceService::drawCenteredText(Font font, const std::string& text, float centerY, float fontSize, Color color, float spacing) {
-    Vector2 size = MeasureTextEx(font, text.c_str(), fontSize, spacing);
+    float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
+    Vector2 size = MeasureTextEx(font, text.c_str(), effectiveSize, spacing);
     Vector2 pos = { (VIRTUAL_WIDTH - size.x) * 0.5f, centerY };
-    DrawTextEx(font, text.c_str(), pos, fontSize, spacing, color);
+    DrawTextEx(font, text.c_str(), pos, effectiveSize, spacing, color);
 }
 
 float ResourceService::measureTextWidth(Font font, const std::string& text, float fontSize, float spacing) {
-    return MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+    float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
+    return MeasureTextEx(font, text.c_str(), effectiveSize, spacing).x;
 }
 
 void ResourceService::clearCache() {

@@ -3,6 +3,7 @@
 #include "core/Constants.hpp"
 #include <cmath>
 #include <algorithm>
+#include <sstream>
 
 namespace nundertale {
 
@@ -181,35 +182,49 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
 }
 
 void BattleSystem::handleActInput(GameContext& context) {
-    const auto& acts = m_enemy->getActOptions();
+    const auto& acts = m_enemy->getActs();
     if (acts.empty()) {
         m_state = BattleState::MenuSelect;
         return;
     }
 
-    if (context.input.isUpPressed()) {
-        m_subOptionIndex = (m_subOptionIndex - 1 + (int)acts.size()) % (int)acts.size();
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+    int actCount = (int)acts.size();
+    if (context.input.isLeftPressed()) {
+        if (m_subOptionIndex % 2 == 1) {
+            m_subOptionIndex--;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+    } else if (context.input.isRightPressed()) {
+        if (m_subOptionIndex % 2 == 0 && m_subOptionIndex + 1 < actCount) {
+            m_subOptionIndex++;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+    } else if (context.input.isUpPressed()) {
+        if (m_subOptionIndex >= 2) {
+            m_subOptionIndex -= 2;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
     } else if (context.input.isDownPressed()) {
-        m_subOptionIndex = (m_subOptionIndex + 1) % (int)acts.size();
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        if (m_subOptionIndex + 2 < actCount) {
+            m_subOptionIndex += 2;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
     }
 
     if (context.input.isConfirmPressed()) {
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
-        std::string chosenAct = acts[m_subOptionIndex];
+        const auto& act = acts[m_subOptionIndex];
 
-        if (chosenAct == "Check") {
-            m_narratorText = "* BARKY - ATK 4 DEF 2\n* The self-proclaimed Alpha Wolf of the Ruins.";
-        } else if (chosenAct == "Cringe Check") {
-            m_narratorText = "* You pointed out the visible zipper on Barky's fursuit!\n* Barky blushes furiously: 'B-baka! It's a ventilation slot!'";
-            m_enemy->setSpareable(true);
-        } else if (chosenAct == "Offer Mountain Dew") {
-            m_narratorText = "* You offered Barky a lukewarm can of Mountain Dew.\n* Barky wagged his tail furiously! He can now be SPARED!";
-            m_enemy->setSpareable(true);
+        if (act.id == "check") {
+            // BUG-06 & ACT-001: Data-driven check text matching enemy instance stats
+            m_narratorText = m_enemy->getCheckText();
+            m_enemySpeechBubble = "";
         } else {
-            m_narratorText = "* You challenged Barky with obscure anime trivia.\n* He gets overwhelmed by canon debates!";
-            m_enemy->setSpareable(true);
+            m_narratorText = act.text;
+            m_enemySpeechBubble = act.response;
+            if (act.spareable) {
+                m_enemy->setSpareable(true);
+            }
         }
 
         m_state = BattleState::DialogMessage;
@@ -227,27 +242,57 @@ void BattleSystem::handleItemInput(GameContext& context) {
     }
 
     int invCount = (int)context.player.inventory.size();
-    if (context.input.isUpPressed()) {
-        m_subOptionIndex = (m_subOptionIndex - 1 + invCount) % invCount;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+    if (context.input.isLeftPressed()) {
+        if (m_subOptionIndex % 2 == 1) {
+            m_subOptionIndex--;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        } else if (m_subOptionIndex >= 4) {
+            // Previous page
+            m_subOptionIndex -= 4;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+    } else if (context.input.isRightPressed()) {
+        if (m_subOptionIndex % 2 == 0 && m_subOptionIndex + 1 < invCount) {
+            m_subOptionIndex++;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        } else if (m_subOptionIndex < 4 && m_subOptionIndex + 4 < invCount) {
+            // Next page
+            m_subOptionIndex += 4;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+    } else if (context.input.isUpPressed()) {
+        if ((m_subOptionIndex % 4) >= 2) {
+            m_subOptionIndex -= 2;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
     } else if (context.input.isDownPressed()) {
-        m_subOptionIndex = (m_subOptionIndex + 1) % invCount;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        if ((m_subOptionIndex % 4) < 2 && m_subOptionIndex + 2 < invCount) {
+            m_subOptionIndex += 2;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
     }
 
     if (context.input.isConfirmPressed()) {
         std::string item = context.player.inventory[m_subOptionIndex];
         context.player.inventory.erase(context.player.inventory.begin() + m_subOptionIndex);
 
+        // ITM-001 & BUG-05: Handle specific item data behaviors
         if (item.find("Dew") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
-            m_narratorText = "* You chugged the Mountain Dew!\n* Recovered 10 HP. It was lukewarm.";
+            m_narratorText = "* You chugged the warm Mountain Dew!\n* You recovered 10 HP! Citrus surged!";
         } else if (item.find("Doritos") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
-            m_narratorText = "* You devoured the stale Doritos!\n* Recovered 6 HP. Pure nostalgia.";
+            m_narratorText = "* You devoured the stale Doritos!\n* Pure nostalgia. You recovered 6 HP!";
+        } else if (item.find("Duct Tape") != std::string::npos || item.find("Tape") != std::string::npos) {
+            context.player.furryMeter = std::max(0.0f, context.player.furryMeter - 15.0f);
+            m_narratorText = "* You aggressively taped down your sprouting fur!\n* Ouch! Furry meter reduced by 15%!";
         } else {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
             m_narratorText = "* You used " + item + "!\n* Recovered 8 HP.";
+        }
+
+        if (context.player.hp >= context.player.maxHp && item.find("Tape") == std::string::npos) {
+            m_narratorText += "\n* Your HP was maxed out.";
         }
 
         context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
@@ -532,26 +577,42 @@ void BattleSystem::render(GameContext& context) {
         DrawRectangle((int)center - 8, (int)m_arenaRect.y + 20, 16, (int)m_arenaRect.height - 40, UI_YELLOW);
         DrawRectangle((int)m_targetCursorX - 4, (int)m_arenaRect.y + 15, 8, (int)m_arenaRect.height - 30, WHITE);
     } else if (m_state == BattleState::ActSelect) {
-        // ACT menu with Soul cursor (BUI-008)
-        const auto& opts = m_enemy->getActOptions();
-        for (size_t i = 0; i < opts.size(); ++i) {
-            float optY = m_arenaRect.y + 25 + (float)i * 30;
+        // ACT menu 2-column layout (BUI-008, ACT-001)
+        const auto& acts = m_enemy->getActs();
+        for (size_t i = 0; i < acts.size(); ++i) {
+            int col = (int)(i % 2);
+            int row = (int)(i / 2);
+            float optX = (col == 0) ? (m_arenaRect.x + 55.0f) : (m_arenaRect.x + 300.0f);
+            float optY = m_arenaRect.y + 25.0f + (float)row * 35.0f;
             if (m_subOptionIndex == (int)i) {
-                drawSoul(m_arenaRect.x + 35, optY + 10, SOUL_RED);
+                drawSoul(optX - 20.0f, optY + 10.0f, SOUL_RED);
             }
-            context.resources.drawText(font8Bit, "* " + opts[i], { m_arenaRect.x + 55, optY }, 20, WHITE, 1.0f);
+            context.resources.drawText(font8Bit, "* " + acts[i].label, { optX, optY }, 20, WHITE, 1.0f);
         }
     } else if (m_state == BattleState::ItemSelect) {
-        // Item menu with Soul cursor (BUI-008, ITM-002)
+        // Item menu 2-column 2-row paginated layout (BUI-008, ITM-002)
         if (context.player.inventory.empty()) {
             context.resources.drawText(font8Bit, "* No items in inventory!", { m_arenaRect.x + 40, m_arenaRect.y + 30 }, 20, WHITE, 1.0f);
         } else {
-            for (size_t i = 0; i < context.player.inventory.size(); ++i) {
-                float optY = m_arenaRect.y + 25 + (float)i * 30;
-                if (m_subOptionIndex == (int)i) {
-                    drawSoul(m_arenaRect.x + 35, optY + 10, SOUL_RED);
+            int page = m_subOptionIndex / 4;
+            int pageStart = page * 4;
+            int pageEnd = std::min((int)context.player.inventory.size(), pageStart + 4);
+
+            for (int i = pageStart; i < pageEnd; ++i) {
+                int localIdx = i - pageStart;
+                int col = localIdx % 2;
+                int row = localIdx / 2;
+                float optX = (col == 0) ? (m_arenaRect.x + 55.0f) : (m_arenaRect.x + 300.0f);
+                float optY = m_arenaRect.y + 25.0f + (float)row * 35.0f;
+                if (m_subOptionIndex == i) {
+                    drawSoul(optX - 20.0f, optY + 10.0f, SOUL_RED);
                 }
-                context.resources.drawText(font8Bit, "* " + context.player.inventory[i], { m_arenaRect.x + 55, optY }, 20, WHITE, 1.0f);
+                context.resources.drawText(font8Bit, "* " + context.player.inventory[i], { optX, optY }, 20, WHITE, 1.0f);
+            }
+
+            if (context.player.inventory.size() > 4) {
+                std::string pageStr = "PAGE " + std::to_string(page + 1);
+                context.resources.drawText(font8Bit, pageStr, { m_arenaRect.x + 460.0f, m_arenaRect.y + 85.0f }, 18, WHITE, 1.0f);
             }
         }
     } else if (m_state == BattleState::MercySelect) {
@@ -567,8 +628,50 @@ void BattleSystem::render(GameContext& context) {
         context.resources.drawText(font8Bit, "* Spare", { m_arenaRect.x + 55, spareY }, 20, spareColor, 1.0f);
         context.resources.drawText(font8Bit, "* Flee",  { m_arenaRect.x + 55, fleeY },  20, WHITE, 1.0f);
     } else {
-        // Narrator message
-        context.resources.drawText(font8Bit, m_narratorText, { m_arenaRect.x + 30, m_arenaRect.y + 25 }, 20, WHITE, 1.0f);
+        // Narrator message with word wrapping and hanging indent (BUG-09, TXT-002)
+        float startX = m_arenaRect.x + 25.0f;
+        float startY = m_arenaRect.y + 24.0f;
+        float lineH = 30.0f;
+        float indentX = startX + 24.0f;
+
+        std::stringstream ss(m_narratorText);
+        std::string paragraph;
+        float currentY = startY;
+
+        while (std::getline(ss, paragraph, '\n')) {
+            if (paragraph.empty()) {
+                currentY += lineH * 0.5f;
+                continue;
+            }
+
+            bool hasAsterisk = (paragraph.rfind("* ", 0) == 0);
+            std::stringstream wordStream(paragraph);
+            std::string word;
+            std::string currentLine = "";
+            bool firstLineOfPara = true;
+
+            while (wordStream >> word) {
+                std::string testLine = currentLine.empty() ? word : (currentLine + " " + word);
+                float effectiveX = (firstLineOfPara || !hasAsterisk) ? startX : indentX;
+                float availableW = m_arenaRect.x + m_arenaRect.width - 25.0f - effectiveX;
+
+                float testW = context.resources.measureTextWidth(font8Bit, testLine, 20, 1.0f);
+                if (testW > availableW && !currentLine.empty()) {
+                    context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 20, WHITE, 1.0f);
+                    currentY += lineH;
+                    firstLineOfPara = false;
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+
+            if (!currentLine.empty()) {
+                float effectiveX = (firstLineOfPara || !hasAsterisk) ? startX : indentX;
+                context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 20, WHITE, 1.0f);
+                currentY += lineH;
+            }
+        }
     }
 
     // 5. Official HUD 1:1 (BUI-005)

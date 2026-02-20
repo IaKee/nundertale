@@ -1,6 +1,7 @@
 #include "scenes/OverworldScene.hpp"
 #include "scenes/BattleScene.hpp"
 #include "scenes/TitleScene.hpp"
+#include "scenes/EncounterTransitionScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
@@ -84,7 +85,8 @@ void OverworldScene::initInteractables() {
                 "* An intense aura of cringe and determination blocks your path!",
                 "* Barky the Alpha Furry attacks!"
             }, "", [this, &context]() {
-                context.scenes.pushScene(std::make_unique<BattleScene>(), context);
+                Vector2 pPos = m_player.getPosition();
+                context.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), context);
             });
         },
         [](GameContext& context) {
@@ -405,9 +407,10 @@ void OverworldScene::update(float dt, GameContext& context) {
     }
 
 #ifdef NUNDERTALE_DEBUG
-    // Quick Battle Trigger shortcut for testing (ENC-005)
+    // Quick Battle Trigger shortcut for testing (ENC-005, ENC-002)
     if (IsKeyPressed(KEY_B)) {
-        context.scenes.pushScene(std::make_unique<BattleScene>(), context);
+        Vector2 pPos = m_player.getPosition();
+        context.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), context);
     }
 #endif
 }
