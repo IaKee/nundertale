@@ -305,15 +305,15 @@ P1 · P · —
 P1 · P · BUG-14
 - **O quê:** segurar ESC por ~1 s mostra "QUITTING..." no canto superior esquerdo com os pontos progredindo; soltar cancela; completar fecha o jogo. ESC deixa de voltar ao título.
 
-#### CORE-007 — Configuração do usuário `[ ]`
+#### CORE-007 — Configuração do usuário `[x]`
 P1 · P · —
 - **O quê:** expandir `config/user.json` com `lang`, `musicVolume`, `sfxVolume`, `fullscreen`, `integerScale`, `keybinds`, `border` e salvar em `%LOCALAPPDATA%/nUndertale/config.json` (não na pasta do jogo).
 
-#### CORE-008 — Remapeamento de teclas e gamepad `[ ]`
+#### CORE-008 — Remapeamento de teclas e gamepad `[x]`
 P2 · M · CORE-007
 - **O quê:** `InputService` com ações abstratas (`Confirm`, `Cancel`, `Menu`, direções) mapeadas para teclas e gamepad (raylib `IsGamepadButtonPressed`). Padrões iguais ao Undertale: Z/Enter, X/Shift, C/Ctrl. Rever o uso de **Space** como confirmação (o Undertale não usa) e de **X como backspace** na tela de nome.
 
-#### CORE-009 — Buffer de input por quadro `[ ]`
+#### CORE-009 — Buffer de input por quadro `[x]`
 P1 · P · CORE-001
 - **O quê:** com a lógica a 30 Hz, um `IsKeyPressed` lido entre ticks pode se perder. Acumular os "pressed" entre ticks e consumir no próximo update.
 
@@ -360,15 +360,15 @@ P0 · P · GFX-003, D-04
 P1 · P · GFX-003
 - **O quê:** `FontId::Sans` (estilo comic, minúsculas) para o Senpai Sans e `FontId::Papyrus` (MAIÚSCULAS) para o Papyrus Streamer, escolhidas automaticamente pela "voz" do diálogo (TXT-006).
 
-#### GFX-006 — Screen shake `[ ]`
+#### GFX-006 — Screen shake `[x]`
 P1 · P · —
 - **O quê:** `Camera::shake(intensity, frames)` aplicado ao canvas virtual. Usado em: dano grande na alma, explosões, quedas, pulo do Barky e o ataque do chefe.
 
-#### GFX-007 — Flash e tint de tela `[ ]`
+#### GFX-007 — Flash e tint de tela `[x]`
 P2 · P · —
 - **O quê:** overlay branco/vermelho por N quadros (flash no encontro, flash do "SKYRIM" no nome, ataques especiais).
 
-#### GFX-008 — Efeito de dissolução ("poeira") `[ ]`
+#### GFX-008 — Efeito de dissolução ("poeira") `[x]`
 P0 · M · GFX-002
 - **O quê:** shader ou CPU: o sprite do inimigo vira poeira, linha por linha de cima para baixo, com partículas cinza subindo/espalhando. Usado na morte do inimigo (BND-003).
 
