@@ -48,6 +48,14 @@ void Game::run() {
     float accumulator = 0.0f;
     float escQuitTimer = 0.0f;
 
+    // CORE-007: Apply user settings from %LOCALAPPDATA%/nUndertale/config.json
+    UserConfig config = m_saveService->getConfig();
+    m_audioService->setMusicVolume(config.musicVolume);
+    m_audioService->setMasterVolume(config.masterVolume);
+    if (config.fullscreen && !IsWindowFullscreen()) {
+        ToggleFullscreen();
+    }
+
     while (!WindowShouldClose() && m_context->isRunning && m_sceneManager->hasScenes()) {
         float frameDt = GetFrameTime();
         if (frameDt > 0.2f) frameDt = 0.2f; // prevent spiral of death
@@ -56,6 +64,8 @@ void Game::run() {
         // F4 toggle fullscreen (CORE-005)
         if (IsKeyPressed(KEY_F4)) {
             ToggleFullscreen();
+            config.fullscreen = IsWindowFullscreen();
+            m_saveService->saveConfig(config);
         }
 
         // Hold ESC for 1 second to quit (CORE-006, BUG-14)
@@ -83,6 +93,26 @@ void Game::run() {
         // 2. Fixed 30 Hz logic update loop (CORE-001)
         while (accumulator >= LOGIC_TIMESTEP) {
             m_context->state.playTime += LOGIC_TIMESTEP;
+
+            // GFX-006: Update screen shake
+            if (m_context->shakeTimer > 0.0f) {
+                m_context->shakeTimer -= LOGIC_TIMESTEP;
+                int maxOffset = static_cast<int>(m_context->shakeIntensity);
+                if (maxOffset > 0) {
+                    m_context->shakeOffset = {
+                        static_cast<float>(GetRandomValue(-maxOffset, maxOffset)),
+                        static_cast<float>(GetRandomValue(-maxOffset, maxOffset))
+                    };
+                }
+            } else {
+                m_context->shakeOffset = { 0.0f, 0.0f };
+            }
+
+            // GFX-007: Update screen flash
+            if (m_context->flashTimer > 0.0f) {
+                m_context->flashTimer -= LOGIC_TIMESTEP;
+            }
+
             m_sceneManager->update(LOGIC_TIMESTEP, *m_context);
             accumulator -= LOGIC_TIMESTEP;
         }
@@ -91,6 +121,14 @@ void Game::run() {
         BeginTextureMode(m_virtualTarget);
             ClearBackground(BLACK);
             m_sceneManager->render(*m_context);
+
+            // GFX-007: Flash & tint overlay
+            if (m_context->flashTimer > 0.0f && m_context->flashDuration > 0.0f) {
+                float alpha = m_context->flashTimer / m_context->flashDuration;
+                Color fc = m_context->flashColor;
+                fc.a = static_cast<unsigned char>(std::clamp(alpha, 0.0f, 1.0f) * 255.0f);
+                DrawRectangle(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, fc);
+            }
 
             // Visual feedback for quitting on held ESC (CORE-006)
             if (escQuitTimer > 0.2f) {
@@ -128,8 +166,8 @@ void Game::renderLetterboxed() {
 
     float destWidth = VIRTUAL_WIDTH * scale;
     float destHeight = VIRTUAL_HEIGHT * scale;
-    float destX = (GetScreenWidth() - destWidth) * 0.5f;
-    float destY = (GetScreenHeight() - destHeight) * 0.5f;
+    float destX = (GetScreenWidth() - destWidth) * 0.5f + m_context->shakeOffset.x * scale;
+    float destY = (GetScreenHeight() - destHeight) * 0.5f + m_context->shakeOffset.y * scale;
 
     Rectangle sourceRec = { 0.0f, 0.0f, (float)m_virtualTarget.texture.width, -(float)m_virtualTarget.texture.height };
     Rectangle destRec = { destX, destY, destWidth, destHeight };

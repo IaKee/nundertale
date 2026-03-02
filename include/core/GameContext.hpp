@@ -80,6 +80,27 @@ struct GameContext {
     PlayerData& player;
     bool isRunning = true;
 
+    // GFX-006: Screen Shake
+    float shakeIntensity = 0.0f;
+    float shakeTimer = 0.0f;
+    Vector2 shakeOffset{ 0.0f, 0.0f };
+
+    void shake(float intensity, float duration) {
+        shakeIntensity = intensity;
+        shakeTimer = duration;
+    }
+
+    // GFX-007: Flash & Tint overlay
+    Color flashColor = WHITE;
+    float flashTimer = 0.0f;
+    float flashDuration = 0.0f;
+
+    void flash(Color color, float duration) {
+        flashColor = color;
+        flashDuration = duration;
+        flashTimer = duration;
+    }
+
     GameContext(IAudioService& a, IResourceService& r, IInputService& i, SceneManager& s, ISaveService& sv)
         : audio(a), resources(r), input(i), scenes(s), save(sv), player(state.player) {}
 };

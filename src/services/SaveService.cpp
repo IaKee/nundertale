@@ -18,8 +18,10 @@ SaveService::SaveService() {
 
     m_savePath = m_saveDir / "file0.json";
     m_backupPath = m_saveDir / "file0.bak";
+    m_configPath = m_saveDir / "config.json";
 
     ensureDirectoryExists();
+    loadConfig(m_userConfig);
 }
 
 void SaveService::ensureDirectoryExists() {
@@ -282,6 +284,92 @@ bool SaveService::loadGame(GameState& state) {
     }
 
     return false;
+}
+
+bool SaveService::saveConfig(const UserConfig& config) {
+    ensureDirectoryExists();
+    m_userConfig = config;
+
+    std::filesystem::path tmpPath = m_saveDir / "config.tmp";
+
+    std::ostringstream ss;
+    ss << "{\n";
+    ss << "  \"musicVolume\": " << config.musicVolume << ",\n";
+    ss << "  \"sfxVolume\": " << config.sfxVolume << ",\n";
+    ss << "  \"masterVolume\": " << config.masterVolume << ",\n";
+    ss << "  \"fullscreen\": " << (config.fullscreen ? "true" : "false") << ",\n";
+    ss << "  \"integerScale\": " << (config.integerScale ? "true" : "false") << ",\n";
+    ss << "  \"lang\": \"" << config.lang << "\"\n";
+    ss << "}\n";
+
+    {
+        std::ofstream out(tmpPath, std::ios::out | std::ios::trunc);
+        if (!out.is_open()) return false;
+        out << ss.str();
+        out.close();
+    }
+
+    std::error_code ec;
+    std::filesystem::rename(tmpPath, m_configPath, ec);
+    return !ec;
+}
+
+bool SaveService::loadConfig(UserConfig& config) {
+    ensureDirectoryExists();
+    std::error_code ec;
+    if (!std::filesystem::exists(m_configPath, ec)) {
+        config = m_userConfig;
+        return false;
+    }
+
+    std::ifstream in(m_configPath);
+    if (!in.is_open()) return false;
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    std::string content = buffer.str();
+
+    auto extractFloat = [&content](const std::string& key, float defaultVal) -> float {
+        auto pos = content.find("\"" + key + "\"");
+        if (pos == std::string::npos) return defaultVal;
+        pos = content.find(':', pos);
+        if (pos == std::string::npos) return defaultVal;
+        try {
+            return std::stof(content.substr(pos + 1));
+        } catch (...) {
+            return defaultVal;
+        }
+    };
+    auto extractBool = [&content](const std::string& key, bool defaultVal) -> bool {
+        auto pos = content.find("\"" + key + "\"");
+        if (pos == std::string::npos) return defaultVal;
+        pos = content.find(':', pos);
+        if (pos == std::string::npos) return defaultVal;
+        std::string sub = content.substr(pos + 1, 12);
+        if (sub.find("true") != std::string::npos) return true;
+        if (sub.find("false") != std::string::npos) return false;
+        return defaultVal;
+    };
+    auto extractString = [&content](const std::string& key, const std::string& defaultVal) -> std::string {
+        auto pos = content.find("\"" + key + "\"");
+        if (pos == std::string::npos) return defaultVal;
+        pos = content.find(':', pos);
+        if (pos == std::string::npos) return defaultVal;
+        auto startQuote = content.find('"', pos);
+        if (startQuote == std::string::npos) return defaultVal;
+        auto endQuote = content.find('"', startQuote + 1);
+        if (endQuote == std::string::npos) return defaultVal;
+        return content.substr(startQuote + 1, endQuote - startQuote - 1);
+    };
+
+    config.musicVolume = extractFloat("musicVolume", 0.8f);
+    config.sfxVolume = extractFloat("sfxVolume", 1.0f);
+    config.masterVolume = extractFloat("masterVolume", 1.0f);
+    config.fullscreen = extractBool("fullscreen", false);
+    config.integerScale = extractBool("integerScale", true);
+    config.lang = extractString("lang", "en");
+
+    m_userConfig = config;
+    return true;
 }
 
 } // namespace nundertale

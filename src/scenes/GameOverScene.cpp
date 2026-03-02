@@ -36,6 +36,7 @@ void GameOverScene::update(float dt, GameContext& context) {
                 m_state = State::Cracking;
                 m_stateTimer = 0.0f;
                 context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.9f);
+                context.shake(4.0f, 0.25f);
             }
             break;
 
@@ -44,6 +45,8 @@ void GameOverScene::update(float dt, GameContext& context) {
                 m_state = State::Shattering;
                 m_stateTimer = 0.0f;
                 context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.9f);
+                context.shake(7.0f, 0.35f);
+                context.flash(WHITE, 0.15f);
 
                 // Spawn 6 soul fragments flying outward with gravity (BND-010)
                 m_shards = {
