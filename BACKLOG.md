@@ -372,7 +372,7 @@ P2 · P · —
 P0 · M · GFX-002
 - **O quê:** shader ou CPU: o sprite do inimigo vira poeira, linha por linha de cima para baixo, com partículas cinza subindo/espalhando. Usado na morte do inimigo (BND-003).
 
-#### GFX-009 — Texto tremido (shaky/wavy) `[ ]`
+#### GFX-009 — Texto tremido (shaky/wavy) `[x]`
 P2 · P · TXT-001
 - **O quê:** modo em que cada glifo treme ±1 px aleatoriamente por quadro (tela de nome, falas assustadas). Já existe algo parecido em `NameSelectScene`; extrair para o renderer de texto.
 
@@ -420,7 +420,7 @@ P0 · M · TXT-001, AUD-002
 P0 · M · TXT-001
 - **O quê:** token `{choice:Yes|No}` mostra as opções com a alma vermelha como cursor (esquerda/direita); o resultado vai para uma flag/callback. Usado em: save point, NPCs, Furiell ("Do you want to... ?"), lojas.
 
-#### TXT-008 — Bolha de fala do inimigo `[ ]`
+#### TXT-008 — Bolha de fala do inimigo `[x]`
 P0 · M · TXT-001
 - **O quê:** um sprite de bolha branca com rabicho (9-slice), texto preto em fonte pequena, posicionada à direita do inimigo que fala, tamanho automático pelo texto, digitação com a voz do inimigo, Z avança e fecha.
 - **Onde:** substitui o retângulo desenhado em `BattleSystem::render`.
@@ -480,11 +480,11 @@ P0 · M · TXT-001
 P0 · P · BUI-008
 - **O quê:** na lista de alvos (FIGHT/ACT/MERCY), o nome do inimigo poupável aparece em amarelo; em MERCY, "* Spare" fica amarelo se **algum** inimigo puder ser poupado.
 
-#### BUI-010 — Animação idle dos inimigos `[ ]`
+#### BUI-010 — Animação idle dos inimigos `[x]`
 P1 · M · GFX-002
 - **O quê:** cada inimigo tem um idle (balanço, respiração, partes que se mexem separadas). Ex.: Barky balança o rabo e mexe as orelhas; o idle para quando ele toma dano e quando é poupado.
 
-#### BUI-011 — Inimigo poupado/fugido fica translúcido `[ ]`
+#### BUI-011 — Inimigo poupado/fugido fica translúcido `[x]`
 P1 · P · BND-002
 - **O quê:** depois de poupado, o sprite fica ~50% transparente e para de animar até a batalha acabar (em lutas com vários inimigos, os outros continuam).
 
@@ -510,11 +510,11 @@ P0 · G · BUG-02, BUI-008
 - **X** volta um nível em qualquer submenu.
 - **Aceite:** diagrama do fluxo em `docs/battle_flow.md`; nenhum estado pula etapas; o BUG-02 deixa de ocorrer.
 
-#### BFL-002 — Textos de "flavor" por turno `[ ]`
+#### BFL-002 — Textos de "flavor" por turno `[x]`
 P0 · M · BFL-001, ACT-001
 - **O quê:** cada inimigo tem pools de flavor text: `default`, `lowHp` (HP < 30%), `spareable`, condicionais por flag (ex.: depois do "Cringe Check": "* Barky is still blushing."). Escolha aleatória sem repetir a última.
 
-#### BFL-003 — Diálogos do inimigo por gatilho `[ ]`
+#### BFL-003 — Diálogos do inimigo por gatilho `[x]`
 P0 · M · BFL-001
 - **O quê:** a bolha do inimigo depende do que o jogador fez no turno (resposta ao ACT específico, ao dano, ao item usado) com fallback aleatório. Ex.: ROTEIRO Cena 3: "H-hey! Stop looking at the zipper!..." depois do "Cringe Check".
 
@@ -522,12 +522,12 @@ P0 · M · BFL-001
 P0 · G · BFL-001
 - **O quê:** `Encounter { enemies[1..3], introText, background, music, canFlee }`. Os ataques de todos os inimigos vivos/não-poupados se somam no mesmo turno (cada um com seu padrão); a vitória vem quando todos estão mortos, poupados ou fugiram.
 
-#### BFL-005 — Dados de encontro e inimigo em JSON `[ ]`
+#### BFL-005 — Dados de encontro e inimigo em JSON `[x]`
 P0 · M · REPO-007, BFL-004
 - **O quê:** `data/enemies/barky.json` com `name, hp, atk, def, exp, gold, sprite, voice, check, acts[], flavor{}, dialogue{}, patterns[], spareCondition, fleeable` (schema completo no Apêndice A). `data/encounters/*.json` referencia os inimigos.
 - **Onde:** substitui o construtor hardcoded em `BattleScene::BattleScene`.
 
-#### BFL-006 — Condições de spare declarativas `[ ]`
+#### BFL-006 — Condições de spare declarativas `[x]`
 P0 · M · BFL-005
 - **O quê:** `mercy` como contador (0–100) ou conjunto de flags: `spareWhen: { all: ["act.cringe_check", "act.offer_dew"] }` ou `{ mercy: 100 }`. Também valem "HP abaixo de X%" e "turnos sobrevividos ≥ N".
 
@@ -610,11 +610,11 @@ P0 · M · ITM-001, BUI-008
 P0 · P · ITM-001
 - **O quê:** "* You drank the Mountain Dew.&* You recovered 10 HP!" / "* Your HP was maxed out." com o som de cura. Usar um item **gasta o turno** (o inimigo ataca em seguida).
 
-#### ITM-004 — Inventário de 8 slots `[ ]`
+#### ITM-004 — Inventário de 8 slots `[x]`
 P0 · P · CORE-004
 - **O quê:** limite de 8 itens como no Undertale; o item novo com o inventário cheio dá "* You're carrying too much." (ou similar).
 
-#### ITM-005 — Efeito de velocidade do Mountain Dew `[ ]`
+#### ITM-005 — Efeito de velocidade do Mountain Dew `[x]`
 P2 · P · ITM-001, BHL-006
 - **O quê:** buff de velocidade da alma por N turnos (paródia direta do ROTEIRO), com indicação visual sutil (rastro).
 
@@ -1326,7 +1326,7 @@ P2 · P · TXT-002
 P0 · P · REPO-003
 - **O quê:** `-DNUNDERTALE_DEBUG` ativa: F1 overlay (FPS, sala, posição, estado da cena, flags), F2 hitboxes, F3 menu de debug. Nenhum atalho de debug existe no release.
 
-#### QA-002 — Overlay de hitboxes `[ ]`
+#### QA-002 — Overlay de hitboxes `[x]`
 P0 · P · QA-001
 - **O quê:** desenha as colisões da sala, a caixa de interação do Pepe, a hitbox da alma e de cada bala.
 
@@ -1342,11 +1342,11 @@ P1 · P · QA-001
 P1 · M · BHL-004
 - **O quê:** uma cena só para testar padrões de ataque em loop, com a escolha do padrão e o ajuste de parâmetros ao vivo.
 
-#### QA-010 — Testes unitários `[ ]`
+#### QA-010 — Testes unitários `[x]`
 P1 · M · REPO-003
 - **O quê:** vendorizar `doctest` (single header); `tests/` com: roundtrip do `GameState`, tabela de LV, fórmula de dano, quebra de linha/recuo, parser de markup, condição de spare, carregamento de todos os JSONs de `data/` (schema).
 
-#### QA-011 — Testes da fórmula de dano `[ ]`
+#### QA-011 — Testes da fórmula de dano `[x]`
 P1 · P · FGT-003, QA-010
 
 #### QA-012 — Validação de dados no build `[ ]`

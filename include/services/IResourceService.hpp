@@ -23,6 +23,7 @@ public:
     virtual Music getMusic(const std::string& path) = 0;
 
     virtual void drawText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float spacing = 1.0f) = 0;
+    virtual void drawShakyText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float shakeAmount = 1.0f, float spacing = 1.0f) = 0;
     virtual void drawCenteredText(Font font, const std::string& text, float centerY, float fontSize, Color color, float spacing = 1.0f) = 0;
     virtual float measureTextWidth(Font font, const std::string& text, float fontSize, float spacing = 1.0f) = 0;
 

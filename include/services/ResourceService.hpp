@@ -25,6 +25,7 @@ public:
     Music getMusic(const std::string& path) override;
 
     void drawText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float spacing = 1.0f) override;
+    void drawShakyText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float shakeAmount = 1.0f, float spacing = 1.0f) override;
     void drawCenteredText(Font font, const std::string& text, float centerY, float fontSize, Color color, float spacing = 1.0f) override;
     float measureTextWidth(Font font, const std::string& text, float fontSize, float spacing = 1.0f) override;
 

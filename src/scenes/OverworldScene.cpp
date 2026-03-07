@@ -96,6 +96,32 @@ void OverworldScene::initInteractables() {
         }
     );
     m_interactables.push_back(std::move(door));
+
+    // 5. Snack Bowl (ITM-004: Monster Candy parody with 8-slot limit check)
+    Rectangle bowlBounds = { 200, 160, 40, 30 };
+    auto snackBowl = std::make_unique<GenericInteractable>(
+        bowlBounds,
+        [this](GameContext& context) {
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+            if (!context.player.canAddItem()) {
+                m_dialogBox.startDialog({
+                    "* (You tried to take a snack...)\n* (You're carrying too much.)"
+                }, "");
+            } else {
+                context.player.addItem("Mt. Dew");
+                context.audio.playSound("assets/sfx/heal.ogg", 0.7f);
+                m_dialogBox.startDialog({
+                    "* (You took a can of warm Mountain Dew.)\n* (Your inventory feels slightly heavier.)"
+                }, "");
+            }
+        },
+        [](GameContext& context) {
+            DrawRectangle(205, 165, 30, 20, { 50, 120, 50, 255 });
+            DrawRectangleLines(205, 165, 30, 20, WHITE);
+            DrawText("DEW", 208, 168, 12, COLOR_UNDERTALE_YELLOW);
+        }
+    );
+    m_interactables.push_back(std::move(snackBowl));
 }
 
 void OverworldScene::onEnter(GameContext& context) {
@@ -451,6 +477,21 @@ void OverworldScene::render(GameContext& context) {
 
     // 5. Render DialogBox if open
     m_dialogBox.render(context);
+
+    // 6. Hitbox Debug Overlay (QA-002)
+    if (context.debugHitboxes) {
+        for (const auto& obs : m_obstacles) {
+            DrawRectangleLinesEx(obs, 1.0f, RED);
+        }
+        for (const auto& item : m_interactables) {
+            DrawRectangleLinesEx(item->getBounds(), 1.0f, COLOR_UNDERTALE_YELLOW);
+        }
+        if (m_savePoint) {
+            DrawRectangleLinesEx(m_savePoint->getBounds(), 1.0f, UI_YELLOW);
+        }
+        DrawRectangleLinesEx(m_player.getCollisionBox(), 1.0f, BLUE);
+        DrawRectangleLinesEx(m_player.getInteractionBox(), 1.0f, COLOR_UNDERTALE_GREEN);
+    }
 }
 
 void OverworldScene::onExit(GameContext& context) {

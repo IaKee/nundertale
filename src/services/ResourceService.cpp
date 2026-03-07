@@ -127,6 +127,30 @@ void ResourceService::drawText(Font font, const std::string& text, Vector2 pos, 
     DrawTextEx(font, text.c_str(), pos, effectiveSize, spacing, color);
 }
 
+void ResourceService::drawShakyText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float shakeAmount, float spacing) {
+    // GFX-009: Render each glyph with jitter offset ±shakeAmount px
+    float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
+    float curX = pos.x;
+    float curY = pos.y;
+    float lineH = effectiveSize + 4.0f;
+
+    for (size_t i = 0; i < text.size(); ++i) {
+        char c = text[i];
+        if (c == '\n') {
+            curX = pos.x;
+            curY += lineH;
+            continue;
+        }
+
+        std::string s(1, c);
+        float jx = ((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount;
+        float jy = ((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount;
+
+        DrawTextEx(font, s.c_str(), { curX + jx, curY + jy }, effectiveSize, spacing, color);
+        curX += MeasureTextEx(font, s.c_str(), effectiveSize, spacing).x + spacing;
+    }
+}
+
 void ResourceService::drawCenteredText(Font font, const std::string& text, float centerY, float fontSize, Color color, float spacing) {
     float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
     Vector2 size = MeasureTextEx(font, text.c_str(), effectiveSize, spacing);
