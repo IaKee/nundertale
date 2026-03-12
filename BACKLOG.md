@@ -911,7 +911,7 @@ P2 · P · SAV-003
 P0 · M · CORE-004
 - **O quê:** `data/lv_table.json` com EXP acumulada por LV (seção 2.2), `HPmax = 16 + 4·LV`, AT e DF por LV (tabela da wiki, confirmar). EXP/gold vêm dos dados do inimigo.
 
-#### PRG-002 — Equipamento `[ ]`
+#### PRG-002 — Equipamento `[x]`
 P0 · P · ITM-001
 - **O quê:** arma (AT, barras de ataque, velocidade da barra) e armadura (DF, i-frames extras). Iniciais: Frayed USB Optical Mouse e One-Sided Broken Gaming Headset.
 
@@ -923,7 +923,7 @@ P1 · G · TXT-007
 P2 · M · PRG-003
 - **O quê:** paródia da "Spider Bake Sale" das Ruínas → "NFT Bake Sale" (itens caros e inúteis, ex.: "Spider Donut" → "JPEG Donut").
 
-#### PRG-020 — Flags de progressão do capítulo `[ ]`
+#### PRG-020 — Flags de progressão do capítulo `[x]`
 P0 · P · CORE-010
 - **O quê:** lista central de flags documentada em `data/flags.md` (ex.: `ruins.barky.state = none|spared|killed`, `ruins.furiell.state`, `ruins.exit.open`).
 

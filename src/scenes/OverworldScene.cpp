@@ -190,16 +190,46 @@ void OverworldScene::handleMenuInput(GameContext& context) {
             if (context.input.isConfirmPressed()) {
                 std::string item = context.player.inventory[m_itemSubIndex];
                 context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
-                if (item.find("Dew") != std::string::npos) {
+
+                if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
+                    // PRG-002: Equip weapon
+                    std::string oldWeapon = context.player.weapon;
+                    context.player.weapon = item;
+                    context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
+                    context.player.inventory.push_back(oldWeapon);
+                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Attack power updated!" }, "");
+                    return;
+                } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
+                    // PRG-002: Equip armor
+                    std::string oldArmor = context.player.armor;
+                    context.player.armor = item;
+                    context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
+                    context.player.inventory.push_back(oldArmor);
+                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Defense updated!" }, "");
+                    return;
+                } else if (item.find("Dew") != std::string::npos) {
                     context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
+                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ "* You drank the warm Mountain Dew.\n* You recovered 10 HP!" }, "");
+                    return;
                 } else if (item.find("Doritos") != std::string::npos) {
                     context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
+                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ "* You ate the stale Doritos.\n* You recovered 6 HP!" }, "");
+                    return;
                 } else {
                     context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
+                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ "* You used " + item + ".\n* Recovered 8 HP." }, "");
+                    return;
                 }
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                m_menuState = OverworldMenuState::Closed;
-                return;
             }
         }
         if (context.input.isCancelPressed() || IsKeyPressed(KEY_C)) {
