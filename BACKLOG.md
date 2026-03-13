@@ -895,7 +895,7 @@ P0 · M · CORE-004
 P0 · M · SAV-003, FRT-005
 - **O quê:** com save existente, o título mostra a tela de continue (FRT-005). Reset apaga o save **mas não a meta-persistência** (SAV-005).
 
-#### SAV-005 — Meta-persistência (memória entre resets) `[ ]`
+#### SAV-005 — Meta-persistência (memória entre resets) `[x]`
 P2 · M · SAV-003, NAR-012
 - **O quê:** `meta.json` separado (equivalente ao `undertale.ini`): nº de resets, se já matou alguém, se já zerou alguma rota, nº de furrificações completas (D-05). Usado por falas que "lembram" (o Senpai Sans quebrando a quarta parede, a paródia do Flowey).
 
@@ -927,7 +927,7 @@ P2 · M · PRG-003
 P0 · P · CORE-010
 - **O quê:** lista central de flags documentada em `data/flags.md` (ex.: `ruins.barky.state = none|spared|killed`, `ruins.furiell.state`, `ruins.exit.open`).
 
-#### PRG-030 — Rastreamento de rota `[ ]`
+#### PRG-030 — Rastreamento de rota `[x]`
 P1 · M · PRG-020, D-07
 - **O quê:** contadores de kill, de spare e de fuga; critérios das rotas Wholesome (0 kills), Normie (o resto) e Toxic Gamer (esgotar as áreas + matar os chefes). Lido por diálogos, finais e pelo Senpai Sans.
 

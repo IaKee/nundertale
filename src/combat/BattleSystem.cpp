@@ -94,6 +94,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                     if (m_isSpared) {
                         context.player.gold += 10;
                         context.state.setFlag("ruins.barky.spared", 1);
+                        context.state.sparesTotal += 1;
                         m_narratorText = "* YOU WON!\n* You earned 0 EXP and 10 gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
                     } else {
@@ -101,6 +102,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                         context.player.gold += 15;
                         context.state.setFlag("ruins.barky.killed", 1);
                         context.state.killsTotal += 1;
+                        context.state.killsByArea["ruins"] += 1;
                         m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
 
@@ -409,6 +411,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
             bool success = (GetRandomValue(1, 100) <= static_cast<int>(fleeChance * 100.0f));
             if (success) {
                 m_state = BattleState::Fleeing;
+                context.state.fleesTotal += 1;
                 m_fleeSoulX = m_arenaRect.x + 35.0f;
                 m_fleeSoulY = m_arenaRect.y + 55.0f + 10.0f;
                 m_fleeTimer = 0.0f;

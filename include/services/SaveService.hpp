@@ -20,6 +20,9 @@ public:
     bool loadConfig(UserConfig& config) override;
     UserConfig getConfig() const override { return m_userConfig; }
 
+    bool saveMeta(const MetaData& meta) override;
+    MetaData getMeta() const override;
+
     std::string getSaveFilePath() const override;
     std::string getRoomDisplayName(const std::string& roomId) const override;
 
@@ -28,6 +31,7 @@ private:
     std::filesystem::path m_savePath;
     std::filesystem::path m_backupPath;
     std::filesystem::path m_configPath;
+    std::filesystem::path m_metaPath;
     UserConfig m_userConfig;
 
     void ensureDirectoryExists();
