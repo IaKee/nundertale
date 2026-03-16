@@ -30,7 +30,7 @@ public:
 
 private:
     void initObstacles();
-    void initInteractables();
+    void initInteractables(GameContext& context);
 
     void handleMenuInput(GameContext& context);
     void renderMenu(GameContext& context, Font font);
