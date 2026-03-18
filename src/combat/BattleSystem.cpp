@@ -88,8 +88,10 @@ void BattleSystem::update(float dt, GameContext& context) {
             break;
         case BattleState::DialogMessage:
             if (context.input.isConfirmPressed()) {
-                // BUG-02: Only ends battle if enemy is actually dead or spared via MERCY!
-                if (m_enemy->isDead() || m_isSpared) {
+                if (m_dialogReturnsToMenu) {
+                    m_dialogReturnsToMenu = false;
+                    m_state = BattleState::MenuSelect;
+                } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
                     m_state = BattleState::Victory;
                     if (m_isSpared) {
                         context.player.gold += 10;
@@ -173,7 +175,13 @@ void BattleSystem::handleMenuInput(GameContext& context) {
                 m_state = BattleState::ItemSelect;
                 break;
             case MainButton::Mercy:
-                m_state = BattleState::MercySelect;
+                if (m_enemy->isMercyLocked()) {
+                    m_narratorText = "* This feature is not available in your region.";
+                    m_dialogReturnsToMenu = true;
+                    m_state = BattleState::DialogMessage;
+                } else {
+                    m_state = BattleState::MercySelect;
+                }
                 break;
         }
     }
@@ -207,7 +215,7 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
             int baseAtk = context.player.at + context.player.weaponAt;
             int enemyDef = m_enemy->getDef();
             float accuracyMult = (dist <= 12.0f) ? 2.2f : std::max(0.5f, (1.0f - dist / maxDist) * 2.0f);
-            int damage = std::max(1, static_cast<int>(std::round((baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
+            int damage = std::max(1, static_cast<int>(std::round(static_cast<float>(baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
 
             m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
             m_enemy->takeDamage(damage);
@@ -292,9 +300,14 @@ void BattleSystem::handleActInput(GameContext& context) {
         } else {
             m_narratorText = act.text;
             m_enemySpeechBubble = act.response;
+            bool wasSpareable = m_enemy->isSpareable();
             m_enemy->addMercy(act.mercy);
             if (act.spareable) {
                 m_enemy->setSpareable(true);
+            }
+            // BUI-012: optional ding the moment the name turns yellow (placeholder SFX until AUD-011)
+            if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {
+                context.audio.playSound("assets/sfx/u_activate.wav", 0.5f);
             }
         }
 
@@ -345,10 +358,18 @@ void BattleSystem::handleItemInput(GameContext& context) {
 
     if (context.input.isConfirmPressed()) {
         std::string item = context.player.inventory[m_subOptionIndex];
-        context.player.inventory.erase(context.player.inventory.begin() + m_subOptionIndex);
 
         m_lastPlayerAction = PlayerTurnAction::Item;
         m_lastActionDetail = item;
+
+        if (item == "Bottle") {
+            m_narratorText = "* You consider drinking from the bottle.\n* ...No. Absolutely not.";
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
+            m_state = BattleState::DialogMessage;
+            return;
+        }
+
+        context.player.inventory.erase(context.player.inventory.begin() + m_subOptionIndex);
 
         // PRG-002: Equip weapon/armor or consume item
         if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
@@ -434,6 +455,8 @@ void BattleSystem::startEnemyTurn() {
     m_enemyTurnTimer = 0.0f;
     m_spawnTimer = 0.0f;
     m_bullets.clear();
+    m_zones.clear();
+    m_ribbitState = RibbitState{};
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
 
@@ -456,10 +479,32 @@ void BattleSystem::startEnemyTurn() {
     m_lastActResponse = "";
 }
 
+bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, float fur) {
+    int reducedDamage = rawDamage + m_enemy->getAtk() - (context.player.df + context.player.armorDf);
+    int finalDamage = std::max(1, reducedDamage);
+
+    context.player.hp -= finalDamage;
+    context.player.furryMeter += fur;
+    context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
+    context.shake(6.0f, 0.25f);
+    context.flash({ 255, 0, 0, 255 }, 0.15f);
+
+    if (context.player.hp <= 0) {
+        context.player.hp = 0;
+        m_state = BattleState::Defeat;
+        m_narratorText = "* GAME OVER! You lost all HP and became a furry!";
+        context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
+        return true;
+    }
+
+    return false;
+}
+
 void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     m_enemyTurnTimer += dt;
     if (m_enemyTurnTimer >= m_enemyTurnDuration) {
         m_bullets.clear();
+        m_zones.clear();
         m_soulTrails.clear();
         if (m_soulSpeedBuffTurns > 0) {
             m_soulSpeedBuffTurns--;
@@ -474,6 +519,8 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     // Soul movement inside dodge box (BHL-006: 4 px/frame at 30 fps = 120 px/s)
     // ITM-005: Mountain Dew speed surge (+35%)
     float currentSpeed = (m_soulSpeedBuffTurns > 0) ? (m_soulSpeed * 1.35f) : m_soulSpeed;
+
+    Vector2 prevSoulPos = m_soulPosition;
 
     Vector2 moveDir = { 0, 0 };
     if (context.input.isLeft()) moveDir.x -= 1.0f;
@@ -495,6 +542,13 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     m_soulPosition.x = std::clamp(m_soulPosition.x, m_arenaRect.x + soulPadding, m_arenaRect.x + m_arenaRect.width - soulPadding);
     m_soulPosition.y = std::clamp(m_soulPosition.y, m_arenaRect.y + soulPadding, m_arenaRect.y + m_arenaRect.height - soulPadding);
 
+    bool soulMoving = (m_soulPosition.x != prevSoulPos.x || m_soulPosition.y != prevSoulPos.y);
+
+    // BHL-015: "thinking" ribbit easter-egg bubble over soul when still for 3.0s
+    if (updateRibbit(m_ribbitState, dt, soulMoving)) {
+        context.audio.playSound("assets/sfx/selection_sound.wav", 0.3f);
+    }
+
     // Spawn bullets
     m_spawnTimer += dt;
     if (m_spawnTimer >= 0.38f) {
@@ -513,26 +567,38 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
             continue;
         }
 
-        if (m_bullets[i].active && m_invulnTimer <= 0.0f && CheckCollisionRecs(soulHitbox, m_bullets[i].getBounds())) {
-            // Damage calculation based on enemy ATK and player DF (BHL-005)
-            int rawDmg = m_bullets[i].damage + m_enemy->getAtk() - (context.player.df + context.player.armorDf);
-            int finalDmg = std::max(1, rawDmg);
-
-            context.player.hp -= finalDmg;
-            context.player.furryMeter += m_bullets[i].furry;
-            m_invulnTimer = 1.0f; // 30 frames of i-frame
-            context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
-            context.shake(6.0f, 0.25f); // GFX-006: screen shake on hurt
-            context.flash({ 255, 0, 0, 255 }, 0.15f); // GFX-007: red hurt flash
-
-            if (context.player.hp <= 0) {
-                context.player.hp = 0;
-                m_state = BattleState::Defeat;
-                m_narratorText = "* GAME OVER! You lost all HP and became a furry!";
-                context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
-                return;
+        if (m_bullets[i].active && CheckCollisionRecs(soulHitbox, m_bullets[i].getBounds())) {
+            if (m_bullets[i].healsSoul()) {
+                context.player.hp = std::min(context.player.maxHp, context.player.hp + m_bullets[i].heal);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_bullets.erase(m_bullets.begin() + i);
+                continue;
+            } else if (m_bullets[i].hurtsSoul(soulMoving) && m_invulnTimer <= 0.0f) {
+                m_invulnTimer = 1.0f; // 30 frames of i-frame
+                if (applySoulDamage(context, m_bullets[i].damage, m_bullets[i].furry)) {
+                    return;
+                }
             }
         }
+        ++i;
+    }
+
+    // BHL-016: persistent zones tick independently of bullet invulnerability.
+    for (size_t i = 0; i < m_zones.size(); ) {
+        bool soulInside = CheckCollisionRecs(soulHitbox, m_zones[i].area);
+        int damage = m_zones[i].update(dt, soulInside);
+        float fur = m_zones[i].furPerTick;
+        bool expired = m_zones[i].expired();
+
+        if (damage > 0 && applySoulDamage(context, damage, fur)) {
+            return;
+        }
+
+        if (expired) {
+            m_zones.erase(m_zones.begin() + i);
+            continue;
+        }
+
         ++i;
     }
 }
@@ -548,7 +614,7 @@ void BattleSystem::spawnBulletWave() {
         b.velocity = { (float)GetRandomValue(-20, 20), (float)GetRandomValue(95, 135) };
         b.type = BulletType::UwU;
         b.text = "UWU";
-        b.color = (Color){ 255, 120, 210, 255 };
+        b.color = Color{ 255, 120, 210, 255 };
         b.damage = 3;
         b.furry = 6.0f;
         m_bullets.push_back(b);
@@ -574,7 +640,7 @@ void BattleSystem::spawnBulletWave() {
         b.velocity = { dirX, (float)GetRandomValue(85, 120) };
         b.type = BulletType::Awoo;
         b.arcRadius = 14.0f;
-        b.color = (Color){ 100, 200, 255, 255 };
+        b.color = Color{ 100, 200, 255, 255 };
         b.damage = 3;
         b.furry = 5.0f;
         m_bullets.push_back(b);
@@ -617,17 +683,17 @@ void BattleSystem::drawHUD(GameContext& context, Font font) const {
     context.resources.drawText(font, "HP", { (float)HUD_HP_LABEL_X, (float)HUD_Y + 4 }, 14, WHITE, 1.0f);
 
     // 4. HP Bar at x = 275, y = 400 (width = maxHp * 1.2f, height = 20)
-    int barW = std::max(20, (int)(context.player.maxHp * 1.2f));
+    int barW = std::max(20, (int)(static_cast<float>(context.player.maxHp) * 1.2f));
     DrawRectangle(HUD_HP_BAR_X, HUD_Y, barW, HUD_HP_BAR_H, HP_RED);
 
     float hpPct = std::clamp((float)context.player.hp / (float)context.player.maxHp, 0.0f, 1.0f);
-    int fillW = (int)(barW * hpPct);
+    int fillW = (int)(static_cast<float>(barW) * hpPct);
     DrawRectangle(HUD_HP_BAR_X, HUD_Y, fillW, HUD_HP_BAR_H, HP_YELLOW);
 
     // Furry Karma overlay (FUR-003) if furryMeter > 0
     if (context.player.furryMeter > 0.0f) {
         float furryPct = std::clamp(context.player.furryMeter / 100.0f, 0.0f, 1.0f);
-        int furW = (int)(barW * furryPct);
+        int furW = (int)(static_cast<float>(barW) * furryPct);
         DrawRectangle(HUD_HP_BAR_X + barW - furW, HUD_Y, furW, HUD_HP_BAR_H, KR_PURPLE);
     }
 
@@ -646,7 +712,8 @@ void BattleSystem::drawButtons(GameContext& context, Font font) const {
         Rectangle bRec = { (float)btnX[i], (float)BATTLE_BUTTON_Y, (float)BATTLE_BUTTON_W, (float)BATTLE_BUTTON_H };
         bool isSelected = (m_selectedButton == static_cast<MainButton>(i));
 
-        Color bColor = isSelected ? UI_YELLOW : UI_ORANGE;
+        bool mercyLocked = (i == static_cast<int>(MainButton::Mercy) && m_enemy->isMercyLocked());
+        Color bColor = mercyLocked ? Color{ 128, 128, 128, 255 } : (isSelected ? UI_YELLOW : UI_ORANGE);
         DrawRectangleLinesEx(bRec, 2.0f, bColor);
 
         float textW = context.resources.measureTextWidth(font, btnLabels[i], 22, 1.0f);
@@ -871,6 +938,9 @@ void BattleSystem::render(GameContext& context) {
         int innerH = std::max(1, (int)m_arenaRect.height - 10);
 
         BeginScissorMode(innerX, innerY, innerW, innerH);
+            for (const auto& zone : m_zones) {
+                DrawRectangleRec(zone.area, zone.color);
+            }
             for (const auto& b : m_bullets) {
                 b.render();
             }
@@ -882,6 +952,27 @@ void BattleSystem::render(GameContext& context) {
         // Soul Heart inside arena (flashing when invulnerable)
         if (m_invulnTimer <= 0.0f || (int)(GetTime() * 15.0) % 2 == 0) {
             drawSoul(m_soulPosition.x, m_soulPosition.y, SOUL_RED);
+        }
+
+        // BHL-015: "thinking" ribbit text over soul when still
+        if (ribbitVisible(m_ribbitState)) {
+            Font fontTiny = context.resources.getFont8Bit(12);
+            float bubbleW = 44.0f;
+            float bubbleH = 16.0f;
+            Rectangle bubbleRect = { m_soulPosition.x + 8.0f, m_soulPosition.y - 20.0f, bubbleW, bubbleH };
+
+            DrawRectangleRec(bubbleRect, WHITE);
+            DrawRectangleLinesEx(bubbleRect, 1.0f, BLACK);
+
+            // Tail pointing down-left toward soul
+            Vector2 p1 = { bubbleRect.x + 2.0f, bubbleRect.y + bubbleRect.height };
+            Vector2 p2 = { bubbleRect.x + 7.0f, bubbleRect.y + bubbleRect.height };
+            Vector2 p3 = { bubbleRect.x - 3.0f, bubbleRect.y + bubbleRect.height + 5.0f };
+            DrawTriangle(p1, p2, p3, WHITE);
+            DrawLineEx(p1, p3, 1.0f, BLACK);
+            DrawLineEx(p2, p3, 1.0f, BLACK);
+
+            context.resources.drawText(fontTiny, "ribbit", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
         }
     } else if (m_state == BattleState::FightTarget) {
         // Fight Target Bar minigame (FGT-001/002)

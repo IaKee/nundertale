@@ -68,7 +68,7 @@ void DisclaimerScene::render(GameContext& context) {
     int startY = 175;
     for (int i = 0; i < 10; ++i) {
         if (lines[i][0] != '\0') {
-            context.resources.drawCenteredText(fontShmup, lines[i], startY + i * 20, 14, dimColor, 1.0f);
+            context.resources.drawCenteredText(fontShmup, lines[i], static_cast<float>(startY + i * 20), 14, dimColor, 1.0f);
         }
     }
 
@@ -78,7 +78,7 @@ void DisclaimerScene::render(GameContext& context) {
     }
 }
 
-void DisclaimerScene::onExit(GameContext& context) {
+void DisclaimerScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

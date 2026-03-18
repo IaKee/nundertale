@@ -44,7 +44,7 @@ Texture2D ResourceService::getMaskedTexture(const std::string& path, Color maskC
     }
 
     Image img = LoadImage(path.c_str());
-    ImageColorReplace(&img, maskColor, (Color){ 0, 0, 0, 0 });
+    ImageColorReplace(&img, maskColor, Color{ 0, 0, 0, 0 });
     Texture2D tex = LoadTextureFromImage(img);
     UnloadImage(img);
 

@@ -169,8 +169,8 @@ void Game::renderLetterboxed() {
 
     float destWidth = VIRTUAL_WIDTH * scale;
     float destHeight = VIRTUAL_HEIGHT * scale;
-    float destX = (GetScreenWidth() - destWidth) * 0.5f + m_context->shakeOffset.x * scale;
-    float destY = (GetScreenHeight() - destHeight) * 0.5f + m_context->shakeOffset.y * scale;
+    float destX = (static_cast<float>(GetScreenWidth()) - destWidth) * 0.5f + m_context->shakeOffset.x * scale;
+    float destY = (static_cast<float>(GetScreenHeight()) - destHeight) * 0.5f + m_context->shakeOffset.y * scale;
 
     Rectangle sourceRec = { 0.0f, 0.0f, (float)m_virtualTarget.texture.width, -(float)m_virtualTarget.texture.height };
     Rectangle destRec = { destX, destY, destWidth, destHeight };

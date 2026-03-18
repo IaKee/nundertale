@@ -230,7 +230,7 @@ void LoreScene::render(GameContext& context) {
     DrawText("[Z: Next / X: Skip to Menu]", VIRTUAL_WIDTH / 2 - 100, 445, 14, COLOR_UNDERTALE_GRAY);
 }
 
-void LoreScene::onExit(GameContext& context) {
+void LoreScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

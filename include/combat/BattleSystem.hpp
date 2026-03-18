@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include "Bullet.hpp"
+#include "DamageZone.hpp"
 #include "Enemy.hpp"
 #include "core/Constants.hpp"
 
@@ -33,6 +34,46 @@ enum class MainButton {
     Mercy = 3
 };
 
+// BHL-015: "thinking" ribbit text over soul easter egg
+struct RibbitState {
+    float stillTime = 0.0f;
+    float showTime = 0.0f;
+    bool shownThisTurn = false;
+};
+
+// Advances the state; returns true on the exact update where the bubble starts showing.
+inline bool updateRibbit(RibbitState& s, float dt, bool soulMoving, float threshold = 3.0f, float duration = 1.5f) {
+    if (soulMoving) {
+        s.stillTime = 0.0f;
+        s.showTime = 0.0f;
+        return false;
+    }
+
+    if (s.showTime > 0.0f) {
+        s.showTime -= dt;
+        if (s.showTime < 0.0f) {
+            s.showTime = 0.0f;
+        }
+    }
+
+    if (s.shownThisTurn) {
+        return false;
+    }
+
+    s.stillTime += dt;
+    if (s.stillTime >= threshold) {
+        s.shownThisTurn = true;
+        s.showTime = duration;
+        return true;
+    }
+
+    return false;
+}
+
+inline bool ribbitVisible(const RibbitState& s) {
+    return s.showTime > 0.0f;
+}
+
 class BattleSystem {
 public:
     explicit BattleSystem(std::unique_ptr<Enemy> enemy);
@@ -46,6 +87,8 @@ public:
     bool isSpared() const { return m_isSpared; }
     BattleState getState() const { return m_state; }
     Vector2 getSoulPosition() const { return m_soulPosition; }
+    const RibbitState& getRibbitState() const { return m_ribbitState; }
+    void addDamageZone(const DamageZone& zone) { m_zones.push_back(zone); }
 
 private:
     void handleMenuInput(GameContext& context);
@@ -56,6 +99,7 @@ private:
     void startEnemyTurn();
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
+    bool applySoulDamage(GameContext& context, int rawDamage, float fur);
 
     void drawBackgroundGrid() const;
     void drawSoul(float x, float y, Color color = SOUL_RED) const;
@@ -88,6 +132,7 @@ private:
 
     // Enemy turn bullets & timer
     std::vector<Bullet> m_bullets;
+    std::vector<DamageZone> m_zones;
     float m_enemyTurnTimer = 0.0f;
     float m_enemyTurnDuration = 5.0f;
     float m_spawnTimer = 0.0f;
@@ -95,6 +140,7 @@ private:
     // Messages
     std::string m_narratorText;
     std::string m_enemySpeechBubble;
+    bool m_dialogReturnsToMenu = false;
 
     // Enemy damage feedback (FGT-004, FGT-005, FGT-006, FGT-007)
     float m_enemyShakeTimer = 0.0f;
@@ -145,6 +191,9 @@ private:
     std::vector<SoulTrail> m_soulTrails;
     void updateSoulTrails(float dt);
     void drawSoulTrails() const;
+
+    // BHL-015: "thinking" ribbit text over soul
+    RibbitState m_ribbitState;
 };
 
 } // namespace nundertale

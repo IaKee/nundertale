@@ -16,7 +16,7 @@ static const char* MATRIX[4][7] = {
     { "V", "W", "X", "Y", "Z", "PRO", "GAMER" }
 };
 
-void NameSelectScene::onEnter(GameContext& context) {
+void NameSelectScene::onEnter(GameContext& /*context*/) {
     m_state = NameSelectState::Selecting;
     m_currentName.clear();
     m_cursorX = 0;
@@ -205,7 +205,7 @@ void NameSelectScene::render(GameContext& context) {
         context.resources.drawCenteredText(font8Bit, "Name the fallen gamer.", 35, 28, WHITE, 2.0f);
 
         // Name box & current name
-        Color nameColor = m_isChad ? COLOR_UNDERTALE_YELLOW : (m_isWaifu ? (Color){ 255, 105, 180, 255 } : WHITE);
+        Color nameColor = m_isChad ? COLOR_UNDERTALE_YELLOW : (m_isWaifu ? Color{ 255, 105, 180, 255 } : WHITE);
         std::string displayName = m_currentName.empty() ? "_" : m_currentName;
         context.resources.drawCenteredText(font8Bit, displayName, 95, 36, nameColor, 3.0f);
 
@@ -272,7 +272,7 @@ void NameSelectScene::render(GameContext& context) {
         }
 
         // Center name with animated rotation & scale
-        Color nameColor = m_isChad ? COLOR_UNDERTALE_YELLOW : (m_isWaifu ? (Color){ 255, 105, 180, 255 } : WHITE);
+        Color nameColor = m_isChad ? COLOR_UNDERTALE_YELLOW : (m_isWaifu ? Color{ 255, 105, 180, 255 } : WHITE);
         context.resources.drawCenteredText(fontTitle, m_currentName, 210, 48, nameColor, 3.0f);
 
         if (m_isChad) {
@@ -291,7 +291,7 @@ void NameSelectScene::render(GameContext& context) {
     }
 }
 
-void NameSelectScene::onExit(GameContext& context) {
+void NameSelectScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

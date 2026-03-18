@@ -183,14 +183,14 @@ void GameOverScene::render(GameContext& context) {
 
         // Retry prompt in WaitingInput state
         if (m_state == State::WaitingInput) {
-            float pulse = (std::sin(GetTime() * 4.0f) + 1.0f) * 0.5f;
+            float pulse = (std::sin(static_cast<float>(GetTime()) * 4.0f) + 1.0f) * 0.5f;
             Color promptColor = { 255, 255, 0, (unsigned char)(150 + pulse * 105) };
             context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to retry]", 410.0f, 20, promptColor, 1.0f);
         }
     }
 }
 
-void GameOverScene::onExit(GameContext& context) {
+void GameOverScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale
