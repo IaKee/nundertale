@@ -51,8 +51,13 @@ void SceneManager::update(float dt, GameContext& context) {
                 m_scenes.push_back(std::move(m_pendingScene));
                 m_scenes.back()->onEnter(context);
             }
-            m_phase = TransitionPhase::None;
-            m_transition.reset();
+            if (!m_transition || m_transition->durationIn() <= 0.0f) {
+                m_phase = TransitionPhase::None;
+                m_transition.reset();
+            } else {
+                m_phase = TransitionPhase::RevealingIn;
+                m_transitionTimer = 0.0f;
+            }
             return;
         }
 
@@ -68,16 +73,21 @@ void SceneManager::update(float dt, GameContext& context) {
                 m_scenes.push_back(std::move(m_pendingScene));
                 m_scenes.back()->onEnter(context);
             }
-            m_phase = TransitionPhase::RevealingIn;
+            if (!m_transition || m_transition->durationIn() <= 0.0f) {
+                m_phase = TransitionPhase::None;
+                m_transition.reset();
+            } else {
+                m_phase = TransitionPhase::RevealingIn;
+            }
         }
         return;
     } else if (m_phase == TransitionPhase::RevealingIn) {
-        if (!m_transition || m_transition->duration() <= 0.0f) {
+        if (!m_transition || m_transition->durationIn() <= 0.0f) {
             m_phase = TransitionPhase::None;
             m_transition.reset();
         } else {
             m_transitionTimer += dt;
-            float dur = m_transition->duration();
+            float dur = m_transition->durationIn();
             if (m_transitionTimer >= dur) {
                 m_phase = TransitionPhase::None;
                 m_transition.reset();
@@ -97,9 +107,9 @@ void SceneManager::render(GameContext& context) {
     }
 
     if (m_phase != TransitionPhase::None && m_transition) {
-        float dur = m_transition->duration();
-        float progress = (dur > 0.0f) ? std::clamp(m_transitionTimer / dur, 0.0f, 1.0f) : 1.0f;
         bool coveringOut = (m_phase == TransitionPhase::CoveringOut);
+        float dur = coveringOut ? m_transition->duration() : m_transition->durationIn();
+        float progress = (dur > 0.0f) ? std::clamp(m_transitionTimer / dur, 0.0f, 1.0f) : 1.0f;
         m_transition->render(progress, coveringOut);
     }
 }
