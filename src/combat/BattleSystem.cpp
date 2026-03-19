@@ -172,10 +172,16 @@ void BattleSystem::handleMenuInput(GameContext& context) {
         switch (m_selectedButton) {
             case MainButton::Fight: {
                 m_state = BattleState::FightTarget;
+                m_fightPhase = FightPhase::Moving;
+                m_fightPhaseTimer = 0.0f;
                 // BUG-17: Random entry side
                 bool fromLeft = (GetRandomValue(0, 1) == 0);
-                m_targetCursorX = fromLeft ? m_arenaRect.x + 10.0f : m_arenaRect.x + m_arenaRect.width - 10.0f;
-                m_targetCursorSpeed = fromLeft ? 400.0f : -400.0f;
+                float innerLeft = m_arenaRect.x + 5.0f;
+                float innerRight = m_arenaRect.x + m_arenaRect.width - 5.0f;
+                float innerW = innerRight - innerLeft;
+                float speed = attackBarSpeed(innerW);
+                m_targetCursorX = fromLeft ? innerLeft : innerRight;
+                m_targetCursorSpeed = fromLeft ? speed : -speed;
                 m_targetCursorMoving = true;
                 break;
             }
@@ -199,70 +205,90 @@ void BattleSystem::handleMenuInput(GameContext& context) {
 }
 
 void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
-    if (m_targetCursorMoving) {
-        // BUG-08: Use dt instead of GetFrameTime()
-        m_targetCursorX += m_targetCursorSpeed * dt;
-
-        bool outOfBounds = (m_targetCursorSpeed > 0.0f && m_targetCursorX >= m_arenaRect.x + m_arenaRect.width) ||
-                           (m_targetCursorSpeed < 0.0f && m_targetCursorX <= m_arenaRect.x);
-
-        if (outOfBounds) {
+    if (m_fightPhase == FightPhase::Moving) {
+        if (context.input.isCancelPressed()) {
+            m_state = BattleState::MenuSelect;
             m_targetCursorMoving = false;
-            m_lastPlayerAction = PlayerTurnAction::FightMiss;
-            m_narratorText = "* You swung wide and missed!";
-            m_lastMiss = true;
-            m_lastDamage = 0;
-            m_damageDisplayTimer = 1.2f;
-            m_enemyShakeTimer = 0.0f;
-            m_state = BattleState::DialogMessage;
-            context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
-        } else if (context.input.isConfirmPressed()) {
-            m_targetCursorMoving = false;
-            float center = m_arenaRect.x + m_arenaRect.width / 2.0f;
-            float dist = std::abs(m_targetCursorX - center);
-            float maxDist = m_arenaRect.width / 2.0f;
-
-            // Damage formula (FGT-003)
-            int baseAtk = context.player.at + context.player.weaponAt;
-            int enemyDef = m_enemy->getDef();
-            float accuracyMult = (dist <= 12.0f) ? 2.2f : std::max(0.5f, (1.0f - dist / maxDist) * 2.0f);
-            int damage = std::max(1, static_cast<int>(std::round(static_cast<float>(baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
-
-            m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
-            m_enemy->takeDamage(damage);
-
-            m_lastMiss = false;
-            m_lastDamage = damage;
-            m_damageDisplayTimer = 1.5f;
-            m_enemyShakeTimer = 0.4f;
-            m_slashAnimTimer = 0.25f;
-
-            // FGT-008: Hitmarker on critical hit, slice sound on normal hit
-            if (dist <= 12.0f) {
-                m_lastPlayerAction = PlayerTurnAction::FightCrit;
-                context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
-                context.shake(5.0f, 0.22f); // GFX-006: Critical screen shake
-                context.flash(WHITE, 0.12f); // GFX-007: Impact flash
-                m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
-            } else {
-                m_lastPlayerAction = PlayerTurnAction::FightHit;
-                context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
-                context.shake(2.0f, 0.1f);
-                m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
-            }
-
-            if (m_enemy->isDead()) {
-                m_narratorText += "\n* Barky was vaporized into synthetic fluff!";
-                spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
-            }
-
-            m_state = BattleState::DialogMessage;
+            m_fightPhase = FightPhase::Moving;
+            m_fightPhaseTimer = 0.0f;
+            return;
         }
-    }
 
-    if (context.input.isCancelPressed()) {
-        m_state = BattleState::MenuSelect;
-        m_targetCursorMoving = false;
+        if (m_targetCursorMoving) {
+            // BUG-08: Use dt instead of GetFrameTime()
+            m_targetCursorX += m_targetCursorSpeed * dt;
+
+            float innerLeft = m_arenaRect.x + 5.0f;
+            float innerRight = m_arenaRect.x + m_arenaRect.width - 5.0f;
+
+            if (attackBarMissed(m_targetCursorX, m_targetCursorSpeed, innerLeft, innerRight)) {
+                m_targetCursorMoving = false;
+                m_lastPlayerAction = PlayerTurnAction::FightMiss;
+                m_narratorText = "* You swung wide and missed!";
+                m_lastMiss = true;
+                m_lastDamage = 0;
+                m_damageDisplayTimer = 1.2f;
+                m_enemyShakeTimer = 0.0f;
+                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
+                m_fightPhase = FightPhase::Fade;
+                m_fightPhaseTimer = 0.0f;
+            } else if (context.input.isConfirmPressed()) {
+                m_targetCursorMoving = false;
+                float center = m_arenaRect.x + m_arenaRect.width / 2.0f;
+                float dist = std::abs(m_targetCursorX - center);
+                float maxDist = m_arenaRect.width / 2.0f;
+
+                // Damage formula (FGT-003)
+                int baseAtk = context.player.at + context.player.weaponAt;
+                int enemyDef = m_enemy->getDef();
+                float accuracyMult = (dist <= ATTACK_CRIT_RADIUS) ? 2.2f : std::max(0.5f, (1.0f - dist / maxDist) * 2.0f);
+                int damage = std::max(1, static_cast<int>(std::round(static_cast<float>(baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
+
+                m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
+                m_enemy->takeDamage(damage);
+
+                m_lastMiss = false;
+                m_lastDamage = damage;
+                m_damageDisplayTimer = 1.5f;
+                m_enemyShakeTimer = 0.4f;
+                m_slashAnimTimer = 0.25f;
+
+                // FGT-008: Hitmarker on critical hit, slice sound on normal hit
+                if (dist <= ATTACK_CRIT_RADIUS) {
+                    m_lastPlayerAction = PlayerTurnAction::FightCrit;
+                    context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
+                    context.shake(5.0f, 0.22f); // GFX-006: Critical screen shake
+                    context.flash(WHITE, 0.12f); // GFX-007: Impact flash
+                    m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
+                } else {
+                    m_lastPlayerAction = PlayerTurnAction::FightHit;
+                    context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
+                    context.shake(2.0f, 0.1f);
+                    m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
+                }
+
+                if (m_enemy->isDead()) {
+                    m_narratorText += "\n* Barky was vaporized into synthetic fluff!";
+                    spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
+                }
+
+                m_fightPhase = FightPhase::HitHold;
+                m_fightPhaseTimer = 0.0f;
+            }
+        }
+    } else if (m_fightPhase == FightPhase::HitHold) {
+        m_fightPhaseTimer += dt;
+        if (m_fightPhaseTimer >= ATTACK_HIT_HOLD_SECONDS) {
+            m_fightPhase = FightPhase::Fade;
+            m_fightPhaseTimer = 0.0f;
+        }
+    } else if (m_fightPhase == FightPhase::Fade) {
+        m_fightPhaseTimer += dt;
+        if (m_fightPhaseTimer >= ATTACK_TARGET_FADE_SECONDS) {
+            m_state = BattleState::DialogMessage;
+            m_fightPhase = FightPhase::Moving;
+            m_fightPhaseTimer = 0.0f;
+        }
     }
 }
 
@@ -842,6 +868,79 @@ void BattleSystem::drawSoulTrails() const {
     }
 }
 
+void BattleSystem::drawAttackTarget() const {
+    int innerX = static_cast<int>(m_arenaRect.x) + 5;
+    int innerY = static_cast<int>(m_arenaRect.y) + 5;
+    int innerW = std::max(1, static_cast<int>(m_arenaRect.width) - 10);
+    int innerH = std::max(1, static_cast<int>(m_arenaRect.height) - 10);
+
+    float squish = 1.0f;
+    if (m_fightPhase == FightPhase::Fade) {
+        squish = attackTargetSquish(m_fightPhaseTimer);
+    }
+
+    BeginScissorMode(innerX, innerY, innerW, innerH);
+
+    // Black background of the target
+    DrawRectangle(innerX, innerY, innerW, innerH, BLACK);
+
+    float centerX = static_cast<float>(innerX) + static_cast<float>(innerW) * 0.5f;
+    float centerY = static_cast<float>(innerY) + static_cast<float>(innerH) * 0.5f;
+
+    float radiusX = (static_cast<float>(innerW) * 0.5f - 1.0f) * squish;
+    float radiusY = static_cast<float>(innerH) * 0.5f - 1.0f;
+
+    if (squish > 0.005f && radiusX >= 1.0f) {
+        // Vertical lines (bands): 8 symmetric pairs narrowing toward center
+        for (int i = 1; i <= 8; ++i) {
+            float t = static_cast<float>(i) / 9.0f;
+            float ratio = std::pow(t, 1.4f);
+            float baseDx = (static_cast<float>(innerW) * 0.5f - 1.0f) * ratio;
+            float dx = baseDx * squish;
+
+            if (dx < radiusX) {
+                float halfH = radiusY * std::sqrt(1.0f - (dx * dx) / (radiusX * radiusX));
+                Color lineColor = { 0, 160, 0, 255 };
+
+                // Right symmetric line
+                DrawLineEx({ centerX + dx, centerY - halfH }, { centerX + dx, centerY + halfH }, 1.0f, lineColor);
+                // Left symmetric line
+                DrawLineEx({ centerX - dx, centerY - halfH }, { centerX - dx, centerY + halfH }, 1.0f, lineColor);
+            }
+        }
+
+        // Center band: slightly brighter light green translucent strip
+        float bandW = 14.0f * squish;
+        if (bandW > 1.0f) {
+            DrawRectangle(static_cast<int>(centerX - bandW * 0.5f), innerY, static_cast<int>(bandW), innerH, Color{ 0, 180, 0, 45 });
+        }
+
+        // White center line
+        DrawLineEx({ centerX, centerY - radiusY }, { centerX, centerY + radiusY }, 2.0f, WHITE);
+
+        // White ellipse outline (2 px thick)
+        DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX, radiusY, WHITE);
+        if (radiusX > 1.5f && radiusY > 1.5f) {
+            DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX - 1.0f, radiusY - 1.0f, WHITE);
+        }
+    }
+
+    // Bar drawing:
+    // Bar is drawn during Moving and HitHold phases (in HitHold, blinks white/black).
+    if (m_fightPhase == FightPhase::Moving || m_fightPhase == FightPhase::HitHold) {
+        bool isWhite = (m_fightPhase == FightPhase::Moving) ? true : attackBarBlinkWhite(m_fightPhaseTimer);
+
+        Color barFill = isWhite ? WHITE : BLACK;
+        Color barOutline = isWhite ? BLACK : Color{ 30, 30, 30, 255 };
+
+        Rectangle barRect = { m_targetCursorX - 7.0f, static_cast<float>(innerY), 14.0f, static_cast<float>(innerH) };
+        DrawRectangleRec(barRect, barFill);
+        DrawRectangleLinesEx(barRect, 2.0f, barOutline);
+    }
+
+    EndScissorMode();
+}
+
 void BattleSystem::render(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
@@ -1036,11 +1135,7 @@ void BattleSystem::render(GameContext& context) {
             context.resources.drawText(fontTiny, "ribbit", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
         }
     } else if (m_state == BattleState::FightTarget) {
-        // Fight Target Bar minigame (FGT-001/002)
-        DrawRectangle((int)m_arenaRect.x + 10, (int)m_arenaRect.y + 20, (int)m_arenaRect.width - 20, (int)m_arenaRect.height - 40, { 30, 30, 30, 255 });
-        float center = m_arenaRect.x + m_arenaRect.width / 2.0f;
-        DrawRectangle((int)center - 8, (int)m_arenaRect.y + 20, 16, (int)m_arenaRect.height - 40, UI_YELLOW);
-        DrawRectangle((int)m_targetCursorX - 4, (int)m_arenaRect.y + 15, 8, (int)m_arenaRect.height - 30, WHITE);
+        drawAttackTarget();
     } else if (m_state == BattleState::ActSelect) {
         // ACT menu 2-column layout (BUI-008, ACT-001)
         const auto& acts = m_enemy->getActs();

@@ -636,14 +636,16 @@ P1 · S · AUD-001
 
 ### FGT — Battle: FIGHT
 
-#### FGT-001 — Elliptical attack target sprite `[ ]`
+#### FGT-001 — Elliptical attack target sprite `[~]`
 P0 · M · ART-022
 - **What:** a "target" sprite (an ellipse with vertical lines and bands, Undertale-style) the size of the box interior (565×130). Replaces the current gray/yellow rectangles.
+- **Partly done (2026-10-17):** Undertale-style target drawn with primitives (white ellipse, green vertical bands narrowing to a white center line) filling the box interior. Pending: the real sprite (ART-022).
 
-#### FGT-002 — Attack bar `[ ]`
+#### FGT-002 — Attack bar `[x]`
 P0 · M · FGT-001
 - **What:** a white vertical bar with a black outline enters from a **random** side (BUG-17) and crosses the box in ~1.5–2 s (confirm); Z stops it. After the hit, the bar flashes white/black for a few frames. If the bar exits the other side without Z: "MISS."
 - **Special weapons** (P2): multiple bars (Real Knife/Burnt Pan style); weapon data defines `bars`, `speed`.
+- **Done (2026-10-17):** white bar with a black outline from a random side, crossing in 1.6 s; after Z it blinks white/black for 0.55 s while the slash plays, then the target squishes out; leaving the far edge = MISS (`include/combat/AttackTarget.hpp`). Multi-bar weapons (P2) pending.
 
 #### FGT-003 — Damage formula from data `[x]`
 P0 · S · PRG-001
@@ -1155,10 +1157,11 @@ P1 · S · SAV-004
 - **LORE §11.2:** the whole front-end (disclaimer → intro → title → instructions → name) fits in **~2:30** on first boot.
 - **Done (2026-10-17):** Disclaimer → intro → press-Z title → start menu (no save) or Continue card (save) → name → white fade. ~20 s idle on the title replays the intro (`include/scenes/FrontEndFlow.hpp`).
 
-#### FRT-002 — 1:1 intro (lore) `[ ]`
+#### FRT-002 — 1:1 intro (lore) `[~]`
 P1 · M · TXT-001
 - **What:** 400×220 images (the current ones are 398×214 → fix the art canvas) at x = 120, with the text typed below (main font, 2×), a black fade between cards, the intro music, and Z speeds it up. **The last image is tall and scrolls vertically** (the fall) before the title — today it's a 187-BMP animation (`assets/img/lore10/`); replace it with one tall image + scroll, or a PNG spritesheet.
 - **Text (LORE §9, BUG-29):** the **10** canonical cards — the intro is **gamer propaganda** (a biased narrator; the furry version comes in the Hall of Posts): 1 `Long ago, two races ruled / over the internet: / GAMERS and FURRIES.` · 2 `One day, the FURRIES tried / to turn every GAMER / into a FURRY.` · 3 `The GAMERS fought back with / copypastas, raids, and a / total lack of shame.` · 4 `After a decisive ratio, / the GAMERS were victorious.` (`lore4` art **redrawn without a real face**, ART-170) · 5 `Seven GAMERS sealed the / degenerates underground / with a magic BARRIER.` · 6 `Many years later...` / `MT. DEW, 202X` · 7 `Legend says that those who / keep on yiffin' / may never game again...` · 8–10 no text (Pepe looking at the Rift; a foot slipping on a Dorito next to a tail; the fall + cut to the title).
+- **Partly done (2026-10-17):** the 10 canonical LORE §9 cards with verbatim text (cards 4 and 5 share `lore4` until ART-170); skip hints use the main font. Pending: 400×220 art canvas, the tall scrolling fall image, Z speed-up instead of skip.
 
 #### FRT-003 — 1:1 title `[~]`
 P1 · S · GFX-004

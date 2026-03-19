@@ -8,55 +8,26 @@
 
 namespace nundertale {
 
+static constexpr size_t SLIP_CARD = 8; // card 9: the slip (SFX + longer pause)
+
 void LoreScene::onEnter(GameContext& context) {
     context.audio.playMusic("assets/music/Undertale - Once Upon A Time Remix (ft Yuri, zR).ogg", true);
 
+    // FRT-002 / LORE §9: the 10 canonical intro cards (gamer propaganda, biased narrator)
     m_cards = {
-        // Card 1
-        {
-            "assets/img/lore1.bmp",
-            { "Not so long ago, two factions", "ruled over the internet:", "FURRIES and GAMERS." }
-        },
-        // Card 2
-        {
-            "assets/img/lore2.bmp",
-            { "One day, the FURRIES tried", "yiffing the GAMERS", "like true degenerates." }
-        },
-        // Card 3
-        {
-            "assets/img/lore3.bmp",
-            { "And after some long reddit", "posts the GAMERS defeated", "those degenerates." }
-        },
-        // Card 4
-        {
-            "assets/img/lore4.bmp",
-            { "They locked the degenerates", "underground using pro gamer", "moves and mountain dew(ritos)." }
-        },
-        // Card 5
-        {
-            "assets/img/lore5.bmp",
-            { "Some weeks later.....", "<<................MTn. DEW................>>", "<<...................202X....................>>" }
-        },
-        // Card 6
-        {
-            "assets/img/lore6.bmp",
-            { "Legend says that those who", "keep on yiffin may never", "game again..." }
-        },
-        // Card 7 (Pepe walking towards the pit)
-        {
-            "assets/img/lore7.bmp",
-            {}
-        },
-        // Card 8 (Pepe slipping on vine)
-        {
-            "assets/img/lore8.bmp",
-            {}
-        },
-        // Card 9 (Pepe falling down)
-        {
-            "assets/img/lore9.bmp",
-            {}
-        }
+        { "assets/img/lore1.bmp", { "Long ago, two races ruled", "over the internet:", "GAMERS and FURRIES." } },
+        { "assets/img/lore2.bmp", { "One day, the FURRIES tried", "to turn every GAMER", "into a FURRY." } },
+        { "assets/img/lore3.bmp", { "The GAMERS fought back with", "copypastas, raids, and a", "total lack of shame." } },
+        { "assets/img/lore4.bmp", { "After a decisive ratio,", "the GAMERS were victorious." } },
+        { "assets/img/lore4.bmp", { "Seven GAMERS sealed the", "degenerates underground", "with a magic BARRIER." } },
+        { "assets/img/lore5.bmp", { "Many years later...", "", "MT. DEW, 202X" } },
+        { "assets/img/lore6.bmp", { "Legend says that those who", "keep on yiffin'", "may never game again..." } },
+        // Card 8: Pepe looking at the Rift
+        { "assets/img/lore7.bmp", {} },
+        // Card 9: a foot slipping on a Dorito next to a tail
+        { "assets/img/lore8.bmp", {} },
+        // Card 10: the fall (followed by the lore10 animation and the cut to the title)
+        { "assets/img/lore9.bmp", {} }
     };
 
     m_currentCard = 0;
@@ -103,7 +74,7 @@ void LoreScene::update(float dt, GameContext& context) {
             m_cardFadingIn = false;
 
             // Trigger slip sound effect on card 8
-            if (m_currentCard == 7) {
+            if (m_currentCard == SLIP_CARD) {
                 context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.9f);
             }
         }
@@ -115,7 +86,7 @@ void LoreScene::update(float dt, GameContext& context) {
     // If card has no text lines (cards 7, 8, 9), wait short timer or confirm to advance
     if (card.lines.empty()) {
         m_cardTimer += dt;
-        float delay = (m_currentCard == 7) ? 2.0f : 1.5f; // Card 8 slip has slightly longer pause
+        float delay = (m_currentCard == SLIP_CARD) ? 2.0f : 1.5f; // the slip card has a slightly longer pause
         if (m_cardTimer >= delay || context.input.isConfirmPressed()) {
             m_currentCard++;
             if (m_currentCard < m_cards.size()) {
@@ -199,7 +170,7 @@ void LoreScene::render(GameContext& context) {
 
         Texture2D animTex = context.resources.getTexture(pathBuf);
         DrawTexture(animTex, 121, 62, WHITE);
-        DrawText("[Press Z or X to Skip]", VIRTUAL_WIDTH / 2 - 80, 440, 14, COLOR_UNDERTALE_GRAY);
+        context.resources.drawCenteredText(font8Bit, "[Press Z or X to Skip]", 440.0f, 14.0f, COLOR_UNDERTALE_GRAY, 1.0f);
         return;
     }
 
@@ -227,7 +198,7 @@ void LoreScene::render(GameContext& context) {
     }
 
     // Skip helper
-    DrawText("[Z: Next / X: Skip to Menu]", VIRTUAL_WIDTH / 2 - 100, 445, 14, COLOR_UNDERTALE_GRAY);
+    context.resources.drawCenteredText(font8Bit, "[Z: Next / X: Skip to Menu]", 445.0f, 14.0f, COLOR_UNDERTALE_GRAY, 1.0f);
 }
 
 void LoreScene::onExit(GameContext& /*context*/) {

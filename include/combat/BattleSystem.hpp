@@ -10,6 +10,7 @@
 #include "Enemy.hpp"
 #include "BattleBackground.hpp"
 #include "ResidualDamage.hpp"
+#include "AttackTarget.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -96,6 +97,8 @@ public:
     BattleBackground getBackground() const { return m_background; }
     void addResidualDamage(float amount) { m_residual.add(amount); }
     const ResidualMeter& getResidual() const { return m_residual; }
+    FightPhase getFightPhase() const { return m_fightPhase; }
+    float getFightPhaseTimer() const { return m_fightPhaseTimer; }
 
 private:
     void handleMenuInput(GameContext& context);
@@ -116,6 +119,7 @@ private:
     void spawnDust(Vector2 center, int count, Color col);
     void updateDust(float dt);
     void drawDust() const;
+    void drawAttackTarget() const;
 
     std::unique_ptr<Enemy> m_enemy;
     BattleState m_state = BattleState::MenuSelect;
@@ -133,10 +137,12 @@ private:
     Rectangle m_arenaRect{ (float)BATTLE_BOX_X, (float)BATTLE_BOX_Y, (float)BATTLE_BOX_W, (float)BATTLE_BOX_H };
     Rectangle m_targetBoxRect{ (float)BATTLE_BOX_X, (float)BATTLE_BOX_Y, (float)BATTLE_BOX_W, (float)BATTLE_BOX_H };
 
-    // Fight bar minigame
+    // Fight bar minigame (FGT-001, FGT-002)
     float m_targetCursorX = 100.0f;
     float m_targetCursorSpeed = 400.0f;
     bool m_targetCursorMoving = false;
+    FightPhase m_fightPhase = FightPhase::Moving;
+    float m_fightPhaseTimer = 0.0f;
 
     // Enemy turn bullets & timer
     std::vector<Bullet> m_bullets;

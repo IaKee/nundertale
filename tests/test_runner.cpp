@@ -9,6 +9,7 @@
 #include "combat/BattleSystem.hpp"
 #include "combat/BattleBackground.hpp"
 #include "combat/ResidualDamage.hpp"
+#include "combat/AttackTarget.hpp"
 #include "ui/DialogBox.hpp"
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
@@ -1015,6 +1016,67 @@ int main() {
         std::cout << "[PASS] FRT-001, FRT-003, FRT-004 & FRT-005: Front-end routing, idle replay, and prompt timing verified." << std::endl;
     }
 
-    std::cout << "\nAll 17 test suites passed successfully!" << std::endl;
+    // 18. FGT-001 & FGT-002: Undertale attack target, bar speed, blink, squish, and miss conditions
+    {
+        using nundertale::ATTACK_BAR_CROSS_SECONDS;
+        using nundertale::ATTACK_HIT_HOLD_SECONDS;
+        using nundertale::ATTACK_TARGET_FADE_SECONDS;
+        using nundertale::ATTACK_CRIT_RADIUS;
+        using nundertale::attackBarSpeed;
+        using nundertale::attackBarBlinkWhite;
+        using nundertale::attackTargetSquish;
+        using nundertale::attackBarMissed;
+
+        // Constants
+        assert(std::abs(ATTACK_BAR_CROSS_SECONDS - 1.6f) < 0.0001f);
+        assert(std::abs(ATTACK_HIT_HOLD_SECONDS - 0.55f) < 0.0001f);
+        assert(std::abs(ATTACK_TARGET_FADE_SECONDS - 0.30f) < 0.0001f);
+        assert(std::abs(ATTACK_CRIT_RADIUS - 12.0f) < 0.0001f);
+
+        // attackBarSpeed(565) ≈ 353.125
+        float speed = attackBarSpeed(565.0f);
+        assert(std::abs(speed - 353.125f) < 0.0001f);
+
+        // attackBarBlinkWhite(0) = true, (0.07) = false
+        assert(attackBarBlinkWhite(0.0f) == true);
+        assert(attackBarBlinkWhite(0.07f) == false);
+        assert(attackBarBlinkWhite(0.14f) == true);
+        assert(attackBarBlinkWhite(0.21f) == false);
+        assert(attackBarBlinkWhite(-1.0f) == true);
+
+        // attackTargetSquish(0)=1, (0.15)≈0.5, (0.3)=0, (1)=0, (-1)=1
+        assert(std::abs(attackTargetSquish(0.0f) - 1.0f) < 0.0001f);
+        assert(std::abs(attackTargetSquish(0.15f) - 0.5f) < 0.0001f);
+        assert(std::abs(attackTargetSquish(0.30f) - 0.0f) < 0.0001f);
+        assert(std::abs(attackTargetSquish(1.0f) - 0.0f) < 0.0001f);
+        assert(std::abs(attackTargetSquish(-1.0f) - 1.0f) < 0.0001f);
+
+        // attackBarMissed for both directions
+        float left = 37.0f;
+        float right = 602.0f;
+
+        // Moving right (speed > 0)
+        float speedRight = 353.125f;
+        assert(!attackBarMissed(left, speedRight, left, right));
+        assert(!attackBarMissed((left + right) * 0.5f, speedRight, left, right));
+        assert(!attackBarMissed(right - 0.1f, speedRight, left, right));
+        assert(attackBarMissed(right, speedRight, left, right));
+        assert(attackBarMissed(right + 10.0f, speedRight, left, right));
+
+        // Moving left (speed < 0)
+        float speedLeft = -353.125f;
+        assert(!attackBarMissed(right, speedLeft, left, right));
+        assert(!attackBarMissed((left + right) * 0.5f, speedLeft, left, right));
+        assert(!attackBarMissed(left + 0.1f, speedLeft, left, right));
+        assert(attackBarMissed(left, speedLeft, left, right));
+        assert(attackBarMissed(left - 10.0f, speedLeft, left, right));
+
+        // Speed zero
+        assert(!attackBarMissed((left + right) * 0.5f, 0.0f, left, right));
+
+        std::cout << "[PASS] FGT-001 & FGT-002: Undertale attack target, bar speed, blink, squish, and miss conditions verified." << std::endl;
+    }
+
+    std::cout << "\nAll 18 test suites passed successfully!" << std::endl;
     return 0;
 }
