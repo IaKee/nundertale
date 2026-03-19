@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IScene.hpp"
+#include "Transition.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -9,10 +10,10 @@ namespace nundertale {
 
 struct GameContext;
 
-enum class FadeState {
+enum class TransitionPhase {
     None,
-    FadeOut,
-    FadeIn
+    CoveringOut,
+    RevealingIn
 };
 
 class SceneManager {
@@ -22,6 +23,9 @@ public:
 
     // Transition with fade (replaces active scene)
     void changeScene(std::unique_ptr<IScene> newScene, float fadeDuration = 0.4f);
+
+    // Pluggable transition (CORE-003)
+    void changeScene(std::unique_ptr<IScene> newScene, std::unique_ptr<ITransition> transition);
 
     // Push scene to stack with lifecycle management (BUG-01, CORE-002)
     void pushScene(std::unique_ptr<IScene> scene, GameContext& context);
@@ -37,11 +41,10 @@ public:
 private:
     std::vector<std::unique_ptr<IScene>> m_scenes;
     std::unique_ptr<IScene> m_pendingScene;
+    std::unique_ptr<ITransition> m_transition;
 
-    FadeState m_fadeState = FadeState::None;
-    float m_fadeAlpha = 0.0f;
-    float m_fadeDuration = 0.4f;
-    float m_fadeTimer = 0.0f;
+    TransitionPhase m_phase = TransitionPhase::None;
+    float m_transitionTimer = 0.0f;
 };
 
 } // namespace nundertale

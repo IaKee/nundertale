@@ -4,9 +4,26 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "services/MusicTracks.hpp"
 #include <raylib.h>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace nundertale {
+
+static std::string extractJsonString(const std::string& json, const std::string& key) {
+    std::string needle = "\"" + key + "\":";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return "";
+    pos += needle.size();
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
+    if (pos >= json.size() || json[pos] != '\"') return "";
+    pos++;
+    size_t end = json.find('\"', pos);
+    if (end == std::string::npos) return "";
+    return json.substr(pos, end - pos);
+}
 
 BattleScene::BattleScene() {
     // BFL-005 & BFL-006: Data-driven enemy loading with fallback
@@ -15,7 +32,25 @@ BattleScene::BattleScene() {
 }
 
 void BattleScene::onEnter(GameContext& context) {
-    context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+    std::string musicId;
+
+    // BUI-013 & BFL-007: Load encounter presentation settings in one read.
+    std::ifstream encFile("data/encounters/barky.json");
+    if (encFile.is_open()) {
+        std::stringstream ss;
+        ss << encFile.rdbuf();
+        const std::string encounterJson = ss.str();
+        const std::string bgId = extractJsonString(encounterJson, "background");
+        musicId = extractJsonString(encounterJson, "music");
+        if (!bgId.empty()) {
+            m_battleSystem->setBackground(backgroundFromId(bgId));
+        }
+    }
+
+    const std::string musicPath = resolveMusicPath(
+        musicId,
+        [](const std::string& path) { return std::filesystem::exists(path); });
+    context.audio.playMusic(musicPath, true);
 }
 
 void BattleScene::update(float dt, GameContext& context) {

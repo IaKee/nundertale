@@ -8,10 +8,18 @@ namespace nundertale {
 SceneManager::SceneManager() = default;
 
 void SceneManager::changeScene(std::unique_ptr<IScene> newScene, float fadeDuration) {
+    if (fadeDuration <= 0.0f) {
+        changeScene(std::move(newScene), cut());
+    } else {
+        changeScene(std::move(newScene), fadeBlack(fadeDuration));
+    }
+}
+
+void SceneManager::changeScene(std::unique_ptr<IScene> newScene, std::unique_ptr<ITransition> transition) {
     m_pendingScene = std::move(newScene);
-    m_fadeDuration = (fadeDuration <= 0.0f) ? 0.001f : fadeDuration;
-    m_fadeTimer = 0.0f;
-    m_fadeState = FadeState::FadeOut;
+    m_transition = transition ? std::move(transition) : cut();
+    m_transitionTimer = 0.0f;
+    m_phase = TransitionPhase::CoveringOut;
 }
 
 void SceneManager::pushScene(std::unique_ptr<IScene> scene, GameContext& context) {
@@ -33,11 +41,8 @@ void SceneManager::popScene(GameContext& context) {
 }
 
 void SceneManager::update(float dt, GameContext& context) {
-    if (m_fadeState == FadeState::FadeOut) {
-        m_fadeTimer += dt;
-        m_fadeAlpha = m_fadeTimer / m_fadeDuration;
-        if (m_fadeAlpha >= 1.0f) {
-            m_fadeAlpha = 1.0f;
+    if (m_phase == TransitionPhase::CoveringOut) {
+        if (!m_transition || m_transition->duration() <= 0.0f) {
             if (!m_scenes.empty()) {
                 m_scenes.back()->onExit(context);
                 m_scenes.pop_back();
@@ -46,16 +51,38 @@ void SceneManager::update(float dt, GameContext& context) {
                 m_scenes.push_back(std::move(m_pendingScene));
                 m_scenes.back()->onEnter(context);
             }
-            m_fadeState = FadeState::FadeIn;
-            m_fadeTimer = m_fadeDuration;
+            m_phase = TransitionPhase::None;
+            m_transition.reset();
+            return;
+        }
+
+        m_transitionTimer += dt;
+        float dur = m_transition->duration();
+        if (m_transitionTimer >= dur) {
+            m_transitionTimer = 0.0f;
+            if (!m_scenes.empty()) {
+                m_scenes.back()->onExit(context);
+                m_scenes.pop_back();
+            }
+            if (m_pendingScene) {
+                m_scenes.push_back(std::move(m_pendingScene));
+                m_scenes.back()->onEnter(context);
+            }
+            m_phase = TransitionPhase::RevealingIn;
         }
         return;
-    } else if (m_fadeState == FadeState::FadeIn) {
-        m_fadeTimer -= dt;
-        m_fadeAlpha = m_fadeTimer / m_fadeDuration;
-        if (m_fadeAlpha <= 0.0f) {
-            m_fadeAlpha = 0.0f;
-            m_fadeState = FadeState::None;
+    } else if (m_phase == TransitionPhase::RevealingIn) {
+        if (!m_transition || m_transition->duration() <= 0.0f) {
+            m_phase = TransitionPhase::None;
+            m_transition.reset();
+        } else {
+            m_transitionTimer += dt;
+            float dur = m_transition->duration();
+            if (m_transitionTimer >= dur) {
+                m_phase = TransitionPhase::None;
+                m_transition.reset();
+                m_transitionTimer = 0.0f;
+            }
         }
     }
 
@@ -69,9 +96,11 @@ void SceneManager::render(GameContext& context) {
         m_scenes.back()->render(context);
     }
 
-    if (m_fadeAlpha > 0.0f) {
-        unsigned char a = static_cast<unsigned char>(m_fadeAlpha * 255.0f);
-        DrawRectangle(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, { 0, 0, 0, a });
+    if (m_phase != TransitionPhase::None && m_transition) {
+        float dur = m_transition->duration();
+        float progress = (dur > 0.0f) ? std::clamp(m_transitionTimer / dur, 0.0f, 1.0f) : 1.0f;
+        bool coveringOut = (m_phase == TransitionPhase::CoveringOut);
+        m_transition->render(progress, coveringOut);
     }
 }
 
