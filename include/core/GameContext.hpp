@@ -8,6 +8,7 @@
 #include "services/IResourceService.hpp"
 #include "services/IInputService.hpp"
 #include "services/ISaveService.hpp"
+#include "core/Fur.hpp"
 
 namespace nundertale {
 
@@ -26,7 +27,6 @@ struct PlayerData {
     int armorDf = 1;
     std::string weapon = "Frayed USB Mouse";
     std::string armor = "Broken Headset";
-    float furryMeter = 0.0f; // 0.0 to 100.0%
     bool isChad = false;
     bool isSkyrim = false;
     bool isWaifuFan = false;
@@ -42,9 +42,9 @@ struct PlayerData {
 };
 
 struct FurryState {
-    float meter = 0.0f; // 0.0 to 100.0%
+    int value = 0;
+    int stageMax = 0;
     int transformations = 0;
-    int stage = 0; // 0: human-frog, 1: ears, 2: paws, 3: tail, 4: snout, 5: full
 };
 
 struct GameState {

@@ -1,10 +1,12 @@
 #include "services/SaveService.hpp"
 #include "core/GameContext.hpp"
+#include "core/Fur.hpp"
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
-#include <iomanip>
 
 namespace nundertale {
 
@@ -157,7 +159,6 @@ std::string SaveService::serializeStateToJson(const GameState& state) const {
     ss << "    \"armor\": \"" << state.player.armor << "\",\n";
     ss << "    \"weaponAt\": " << state.player.weaponAt << ",\n";
     ss << "    \"armorDf\": " << state.player.armorDf << ",\n";
-    ss << "    \"furryMeter\": " << std::fixed << std::setprecision(2) << state.player.furryMeter << ",\n";
     ss << "    \"inventory\": [";
     for (size_t i = 0; i < state.player.inventory.size(); ++i) {
         ss << "\"" << state.player.inventory[i] << "\"";
@@ -167,9 +168,9 @@ std::string SaveService::serializeStateToJson(const GameState& state) const {
     ss << "  },\n";
 
     ss << "  \"furry\": {\n";
-    ss << "    \"meter\": " << state.furry.meter << ",\n";
-    ss << "    \"transformations\": " << state.furry.transformations << ",\n";
-    ss << "    \"stage\": " << state.furry.stage << "\n";
+    ss << "    \"value\": " << state.furry.value << ",\n";
+    ss << "    \"stageMax\": " << state.furry.stageMax << ",\n";
+    ss << "    \"transformations\": " << state.furry.transformations << "\n";
     ss << "  },\n";
 
     ss << "  \"currentRoom\": \"" << state.currentRoom << "\",\n";
@@ -211,10 +212,40 @@ bool SaveService::parseStateFromJson(const std::string& json, GameState& state) 
     std::string arm = extractJsonString(json, "armor");
     if (!arm.empty()) state.player.armor = arm;
 
-    state.player.furryMeter = (float)extractJsonNumber(json, "furryMeter", 0.0);
-    state.furry.meter = (float)extractJsonNumber(json, "meter", 0.0);
-    state.furry.transformations = (int)extractJsonNumber(json, "transformations", 0);
-    state.furry.stage = (int)extractJsonNumber(json, "stage", 0);
+    size_t furryPos = json.find("\"furry\":");
+    std::string furryJson;
+    if (furryPos != std::string::npos) {
+        size_t openBrace = json.find('{', furryPos);
+        size_t closeBrace = json.find('}', openBrace);
+        if (openBrace != std::string::npos && closeBrace != std::string::npos) {
+            furryJson = json.substr(openBrace, closeBrace - openBrace + 1);
+        }
+    }
+
+    const bool hasNewFurValue = furryJson.find("\"value\":") != std::string::npos;
+    if (hasNewFurValue) {
+        state.furry.value = std::clamp(
+            static_cast<int>(std::lround(extractJsonNumber(furryJson, "value", 0.0))),
+            0,
+            FUR_MAX);
+    } else {
+        const double playerMeter = extractJsonNumber(json, "furryMeter", 0.0);
+        const double furryMeter = extractJsonNumber(furryJson, "meter", 0.0);
+        state.furry.value = std::clamp(
+            static_cast<int>(std::lround(std::max(playerMeter, furryMeter))),
+            0,
+            FUR_MAX);
+    }
+
+    const int savedStage = hasNewFurValue
+        ? static_cast<int>(extractJsonNumber(furryJson, "stageMax", 0.0))
+        : static_cast<int>(extractJsonNumber(furryJson, "stage", 0.0));
+    const int valueStage = static_cast<int>(furStageFor(state.furry.value));
+    state.furry.stageMax = std::clamp(
+        std::max(savedStage, valueStage),
+        0,
+        static_cast<int>(FurStage::Mirror));
+    state.furry.transformations = static_cast<int>(extractJsonNumber(furryJson, "transformations", 0.0));
 
     std::string room = extractJsonString(json, "currentRoom");
     if (!room.empty()) state.currentRoom = room;

@@ -1318,6 +1318,7 @@ P0 · M · FUR-001, BHL-005, BUG-27
 | Wrong answer in Mettapaw's quiz | +5 |
 
 - **Acceptance:** the per-bullet value comes from the pattern JSON (`params.fur`); unit tests cover the multiplier, the 0–100 clamp and the Mirror trigger; an old save with both fields migrates without loss.
+- **Progress (2026-10-17):** single integer `GameState::furry.value` 0–100 with `stageMax`, `applyFur(value, stageMax, delta, armorMult)` in `include/core/Fur.hpp`; `PlayerData::furryMeter` removed; old saves migrate (max of the two old fields, rounded). Per-bullet values unchanged (6/7/5). Pending: `data/fur.json` and per-pattern `params.fur`.
 
 #### FUR-003 — KR-style HUD display `[~]` (LORE rework)
 P0 · S · BUI-005, FUR-002
@@ -1328,10 +1329,11 @@ P0 · S · BUI-005, FUR-002
 P0 · S · FUR-002
 - **What (LORE §8.4):** `Duct Tape` −15 · ACT `Touch` on Grasstoid −10 · ACT `Shower` on Washua −10 · Shed Inn (10G) −25 · refusing the Mirror → back to **60** · save points **don't reduce it** (with FUR > 0 the save text gets the extra line `* DETERMINATION can't fix fluff.`) · Furiell zeroes FUR after Floofy's tutorial ("my glitter is hypoallergenic").
 
-#### FUR-005 — Stages and transitions `[ ]`
+#### FUR-005 — Stages and transitions `[~]`
 P0 · M · FUR-002
 - **What:** 0–19 **Frog** · 20–39 **Ears** · 40–59 **Paws** · 60–79 **Tail** · 80–99 **Snout** · 100 **Mirror**. On **going up** a stage: a "pomf" of fluff (`GFX-013`) + *pomf* SFX + `* You feel... fluffier.` (in the overworld, or in battle's `FlavorText`). Going down (Duct Tape, Shed Inn) swaps the sprite back with no ceremony. Track `fur.stage_max`.
 - **Acceptance:** jumping two stages in one hit shows a single transition; the text doesn't interrupt the enemy turn.
+- **Partly done (2026-10-17):** stages Frog/Ears/Paws/Tail/Snout/Mirror; going up shows a pink fluff burst + flash and `* You feel... fluffier.` as the next menu flavor text (one transition per hit); reaching 100 sets `fur_mirror_pending`. Pending: the *pomf* SFX and per-stage sprites (FUR-007).
 
 #### FUR-006 — FUR in STAT `[~]` (LORE rework)
 P1 · S · MNU-003, BUG-23
