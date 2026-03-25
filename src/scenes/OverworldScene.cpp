@@ -5,6 +5,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "core/SaveText.hpp"
 #include <raylib.h>
 
 namespace nundertale {
@@ -600,13 +601,14 @@ void OverworldScene::update(float dt, GameContext& context) {
         // Check SavePoint (SAV-002)
         if (m_savePoint && CheckCollisionRecs(interactBox, m_savePoint->getBounds())) {
             m_savePoint->interact(context);
-            m_dialogBox.startDialog({
-                "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.",
-                "* HP fully restored."
-            }, "", [this]() {
-                m_saveBoxState = SaveBoxState::Active;
-                m_saveBoxChoice = 0;
-            });
+            m_dialogBox.startDialog(
+                saveLines(context.state.currentRoom, context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer),
+                "",
+                [this]() {
+                    m_saveBoxState = SaveBoxState::Active;
+                    m_saveBoxChoice = 0;
+                }
+            );
             return;
         }
 
