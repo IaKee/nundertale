@@ -1208,6 +1208,40 @@ int main() {
         std::cout << "[PASS] SAV-001, SAV-007 & FUR-004: Save place lines, room mapping, and route/fur save dialogue verified." << std::endl;
     }
 
-    std::cout << "\nAll 20 test suites passed successfully!" << std::endl;
+    // 21. ACT-005 & ACT-006: repeat texts (Cringe Check 2nd use) and Laser gated by Toy Laser Pointer
+    {
+        using nundertale::ActDef;
+        using nundertale::actTextForUse;
+        using nundertale::actResponseForUse;
+        using nundertale::actAvailable;
+
+        ActDef cringe;
+        cringe.text = "* You stare directly at the zipper on Barky's back.";
+        cringe.response = "H-hey! It's an artisanal design feature, b-baka!";
+        cringe.repeatText = "* You stare again. Barky is out of blush.";
+        cringe.repeatResponse = "...I KNOW, okay? I KNOW.";
+        assert(actTextForUse(cringe, 1) == cringe.text);
+        assert(actResponseForUse(cringe, 1) == cringe.response);
+        assert(actTextForUse(cringe, 2) == cringe.repeatText);
+        assert(actResponseForUse(cringe, 3) == cringe.repeatResponse);
+
+        ActDef plain;
+        plain.text = "* Text.";
+        plain.response = "Line.";
+        assert(actTextForUse(plain, 5) == "* Text.");
+        assert(actResponseForUse(plain, 5) == "Line.");
+
+        ActDef laser;
+        laser.requiresItem = "Toy Laser Pointer";
+        auto noFlags = [](const std::string&) { return false; };
+        assert(!actAvailable(laser, { "Bottle", "Mt. Dew" }, 0, noFlags));
+        assert(actAvailable(laser, { "Bottle", "Toy Laser Pointer" }, 0, noFlags));
+
+        ActDef hug;
+        assert(hug.fur == 0 && !hug.spareNow);
+        std::cout << "[PASS] ACT-005 & ACT-006: repeat ACT texts, Laser item gate, and Accept Hug defaults verified." << std::endl;
+    }
+
+    std::cout << "\nAll 21 test suites passed successfully!" << std::endl;
     return 0;
 }

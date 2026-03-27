@@ -267,19 +267,19 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 
 | ID | File | Divergence | Fix (item) |
 | :--- | :--- | :--- | :--- |
-| **BUG-18** | `src/scenes/OverworldScene.cpp:164` | Hardcoded, non-canon encounter text `* Barky the Alpha Furry attacks!` (Barky is "the Alpha Wolf"; his entrance is ROTEIRO Scene 3 / LORE R9). | Move to data and use the LORE scene (`C1-009`, `TXT-010`). |
-| **BUG-19** | `src/scenes/OverworldScene.cpp:43` and `data/dialogue/en/ruins.json` (`ruins.sign.notice`) | Two different versions of the Ruins Administration notice, neither matching the canon (LORE R8: `Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.`). | One key only, with the LORE text (`C1-008`). |
+| **BUG-18** | `src/scenes/OverworldScene.cpp:164` | Hardcoded, non-canon encounter text `* Barky the Alpha Furry attacks!` (Barky is "the Alpha Wolf"; his entrance is ROTEIRO Scene 3 / LORE R9). | Move to data and use the LORE scene (`C1-009`, `TXT-010`). **[~] Partly fixed (2026-10-17):** Barky's ROTEIRO/LORE §19.1 entrance lines (speaker BARKY) replace the old text; still hardcoded until C1-009/TXT-010. |
+| **BUG-19** | `src/scenes/OverworldScene.cpp:43` and `data/dialogue/en/ruins.json` (`ruins.sign.notice`) | Two different versions of the Ruins Administration notice, neither matching the canon (LORE R8: `Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.`). | One key only, with the LORE text (`C1-008`). **[~] Partly fixed (2026-10-17):** The overworld sign uses the LORE R8 notice verbatim; `data/dialogue/en/ruins.json` still to align (TXT-010). |
 | **BUG-20** | `src/scenes/GameOverScene.cpp:163-170` | `GAME OVER` logo and a shattering soul. LORE §23.1 calls for **FURRY OVER**: the soul grows ears and a tail, inflates and pops into pink pom-poms; Asgrr's voice. | `BND-010` (rework). |
-| **BUG-21** | `src/combat/BattleSystem.cpp:531` | The narrator writes `* GAME OVER! You lost all HP and became a furry!` inside the box — Undertale has no such line; the sequence is the game over screen. | Remove; go straight to the sequence (`BND-010`). |
-| **BUG-22** | `src/combat/BattleSystem.cpp:127` | Level-up says `* Your VITRIOL increased.`; LORE §8.2 fixes it as `* Your LEVEL OF VITRIOL increased.` | `BND-004` (rework). |
-| **BUG-23** | `src/scenes/OverworldScene.cpp:403` | STAT shows `FURRY: n%`; the LORE uses the label **`FUR`** (and `FLF` on the Furry route). | `MNU-003`, `FUR-006`. |
-| **BUG-24** | `data/items/items.json` | Names `Frayed USB Optical Mouse` / `One-Sided Broken Gaming Headset` (LORE: `Frayed USB Mouse` / `One-Sided Broken Headset`); Duct Tape says "Furry meter … 15%" (LORE: `FUR −15`). The starting `Bottle` item is missing. | `ITM-006`, `ITM-007`. |
+| **BUG-21** | `src/combat/BattleSystem.cpp:531` | The narrator writes `* GAME OVER! You lost all HP and became a furry!` inside the box — Undertale has no such line; the sequence is the game over screen. | Remove; go straight to the sequence (`BND-010`). **[x] Fixed (2026-10-17):** The narrator line is gone; defeat goes straight to the game over scene. |
+| **BUG-22** | `src/combat/BattleSystem.cpp:127` | Level-up says `* Your VITRIOL increased.`; LORE §8.2 fixes it as `* Your LEVEL OF VITRIOL increased.` | `BND-004` (rework). **[x] Fixed (2026-10-17):** `* Your LEVEL OF VITRIOL increased.` |
+| **BUG-23** | `src/scenes/OverworldScene.cpp:403` | STAT shows `FURRY: n%`; the LORE uses the label **`FUR`** (and `FLF` on the Furry route). | `MNU-003`, `FUR-006`. **[x] Fixed (2026-10-17):** STAT shows `FUR: n` (FLF label pending with the Furry route). |
+| **BUG-24** | `data/items/items.json` | Names `Frayed USB Optical Mouse` / `One-Sided Broken Gaming Headset` (LORE: `Frayed USB Mouse` / `One-Sided Broken Headset`); Duct Tape says "Furry meter … 15%" (LORE: `FUR −15`). The starting `Bottle` item is missing. | `ITM-006`, `ITM-007`. **[x] Fixed (2026-10-17):** Item names already matched; the default armor in `PlayerData` is now `One-Sided Broken Headset`. |
 | **BUG-25** | `include/core/GameContext.hpp:64-75` | `RouteType { Wholesome, Normie, … }` — names retired by D-07; the Furry route and the Clean Run variant are missing. | `PRG-031`. |
 | **BUG-26** | `data/flags.md` | `kills.ruins = 20` cap, `route.wholesome`/`route.normie` flags, and `meta.ever_transformed` described as "times it reached 100%" (LORE §23.1 uses it as the FURRY OVER count). | `PRG-021`. |
-| **BUG-27** | `include/core/GameContext.hpp:29,44` + `src/services/SaveService.cpp:160-172` | Two sources of truth for FUR: `PlayerData::furryMeter` (float) and `FurryState::meter`, both saved. The LORE uses an integer `fur.value` 0–100. | `FUR-002`. |
+| **BUG-27** | `include/core/GameContext.hpp:29,44` + `src/services/SaveService.cpp:160-172` | Two sources of truth for FUR: `PlayerData::furryMeter` (float) and `FurryState::meter`, both saved. The LORE uses an integer `fur.value` 0–100. | `FUR-002`. **[x] Fixed (2026-10-17):** FUR-002: single integer `furry.value` with save migration. |
 | **BUG-28** | `data/dialogue/en/ruins.json` (`ruins.intro.fall`) | Merges Pepe's wake-up thought and the save text into one line; in LORE R1 they're two things (a `* (...)` thought and the save point text). | `C1-001`. |
-| **BUG-29** | `src/scenes/LoreScene.cpp:18-43` | Old intro cards ("FURRIES and GAMERS", "yiffing the GAMERS", "reddit posts"), 6 cards instead of LORE §9's 10. | `FRT-002`, `NAR-001`. |
-| **BUG-30** | `data/enemies/barky.json` | Missing the `Laser` (with Toy Laser Pointer) and `Accept Hug` ACTs, the 2nd `Cringe Check` response and the `howl_wave` pattern; the Check isn't the LORE §19.1 text. | `ACT-002`, `BHL-014`. |
+| **BUG-29** | `src/scenes/LoreScene.cpp:18-43` | Old intro cards ("FURRIES and GAMERS", "yiffing the GAMERS", "reddit posts"), 6 cards instead of LORE §9's 10. | `FRT-002`, `NAR-001`. **[x] Fixed (2026-10-17):** FRT-002: the 10 canonical cards. |
+| **BUG-30** | `data/enemies/barky.json` | Missing the `Laser` (with Toy Laser Pointer) and `Accept Hug` ACTs, the 2nd `Cringe Check` response and the `howl_wave` pattern; the Check isn't the LORE §19.1 text. | `ACT-002`, `BHL-014`. **[~] Partly fixed (2026-10-17):** `Laser` (Toy Laser Pointer), `Accept Hug`, the 2nd `Cringe Check` and the LORE Check text are in; `howl_wave` pending (BHL-014). Also fixed: JSON strings are unescaped, so the Check no longer prints a literal backslash-n and a doubled header. |
 
 ---
 
@@ -693,9 +693,10 @@ P1 · M · ACT-001, BHL-004
 P1 · M · BFL-004
 - **What:** ACTs that affect everyone or depend on the encounter's makeup: Dogsona & Dogsonissa (`Roll Around` + `Re-sniff` → `Pet`), Reply Guy (`Talk` only works alone), Jerry (`Ditch`). Bumped from P3 to P1 because the Ruins and Snowdinha depend on it.
 
-#### ACT-005 — Universal `Accept Hug` `[ ]`
+#### ACT-005 — Universal `Accept Hug` `[~]`
 P0 · M · ACT-001, FUR-002
 - **What:** an ACT present on every furry the LORE marks (Fursuit Dummy, Froggsona, Shysona, Doge, Barky, Furiell…): **spares on the spot** and adds FUR (+10 to +15; +30 on Furiell, which ends the fight). Squeak SFX; per-enemy text. It's the love-bombing mechanic (LORE §8.4) — it never appears on gamers.
+- **Partly done (2026-10-17):** `ActDef::fur` + `spareNow`; Barky's `Accept Hug` spares on the spot with FUR +15 (stage-up feedback included) and shows his LORE line. Pending: the other LORE furries, the squeak SFX, Furiell's +30 ending.
 
 #### ACT-006 — Conditional ACTs `[x]`
 P1 · S · ACT-001

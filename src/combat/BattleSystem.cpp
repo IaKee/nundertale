@@ -137,7 +137,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                             context.player.level = newLevel;
                             context.player.maxHp = (newLevel == 20) ? 99 : (16 + 4 * newLevel);
                             context.player.hp = context.player.maxHp;
-                            m_narratorText += "\n* Your VITRIOL increased.";
+                            m_narratorText += "\n* Your LEVEL OF VITRIOL increased."; // LORE §8.2 (BUG-22)
                             context.audio.playSound("assets/sfx/heal.ogg", 0.9f);
                         }
                     }
@@ -268,7 +268,7 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 }
 
                 if (m_enemy->isDead()) {
-                    m_narratorText += "\n* Barky was vaporized into synthetic fluff!";
+                    m_narratorText += "\n* Only a pile of synthetic wolf fur remains."; // LORE §19.1
                     spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
                 }
 
@@ -344,16 +344,34 @@ void BattleSystem::handleActInput(GameContext& context) {
 
         m_lastPlayerAction = PlayerTurnAction::Act;
         m_lastActionDetail = act.id;
-        m_lastActResponse = act.response;
+        m_lastActResponse = actResponseForUse(act, useCount);
 
         if (act.id == "check") {
             // BUG-06 & ACT-001: Data-driven check text matching enemy instance stats
             m_narratorText = m_enemy->getCheckText();
             m_enemySpeechBubble = "";
         } else {
-            m_narratorText = act.text;
-            m_enemySpeechBubble = act.response;
+            m_narratorText = actTextForUse(act, useCount);
+            m_enemySpeechBubble = actResponseForUse(act, useCount);
             bool wasSpareable = m_enemy->isSpareable();
+            if (applies && act.fur != 0) {
+                // ACT-005: Accept Hug adds FUR (FUR-002/FUR-005 feedback)
+                const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, act.fur);
+                if (furChange.stageUp) {
+                    const Color fluffPink{ 255, 170, 220, 255 };
+                    spawnDust(m_soulPosition, 18, fluffPink);
+                    context.flash(fluffPink, 0.12f);
+                    m_narratorText += "\n* You feel... fluffier.";
+                }
+                if (furChange.reachedMirror) {
+                    context.state.setFlag("fur_mirror_pending", 1);
+                }
+            }
+            if (applies && act.spareNow) {
+                // ACT-005: spares on the spot; the dialog then ends the battle as a spare
+                m_isSpared = true;
+                spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
+            }
             if (applies) {
                 m_enemy->addMercy(act.mercy);
                 if (act.spareable) {
@@ -479,7 +497,8 @@ void BattleSystem::handleMercyInput(GameContext& context) {
         if (m_subOptionIndex == 0) { // Spare
             if (m_enemy->isSpareable()) {
                 m_isSpared = true;
-                m_narratorText = "* You spared " + m_enemy->getName() + "!\n* Barky happily wags his tail and steps aside.";
+                m_narratorText = "* You spared " + m_enemy->getName() + ".";
+                m_enemySpeechBubble = "You can tell no one about the zipper. Pack secret."; // LORE §19.1
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/selection_sound.wav", 1.0f);
             } else {
@@ -582,7 +601,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         m_state = BattleState::Defeat;
         m_residual.clear();
         m_furStageUpPending = false;
-        m_narratorText = "* GAME OVER! You lost all HP and became a furry!";
+        m_narratorText.clear(); // BUG-21: no narrator line, straight to the FURRY OVER sequence
         context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
         return true;
     }
@@ -1081,7 +1100,9 @@ void BattleSystem::render(GameContext& context) {
     drawDust();
 
     // TXT-008: Enemy Speech Bubble with auto-sizing and tail pointer
-    if (m_state == BattleState::EnemyTurn && !m_enemySpeechBubble.empty()) {
+    // The bubble also shows on the spare dialog (Barky's spare / Accept Hug lines, LORE §19.1)
+    const bool showBubble = m_state == BattleState::EnemyTurn || (m_state == BattleState::DialogMessage && m_isSpared);
+    if (showBubble && !m_enemySpeechBubble.empty()) {
         float textW = context.resources.measureTextWidth(fontSmall, m_enemySpeechBubble, 16, 1.0f);
         float bubbleW = std::clamp(textW + 24.0f, 100.0f, 240.0f);
         float bubbleH = 48.0f;
