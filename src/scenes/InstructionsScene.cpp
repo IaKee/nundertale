@@ -1,6 +1,7 @@
 #include "scenes/InstructionsScene.hpp"
 #include "scenes/NameSelectScene.hpp"
 #include "scenes/TitleScene.hpp"
+#include "scenes/SettingsScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
@@ -11,17 +12,9 @@ namespace nundertale {
 void InstructionsScene::onEnter(GameContext& context) {
     context.audio.playMusic("assets/music/main_menu_loop.ogg", true);
     m_selectedIndex = 0;
-    m_settingsMessageTimer = 0.0f;
 }
 
-void InstructionsScene::update(float dt, GameContext& context) {
-    if (m_settingsMessageTimer > 0.0f) {
-        m_settingsMessageTimer -= dt;
-        if (m_settingsMessageTimer < 0.0f) {
-            m_settingsMessageTimer = 0.0f;
-        }
-    }
-
+void InstructionsScene::update(float /*dt*/, GameContext& context) {
     if (context.input.isUpPressed() || context.input.isDownPressed()) {
         m_selectedIndex = 1 - m_selectedIndex;
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
@@ -38,8 +31,8 @@ void InstructionsScene::update(float dt, GameContext& context) {
             context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
             context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
         } else {
-            m_settingsMessageTimer = 2.0f;
-            context.audio.playSound("assets/sfx/areusure.ogg", 0.8f);
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.scenes.pushScene(std::make_unique<SettingsScene>(), context);
         }
     }
 }
@@ -48,7 +41,6 @@ void InstructionsScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
     Font font8Bit = context.resources.getFont8Bit(22);
-    Font fontShmup = context.resources.getFontShmup(16);
 
     context.resources.drawCenteredText(font8Bit, "--- Instruction ---", 60.0f, 30.0f, COLOR_UNDERTALE_GRAY, 2.0f);
 
@@ -69,10 +61,6 @@ void InstructionsScene::render(GameContext& context) {
 
     context.resources.drawText(font8Bit, "Begin Game", { 170.0f, 360.0f }, 22.0f, m_selectedIndex == 0 ? UI_YELLOW : WHITE, 1.0f);
     context.resources.drawText(font8Bit, "Settings", { 170.0f, 400.0f }, 22.0f, m_selectedIndex == 1 ? UI_YELLOW : WHITE, 1.0f);
-
-    if (m_settingsMessageTimer > 0.0f) {
-        context.resources.drawCenteredText(fontShmup, "* Settings are still being installed. (F4 works.)", 438.0f, 16.0f, COLOR_UNDERTALE_GRAY, 1.0f);
-    }
 }
 
 void InstructionsScene::onExit(GameContext& /*context*/) {

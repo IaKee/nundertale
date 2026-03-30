@@ -16,7 +16,6 @@ public:
 
 private:
     int m_selectedIndex = 0;
-    float m_settingsMessageTimer = 0.0f;
 };
 
 } // namespace nundertale

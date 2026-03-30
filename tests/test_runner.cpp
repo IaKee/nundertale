@@ -19,6 +19,7 @@
 #include "services/MusicTracks.hpp"
 #include "scenes/FrontEndFlow.hpp"
 #include "core/SaveText.hpp"
+#include "scenes/SettingsModel.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1242,6 +1243,37 @@ int main() {
         std::cout << "[PASS] ACT-005 & ACT-006: repeat ACT texts, Laser item gate, and Accept Hug defaults verified." << std::endl;
     }
 
-    std::cout << "\nAll 21 test suites passed successfully!" << std::endl;
+    // 22. FRT-009: SettingsModel pure functions: volume stepping, percentage rounding, and index wrapping
+    {
+        using nundertale::stepVolume;
+        using nundertale::volumePercent;
+        using nundertale::wrapIndex;
+
+        // stepVolume(0.8,+1)≈0.9, (1.0,+1)=1.0, (0.0,-1)=0.0, (0.05,+1)≈0.1
+        assert(std::fabs(stepVolume(0.8f, +1) - 0.9f) < 1e-4f);
+        assert(std::fabs(stepVolume(1.0f, +1) - 1.0f) < 1e-4f);
+        assert(std::fabs(stepVolume(0.0f, -1) - 0.0f) < 1e-4f);
+        assert(std::fabs(stepVolume(0.05f, +1) - 0.1f) < 1e-4f);
+
+        // Additional edge cases
+        assert(std::fabs(stepVolume(0.9f, -1) - 0.8f) < 1e-4f);
+        assert(std::fabs(stepVolume(0.1f, -1) - 0.0f) < 1e-4f);
+        assert(std::fabs(stepVolume(1.0f, -1) - 0.9f) < 1e-4f);
+
+        // volumePercent(0.8)=80
+        assert(volumePercent(0.8f) == 80);
+        assert(volumePercent(1.0f) == 100);
+        assert(volumePercent(0.0f) == 0);
+
+        // wrapIndex(0,-1,5)=4, (4,+1,5)=0
+        assert(wrapIndex(0, -1, 5) == 4);
+        assert(wrapIndex(4, +1, 5) == 0);
+        assert(wrapIndex(2, +1, 5) == 3);
+        assert(wrapIndex(2, -1, 5) == 1);
+
+        std::cout << "[PASS] FRT-009: SettingsModel volume stepping, percent, and index wrapping verified." << std::endl;
+    }
+
+    std::cout << "\nAll 22 test suites passed successfully!" << std::endl;
     return 0;
 }

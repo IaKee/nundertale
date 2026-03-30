@@ -24,7 +24,6 @@ private:
     void resetSplash();
     void updateSplash(float dt, GameContext& context);
     void updateContinueCard(float dt, GameContext& context);
-    void showSettingsPlaceholder(GameContext& context);
     void renderSplash(GameContext& context);
     void renderContinueCard(GameContext& context);
 
@@ -32,7 +31,6 @@ private:
     int m_selectedIndex = 0;
     float m_animTimer = 0.0f;
     float m_idleTimer = 0.0f;
-    float m_settingsMessageTimer = 0.0f;
     bool m_promptSoundPlayed = false;
     bool m_hasSave = false;
     std::string m_savedName = "PEPE";

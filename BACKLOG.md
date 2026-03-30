@@ -1176,7 +1176,7 @@ P1 · S · GFX-004
 #### FRT-004 — Instructions/start menu screen `[x]`
 P1 · S · FRT-001
 - **What:** Undertale's layout: `--- Instruction ---` in gray, the list `[Z or ENTER] - Confirm`, `[X or SHIFT] - Cancel`, `[C or CTRL] - Menu (In-game)`, `[F4] - Fullscreen`, `[Hold ESC] - Quit`, `When HP is 0, you become a furry.` (already there, keep it), and below `Begin Game` / `Settings` with a yellow selection.
-- **Done (2026-10-17):** Undertale layout with `Begin Game` / `Settings` (Settings shows a placeholder line until FRT-009).
+- **Done (2026-10-17):** Undertale layout with `Begin Game` / `Settings` (Settings opens the FRT-009 screen).
 
 #### FRT-005 — Continue screen `[~]`
 P1 · M · SAV-004
@@ -1200,9 +1200,10 @@ P2 · S · FRT-007
 - **Dropped:** the previously proposed `GABEN` (a real person, LORE §2.2). Replace "Midwest FurFest" with FurNation Con '14 wherever it shows up.
 - **Partly done (2026-10-17):** ROTEIRO §6 + LORE §30.2 table in `include/core/NameRules.hpp` (FURIEL/BARKY/FLOOFY/YIFF forbidden, AZZY darkens, FROG/PEPE frog color, GASTER restarts the game). Pending: move it to `data/names.json` (NAR-028).
 
-#### FRT-009 — Settings `[ ]`
+#### FRT-009 — Settings `[~]`
 P2 · M · CORE-007
 - **What:** the "SETTINGS" screen with `EXIT`, music/SFX volume, fullscreen, integer scaling and controls (no language option, D-03). Undertale's background/style (big text, selected option in yellow).
+- **Partly done (2026-10-17):** `SettingsScene` pushed from the start menu and the Continue card: EXIT, music volume, master volume (live, 10% steps), fullscreen, spare ding, a static controls block; saved to the config on exit. Pending: SFX volume and integer scaling (need engine support) and a remapping UI.
 
 #### FRT-010 — Disclaimer `[ ]`
 P3 · S · BUG-01
