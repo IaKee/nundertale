@@ -843,6 +843,7 @@ P0 · M · BHL-004, ART-012
   3. **Awoo Howl** — sound waves (arcs) coming from the sides with a gap to slip through.
   4. **Tail Swipe** (when HP < 50%) — a tail sweeps the box horizontally; jump over it with timing (no blue mode, just dodging up/down).
 - **Acceptance:** "first Undertale boss" difficulty: beatable without taking damage after 2–3 tries.
+- **LORE rework done (2026-10-17):** the pattern is chosen once per enemy turn (`include/combat/BarkyPatterns.hpp`): uwu_rain / dew_bounce alternate; Cringe Check unlocks howl_wave (immediately on the next turn, then in the 3-pattern cycle); howl_wave is a wall of arcs crossing the box with a 48 px gap; dew_bounce is now FUR +4. Pending: real sprites (ART-012), tuning (a howl turn shows ~1 wall).
 
 #### BHL-015 — "Thinking" text over the soul `[x]`
 P3 · S · —
@@ -892,10 +893,11 @@ P0 · S · GFX-008
 - **What:** the dead enemy turns to dust (GFX-008) with the "vaporized" sound; gold/EXP is tallied at the end.
 - **LORE §8.8:** the dust is **plush stuffing + glitter** (shame kills furries); `exGamer` enemies (Barky, Napstablurk, Jerry, Musk-ron, Vtuber-en, Mettapaw) also release a **red spark** that flies toward the castle (GFX-013). Asgrr turns into lanyard dust.
 
-#### BND-004 — Level up `[~]` (LORE rework)
+#### BND-004 — Level up `[x]` (LORE rework)
 P0 · S · PRG-001
 - **What:** when EXP crosses the threshold: the extra line + level-up sound; HPmax/AT/DF updated.
 - **Rework (BUG-22):** the canonical text is `* Your LEVEL OF VITRIOL increased.` (LORE §8.2); today it says `* Your VITRIOL increased.`
+- **Rework done (2026-10-17):** `* Your LEVEL OF VITRIOL increased.` (BUG-22).
 
 #### BND-010 — 1:1 game over + furrification `[~]` (LORE rework)
 P0 · L · CORE-003, FUR-004

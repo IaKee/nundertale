@@ -551,6 +551,12 @@ void BattleSystem::startEnemyTurn() {
     m_bullets.clear();
     m_zones.clear();
     m_ribbitState = RibbitState{};
+    const auto cringeUses = m_actUseCounts.find("cringe_check");
+    const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
+    const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
+    m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
+    m_howlUnlocked = howlUnlocked;
+    m_howlWallTimer = 1.4f;
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
 
@@ -611,6 +617,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
 
 void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     m_enemyTurnTimer += dt;
+    m_howlWallTimer += dt;
     if (m_enemyTurnTimer >= m_enemyTurnDuration) {
         m_bullets.clear();
         m_zones.clear();
@@ -718,9 +725,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 }
 
 void BattleSystem::spawnBulletWave() {
-    int pattern = m_turnCount % 3;
-
-    if (pattern == 0) {
+    if (m_barkyPattern == BarkyPattern::UwuRain) {
         // Pattern 1: UwU Rain (BHL-014: falling letters with slight zigzag)
         float startX = m_arenaRect.x + (float)GetRandomValue(15, (int)m_arenaRect.width - 25);
         Bullet b;
@@ -732,7 +737,7 @@ void BattleSystem::spawnBulletWave() {
         b.damage = 3;
         b.fur = 6;
         m_bullets.push_back(b);
-    } else if (pattern == 1) {
+    } else if (m_barkyPattern == BarkyPattern::DewBounce) {
         // Pattern 2: Dew Bounce (BHL-014: Mountain Dew cans bouncing off arena walls & floor)
         float startX = m_arenaRect.x + (float)GetRandomValue(20, (int)m_arenaRect.width - 20);
         Bullet b;
@@ -743,21 +748,50 @@ void BattleSystem::spawnBulletWave() {
         b.gravity = 140.0f;
         b.bounces = true;
         b.damage = 4;
-        b.fur = 7;
+        b.fur = 4;
         m_bullets.push_back(b);
     } else {
-        // Pattern 3: Awoo Howl (BHL-014: sound waves expanding downward from Barky)
-        float startX = (GetRandomValue(0, 1) == 0) ? (m_arenaRect.x + 22.0f) : (m_arenaRect.x + m_arenaRect.width - 22.0f);
-        Bullet b;
-        b.position = { startX, m_arenaRect.y - 12.0f };
-        float dirX = (startX < m_arenaRect.x + m_arenaRect.width / 2.0f) ? 35.0f : -35.0f;
-        b.velocity = { dirX, (float)GetRandomValue(85, 120) };
-        b.type = BulletType::Awoo;
-        b.arcRadius = 14.0f;
-        b.color = Color{ 100, 200, 255, 255 };
-        b.damage = 3;
-        b.fur = 5;
-        m_bullets.push_back(b);
+        // Pattern 3: Howl Wave. Keep one readable wall in flight at a time.
+        const bool wallActive = std::any_of(m_bullets.begin(), m_bullets.end(), [](const Bullet& bullet) {
+            return bullet.type == BulletType::Awoo;
+        });
+        if (wallActive || m_howlWallTimer < 1.4f) {
+            return;
+        }
+
+        constexpr float arcRadius = 10.0f;
+        constexpr float gapHeight = 48.0f;
+        constexpr float rowStep = 18.0f;
+        constexpr float wallSpeed = 110.0f;
+        const float innerTop = m_arenaRect.y + 10.0f;
+        const float innerBottom = m_arenaRect.y + m_arenaRect.height - 10.0f;
+        const int gapMin = static_cast<int>(innerTop);
+        const int gapMax = static_cast<int>(innerBottom - gapHeight);
+        const float gapTop = static_cast<float>(GetRandomValue(gapMin, gapMax));
+        const float startX = m_howlFromLeft
+            ? m_arenaRect.x - arcRadius
+            : m_arenaRect.x + m_arenaRect.width + arcRadius;
+        const float velocityX = m_howlFromLeft ? wallSpeed : -wallSpeed;
+
+        for (float y = innerTop; y <= innerBottom; y += rowStep) {
+            // Include the arc hitbox margin so the full 48 px gap remains reachable.
+            if (howlGapContains(gapTop - arcRadius, gapHeight + arcRadius * 2.0f, y)) {
+                continue;
+            }
+
+            Bullet b;
+            b.position = { startX, y };
+            b.velocity = { velocityX, 0.0f };
+            b.type = BulletType::Awoo;
+            b.arcRadius = arcRadius;
+            b.color = Color{ 100, 200, 255, 255 };
+            b.damage = 3;
+            b.fur = 5;
+            m_bullets.push_back(b);
+        }
+
+        m_howlFromLeft = !m_howlFromLeft;
+        m_howlWallTimer = 0.0f;
     }
 }
 

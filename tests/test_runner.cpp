@@ -10,6 +10,7 @@
 #include "combat/BattleBackground.hpp"
 #include "combat/ResidualDamage.hpp"
 #include "combat/AttackTarget.hpp"
+#include "combat/BarkyPatterns.hpp"
 #include "ui/DialogBox.hpp"
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
@@ -1274,6 +1275,33 @@ int main() {
         std::cout << "[PASS] FRT-009: SettingsModel volume stepping, percent, and index wrapping verified." << std::endl;
     }
 
-    std::cout << "\nAll 22 test suites passed successfully!" << std::endl;
+    // 23. BHL-014: Barky pattern routing and reachable howl gap
+    {
+        using nundertale::barkyPatternForTurn;
+        using nundertale::BarkyPattern;
+        using nundertale::howlGapContains;
+
+        assert(barkyPatternForTurn(0, false, false) == BarkyPattern::UwuRain);
+        assert(barkyPatternForTurn(1, false, false) == BarkyPattern::DewBounce);
+        assert(barkyPatternForTurn(2, false, false) == BarkyPattern::UwuRain);
+
+        assert(barkyPatternForTurn(0, true, true) == BarkyPattern::HowlWave);
+        assert(barkyPatternForTurn(1, true, true) == BarkyPattern::HowlWave);
+        assert(barkyPatternForTurn(2, true, true) == BarkyPattern::HowlWave);
+
+        assert(barkyPatternForTurn(3, true, false) == BarkyPattern::UwuRain);
+        assert(barkyPatternForTurn(4, true, false) == BarkyPattern::DewBounce);
+        assert(barkyPatternForTurn(5, true, false) == BarkyPattern::HowlWave);
+
+        assert(!howlGapContains(100.0f, 48.0f, 99.9f));
+        assert(howlGapContains(100.0f, 48.0f, 100.0f));
+        assert(howlGapContains(100.0f, 48.0f, 124.0f));
+        assert(howlGapContains(100.0f, 48.0f, 148.0f));
+        assert(!howlGapContains(100.0f, 48.0f, 148.1f));
+
+        std::cout << "[PASS] BHL-014: Barky pattern unlock routing and reachable howl gap verified." << std::endl;
+    }
+
+    std::cout << "\nAll 23 test suites passed successfully!" << std::endl;
     return 0;
 }

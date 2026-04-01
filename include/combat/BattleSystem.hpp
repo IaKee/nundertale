@@ -11,6 +11,7 @@
 #include "BattleBackground.hpp"
 #include "ResidualDamage.hpp"
 #include "AttackTarget.hpp"
+#include "BarkyPatterns.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -150,6 +151,10 @@ private:
     float m_enemyTurnTimer = 0.0f;
     float m_enemyTurnDuration = 5.0f;
     float m_spawnTimer = 0.0f;
+    BarkyPattern m_barkyPattern = BarkyPattern::UwuRain;
+    bool m_howlUnlocked = false;
+    bool m_howlFromLeft = true;
+    float m_howlWallTimer = 0.0f;
 
     // Messages
     std::string m_narratorText;
