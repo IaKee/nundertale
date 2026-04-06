@@ -21,6 +21,7 @@
 #include "scenes/FrontEndFlow.hpp"
 #include "core/SaveText.hpp"
 #include "scenes/SettingsModel.hpp"
+#include "scenes/FurryOver.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1302,6 +1303,73 @@ int main() {
         std::cout << "[PASS] BHL-014: Barky pattern unlock routing and reachable howl gap verified." << std::endl;
     }
 
-    std::cout << "\nAll 23 test suites passed successfully!" << std::endl;
+    // 24. BND-010 & BND-011: FURRY OVER voice lines, [NAME] replacement, route gating, and variations
+    {
+        using nundertale::asgrrLines;
+        using nundertale::withName;
+        using nundertale::furryOverLines;
+
+        // withName with two tokens
+        std::string twoTokens = "Don't give up, [NAME]! I believe in you, [NAME].";
+        assert(withName(twoTokens, "PEPE") == "Don't give up, PEPE! I believe in you, PEPE.");
+
+        // withName with zero and one token
+        assert(withName("No token here.", "PEPE") == "No token here.");
+        assert(withName("One [NAME] here.", "FROG") == "One FROG here.");
+
+        // asgrrLines() returns the 6 canonical lines
+        const auto& lines = asgrrLines();
+        assert(lines.size() == 6);
+        assert(lines[0] == "Don't lose hope, [NAME]... The ears suit you, honestly.");
+        assert(lines[1] == "[NAME]! Stay determined... and maybe a little fluffy.");
+        assert(lines[2] == "This is not the end, [NAME]. It is a... rebrand.");
+        assert(lines[3] == "Get up, [NAME]. Your guild is counting on you. ...Probably.");
+        assert(lines[4] == "You cannot give up just yet... You have not even picked a species.");
+        assert(lines[5] == "Your SOUL said no, [NAME]. ...This time.");
+
+        // furryOverLines: toxic -> empty
+        auto toxicLines = furryOverLines("PEPE", "barky", 0, true, 2);
+        assert(toxicLines.empty());
+        auto toxicNoEnemy = furryOverLines("PEPE", "", 5, true, 0);
+        assert(toxicNoEnemy.empty());
+
+        // pick 2 + name "PEPE" -> This is not the end, PEPE. It is a... rebrand.
+        auto pick2 = furryOverLines("PEPE", "", 0, false, 2);
+        assert(pick2.size() == 1);
+        assert(pick2[0] == "This is not the end, PEPE. It is a... rebrand.");
+
+        // enemy barky -> 2 lines, 2nd is the Barky line
+        auto barkyLines = furryOverLines("PEPE", "barky", 0, false, 2);
+        assert(barkyLines.size() == 2);
+        assert(barkyLines[0] == "This is not the end, PEPE. It is a... rebrand.");
+        assert(barkyLines[1] == "...welcome to the pack? no? ok.");
+
+        // timesTransformed 3 -> ...Again? Keep the tail, PEPE.
+        auto trans3 = furryOverLines("PEPE", "", 3, false, 2);
+        assert(trans3.size() == 1);
+        assert(trans3[0] == "...Again? Keep the tail, PEPE.");
+
+        // timesTransformed > 3 preserves the line and still appends barky line if enemy is barky
+        auto trans4Barky = furryOverLines("PEPE", "barky", 4, false, 0);
+        assert(trans4Barky.size() == 2);
+        assert(trans4Barky[0] == "...Again? Keep the tail, PEPE.");
+        assert(trans4Barky[1] == "...welcome to the pack? no? ok.");
+
+        // pick 8 -> index 2 (8 % 6 = 2)
+        auto pick8 = furryOverLines("PEPE", "", 0, false, 8);
+        assert(pick8.size() == 1);
+        assert(pick8[0] == "This is not the end, PEPE. It is a... rebrand.");
+
+        // picks 0, 1, 3, 4, 5 coverage
+        assert(furryOverLines("CHAD", "", 0, false, 0)[0] == "Don't lose hope, CHAD... The ears suit you, honestly.");
+        assert(furryOverLines("CHAD", "", 0, false, 1)[0] == "CHAD! Stay determined... and maybe a little fluffy.");
+        assert(furryOverLines("CHAD", "", 0, false, 3)[0] == "Get up, CHAD. Your guild is counting on you. ...Probably.");
+        assert(furryOverLines("CHAD", "", 0, false, 4)[0] == "You cannot give up just yet... You have not even picked a species.");
+        assert(furryOverLines("CHAD", "", 0, false, 5)[0] == "Your SOUL said no, CHAD. ...This time.");
+
+        std::cout << "[PASS] BND-010 & BND-011: FURRY OVER voice lines, token substitution, route gating, and variations verified." << std::endl;
+    }
+
+    std::cout << "\nAll 24 test suites passed successfully!" << std::endl;
     return 0;
 }

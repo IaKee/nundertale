@@ -60,7 +60,7 @@ void BattleScene::update(float dt, GameContext& context) {
         // BND-010 & BUG-03: Transition directly to authentic GameOverScene
         if (m_battleSystem->getState() == BattleState::Defeat) {
             Vector2 deathPos = m_battleSystem->getSoulPosition();
-            context.scenes.changeScene(std::make_unique<GameOverScene>(deathPos), 0.0f);
+            context.scenes.changeScene(std::make_unique<GameOverScene>(deathPos, "barky"), 0.0f);
             return;
         }
 
