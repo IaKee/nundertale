@@ -1055,6 +1055,7 @@ P0 · M · MNU-001, PRG-001
   ```
   Parody: an extra `FUR` line (FUR-003) and a "KILLS" line that only shows on the Toxic Gamer route.
 - **LORE rework:** label **`FUR n`** + the stage name (BUG-23, FUR-006); a **`RAID mm:ss`** line (RAD-002); on the Furry route `HP` becomes `FLF` and FUR disappears; weapon/armor with the LORE names (BUG-24).
+- **Progress (2026-10-17):** the STAT box shows `FUR: n (Stage)` (e.g. `FUR: 21 (Ears)`) and the LORE armor name. Pending: `RAID mm:ss` (RAD-002), the FLF swap on the Furry route, the KILLS line.
 
 #### MNU-004 — CELL (phone) `[ ]`
 P1 · M · MNU-001, NAR-004
