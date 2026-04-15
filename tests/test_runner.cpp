@@ -22,6 +22,7 @@
 #include "core/SaveText.hpp"
 #include "scenes/SettingsModel.hpp"
 #include "scenes/FurryOver.hpp"
+#include "combat/FurHud.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1370,6 +1371,46 @@ int main() {
         std::cout << "[PASS] BND-010 & BND-011: FURRY OVER voice lines, token substitution, route gating, and variations verified." << std::endl;
     }
 
-    std::cout << "\nAll 24 test suites passed successfully!" << std::endl;
+    // 25. FUR-003: KR-style FUR HUD visibility, tremble timing window, and deterministic jitter
+    {
+        using nundertale::furHudVisible;
+        using nundertale::furHudShouldTremble;
+        using nundertale::furHudJitter;
+
+        // Visibility: false at 0, true at >0
+        assert(!furHudVisible(0));
+        assert(furHudVisible(1));
+        assert(furHudVisible(15));
+        assert(!furHudVisible(-1));
+
+        // Tremble window edges: [0, 1.5)
+        assert(furHudShouldTremble(0.0f));
+        assert(furHudShouldTremble(0.5f));
+        assert(furHudShouldTremble(1.49f));
+        assert(!furHudShouldTremble(1.5f));
+        assert(!furHudShouldTremble(1.51f));
+        assert(!furHudShouldTremble(2.0f));
+        assert(!furHudShouldTremble(-0.1f));
+
+        // Jitter returns values in {-1, 0, 1} and is 0 at t >= 1.5
+        for (float t = 0.0f; t < 1.5f; t += 0.02f) {
+            int j = furHudJitter(t);
+            assert(j == -1 || j == 0 || j == 1);
+        }
+        assert(furHudJitter(1.5f) == 0);
+        assert(furHudJitter(1.51f) == 0);
+        assert(furHudJitter(2.0f) == 0);
+        assert(furHudJitter(-0.5f) == 0);
+
+        // Deterministic alternation every ~2 frames (~1/15s)
+        assert(furHudJitter(0.0f) == -1);
+        assert(furHudJitter(0.07f) == 1);
+        assert(furHudJitter(0.14f) == 0);
+        assert(furHudJitter(0.21f) == -1);
+
+        std::cout << "[PASS] FUR-003: KR-style FUR HUD visibility, tremble window, and jitter verified." << std::endl;
+    }
+
+    std::cout << "\nAll 25 test suites passed successfully!" << std::endl;
     return 0;
 }

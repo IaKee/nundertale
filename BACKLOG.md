@@ -1333,6 +1333,7 @@ P0 · M · FUR-001, BHL-005, BUG-27
 P0 · S · BUI-005, FUR-002
 - **Today:** there's a `KR_PURPLE` overlay proportional to the meter and pinkish numbers (`BattleSystem.cpp:627-637`).
 - **Missing (LORE §8.4):** a small **`FUR`** label after the HP bar (a sprite, like "KR"); hidden at 0%; on its **first appearance (R2)** the bar comes in trembling (`GFX-009`). On the Furry route the whole HUD switches to FLUFF (`FLF-004`).
+- **LORE rework done (2026-10-17):** a KR-style `FUR` label after the HP bar (hidden at 0), HP numbers purple while FUR > 0; on its first appearance the label and the purple overlay tremble for 1.5 s (`fur_hud_seen` flag, `include/combat/FurHud.hpp`). Pending: a sprite label instead of text, the FLUFF HUD (FLF-004).
 
 #### FUR-004 — Loss sources `[ ]`
 P0 · S · FUR-002
