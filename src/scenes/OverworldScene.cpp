@@ -573,6 +573,10 @@ void OverworldScene::renderSaveBox(GameContext& context, Font font) {
 }
 
 void OverworldScene::update(float dt, GameContext& context) {
+    // Ambient fluff particles (FUR-010)
+    int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);
+    updateFluff(m_fluffParticles, dt, targetFluff, m_fluffRng);
+
     // If dialog is active, dialog gets all input
     if (m_dialogBox.isActive()) {
         m_dialogBox.update(dt, context);
@@ -677,6 +681,13 @@ void OverworldScene::render(GameContext& context) {
     // 4. Render Player (Pepe the frog using masked texture)
     Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
     m_player.render(pepeTex);
+
+    // Ambient fluff particles (FUR-010)
+    for (const auto& p : m_fluffParticles) {
+        Color fluffCol = (p.colorIndex == 0) ? Color{ 255, 179, 230, 180 } : Color{ 255, 210, 127, 180 };
+        float drawX = fluffDrawX(p);
+        DrawRectangle(static_cast<int>(drawX), static_cast<int>(p.y), 2, 2, fluffCol);
+    }
 
     // OVW-001: Bottom HUD bar removed! Exploration is clean 1:1 like Undertale.
     // Overworld C Menu (MNU-001)

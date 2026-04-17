@@ -26,6 +26,7 @@
 #include "scenes/FurryOver.hpp"
 #include "combat/FurHud.hpp"
 #include "core/ItemDatabase.hpp"
+#include "core/FluffParticles.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1483,6 +1484,98 @@ int main() {
         std::cout << "[PASS] ITM-001 & FUR-009: Item JSON parsing, defaults, escapes, and name lookups verified." << std::endl;
     }
 
-    std::cout << "\nAll 26 test suites passed successfully!" << std::endl;
+    // Test Suite 27: Ambient fluff particles in the overworld (FUR-010)
+    {
+        // 1. Target count based on fur and route
+        assert(nundertale::fluffTargetCount(0, false) == 2);
+        assert(nundertale::fluffTargetCount(49, false) == 2);
+        assert(nundertale::fluffTargetCount(50, false) == 3);
+        assert(nundertale::fluffTargetCount(100, false) == 4);
+        assert(nundertale::fluffTargetCount(80, true) == 0);
+
+        // Clamping edge cases
+        assert(nundertale::fluffTargetCount(-5, false) == 2);
+        assert(nundertale::fluffTargetCount(150, false) == 4);
+        assert(nundertale::fluffTargetCount(0, true) == 0);
+
+        // 2. Convergence to target and never exceeding target+0
+        std::vector<nundertale::FluffParticle> particles;
+        std::uint32_t rng = 0x12345678u;
+        const int target = 4;
+
+        // Starts empty
+        assert(particles.empty());
+
+        // Converges to target within N updates (1 per update at most)
+        for (int i = 1; i <= target; ++i) {
+            nundertale::updateFluff(particles, 0.016f, target, rng);
+            assert(static_cast<int>(particles.size()) == i);
+            assert(static_cast<int>(particles.size()) <= target);
+        }
+        assert(static_cast<int>(particles.size()) == target);
+
+        // Extra updates: never exceeds target+0
+        for (int i = 0; i < 20; ++i) {
+            nundertale::updateFluff(particles, 0.016f, target, rng);
+            assert(static_cast<int>(particles.size()) == target);
+        }
+
+        // Target reduction: reduces by 1 per update
+        const int reducedTarget = 2;
+        nundertale::updateFluff(particles, 0.016f, reducedTarget, rng);
+        assert(static_cast<int>(particles.size()) == 3);
+        nundertale::updateFluff(particles, 0.016f, reducedTarget, rng);
+        assert(static_cast<int>(particles.size()) == 2);
+        nundertale::updateFluff(particles, 0.016f, reducedTarget, rng);
+        assert(static_cast<int>(particles.size()) == 2);
+
+        // Target 0 (toxic route)
+        nundertale::updateFluff(particles, 0.016f, 0, rng);
+        assert(static_cast<int>(particles.size()) == 1);
+        nundertale::updateFluff(particles, 0.016f, 0, rng);
+        assert(particles.empty());
+        nundertale::updateFluff(particles, 0.016f, 0, rng);
+        assert(particles.empty());
+
+        // 3. Particles stay within canvas bounds after many updates (with wrapping)
+        particles.clear();
+        rng = 0x98765432u;
+        for (int i = 0; i < 1000; ++i) {
+            nundertale::updateFluff(particles, 0.033f, 4, rng);
+            for (const auto& p : particles) {
+                assert(p.x >= 0.0f && p.x <= 640.0f);
+                assert(p.y >= 0.0f && p.y <= 480.0f);
+                float drawX = nundertale::fluffDrawX(p);
+                assert(drawX >= 0.0f && drawX <= 640.0f);
+                assert(p.colorIndex == 0 || p.colorIndex == 1);
+            }
+        }
+
+        // 4. Deterministic RNG: same seed -> same positions
+        std::vector<nundertale::FluffParticle> p1;
+        std::vector<nundertale::FluffParticle> p2;
+        std::uint32_t seed1 = 0xC0FFEE11u;
+        std::uint32_t seed2 = 0xC0FFEE11u;
+
+        for (int i = 0; i < 60; ++i) {
+            nundertale::updateFluff(p1, 0.02f, 4, seed1);
+            nundertale::updateFluff(p2, 0.02f, 4, seed2);
+        }
+
+        assert(p1.size() == p2.size());
+        assert(seed1 == seed2);
+        for (size_t i = 0; i < p1.size(); ++i) {
+            assert(p1[i].x == p2[i].x);
+            assert(p1[i].y == p2[i].y);
+            assert(p1[i].vx == p2[i].vx);
+            assert(p1[i].vy == p2[i].vy);
+            assert(p1[i].phase == p2[i].phase);
+            assert(p1[i].colorIndex == p2[i].colorIndex);
+        }
+
+        std::cout << "[PASS] FUR-010: Ambient fluff particles target count, convergence, canvas bounds, and deterministic RNG verified." << std::endl;
+    }
+
+    std::cout << "\nAll 27 test suites passed successfully!" << std::endl;
     return 0;
 }
