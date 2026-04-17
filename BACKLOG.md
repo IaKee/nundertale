@@ -1233,9 +1233,10 @@ P0 · M · D-04
 P0 · S · AUD-002
 - **What:** **moving the cursor** = a short "squeak"; **confirming** = "select." Today both use `selection_sound.wav` at different volumes.
 
-#### AUD-004 — Music cuts and resumes `[ ]`
+#### AUD-004 — Music cuts and resumes `[~]`
 P1 · S · AUD-001
 - **What:** the music stops on encounter (ENC-002); the battle theme plays; on victory the music stops; back in the overworld, the area track restarts (confirm against Undertale). Special cases: the Ruins music in slow motion on the Toxic route (C7-002); the Con Center **without music** until the throne.
+- **Partly done (2026-10-17):** the battle music stops when YOU WON shows; back in the overworld the area track restarts from the beginning. Pending: the Toxic-route slow Ruins music and the silent Con Center (need those areas/tracks).
 
 #### AUD-005 — Loop points `[ ]`
 P1 · S · AUD-001
@@ -1357,9 +1358,10 @@ P1 · L · ART-101, FUR-005, D-15
 P2 · M · FUR-005, NAR-027
 - **What (LORE §8.4):** `* Nice ears, newcomer!` (≥ 20, generic NPCs) · Barky `Dude. Your paws are SO much better than mine.` (≥ 40) · the shops' "fandom discount" (≥ 60, SHP-008) · Senpai Sans `heh. you're one bad day away from a con badge.` (≥ 80) · a "squeak" at the end of Pepe's thoughts (≥ 80) · the mirror in Furiell's house `* It's... still you. With ears.` (≥ 20) · Dogsona & Dogsonissa spare you outright (≥ 40). Conditions on `fur.value` in the conditional dialogue system (CORE-010).
 
-#### FUR-009 — Armor multiplier and FUR on equip `[ ]`
+#### FUR-009 — Armor multiplier and FUR on equip `[x]`
 P1 · S · ITM-001, FUR-002
 - **What:** `furMult` and `furOnEquip` fields on items: Faux-Fur Bandana ×1.25 · Fursuit Head +40 on equip and ×1.5 · Pillowcase Cape ×1.25 · Uwu-mie Armor ×2 · Blue-Light Glasses ×0.75. `furOnEquip` applies once per item instance (unequip/re-equip can't farm FUR).
+- **Done (2026-10-17):** `data/items/items.json` is now actually loaded (`include/core/ItemDatabase.hpp`, at startup); weapons/armor equip from data (AT/DF) in both menus with the old name-based fallback; armor `furMult` multiplies bullet FUR; armor `furry` (e.g. Fursuit Head +40) applies once per item per playthrough (`fur_on_equip.<id>` flag).
 
 #### FUR-010 — Fluff particles in the air `[ ]`
 P2 · S · GFX-002

@@ -239,6 +239,8 @@ void OverworldScene::onEnter(GameContext& context) {
 }
 
 void OverworldScene::onResume(GameContext& context) {
+    // AUD-004: back from a battle, the area track restarts from the beginning (even if it is the battle file)
+    context.audio.stopMusic();
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
     initInteractables(context);
 }
@@ -328,6 +330,7 @@ void OverworldScene::handleMenuInput(GameContext& context) {
 
         if (context.input.isConfirmPressed()) {
             const std::string item = context.player.inventory[m_itemSubIndex];
+            const ItemDef* itemDef = context.itemDatabase.findItemByName(item);
             m_menuState = OverworldMenuState::Closed;
 
             if (m_itemActionIndex == 1) {
@@ -354,22 +357,38 @@ void OverworldScene::handleMenuInput(GameContext& context) {
             }
 
             context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
-            if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
+            if ((itemDef != nullptr && itemDef->type == "weapon") ||
+                (itemDef == nullptr && (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos))) {
                 // PRG-002: Equip weapon
                 std::string oldWeapon = context.player.weapon;
                 context.player.weapon = item;
-                context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
+                context.player.weaponAt = (itemDef != nullptr) ? itemDef->at : ((item.find("Keyboard") != std::string::npos) ? 4 : 2);
                 context.player.inventory.push_back(oldWeapon);
                 context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
                 m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Attack power updated!" }, "");
-            } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
+            } else if ((itemDef != nullptr && itemDef->type == "armor") ||
+                       (itemDef == nullptr && (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos))) {
                 // PRG-002: Equip armor
                 std::string oldArmor = context.player.armor;
                 context.player.armor = item;
-                context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
+                context.player.armorDf = (itemDef != nullptr) ? itemDef->df : ((item.find("Hoodie") != std::string::npos) ? 3 : 1);
                 context.player.inventory.push_back(oldArmor);
                 context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Defense updated!" }, "");
+                std::string equipText = "* You equipped the " + item + ".\n* Defense updated!";
+                if (itemDef != nullptr && itemDef->furry > 0 && !itemDef->id.empty()) {
+                    const std::string flag = "fur_on_equip." + itemDef->id;
+                    if (!context.state.hasFlag(flag)) {
+                        const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, itemDef->furry);
+                        context.state.setFlag(flag, 1);
+                        if (furChange.stageUp) {
+                            equipText += "\n* You feel... fluffier.";
+                        }
+                        if (furChange.reachedMirror) {
+                            context.state.setFlag("fur_mirror_pending", 1);
+                        }
+                    }
+                }
+                m_dialogBox.startDialog({ equipText }, "");
             } else if (item.find("Dew") != std::string::npos) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
                 context.audio.playSound("assets/sfx/heal.ogg", 0.8f);

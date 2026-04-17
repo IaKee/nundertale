@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #include "combat/Bullet.hpp"
@@ -23,6 +25,7 @@
 #include "scenes/SettingsModel.hpp"
 #include "scenes/FurryOver.hpp"
 #include "combat/FurHud.hpp"
+#include "core/ItemDatabase.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1411,6 +1414,75 @@ int main() {
         std::cout << "[PASS] FUR-003: KR-style FUR HUD visibility, tremble window, and jitter verified." << std::endl;
     }
 
-    std::cout << "\nAll 25 test suites passed successfully!" << std::endl;
+    // 26. ITM-001 & FUR-009: Item database parsing, defaults, escapes, and lookups
+    {
+        using nundertale::ItemDatabase;
+
+        const std::string json = R"json([
+            {
+                "id": "escaped_weapon",
+                "name": "Toy \"Laser\"",
+                "shortName": "Laser\nMk2",
+                "type": "weapon",
+                "heal": 2,
+                "at": 7,
+                "df": 1,
+                "furry": 3,
+                "furMult": 1.5,
+                "info": "Line one\nLine two",
+                "useText": "Use the \"laser\".",
+                "unknown": { "nested": [1, 2, 3] }
+            },
+            {
+                "id": "plain_armor",
+                "name": "Plain Armor",
+                "type": "armor",
+                "df": 4
+            }
+        ])json";
+
+        ItemDatabase database;
+        assert(database.parse(json));
+        assert(database.items().size() == 2);
+
+        const auto* weapon = database.findItemByName("Toy \"Laser\"");
+        assert(weapon != nullptr);
+        assert(weapon->id == "escaped_weapon");
+        assert(weapon->shortName == "Laser\nMk2");
+        assert(weapon->type == "weapon");
+        assert(weapon->heal == 2);
+        assert(weapon->at == 7);
+        assert(weapon->df == 1);
+        assert(weapon->furry == 3);
+        assert(std::abs(weapon->furMult - 1.5f) < 0.0001f);
+        assert(weapon->info == "Line one\nLine two");
+        assert(weapon->useText == "Use the \"laser\".");
+
+        const auto* armor = database.findItemByName("Plain Armor");
+        assert(armor != nullptr);
+        assert(armor->df == 4);
+        assert(std::abs(armor->furMult - 1.0f) < 0.0001f);
+        assert(database.findItemByName("Missing Item") == nullptr);
+
+        std::ifstream realItemsFile("data/items/items.json");
+        if (realItemsFile) {
+            std::ostringstream realItemsJson;
+            realItemsJson << realItemsFile.rdbuf();
+            ItemDatabase realDatabase;
+            assert(realDatabase.parse(realItemsJson.str()));
+
+            const auto* bandana = realDatabase.findItemByName("Faux-Fur Bandana");
+            assert(bandana != nullptr);
+            assert(std::abs(bandana->furMult - 1.25f) < 0.0001f);
+
+            const auto* fursuitHead = realDatabase.findItemByName("Fursuit Head");
+            assert(fursuitHead != nullptr);
+            assert(fursuitHead->furry == 40);
+        }
+
+        std::cout << "[PASS] ITM-001 & FUR-009: Item JSON parsing, defaults, escapes, and name lookups verified." << std::endl;
+    }
+
+    std::cout << "\nAll 26 test suites passed successfully!" << std::endl;
     return 0;
 }
