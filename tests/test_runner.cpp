@@ -1596,6 +1596,36 @@ int main() {
         std::cout << "[PASS] FUR-008: FUR stage reaction speaker thresholds verified." << std::endl;
     }
 
-    std::cout << "\nAll 28 test suites passed successfully!" << std::endl;
+    // 29. BHL-014 tuning: howl_wave wall cadence and howlNextWallReady helper
+    {
+        using nundertale::howlNextWallReady;
+
+        constexpr float boxW = 165.0f;
+        constexpr float minRatio = 0.60f;
+        constexpr float minReqTravel = boxW * minRatio; // 99.0f
+
+        // Interval below 1.4s -> false regardless of travel
+        assert(!howlNextWallReady(200.0f, boxW, 0.0f));
+        assert(!howlNextWallReady(200.0f, boxW, 1.39f));
+
+        // Travel below 60% of box width -> false regardless of interval
+        assert(!howlNextWallReady(0.0f, boxW, 1.4f));
+        assert(!howlNextWallReady(minReqTravel - 0.1f, boxW, 2.0f));
+
+        // Exact boundaries
+        assert(howlNextWallReady(minReqTravel, boxW, 1.4f));
+
+        // Above boundaries
+        assert(howlNextWallReady(minReqTravel + 10.0f, boxW, 1.41f));
+        assert(howlNextWallReady(182.0f, boxW, 1.4f)); // 1.4s * 130 px/s = 182 px
+
+        // Custom parameters
+        assert(!howlNextWallReady(50.0f, 100.0f, 1.0f, 0.60f, 1.2f));
+        assert(howlNextWallReady(60.0f, 100.0f, 1.2f, 0.60f, 1.2f));
+
+        std::cout << "[PASS] BHL-014: howl_wave wall cadence and howlNextWallReady helper verified." << std::endl;
+    }
+
+    std::cout << "\nAll 29 test suites passed successfully!" << std::endl;
     return 0;
 }
