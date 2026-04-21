@@ -111,7 +111,7 @@ private:
     void handleItemInput(GameContext& context);
     void handleMercyInput(GameContext& context);
     std::vector<int> getAvailableActIndices(const GameContext& context) const;
-    void startEnemyTurn();
+    void startEnemyTurn(GameContext& context);
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
     bool applySoulDamage(GameContext& context, int rawDamage, int fur);
@@ -201,6 +201,7 @@ private:
     PlayerTurnAction m_lastPlayerAction = PlayerTurnAction::None;
     std::string m_lastActionDetail;
     std::string m_lastActResponse;
+    bool m_furReactionSaid = false;
 
     // ACT-006/007: Per-battle ACT use counts and queued skipped enemy attacks
     std::unordered_map<std::string, int> m_actUseCounts;

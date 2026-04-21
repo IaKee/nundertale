@@ -1,6 +1,7 @@
 #include "combat/BattleSystem.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
+#include "core/FurReactions.hpp"
 #include <cmath>
 #include <algorithm>
 #include <sstream>
@@ -162,7 +163,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                         }
                     }
                 } else {
-                    startEnemyTurn();
+                    startEnemyTurn(context);
                 }
             }
             break;
@@ -573,7 +574,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
     }
 }
 
-void BattleSystem::startEnemyTurn() {
+void BattleSystem::startEnemyTurn(GameContext& context) {
     m_turnCount++;
 
     if (m_frozenTurns > 0) {
@@ -619,7 +620,14 @@ void BattleSystem::startEnemyTurn() {
         trigger = "item";
     }
 
-    m_enemySpeechBubble = m_enemy->getDialogueForTrigger(trigger, m_lastActResponse);
+    const bool hasQueuedActResponse = !m_lastActResponse.empty();
+    const std::string furReaction = furReactionLine(context.state.furry.value, "barky");
+    if (!m_furReactionSaid && !hasQueuedActResponse && !furReaction.empty()) {
+        m_enemySpeechBubble = furReaction;
+        m_furReactionSaid = true;
+    } else {
+        m_enemySpeechBubble = m_enemy->getDialogueForTrigger(trigger, m_lastActResponse);
+    }
 
     // Reset action state for the turn
     m_lastPlayerAction = PlayerTurnAction::None;

@@ -6,6 +6,7 @@
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
 #include "core/SaveText.hpp"
+#include "core/FurReactions.hpp"
 #include <raylib.h>
 
 namespace nundertale {
@@ -102,11 +103,17 @@ void OverworldScene::initInteractables(GameContext& context) {
             npcBounds,
             [this](GameContext& ctx) {
                 ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
-                m_dialogBox.startDialog({
+                std::vector<std::string> lines;
+                const std::string furReaction = furReactionLine(ctx.state.furry.value, "barky");
+                if (!furReaction.empty()) {
+                    lines.push_back(furReaction);
+                }
+                lines.insert(lines.end(), {
                     "* Awoo! Hey there, fellow cool gamer.",
                     "* Thanks for not roasting my fursona back there.",
                     "* The northern gate is unlocked! Safe travels through the Underground!"
-                }, "BARKY");
+                });
+                m_dialogBox.startDialog(lines, "BARKY");
             },
             [](GameContext& /*ctx*/) {
                 DrawCircle(510, 95, 16, { 120, 150, 140, 255 });
