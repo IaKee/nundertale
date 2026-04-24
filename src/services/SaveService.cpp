@@ -173,6 +173,11 @@ std::string SaveService::serializeStateToJson(const GameState& state) const {
     ss << "    \"transformations\": " << state.furry.transformations << "\n";
     ss << "  },\n";
 
+    ss << "  \"raid\": {\n";
+    ss << "    \"started\": " << (state.raid.started ? 1 : 0) << ",\n";
+    ss << "    \"timeLeft\": " << state.raid.timeLeft << "\n";
+    ss << "  },\n";
+
     ss << "  \"currentRoom\": \"" << state.currentRoom << "\",\n";
     ss << "  \"playerPos\": { \"x\": " << state.playerPos.x << ", \"y\": " << state.playerPos.y << " },\n";
     ss << "  \"playerFacing\": " << state.playerFacing << ",\n";
@@ -246,6 +251,19 @@ bool SaveService::parseStateFromJson(const std::string& json, GameState& state) 
         0,
         static_cast<int>(FurStage::Mirror));
     state.furry.transformations = static_cast<int>(extractJsonNumber(furryJson, "transformations", 0.0));
+
+    state.raid = RaidClock{};
+    size_t raidPos = json.find("\"raid\":");
+    if (raidPos != std::string::npos) {
+        size_t openBrace = json.find('{', raidPos);
+        size_t closeBrace = json.find('}', openBrace);
+        if (openBrace != std::string::npos && closeBrace != std::string::npos) {
+            const std::string raidJson = json.substr(openBrace, closeBrace - openBrace + 1);
+            state.raid.started = extractJsonNumber(raidJson, "started", 0.0) != 0.0;
+            state.raid.timeLeft = static_cast<float>(extractJsonNumber(raidJson, "timeLeft", 0.0));
+            if (state.raid.timeLeft < 0.0f) state.raid.timeLeft = 0.0f;
+        }
+    }
 
     std::string room = extractJsonString(json, "currentRoom");
     if (!room.empty()) state.currentRoom = room;

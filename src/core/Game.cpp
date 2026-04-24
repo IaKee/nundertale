@@ -105,6 +105,8 @@ void Game::run() {
         // 2. Fixed 30 Hz logic update loop (CORE-001)
         while (accumulator >= LOGIC_TIMESTEP) {
             m_context->state.playTime += LOGIC_TIMESTEP;
+            raidTick(m_context->state.raid, LOGIC_TIMESTEP,
+                     !IsWindowFocused() || m_context->raidPaused);
 
             // GFX-006: Update screen shake
             if (m_context->shakeTimer > 0.0f) {

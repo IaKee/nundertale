@@ -8,6 +8,8 @@
 #include "core/SaveText.hpp"
 #include "core/FurReactions.hpp"
 #include <raylib.h>
+#include <fstream>
+#include <sstream>
 
 namespace nundertale {
 
@@ -238,6 +240,17 @@ void OverworldScene::initInteractables(GameContext& context) {
 }
 
 void OverworldScene::onEnter(GameContext& context) {
+    static const float raidStartSeconds = []() {
+        constexpr int fallbackSeconds = 1320;
+        std::ifstream file("data/raid.json");
+        if (!file) return static_cast<float>(fallbackSeconds);
+        std::ostringstream json;
+        json << file.rdbuf();
+        return static_cast<float>(raidStartSecondsFromJson(json.str(), fallbackSeconds));
+    }();
+
+    raidStart(context.state.raid, raidStartSeconds);
+    context.raidPaused = false;
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
     if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
         m_player.setPosition(context.state.playerPos);
@@ -246,6 +259,7 @@ void OverworldScene::onEnter(GameContext& context) {
 }
 
 void OverworldScene::onResume(GameContext& context) {
+    context.raidPaused = (m_menuState != OverworldMenuState::Closed);
     // AUD-004: back from a battle, the area track restarts from the beginning (even if it is the battle file)
     context.audio.stopMusic();
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
@@ -471,6 +485,11 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
         // Furry meter status line (MNU-003 / FUR-006)
         Color furColor = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
         context.resources.drawText(font, "FUR:    " + std::to_string(context.state.furry.value) + " (" + furStageName(furStageFor(context.state.furry.value)) + ")", { 210, 305 }, 18, furColor, 1.0f);
+
+        const std::string raidText = raidLabel(context.state.raid);
+        if (!raidText.empty()) {
+            context.resources.drawText(font, raidText, { 210, 337 }, 18, WHITE, 1.0f);
+        }
     } else if (m_menuState == OverworldMenuState::Item || m_menuState == OverworldMenuState::ItemAction) {
         Rectangle itemBox = { 186, 52, 400, 300 };
         DrawRectangleRec(itemBox, BLACK);
@@ -580,6 +599,8 @@ void OverworldScene::renderSaveBox(GameContext& context, Font font) {
 }
 
 void OverworldScene::update(float dt, GameContext& context) {
+    context.raidPaused = (m_menuState != OverworldMenuState::Closed);
+
     // Ambient fluff particles (FUR-010)
     int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);
     updateFluff(m_fluffParticles, dt, targetFluff, m_fluffRng);
@@ -599,12 +620,14 @@ void OverworldScene::update(float dt, GameContext& context) {
     // Overworld C Menu update (MNU-001)
     if (m_menuState != OverworldMenuState::Closed) {
         handleMenuInput(context);
+        context.raidPaused = (m_menuState != OverworldMenuState::Closed);
         return;
     }
 
     if (IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
         m_menuState = OverworldMenuState::Main;
         m_menuIndex = 0;
+        context.raidPaused = true;
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
         return;
     }
@@ -624,7 +647,6 @@ void OverworldScene::update(float dt, GameContext& context) {
 
     // Keep GameState synchronized (CORE-004)
     context.state.playerPos = m_player.getPosition();
-    context.state.playTime += dt;
 
     // Interaction check
     if (context.input.isConfirmPressed()) {
@@ -722,7 +744,8 @@ void OverworldScene::render(GameContext& context) {
     }
 }
 
-void OverworldScene::onExit(GameContext& /*context*/) {
+void OverworldScene::onExit(GameContext& context) {
+    context.raidPaused = false;
 }
 
 } // namespace nundertale
