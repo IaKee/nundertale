@@ -1669,6 +1669,86 @@ int main() {
         std::cout << "[PASS] RAD-001 & RAD-002: raid clock labels, ticking, pausing, kick state, and config parsing verified." << std::endl;
     }
 
-    std::cout << "\nAll 30 test suites passed successfully!" << std::endl;
+    // 31. FUR-004 & FUR-011: Duct Tape FUR loss and Toxic route 99 cap
+    {
+        using nundertale::applyFur;
+        using nundertale::applyFurCapped;
+        using nundertale::DUCT_TAPE_FUR_LOSS;
+        using nundertale::DUCT_TAPE_EMPTY_TEXT;
+        using nundertale::DUCT_TAPE_DEFAULT_TEXT;
+        using nundertale::TOXIC_CAP_FLAVOR_MSG;
+
+        // FUR-004: Duct Tape loss at 30 -> 15, at 10 -> 0, at 0 -> 0
+        int value = 30;
+        int stageMax = 1;
+        auto tape1 = applyFur(value, stageMax, DUCT_TAPE_FUR_LOSS);
+        assert(value == 15);
+        assert(tape1.after == 15);
+        assert(!tape1.stageUp);
+        assert(!tape1.reachedMirror);
+        assert(!tape1.capped);
+
+        value = 10;
+        stageMax = 0;
+        auto tape2 = applyFur(value, stageMax, DUCT_TAPE_FUR_LOSS);
+        assert(value == 0);
+        assert(tape2.after == 0);
+        assert(!tape2.stageUp);
+        assert(!tape2.reachedMirror);
+        assert(!tape2.capped);
+
+        value = 0;
+        stageMax = 0;
+        auto tape3 = applyFur(value, stageMax, DUCT_TAPE_FUR_LOSS);
+        assert(value == 0);
+        assert(tape3.after == 0);
+        assert(!tape3.stageUp);
+        assert(!tape3.reachedMirror);
+        assert(!tape3.capped);
+
+        // FUR-011: Capped gain 95+10 toxic -> 99, no mirror; non-toxic 95+10 -> 100 + mirror
+        value = 95;
+        stageMax = 4;
+        auto toxicGain = applyFurCapped(value, stageMax, 10, true);
+        assert(value == 99);
+        assert(toxicGain.after == 99);
+        assert(!toxicGain.reachedMirror);
+        assert(toxicGain.capped);
+        assert(stageMax == 4);
+
+        value = 95;
+        stageMax = 4;
+        auto nonToxicGain = applyFurCapped(value, stageMax, 10, false);
+        assert(value == 100);
+        assert(nonToxicGain.after == 100);
+        assert(nonToxicGain.reachedMirror);
+        assert(!nonToxicGain.capped);
+        assert(stageMax == 5);
+
+        // Additional edge case: toxic gain already at 99 stays 99 and sets capped
+        value = 99;
+        stageMax = 4;
+        auto toxicGainAtCap = applyFurCapped(value, stageMax, 5, true);
+        assert(value == 99);
+        assert(toxicGainAtCap.after == 99);
+        assert(!toxicGainAtCap.reachedMirror);
+        assert(toxicGainAtCap.capped);
+
+        // Additional edge case: toxic gain within limit (e.g. 50 + 20 = 70) is not capped
+        value = 50;
+        stageMax = 2;
+        auto toxicUncapped = applyFurCapped(value, stageMax, 20, true);
+        assert(value == 70);
+        assert(!toxicUncapped.capped);
+
+        // Text constants check
+        assert(std::string(DUCT_TAPE_EMPTY_TEXT) == "* You tape... nothing. There's no fluff to remove.");
+        assert(std::string(DUCT_TAPE_DEFAULT_TEXT) == "* You aggressively taped down your sprouting fur.\n* Ouch! FUR reduced by 15!");
+        assert(std::string(TOXIC_CAP_FLAVOR_MSG) == "* Your vitriol burns the fluff right off.");
+
+        std::cout << "[PASS] FUR-004 & FUR-011: Duct Tape loss and Toxic route 99 cap verified." << std::endl;
+    }
+
+    std::cout << "\nAll 31 test suites passed successfully!" << std::endl;
     return 0;
 }
