@@ -1749,6 +1749,16 @@ int main() {
         std::cout << "[PASS] FUR-004 & FUR-011: Duct Tape loss and Toxic route 99 cap verified." << std::endl;
     }
 
-    std::cout << "\nAll 31 test suites passed successfully!" << std::endl;
+    // 32. MET-004: same name as the previous game
+    {
+        assert(nundertale::withSameNameReaction(nundertale::reactionFor("Bob"), "Bob", "BOB").message == "Again? You must really love this name.");
+        assert(nundertale::withSameNameReaction(nundertale::reactionFor("Bob"), "Bob", "").message.empty());
+        assert(nundertale::withSameNameReaction(nundertale::reactionFor("Bob"), "Bob", "Frog").message.empty());
+        // Easter-egg reactions win over the same-name line
+        assert(nundertale::withSameNameReaction(nundertale::reactionFor("Chad"), "Chad", "CHAD").message == nundertale::reactionFor("Chad").message);
+        std::cout << "[PASS] MET-004: same-name reaction verified." << std::endl;
+    }
+
+    std::cout << "\nAll 32 test suites passed successfully!" << std::endl;
     return 0;
 }

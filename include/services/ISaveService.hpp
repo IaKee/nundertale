@@ -21,6 +21,7 @@ struct MetaData {
     bool everKilled = false;
     int timesTransformed = 0;
     std::string lastClearedRoute = "none";
+    std::string lastName; // MET-004: name confirmed in the previous game
 };
 
 class ISaveService {
