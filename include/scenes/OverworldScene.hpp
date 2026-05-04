@@ -51,6 +51,15 @@ private:
     int m_itemSubIndex = 0;
     int m_itemActionIndex = 0; // 0: USE, 1: INFO, 2: DROP
 
+    // CELL Menu (MNU-004 / NAR-004)
+    enum class CellSubState {
+        Contacts,
+        FuriellMenu
+    };
+    CellSubState m_cellSubState = CellSubState::Contacts;
+    int m_cellIndex = 0;
+    int m_furiellIndex = 0;
+
     // Save Point Dialog & Box (SAV-002)
     enum class SaveBoxState {
         Closed,

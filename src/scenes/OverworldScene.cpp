@@ -7,6 +7,7 @@
 #include "core/SceneManager.hpp"
 #include "core/SaveText.hpp"
 #include "core/FurReactions.hpp"
+#include "core/Cell.hpp"
 #include <raylib.h>
 #include <fstream>
 #include <sstream>
@@ -311,6 +312,9 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 m_menuState = OverworldMenuState::Stat;
             } else if (m_menuIndex == 2) {
                 m_menuState = OverworldMenuState::Cell;
+                m_cellSubState = CellSubState::Contacts;
+                m_cellIndex = 0;
+                m_furiellIndex = 0;
             }
         }
     } else if (m_menuState == OverworldMenuState::Stat) {
@@ -452,9 +456,77 @@ void OverworldScene::handleMenuInput(GameContext& context) {
             return;
         }
     } else if (m_menuState == OverworldMenuState::Cell) {
-        if (context.input.isCancelPressed() || context.input.isConfirmPressed() || IsKeyPressed(KEY_C)) {
-            m_menuState = OverworldMenuState::Main;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        if (m_cellSubState == CellSubState::Contacts) {
+            auto entries = cellEntries([&context](const std::string& flag) {
+                return context.state.hasFlag(flag);
+            });
+            int count = static_cast<int>(entries.size());
+            if (count > 0) {
+                m_cellIndex = std::clamp(m_cellIndex, 0, count - 1);
+                if (context.input.isUpPressed()) {
+                    m_cellIndex = (m_cellIndex - 1 + count) % count;
+                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                } else if (context.input.isDownPressed()) {
+                    m_cellIndex = (m_cellIndex + 1) % count;
+                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                }
+            }
+
+            if (context.input.isCancelPressed() || IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
+                m_menuState = OverworldMenuState::Main;
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                return;
+            }
+
+            if (context.input.isConfirmPressed()) {
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                if (count > 0) {
+                    const std::string& selected = entries[static_cast<size_t>(m_cellIndex)];
+                    if (selected == "Furiell") {
+                        m_cellSubState = CellSubState::FuriellMenu;
+                        m_furiellIndex = 0;
+                    } else if (selected == "Guild" || selected == "Mom") {
+                        m_menuState = OverworldMenuState::Closed;
+                        m_dialogBox.startDialog({ cellReceiveOnlyText() }, "");
+                    } else if (selected == "Homework (400 GB)") {
+                        m_menuState = OverworldMenuState::Closed;
+                        m_dialogBox.startDialog({ cellHomeworkText() }, "");
+                    } else if (selected == "Papyrus" || selected == "Alphys") {
+                        m_menuState = OverworldMenuState::Closed;
+                        m_dialogBox.startDialog({ cellNoAnswerText() }, "");
+                    }
+                }
+                return;
+            }
+        } else if (m_cellSubState == CellSubState::FuriellMenu) {
+            const auto& opts = furiellOptions();
+            int count = static_cast<int>(opts.size());
+            if (count > 0) {
+                m_furiellIndex = std::clamp(m_furiellIndex, 0, count - 1);
+                if (context.input.isUpPressed()) {
+                    m_furiellIndex = (m_furiellIndex - 1 + count) % count;
+                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                } else if (context.input.isDownPressed()) {
+                    m_furiellIndex = (m_furiellIndex + 1) % count;
+                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                }
+            }
+
+            if (context.input.isCancelPressed() || IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
+                m_cellSubState = CellSubState::Contacts;
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                return;
+            }
+
+            if (context.input.isConfirmPressed()) {
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                if (count > 0) {
+                    const auto& chosen = opts[static_cast<size_t>(m_furiellIndex)];
+                    m_menuState = OverworldMenuState::Closed;
+                    m_dialogBox.startDialog({ chosen.second }, "Furiell");
+                }
+                return;
+            }
         }
     }
 }
@@ -544,12 +616,38 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
             }
         }
     } else if (m_menuState == OverworldMenuState::Cell) {
-        Rectangle cellBox = { 186, 52, 400, 180 };
+        Rectangle cellBox = { 186, 52, 400, 300 };
         DrawRectangleRec(cellBox, BLACK);
         DrawRectangleLinesEx(cellBox, 5.0f, WHITE);
 
-        context.resources.drawText(font, "* Furiell (No signal in the Ruins)", { 210, 80 }, 20, GRAY, 1.0f);
-        context.resources.drawText(font, "* Discord (Wi-Fi disconnected)", { 210, 115 }, 20, GRAY, 1.0f);
+        const std::string raidText = raidLabel(context.state.raid);
+        if (!raidText.empty()) {
+            float raidW = context.resources.measureTextWidth(font, raidText, 18.0f, 1.0f);
+            float raidX = cellBox.x + cellBox.width - 20.0f - raidW;
+            context.resources.drawText(font, raidText, { raidX, 68.0f }, 18, WHITE, 1.0f);
+        }
+
+        if (m_cellSubState == CellSubState::Contacts) {
+            auto entries = cellEntries([&context](const std::string& flag) {
+                return context.state.hasFlag(flag);
+            });
+            for (size_t i = 0; i < entries.size(); ++i) {
+                float optY = 100.0f + static_cast<float>(i) * 30.0f;
+                if (m_cellIndex == static_cast<int>(i)) {
+                    drawSoul(210.0f, optY + 9.0f);
+                }
+                context.resources.drawText(font, entries[i], { 228.0f, optY }, 20, WHITE, 1.0f);
+            }
+        } else if (m_cellSubState == CellSubState::FuriellMenu) {
+            const auto& opts = furiellOptions();
+            for (size_t i = 0; i < opts.size(); ++i) {
+                float optY = 100.0f + static_cast<float>(i) * 32.0f;
+                if (m_furiellIndex == static_cast<int>(i)) {
+                    drawSoul(210.0f, optY + 9.0f);
+                }
+                context.resources.drawText(font, opts[i].first, { 228.0f, optY }, 20, WHITE, 1.0f);
+            }
+        }
     }
 }
 

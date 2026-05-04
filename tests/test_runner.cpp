@@ -31,6 +31,7 @@
 #include "core/RaidClock.hpp"
 #include "services/MusicFade.hpp"
 #include "tools/ContentLint.hpp"
+#include "core/Cell.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1902,6 +1903,83 @@ int main() {
         std::cout << "[PASS] AUD-006: music fade steps verified." << std::endl;
     }
 
-    std::cout << "\nAll 35 test suites passed successfully!" << std::endl;
+    // 36. MNU-004 & NAR-004: CELL contacts, Furiell options, and voicemail
+    {
+        using nundertale::cellEntries;
+        using nundertale::furiellOptions;
+        using nundertale::furiellVoicemail;
+        using nundertale::cellReceiveOnlyText;
+        using nundertale::cellNoAnswerText;
+        using nundertale::cellHomeworkText;
+
+        // 1. Entries without flags = Guild, Mom, Homework (400 GB)
+        const auto noFlags = [](const std::string& /*flag*/) { return false; };
+        const auto defaultEntries = cellEntries(noFlags);
+        assert(defaultEntries.size() == 3);
+        assert(defaultEntries[0] == "Guild");
+        assert(defaultEntries[1] == "Mom");
+        assert(defaultEntries[2] == "Homework (400 GB)");
+
+        // 2. Entries with null/empty lambda
+        const auto emptyEntries = cellEntries(nullptr);
+        assert(emptyEntries.size() == 3);
+        assert(emptyEntries[0] == "Guild");
+        assert(emptyEntries[1] == "Mom");
+        assert(emptyEntries[2] == "Homework (400 GB)");
+
+        // 3. With cell_furiell: Furiell appears before Homework
+        const auto furiellFlag = [](const std::string& flag) { return flag == "cell_furiell"; };
+        const auto furiellEntries = cellEntries(furiellFlag);
+        assert(furiellEntries.size() == 4);
+        assert(furiellEntries[0] == "Guild");
+        assert(furiellEntries[1] == "Mom");
+        assert(furiellEntries[2] == "Furiell");
+        assert(furiellEntries[3] == "Homework (400 GB)");
+
+        auto itFuriell = std::find(furiellEntries.begin(), furiellEntries.end(), "Furiell");
+        auto itHomework = std::find(furiellEntries.begin(), furiellEntries.end(), "Homework (400 GB)");
+        assert(itFuriell != furiellEntries.end());
+        assert(itHomework != furiellEntries.end());
+        assert(itFuriell < itHomework);
+
+        // 4. Other flags: Papyrus and Alphys
+        const auto allFlags = [](const std::string& flag) {
+            return flag == "cell_furiell" || flag == "cell_papyrus" || flag == "cell_alphys";
+        };
+        const auto allEntries = cellEntries(allFlags);
+        assert(allEntries.size() == 6);
+        assert(allEntries[0] == "Guild");
+        assert(allEntries[1] == "Mom");
+        assert(allEntries[2] == "Furiell");
+        assert(allEntries[3] == "Papyrus");
+        assert(allEntries[4] == "Alphys");
+        assert(allEntries[5] == "Homework (400 GB)");
+
+        // 5. 5 Furiell options with the exact Call Her "Mod" line
+        const auto& options = furiellOptions();
+        assert(options.size() == 5);
+        assert(options[0].first == "Say Hello");
+        assert(options[0].second == "Hello? This is Furiell. ...Did you drink water today? Actual water?");
+        assert(options[1].first == "Puzzle Help");
+        assert(options[1].second == "Look for the glitter, my child. The glitter is always right.");
+        assert(options[2].first == "About Yourself");
+        assert(options[2].second == "I used to run a convention. Now I run a household of one. Soon two!");
+        assert(options[3].first == "Call Her \"Mod\"");
+        assert(options[3].second == "...Did you just call me \"Mod\"? Oh my. Would you like to be pinned? To the fridge?");
+        assert(options[4].first == "Send a Meme");
+        assert(options[4].second == "Is this... a frog? Is this you? I'm printing it.");
+
+        // 6. Furiell voicemail (LORE §21.1 verbatim)
+        assert(furiellVoicemail() == "Hello, you have reached Furiell. I cannot come to the phone. I am probably baking. Please leave a message after the tone. ...Did you drink water today?");
+
+        // 7. Dialogue helpers
+        assert(cellReceiveOnlyText() == "* (They only text you. You can't call them.)");
+        assert(cellNoAnswerText() == "* ...No answer.");
+        assert(cellHomeworkText() == "* Not here.");
+
+        std::cout << "[PASS] MNU-004 & NAR-004: CELL contacts by flags, Furiell options, and voicemail verified." << std::endl;
+    }
+
+    std::cout << "\nAll 36 test suites passed successfully!" << std::endl;
     return 0;
 }
