@@ -29,6 +29,7 @@
 #include "core/FluffParticles.hpp"
 #include "core/FurReactions.hpp"
 #include "core/RaidClock.hpp"
+#include "services/MusicFade.hpp"
 #include "tools/ContentLint.hpp"
 
 // Raylib stub for tests running without libraylib runtime
@@ -1882,6 +1883,25 @@ int main() {
         std::cout << "[PASS] LOR-005: UTF-8, Portuguese word, allowed punctuation, and blocklist lint rules verified." << std::endl;
     }
 
-    std::cout << "\nAll 34 test suites passed successfully!" << std::endl;
+    // 35. AUD-006: music fades
+    {
+        nundertale::MusicFade fade;
+        nundertale::fadeStart(fade, 1.0f, 0.0f, 2.0f, true);
+        assert(fade.active);
+        const float mid = nundertale::fadeStep(fade, 1.0f);
+        assert(mid > 0.49f && mid < 0.51f);
+        assert(fade.active);
+        const float end = nundertale::fadeStep(fade, 5.0f);
+        assert(end == 0.0f);
+        assert(!fade.active);
+        assert(fade.stopAtEnd);
+        nundertale::MusicFade instant;
+        nundertale::fadeStart(instant, 0.0f, 1.0f, 0.0f, false);
+        assert(!instant.active);
+        assert(nundertale::fadeStep(instant, 0.1f) == 1.0f);
+        std::cout << "[PASS] AUD-006: music fade steps verified." << std::endl;
+    }
+
+    std::cout << "\nAll 35 test suites passed successfully!" << std::endl;
     return 0;
 }

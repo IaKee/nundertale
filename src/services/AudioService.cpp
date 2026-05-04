@@ -25,9 +25,11 @@ void AudioService::playMusic(const std::string& path, bool loop) {
     stopMusic();
 
     if (FileExists(path.c_str())) {
+        m_fade = MusicFade{};
+        m_fadeFactor = 1.0f;
         m_currentMusic = LoadMusicStream(path.c_str());
         m_currentMusic.looping = loop;
-        SetMusicVolume(m_currentMusic, m_musicVolume);
+        SetMusicVolume(m_currentMusic, m_musicVolume * m_fadeFactor);
         PlayMusicStream(m_currentMusic);
         m_currentMusicPath = path;
         m_hasActiveMusic = true;
@@ -43,6 +45,8 @@ void AudioService::stopMusic() {
         m_hasActiveMusic = false;
         m_currentMusicPath.clear();
     }
+    m_fade = MusicFade{};
+    m_fadeFactor = 1.0f;
 }
 
 void AudioService::pauseMusic() {
@@ -58,15 +62,44 @@ void AudioService::resumeMusic() {
 }
 
 void AudioService::updateMusic() {
-    if (m_hasActiveMusic) {
-        UpdateMusicStream(m_currentMusic);
+    if (!m_hasActiveMusic) {
+        return;
     }
+    UpdateMusicStream(m_currentMusic);
+    if (m_fade.active) {
+        m_fadeFactor = fadeStep(m_fade, GetFrameTime());
+        SetMusicVolume(m_currentMusic, m_musicVolume * m_fadeFactor);
+        if (!m_fade.active && m_fade.stopAtEnd) {
+            stopMusic();
+        }
+    }
+}
+
+void AudioService::fadeOutMusic(float seconds) {
+    if (!m_hasActiveMusic) {
+        return;
+    }
+    if (seconds <= 0.0f) {
+        stopMusic();
+        return;
+    }
+    fadeStart(m_fade, m_fadeFactor, 0.0f, seconds, true);
+}
+
+void AudioService::fadeInMusic(const std::string& path, float seconds, bool loop) {
+    playMusic(path, loop);
+    if (!m_hasActiveMusic || seconds <= 0.0f) {
+        return;
+    }
+    m_fadeFactor = 0.0f;
+    fadeStart(m_fade, 0.0f, 1.0f, seconds, false);
+    SetMusicVolume(m_currentMusic, 0.0f);
 }
 
 void AudioService::setMusicVolume(float volume) {
     m_musicVolume = volume;
     if (m_hasActiveMusic) {
-        SetMusicVolume(m_currentMusic, m_musicVolume);
+        SetMusicVolume(m_currentMusic, m_musicVolume * m_fadeFactor);
     }
 }
 
