@@ -239,8 +239,8 @@ void OverworldScene::initInteractables(GameContext& context) {
     m_interactables.push_back(std::move(snackBowl));
 }
 
-void OverworldScene::onEnter(GameContext& context) {
-    static const float raidStartSeconds = []() {
+static float getRaidStartSeconds() {
+    static const float s_raidStartSeconds = []() {
         constexpr int fallbackSeconds = 1320;
         std::ifstream file("data/raid.json");
         if (!file) return static_cast<float>(fallbackSeconds);
@@ -248,8 +248,18 @@ void OverworldScene::onEnter(GameContext& context) {
         json << file.rdbuf();
         return static_cast<float>(raidStartSecondsFromJson(json.str(), fallbackSeconds));
     }();
+    return s_raidStartSeconds;
+}
+
+static float s_prevRaidTimeLeft = -1.0f;
+
+void OverworldScene::onEnter(GameContext& context) {
+    const float raidStartSeconds = getRaidStartSeconds();
 
     raidStart(context.state.raid, raidStartSeconds);
+    if (s_prevRaidTimeLeft < 0.0f) {
+        s_prevRaidTimeLeft = context.state.raid.timeLeft;
+    }
     context.raidPaused = false;
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
     if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
@@ -638,6 +648,25 @@ void OverworldScene::update(float dt, GameContext& context) {
         handleMenuInput(context);
         context.raidPaused = (m_menuState != OverworldMenuState::Closed);
         return;
+    }
+
+    // RAD-003: Guild phone messages at raid clock thresholds
+    if (context.state.raid.started) {
+        const float nowLeft = context.state.raid.timeLeft;
+        if (s_prevRaidTimeLeft < 0.0f || nowLeft > s_prevRaidTimeLeft) {
+            s_prevRaidTimeLeft = nowLeft;
+        }
+
+        const int mask = context.state.getFlag("raid_msgs_shown", 0);
+        const int pendingIndex = raidPendingMessage(s_prevRaidTimeLeft, nowLeft, mask);
+        if (pendingIndex >= 0) {
+            context.state.setFlag("raid_msgs_shown", mask | (1 << pendingIndex));
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+            m_dialogBox.startDialog(raidMessageLines(pendingIndex, getRaidStartSeconds()), "");
+            return;
+        } else {
+            s_prevRaidTimeLeft = nowLeft;
+        }
     }
 
     if (IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
