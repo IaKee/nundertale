@@ -1,4 +1,5 @@
 #include "combat/Enemy.hpp"
+#include "core/FurTable.hpp"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -195,7 +196,7 @@ void Enemy::initDefaultActs() {
     ActDef hug = act("accept_hug", "Accept Hug",
         "* Barky hugs you. He smells like a gym bag. You hug back anyway.",
         "...this is the best day of my life. Don't tell anyone.");
-    hug.fur = 15;
+    hug.fur = globalFurTable().get("accept_hug", 15);
     hug.spareNow = true;
 
     m_acts = { check, cringe, dew, lore, laser, hug };
@@ -336,6 +337,12 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     enemy->m_exp = extractJsonInt(json, "exp", 20);
     enemy->m_gold = extractJsonInt(json, "gold", 10);
     enemy->setMercyLockedAbovePct(extractJsonInt(json, "mercyLockedAbovePct", 0));
+    const int missingPatternFur = -1;
+    const int uwuFur = patternFurFromJson(json, "uwu_rain", missingPatternFur);
+    const int dewFur = patternFurFromJson(json, "dew_bounce", missingPatternFur);
+    if (uwuFur >= 0) enemy->m_patternFur["uwu_rain"] = uwuFur;
+    if (dewFur >= 0) enemy->m_patternFur["dew_bounce"] = dewFur;
+    enemy->m_howlFur = howlFurFromJson(json, missingPatternFur);
 
     std::string checkStr = extractJsonString(json, "check");
     if (!checkStr.empty()) {

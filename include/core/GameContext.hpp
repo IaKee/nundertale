@@ -9,6 +9,7 @@
 #include "services/IInputService.hpp"
 #include "services/ISaveService.hpp"
 #include "core/Fur.hpp"
+#include "core/FurTable.hpp"
 #include "core/ItemDatabase.hpp"
 #include "core/RaidClock.hpp"
 
@@ -104,6 +105,7 @@ struct GameContext {
     IInputService& input;
     SceneManager& scenes;
     ISaveService& save;
+    FurTable& furTable;
     ItemDatabase itemDatabase;
     GameState state;
     PlayerData& player;
@@ -133,7 +135,7 @@ struct GameContext {
     }
 
     GameContext(IAudioService& a, IResourceService& r, IInputService& i, SceneManager& s, ISaveService& sv)
-        : audio(a), resources(r), input(i), scenes(s), save(sv), player(state.player) {}
+        : audio(a), resources(r), input(i), scenes(s), save(sv), furTable(globalFurTable()), player(state.player) {}
 };
 
 } // namespace nundertale
