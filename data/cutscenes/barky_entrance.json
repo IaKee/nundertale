@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "type": "sound",
+      "path": "assets/sfx/pipipipopopo_backwards.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "shake",
+      "intensity": 4,
+      "seconds": 0.3
+    },
+    {
+      "type": "wait",
+      "seconds": 0.4
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "Halt, hairless intruder! *[awkward howling]*",
+        "You have stepped into the domain of the Shadow Fang Pack!",
+        "Prepare to face my fursona!"
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "barky"
+    }
+  ]
+}

@@ -5,6 +5,7 @@
 #include "entities/Interactable.hpp"
 #include "ui/DialogBox.hpp"
 #include "core/FluffParticles.hpp"
+#include "core/Cutscene.hpp"
 #include <vector>
 #include <memory>
 
@@ -75,6 +76,8 @@ private:
     // Ambient fluff particles (FUR-010)
     std::vector<FluffParticle> m_fluffParticles;
     std::uint32_t m_fluffRng = 0x5F100Fu;
+
+    CutsceneRunner m_cutscene;
 };
 
 } // namespace nundertale

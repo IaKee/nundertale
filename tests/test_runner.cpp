@@ -33,6 +33,7 @@
 #include "services/MusicFade.hpp"
 #include "tools/ContentLint.hpp"
 #include "core/Cell.hpp"
+#include "core/Cutscene.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -2141,6 +2142,168 @@ int main() {
         std::cout << "[PASS] FRT-008 & NAR-028: names.json parser, quotes, and parity with built-in table verified." << std::endl;
     }
 
-    std::cout << "\nAll 38 test suites passed successfully!" << std::endl;
+    // 39. CORE-011: minimal step-scripted cutscene parser and runner
+    {
+        using nundertale::Cutscene;
+        using nundertale::CutsceneHost;
+        using nundertale::CutsceneRunner;
+        using nundertale::CutsceneStep;
+        using nundertale::CutsceneStepType;
+
+        const std::string json = R"json({
+            "steps": [
+                {"type":"wait","seconds":0.6},
+                {"type":"dialog","speaker":"BARKY","lines":["First line.","He said: \"Awoo!\""]},
+                {"type":"sound","path":"howl.ogg","volume":0.8},
+                {"type":"setFlag","key":"ruins.test","value":2},
+                {"type":"shake","intensity":4,"seconds":0.3},
+                {"type":"flash","r":12,"g":34,"b":56,"seconds":0.2},
+                {"type":"startBattle","encounter":"barky"},
+                {"type":"moveNpc","npc":"barky"},
+                {"type":"cameraPan","x":10},
+                {"type":"fadeOut","seconds":1},
+                {"type":"futureStep","payload":{"nested":[1,2,3]}}
+            ]
+        })json";
+
+        Cutscene parsed;
+        assert(nundertale::parseCutsceneJson(json, parsed));
+        assert(parsed.steps.size() == 11);
+        assert(parsed.steps[0].type == CutsceneStepType::Wait);
+        assert(parsed.steps[0].seconds == 0.6f);
+        assert(parsed.steps[1].type == CutsceneStepType::Dialog);
+        assert(parsed.steps[1].speaker == "BARKY");
+        assert(parsed.steps[1].lines.size() == 2);
+        assert(parsed.steps[1].lines[1] == "He said: \"Awoo!\"");
+        assert(parsed.steps[2].type == CutsceneStepType::Sound);
+        assert(parsed.steps[2].path == "howl.ogg");
+        assert(parsed.steps[2].volume == 0.8f);
+        assert(parsed.steps[3].type == CutsceneStepType::SetFlag);
+        assert(parsed.steps[3].key == "ruins.test");
+        assert(parsed.steps[3].value == 2);
+        assert(parsed.steps[4].type == CutsceneStepType::Shake);
+        assert(parsed.steps[4].intensity == 4.0f);
+        assert(parsed.steps[5].type == CutsceneStepType::Flash);
+        assert(parsed.steps[5].r == 12 && parsed.steps[5].g == 34 && parsed.steps[5].b == 56);
+        assert(parsed.steps[6].type == CutsceneStepType::StartBattle);
+        assert(parsed.steps[6].encounter == "barky");
+        assert(parsed.steps[7].type == CutsceneStepType::Unsupported);
+        assert(parsed.steps[8].type == CutsceneStepType::Unsupported);
+        assert(parsed.steps[9].type == CutsceneStepType::Unsupported);
+        assert(parsed.steps[10].type == CutsceneStepType::Unknown);
+
+        struct FakeCutsceneHost final : CutsceneHost {
+            bool dialogIsOpen = false;
+            std::vector<std::string> calls;
+
+            void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
+                calls.push_back("dialog:" + speaker + ":" + lines.front());
+                dialogIsOpen = true;
+            }
+            bool dialogOpen() const override { return dialogIsOpen; }
+            void sound(const std::string& path, float volume) override {
+                calls.push_back("sound:" + path + ":" + std::to_string(volume));
+            }
+            void setFlag(const std::string& key, int value) override {
+                calls.push_back("flag:" + key + ":" + std::to_string(value));
+            }
+            void shake(float intensity, float seconds) override {
+                calls.push_back("shake:" + std::to_string(intensity) + ":" + std::to_string(seconds));
+            }
+            void flash(int r, int g, int b, float seconds) override {
+                calls.push_back("flash:" + std::to_string(r) + ":" + std::to_string(g) + ":" +
+                                std::to_string(b) + ":" + std::to_string(seconds));
+            }
+            void startBattle(const std::string& encounter) override {
+                calls.push_back("battle:" + encounter);
+            }
+        } host;
+
+        Cutscene flow;
+        CutsceneStep wait;
+        wait.type = CutsceneStepType::Wait;
+        wait.seconds = 0.5f;
+        flow.steps.push_back(wait);
+
+        CutsceneStep sound;
+        sound.type = CutsceneStepType::Sound;
+        sound.path = "howl.ogg";
+        sound.volume = 0.8f;
+        flow.steps.push_back(sound);
+
+        CutsceneStep dialog;
+        dialog.type = CutsceneStepType::Dialog;
+        dialog.speaker = "BARKY";
+        dialog.lines = {"Awoo!"};
+        flow.steps.push_back(dialog);
+
+        CutsceneStep flag;
+        flag.type = CutsceneStepType::SetFlag;
+        flag.key = "ruins.test";
+        flag.value = 7;
+        flow.steps.push_back(flag);
+
+        CutsceneStep shake;
+        shake.type = CutsceneStepType::Shake;
+        shake.intensity = 4.0f;
+        shake.seconds = 0.3f;
+        flow.steps.push_back(shake);
+
+        CutsceneStep flash;
+        flash.type = CutsceneStepType::Flash;
+        flash.r = 255;
+        flash.g = 128;
+        flash.b = 64;
+        flash.seconds = 0.2f;
+        flow.steps.push_back(flash);
+
+        CutsceneStep unknown;
+        unknown.type = CutsceneStepType::Unknown;
+        flow.steps.push_back(unknown);
+
+        CutsceneStep battle;
+        battle.type = CutsceneStepType::StartBattle;
+        battle.encounter = "barky";
+        flow.steps.push_back(battle);
+
+        CutsceneRunner runner;
+        runner.start(flow);
+        assert(runner.running());
+        runner.update(0.4f, host);
+        assert(host.calls.empty());
+        assert(runner.running());
+
+        runner.update(0.2f, host);
+        assert(host.calls.size() == 2);
+        assert(host.calls[0].find("sound:howl.ogg") == 0);
+        assert(host.calls[1] == "dialog:BARKY:Awoo!");
+        assert(runner.running());
+
+        runner.update(1.0f, host);
+        assert(host.calls.size() == 2);
+        assert(runner.running());
+
+        host.dialogIsOpen = false;
+        runner.update(0.0f, host);
+        assert(host.calls.size() == 6);
+        assert(host.calls[2] == "flag:ruins.test:7");
+        assert(host.calls[3].find("shake:4.000000:0.300000") == 0);
+        assert(host.calls[4].find("flash:255:128:64:0.200000") == 0);
+        assert(host.calls[5] == "battle:barky");
+        assert(!runner.running());
+
+        Cutscene unknownFlow;
+        unknownFlow.steps.push_back(unknown);
+        unknownFlow.steps.push_back(sound);
+        runner.start(unknownFlow);
+        runner.update(0.0f, host);
+        assert(!runner.running());
+        assert(host.calls.size() == 7);
+        assert(host.calls[6].find("sound:howl.ogg") == 0);
+
+        std::cout << "[PASS] CORE-011: cutscene parsing, waits, dialog blocking, callbacks, and skips verified." << std::endl;
+    }
+
+    std::cout << "\nAll 39 test suites passed successfully!" << std::endl;
     return 0;
 }
