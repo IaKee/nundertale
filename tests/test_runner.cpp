@@ -34,6 +34,7 @@
 #include "tools/ContentLint.hpp"
 #include "core/Cell.hpp"
 #include "core/Cutscene.hpp"
+#include "core/SessionMeta.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -2304,6 +2305,57 @@ int main() {
         std::cout << "[PASS] CORE-011: cutscene parsing, waits, dialog blocking, callbacks, and skips verified." << std::endl;
     }
 
-    std::cout << "\nAll 39 test suites passed successfully!" << std::endl;
+    // 40. MET-001: Reload detection and session-only metadata
+    {
+        using namespace nundertale;
+
+        SessionMeta meta;
+        assert(meta.killsSinceSave == 0);
+        assert(!meta.reloadedAfterFurryOver);
+        assert(!meta.reloadedAfterKill);
+
+        // Scenario 1: Kill -> Save -> Load -> no reloadedAfterKill
+        sessionOnKill(meta);
+        assert(meta.killsSinceSave == 1);
+        sessionOnSave(meta);
+        assert(meta.killsSinceSave == 0);
+        sessionOnLoad(meta, false);
+        assert(!meta.reloadedAfterKill);
+        assert(!meta.reloadedAfterFurryOver);
+        assert(meta.killsSinceSave == 0);
+
+        // Scenario 2: Kill -> Load -> reloadedAfterKill
+        sessionOnKill(meta);
+        sessionOnKill(meta);
+        assert(meta.killsSinceSave == 2);
+        sessionOnLoad(meta, false);
+        assert(meta.reloadedAfterKill);
+        assert(!meta.reloadedAfterFurryOver);
+        assert(meta.killsSinceSave == 0);
+
+        // Scenario 3: Load after Furry Over (afterFurryOver = true)
+        sessionOnLoad(meta, true);
+        assert(!meta.reloadedAfterKill);
+        assert(meta.reloadedAfterFurryOver);
+        assert(meta.killsSinceSave == 0);
+
+        // Scenario 4: Kill -> Load after Furry Over -> both flags true
+        sessionOnKill(meta);
+        assert(meta.killsSinceSave == 1);
+        sessionOnLoad(meta, true);
+        assert(meta.reloadedAfterKill);
+        assert(meta.reloadedAfterFurryOver);
+        assert(meta.killsSinceSave == 0);
+
+        // Scenario 5: A second clean load clears reloadedAfterKill and reloadedAfterFurryOver
+        sessionOnLoad(meta, false);
+        assert(!meta.reloadedAfterKill);
+        assert(!meta.reloadedAfterFurryOver);
+        assert(meta.killsSinceSave == 0);
+
+        std::cout << "[PASS] MET-001: reload detection, session kill tracking, and game-over flags verified." << std::endl;
+    }
+
+    std::cout << "\nAll 40 test suites passed successfully!" << std::endl;
     return 0;
 }

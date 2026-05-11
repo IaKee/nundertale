@@ -673,6 +673,7 @@ void OverworldScene::handleSaveBoxInput(GameContext& context) {
             if (m_saveBoxChoice == 0) { // Save
                 context.state.playerPos = m_player.getPosition();
                 context.save.saveGame(context.state);
+                sessionOnSave(context.session);
                 context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
                 m_saveBoxState = SaveBoxState::Saved;
             } else { // Return

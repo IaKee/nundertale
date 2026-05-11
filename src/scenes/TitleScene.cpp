@@ -129,6 +129,7 @@ void TitleScene::updateContinueCard(float /*dt*/, GameContext& context) {
         if (m_selectedIndex == 0) {
             context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
             context.save.loadGame(context.state);
+            sessionOnLoad(context.session, false);
             context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
         } else if (m_selectedIndex == 1) {
             context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
