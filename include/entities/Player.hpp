@@ -30,6 +30,13 @@ public:
     void setDirection(Direction dir) { m_direction = dir; }
 
     bool isMoving() const { return m_isMoving; }
+    float getSpriteAnimationTime() const { return m_spriteAnimTimer; }
+    Vector2 getSpritePivot() const {
+        return {
+            m_position.x + static_cast<float>(m_drawW) * 0.5f,
+            m_position.y + static_cast<float>(m_drawH)
+        };
+    }
 
 private:
     Vector2 m_position;
@@ -37,6 +44,7 @@ private:
     bool m_isMoving = false;
 
     float m_animTimer = 0.0f;
+    float m_spriteAnimTimer = 0.0f;
     int m_animFrame = 0;
     bool m_alterna = false;
     bool m_alternaVert = false;

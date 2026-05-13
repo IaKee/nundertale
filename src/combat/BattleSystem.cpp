@@ -2,6 +2,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/FurReactions.hpp"
+#include "ui/SpriteDraw.hpp"
 #include <cmath>
 #include <algorithm>
 #include <sstream>
@@ -1138,6 +1139,42 @@ void BattleSystem::render(GameContext& context) {
     }
 
     if (shouldDrawEnemy) {
+        const SpriteSheetDef* barkySheet = nullptr;
+        if (m_enemy->getName() == "Barky") {
+            barkySheet = spriteSheetCache().load(
+                "assets/sprites/battle/barky.png",
+                "assets/sprites/battle/barky.json"
+            );
+        }
+
+        if (barkySheet != nullptr) {
+            std::string animation = "idle";
+            Color tint = WHITE;
+            if (m_isSpared) {
+                animation = "spared";
+                tint.a = 120;
+            } else if (m_enemyShakeTimer > 0.0f) {
+                animation = "hurt";
+            } else {
+                const auto cringeUses = m_actUseCounts.find("cringe_check");
+                if (cringeUses != m_actUseCounts.end() && cringeUses->second > 0 &&
+                    barkySheet->anims.find("blush") != barkySheet->anims.end()) {
+                    animation = "blush";
+                }
+            }
+
+            Texture2D barkyTexture = context.resources.getTexture("assets/sprites/battle/barky.png");
+            SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
+            drawSprite(
+                barkyTexture,
+                *barkySheet,
+                animation,
+                m_enemyIdleTimer,
+                { static_cast<float>(enemyCenterX), static_cast<float>(baselineY) },
+                2.0f,
+                tint
+            );
+        } else {
         Color bodyColor = { 50, 50, 70, 255 };
         Color headColor = { 120, 120, 140, 255 };
         Color earColor  = { 90, 90, 110, 255 };
@@ -1190,6 +1227,7 @@ void BattleSystem::render(GameContext& context) {
         DrawCircle(enemyCenterX + 10, headCenterY - 4, 5, m_isSpared ? Fade(WHITE, 0.5f) : WHITE);
         DrawCircle(enemyCenterX - 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
         DrawCircle(enemyCenterX + 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
+        }
     }
 
     // FGT-004: Slash Animation
