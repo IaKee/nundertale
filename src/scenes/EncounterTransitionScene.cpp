@@ -29,7 +29,7 @@ void EncounterTransitionScene::update(float dt, GameContext& context) {
             m_timer = 0.0f;
             m_flashStep = 0;
             m_soulVisible = true;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.9f);
         }
     } else if (m_phase == Phase::Flash) {
         if (m_timer >= 0.08f) {
@@ -38,7 +38,7 @@ void EncounterTransitionScene::update(float dt, GameContext& context) {
             m_soulVisible = (m_flashStep % 2 == 0);
 
             if (m_soulVisible) {
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.9f);
             }
 
             if (m_flashStep >= 6) {

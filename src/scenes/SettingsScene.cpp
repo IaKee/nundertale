@@ -38,23 +38,23 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
     }
 
     if (context.input.isCancelPressed() || context.input.isEscapePressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
         context.scenes.popScene(context);
         return;
     }
 
     if (context.input.isUpPressed()) {
         m_selectedIndex = wrapIndex(m_selectedIndex, -1, 5);
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     } else if (context.input.isDownPressed()) {
         m_selectedIndex = wrapIndex(m_selectedIndex, +1, 5);
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     }
 
     switch (m_selectedIndex) {
         case 0: // EXIT
             if (context.input.isConfirmPressed()) {
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
                 context.scenes.popScene(context);
                 return;
             }
@@ -66,14 +66,14 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
                 if (std::fabs(newVol - m_config.musicVolume) > 1e-4f) {
                     m_config.musicVolume = newVol;
                     context.audio.setMusicVolume(m_config.musicVolume);
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
                 }
             } else if (context.input.isRightPressed()) {
                 float newVol = stepVolume(m_config.musicVolume, +1);
                 if (std::fabs(newVol - m_config.musicVolume) > 1e-4f) {
                     m_config.musicVolume = newVol;
                     context.audio.setMusicVolume(m_config.musicVolume);
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
                 }
             }
             break;
@@ -84,14 +84,14 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
                 if (std::fabs(newVol - m_config.masterVolume) > 1e-4f) {
                     m_config.masterVolume = newVol;
                     context.audio.setMasterVolume(m_config.masterVolume);
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
                 }
             } else if (context.input.isRightPressed()) {
                 float newVol = stepVolume(m_config.masterVolume, +1);
                 if (std::fabs(newVol - m_config.masterVolume) > 1e-4f) {
                     m_config.masterVolume = newVol;
                     context.audio.setMasterVolume(m_config.masterVolume);
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
                 }
             }
             break;
@@ -100,14 +100,14 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
             if (context.input.isConfirmPressed() || context.input.isLeftPressed() || context.input.isRightPressed()) {
                 ToggleFullscreen();
                 m_config.fullscreen = !m_config.fullscreen;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
             }
             break;
 
         case 4: // SPARE DING
             if (context.input.isConfirmPressed() || context.input.isLeftPressed() || context.input.isRightPressed()) {
                 m_config.spareDing = !m_config.spareDing;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
             }
             break;
 

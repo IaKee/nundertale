@@ -44,7 +44,7 @@ void OverworldScene::initInteractables(GameContext& context) {
     auto sign = std::make_unique<GenericInteractable>(
         signBounds,
         [this](GameContext& ctx) {
-            ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+            ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
             m_dialogBox.startDialog({
                 // BUG-19: LORE R8 notice
                 "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
@@ -71,7 +71,7 @@ void OverworldScene::initInteractables(GameContext& context) {
         auto dust = std::make_unique<GenericInteractable>(
             dustBounds,
             [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
                 m_dialogBox.startDialog({
                     "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
                 }, "");
@@ -89,7 +89,7 @@ void OverworldScene::initInteractables(GameContext& context) {
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
                 m_dialogBox.startDialog({
                     "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
                 }, "");
@@ -133,7 +133,7 @@ void OverworldScene::initInteractables(GameContext& context) {
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
                 m_dialogBox.startDialog({
                     "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
                 }, "");
@@ -205,7 +205,7 @@ void OverworldScene::initInteractables(GameContext& context) {
     auto snackBowl = std::make_unique<GenericInteractable>(
         bowlBounds,
         [this](GameContext& ctx) {
-            ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+            ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
             int takenCount = ctx.state.getFlag("ruins.dew.taken", 0);
 
             if (takenCount >= 4) {
@@ -221,7 +221,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }, "");
             } else {
                 ctx.player.addItem("Mt. Dew");
-                ctx.audio.playSound("assets/sfx/heal.ogg", 0.7f);
+                ctx.audio.playSound("assets/sfx/heal.wav", 0.7f);
                 takenCount++;
                 ctx.state.setFlag("ruins.dew.taken", takenCount);
                 if (takenCount == 1) {
@@ -303,20 +303,20 @@ void OverworldScene::handleMenuInput(GameContext& context) {
     if (m_menuState == OverworldMenuState::Main) {
         if (context.input.isUpPressed()) {
             m_menuIndex = (m_menuIndex - 1 + 3) % 3;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (context.input.isDownPressed()) {
             m_menuIndex = (m_menuIndex + 1) % 3;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
 
         if (context.input.isCancelPressed() || IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
             m_menuState = OverworldMenuState::Closed;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.3f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.3f);
             return;
         }
 
         if (context.input.isConfirmPressed()) {
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
             if (m_menuIndex == 0) {
                 m_menuState = OverworldMenuState::Item;
                 m_itemSubIndex = 0;
@@ -332,27 +332,27 @@ void OverworldScene::handleMenuInput(GameContext& context) {
     } else if (m_menuState == OverworldMenuState::Stat) {
         if (context.input.isCancelPressed() || context.input.isConfirmPressed() || IsKeyPressed(KEY_C)) {
             m_menuState = OverworldMenuState::Main;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
         }
     } else if (m_menuState == OverworldMenuState::Item) {
         int invSize = (int)context.player.inventory.size();
         if (invSize > 0) {
             if (context.input.isUpPressed()) {
                 m_itemSubIndex = (m_itemSubIndex - 1 + invSize) % invSize;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
             } else if (context.input.isDownPressed()) {
                 m_itemSubIndex = (m_itemSubIndex + 1) % invSize;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
             }
             if (context.input.isConfirmPressed()) {
                 m_itemActionIndex = 0;
                 m_menuState = OverworldMenuState::ItemAction;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
             }
         }
         if (context.input.isCancelPressed() || IsKeyPressed(KEY_C)) {
             m_menuState = OverworldMenuState::Main;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
         }
     } else if (m_menuState == OverworldMenuState::ItemAction) {
         if (context.player.inventory.empty()) {
@@ -363,15 +363,15 @@ void OverworldScene::handleMenuInput(GameContext& context) {
 
         if (context.input.isLeftPressed()) {
             m_itemActionIndex = (m_itemActionIndex - 1 + 3) % 3;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (context.input.isRightPressed()) {
             m_itemActionIndex = (m_itemActionIndex + 1) % 3;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
 
         if (context.input.isCancelPressed() || IsKeyPressed(KEY_C)) {
             m_menuState = OverworldMenuState::Item;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
             return;
         }
 
@@ -411,7 +411,7 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 context.player.weapon = item;
                 context.player.weaponAt = (itemDef != nullptr) ? itemDef->at : ((item.find("Keyboard") != std::string::npos) ? 4 : 2);
                 context.player.inventory.push_back(oldWeapon);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Attack power updated!" }, "");
             } else if ((itemDef != nullptr && itemDef->type == "armor") ||
                        (itemDef == nullptr && (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos))) {
@@ -420,7 +420,7 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 context.player.armor = item;
                 context.player.armorDf = (itemDef != nullptr) ? itemDef->df : ((item.find("Hoodie") != std::string::npos) ? 3 : 1);
                 context.player.inventory.push_back(oldArmor);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 std::string equipText = "* You equipped the " + item + ".\n* Defense updated!";
                 if (itemDef != nullptr && itemDef->furry > 0 && !itemDef->id.empty()) {
                     const std::string flag = "fur_on_equip." + itemDef->id;
@@ -443,14 +443,14 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 m_dialogBox.startDialog({ equipText }, "");
             } else if (item.find("Dew") != std::string::npos) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_dialogBox.startDialog({ "* You drank the warm Mountain Dew.\n* You recovered 10 HP!" }, "");
             } else if (item.find("Doritos") != std::string::npos) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_dialogBox.startDialog({ "* You ate the stale Doritos.\n* You recovered 6 HP!" }, "");
             } else if (item.find("Duct Tape") != std::string::npos || item.find("Tape") != std::string::npos) {
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 if (context.state.furry.value <= 0) {
                     m_dialogBox.startDialog({ DUCT_TAPE_EMPTY_TEXT }, "");
                 } else {
@@ -462,7 +462,7 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 }
             } else {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_dialogBox.startDialog({ "* You used " + item + ".\n* Recovered 8 HP." }, "");
             }
             return;
@@ -477,21 +477,21 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 m_cellIndex = std::clamp(m_cellIndex, 0, count - 1);
                 if (context.input.isUpPressed()) {
                     m_cellIndex = (m_cellIndex - 1 + count) % count;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 } else if (context.input.isDownPressed()) {
                     m_cellIndex = (m_cellIndex + 1) % count;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 }
             }
 
             if (context.input.isCancelPressed() || IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
                 m_menuState = OverworldMenuState::Main;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
                 return;
             }
 
             if (context.input.isConfirmPressed()) {
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
                 if (count > 0) {
                     const std::string& selected = entries[static_cast<size_t>(m_cellIndex)];
                     if (selected == "Furiell") {
@@ -517,21 +517,21 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 m_furiellIndex = std::clamp(m_furiellIndex, 0, count - 1);
                 if (context.input.isUpPressed()) {
                     m_furiellIndex = (m_furiellIndex - 1 + count) % count;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 } else if (context.input.isDownPressed()) {
                     m_furiellIndex = (m_furiellIndex + 1) % count;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 }
             }
 
             if (context.input.isCancelPressed() || IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {
                 m_cellSubState = CellSubState::Contacts;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
                 return;
             }
 
             if (context.input.isConfirmPressed()) {
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
                 if (count > 0) {
                     const auto& chosen = opts[static_cast<size_t>(m_furiellIndex)];
                     m_menuState = OverworldMenuState::Closed;
@@ -667,7 +667,7 @@ void OverworldScene::handleSaveBoxInput(GameContext& context) {
     if (m_saveBoxState == SaveBoxState::Active) {
         if (context.input.isLeftPressed() || context.input.isRightPressed()) {
             m_saveBoxChoice = (m_saveBoxChoice == 0) ? 1 : 0;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
         }
 
         if (context.input.isConfirmPressed()) {
@@ -679,11 +679,11 @@ void OverworldScene::handleSaveBoxInput(GameContext& context) {
                 m_saveBoxState = SaveBoxState::Saved;
             } else { // Return
                 m_saveBoxState = SaveBoxState::Closed;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
             }
         } else if (context.input.isCancelPressed()) {
             m_saveBoxState = SaveBoxState::Closed;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.4f);
         }
     } else if (m_saveBoxState == SaveBoxState::Saved) {
         if (context.input.isConfirmPressed() || context.input.isCancelPressed()) {
@@ -828,7 +828,7 @@ void OverworldScene::update(float dt, GameContext& context) {
         const int pendingIndex = raidPendingMessage(s_prevRaidTimeLeft, nowLeft, mask);
         if (pendingIndex >= 0) {
             context.state.setFlag("raid_msgs_shown", mask | (1 << pendingIndex));
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
             m_dialogBox.startDialog(raidMessageLines(pendingIndex, getRaidStartSeconds()), "");
             return;
         } else {
@@ -840,7 +840,7 @@ void OverworldScene::update(float dt, GameContext& context) {
         m_menuState = OverworldMenuState::Main;
         m_menuIndex = 0;
         context.raidPaused = true;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
         return;
     }
 

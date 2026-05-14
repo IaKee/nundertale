@@ -27,7 +27,7 @@ void DisclaimerScene::update(float dt, GameContext& context) {
 
     // Skip on confirm key or after 12 seconds
     if (context.input.isConfirmPressed() || m_timer >= 12.0f) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
         context.scenes.changeScene(std::make_unique<LoreScene>(), 0.5f);
     }
 }

@@ -62,7 +62,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 int count = getRowColCount(m_cursorY);
                 m_cursorX = (m_cursorX + count - 1) % count;
             }
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (context.input.isRightPressed()) {
             if (m_cursorY == 8) {
                 m_cursorX = (m_cursorX + 1) % 3;
@@ -70,7 +70,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 int count = getRowColCount(m_cursorY);
                 m_cursorX = (m_cursorX + 1) % count;
             }
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (context.input.isUpPressed()) {
             if (m_cursorY == 8) {
                 m_cursorY = 7;
@@ -87,7 +87,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 else if (m_cursorX <= 3) m_cursorX = 1;
                 else m_cursorX = 2;
             }
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (context.input.isDownPressed()) {
             if (m_cursorY < 7) {
                 m_cursorY++;
@@ -104,7 +104,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 else if (m_cursorX == 1) m_cursorX = 2;
                 else m_cursorX = 5;
             }
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
 
         // Backspace / Cancel key deletes last letter
@@ -149,7 +149,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                         m_reaction = withSameNameReaction(reactionFor(m_currentName), m_currentName, context.save.getMeta().lastName);
                         m_confirmTimer = 0.0f;
                         m_confirmChoice = false;
-                        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                        context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
                     }
                 }
             }
@@ -160,24 +160,24 @@ void NameSelectScene::update(float dt, GameContext& context) {
         if (m_reaction.allowed) {
             if (context.input.isLeftPressed() || context.input.isRightPressed()) {
                 m_confirmChoice = !m_confirmChoice;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
             }
         }
 
         if (context.input.isCancelPressed()) {
             m_state = NameSelectState::Selecting;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
             return;
         }
 
         if (context.input.isConfirmPressed()) {
             if (!m_reaction.allowed) {
                 m_state = NameSelectState::Selecting;
-                context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
             } else {
                 if (!m_confirmChoice) {
                     m_state = NameSelectState::Selecting;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+                    context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
                 } else {
                     context.player.name = m_currentName;
                     context.player.isChad = (m_reaction.effect == NameEffect::Gold);

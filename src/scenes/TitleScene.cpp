@@ -116,11 +116,11 @@ void TitleScene::updateContinueCard(float /*dt*/, GameContext& context) {
 
     if (nextSelection != m_selectedIndex) {
         m_selectedIndex = nextSelection;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
     }
 
     if (context.input.isCancelPressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
         resetSplash();
         return;
     }
@@ -137,7 +137,7 @@ void TitleScene::updateContinueCard(float /*dt*/, GameContext& context) {
             context.state = GameState();
             context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
         } else {
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
             context.scenes.pushScene(std::make_unique<SettingsScene>(), context);
         }
     }

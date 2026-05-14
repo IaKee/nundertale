@@ -161,7 +161,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                             context.player.maxHp = (newLevel == 20) ? 99 : (16 + 4 * newLevel);
                             context.player.hp = context.player.maxHp;
                             m_narratorText += "\n* Your LEVEL OF VITRIOL increased."; // LORE §8.2 (BUG-22)
-                            context.audio.playSound("assets/sfx/heal.ogg", 0.9f);
+                            context.audio.playSound("assets/sfx/heal.wav", 0.9f);
                         }
                     }
                 } else {
@@ -191,15 +191,15 @@ void BattleSystem::handleMenuInput(GameContext& context) {
     if (context.input.isLeftPressed()) {
         int idx = (static_cast<int>(m_selectedButton) + 3) % 4;
         m_selectedButton = static_cast<MainButton>(idx);
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     } else if (context.input.isRightPressed()) {
         int idx = (static_cast<int>(m_selectedButton) + 1) % 4;
         m_selectedButton = static_cast<MainButton>(idx);
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     }
 
     if (context.input.isConfirmPressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
         m_subOptionIndex = 0;
         switch (m_selectedButton) {
             case MainButton::Fight: {
@@ -349,27 +349,27 @@ void BattleSystem::handleActInput(GameContext& context) {
     if (context.input.isLeftPressed()) {
         if (m_subOptionIndex % 2 == 1) {
             m_subOptionIndex--;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isRightPressed()) {
         if (m_subOptionIndex % 2 == 0 && m_subOptionIndex + 1 < actCount) {
             m_subOptionIndex++;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isUpPressed()) {
         if (m_subOptionIndex >= 2) {
             m_subOptionIndex -= 2;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isDownPressed()) {
         if (m_subOptionIndex + 2 < actCount) {
             m_subOptionIndex += 2;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     }
 
     if (context.input.isConfirmPressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
         const auto& act = acts[static_cast<size_t>(availableActs[static_cast<size_t>(m_subOptionIndex)])];
         int useCount = ++m_actUseCounts[act.id];
         bool applies = actEffectApplies(useCount, act.minUses);
@@ -442,30 +442,30 @@ void BattleSystem::handleItemInput(GameContext& context) {
     if (context.input.isLeftPressed()) {
         if (m_subOptionIndex % 2 == 1) {
             m_subOptionIndex--;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (m_subOptionIndex >= 4) {
             // Previous page
             m_subOptionIndex -= 4;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isRightPressed()) {
         if (m_subOptionIndex % 2 == 0 && m_subOptionIndex + 1 < invCount) {
             m_subOptionIndex++;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         } else if (m_subOptionIndex < 4 && m_subOptionIndex + 4 < invCount) {
             // Next page
             m_subOptionIndex += 4;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isUpPressed()) {
         if ((m_subOptionIndex % 4) >= 2) {
             m_subOptionIndex -= 2;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     } else if (context.input.isDownPressed()) {
         if ((m_subOptionIndex % 4) < 2 && m_subOptionIndex + 2 < invCount) {
             m_subOptionIndex += 2;
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
         }
     }
 
@@ -479,7 +479,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
 
         if (item == "Bottle") {
             m_narratorText = "* You consider drinking from the bottle.\n* ...No. Absolutely not.";
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
             m_state = BattleState::DialogMessage;
             return;
         }
@@ -546,7 +546,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
             m_narratorText += "\n* You feel... fluffier.";
         }
 
-        context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+        context.audio.playSound("assets/sfx/heal.wav", 0.8f);
         m_state = BattleState::DialogMessage;
     } else if (context.input.isCancelPressed()) {
         m_state = BattleState::MenuSelect;
@@ -556,18 +556,18 @@ void BattleSystem::handleItemInput(GameContext& context) {
 void BattleSystem::handleMercyInput(GameContext& context) {
     if (context.input.isUpPressed() || context.input.isDownPressed()) {
         m_subOptionIndex = 1 - m_subOptionIndex;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
     }
 
     if (context.input.isConfirmPressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
         if (m_subOptionIndex == 0) { // Spare
             if (m_enemy->isSpareable()) {
                 m_isSpared = true;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".";
                 m_enemySpeechBubble = "You can tell no one about the zipper. Pack secret."; // LORE §19.1
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
-                context.audio.playSound("assets/sfx/selection_sound.wav", 1.0f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 1.0f);
             } else {
                 m_lastPlayerAction = PlayerTurnAction::MercySpareFail;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
@@ -758,7 +758,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 
     // BHL-015: "thinking" ribbit easter-egg bubble over soul when still for 3.0s
     if (updateRibbit(m_ribbitState, dt, soulMoving)) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.3f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.3f);
     }
 
     // Spawn bullets
@@ -782,7 +782,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
         if (m_bullets[i].active && CheckCollisionRecs(soulHitbox, m_bullets[i].getBounds())) {
             if (m_bullets[i].healsSoul()) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + m_bullets[i].heal);
-                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_bullets.erase(m_bullets.begin() + i);
                 continue;
             } else if (m_bullets[i].hurtsSoul(soulMoving) && m_invulnTimer <= 0.0f) {
