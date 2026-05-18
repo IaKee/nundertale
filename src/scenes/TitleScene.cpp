@@ -8,6 +8,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "services/MusicTracks.hpp"
 #include <raylib.h>
 #include <cmath>
 #include <cstdio>
@@ -35,7 +36,8 @@ void TitleScene::resetSplash() {
 }
 
 void TitleScene::onEnter(GameContext& context) {
-    context.audio.playMusic("assets/music/main_menu_loop.ogg", true);
+    const MusicEntry track = musicFor("title");
+    context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
     resetSplash();
 
     m_hasSave = context.save.hasSaveGame();

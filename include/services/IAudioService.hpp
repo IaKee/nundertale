@@ -9,6 +9,8 @@ public:
     virtual ~IAudioService() = default;
 
     virtual void playMusic(const std::string& path, bool loop = true) = 0;
+    virtual void playMusic(const std::string& path, bool loop, float loopStart, float loopEnd) = 0;
+    virtual void setMusicLoopPoints(float loopStart, float loopEnd) = 0;
     virtual void stopMusic() = 0;
     virtual void pauseMusic() = 0;
     virtual void resumeMusic() = 0;

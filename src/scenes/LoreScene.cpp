@@ -3,6 +3,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "services/MusicTracks.hpp"
 #include <raylib.h>
 #include <cstdio>
 
@@ -11,7 +12,8 @@ namespace nundertale {
 static constexpr size_t SLIP_CARD = 8; // card 9: the slip (SFX + longer pause)
 
 void LoreScene::onEnter(GameContext& context) {
-    context.audio.playMusic("assets/music/Undertale - Once Upon A Time Remix (ft Yuri, zR).ogg", true);
+    const MusicEntry track = musicFor("lore");
+    context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
 
     // FRT-002 / LORE §9: the 10 canonical intro cards (gamer propaganda, biased narrator)
     m_cards = {

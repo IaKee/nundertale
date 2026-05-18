@@ -1,0 +1,23 @@
+{
+  "title": {
+    "path": "assets/music/main_menu_loop.ogg"
+  },
+  "lore": {
+    "path": "assets/music/Undertale - Once Upon A Time Remix (ft Yuri, zR).ogg"
+  },
+  "instructions": {
+    "path": "assets/music/main_menu_loop.ogg"
+  },
+  "overworld.default": {
+    "path": "assets/music/epic_background_loop.ogg"
+  },
+  "overworld.ruins_entrance": {
+    "path": "assets/music/epic_background_loop.ogg"
+  },
+  "battle.default": {
+    "path": "assets/music/epic_background_loop.ogg"
+  },
+  "gameover": {
+    "path": "assets/music/epic_background_loop.ogg"
+  }
+}

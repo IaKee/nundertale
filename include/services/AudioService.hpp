@@ -14,6 +14,8 @@ public:
     ~AudioService() override;
 
     void playMusic(const std::string& path, bool loop = true) override;
+    void playMusic(const std::string& path, bool loop, float loopStart, float loopEnd) override;
+    void setMusicLoopPoints(float loopStart, float loopEnd) override;
     void stopMusic() override;
     void pauseMusic() override;
     void resumeMusic() override;
@@ -36,6 +38,8 @@ private:
     float m_masterVolume = 1.0f;
     MusicFade m_fade;
     float m_fadeFactor = 1.0f;
+    float m_loopStart = 0.0f;
+    float m_loopEnd = 0.0f;
 };
 
 } // namespace nundertale

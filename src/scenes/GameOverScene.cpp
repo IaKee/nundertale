@@ -4,6 +4,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "services/MusicTracks.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -101,7 +102,8 @@ void GameOverScene::update(float dt, GameContext& context) {
             if (m_stateTimer >= 1.0f) {
                 m_state = State::FadingText;
                 m_stateTimer = 0.0f;
-                context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+                const MusicEntry track = musicFor("gameover");
+                context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
             }
             break;
 
