@@ -19,6 +19,8 @@ public:
     // AUD-006: fadeOutMusic stops the track when the fade ends; fadeInMusic starts a track from silence
     virtual void fadeOutMusic(float seconds) = 0;
     virtual void fadeInMusic(const std::string& path, float seconds, bool loop = true) = 0;
+    // AUD-008: pitch/tempo of the current track (1.0 = normal); a new track resets it
+    virtual void setMusicPitch(float pitch) = 0;
 
     virtual void playSound(const std::string& path, float volume = 1.0f) = 0;
     virtual void stopAllSounds() = 0;

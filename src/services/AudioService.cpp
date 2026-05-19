@@ -104,6 +104,12 @@ void AudioService::updateMusic() {
     }
 }
 
+void AudioService::setMusicPitch(float pitch) {
+    if (m_hasActiveMusic) {
+        SetMusicPitch(m_currentMusic, pitch > 0.0f ? pitch : 1.0f);
+    }
+}
+
 void AudioService::fadeOutMusic(float seconds) {
     if (!m_hasActiveMusic) {
         return;
@@ -142,11 +148,43 @@ void AudioService::playSound(const std::string& path, float volume) {
         Sound snd = LoadSound(path.c_str());
         it = m_soundCache.emplace(path, snd).first;
     }
-    SetSoundVolume(it->second, volume);
-    PlaySound(it->second);
+
+    Sound voice = it->second;
+    if (IsSoundPlaying(voice)) {
+        // AUD-007: overlap instead of restarting — use a free alias, add one, or reuse the oldest
+        std::vector<Sound>& aliases = m_soundAliases[path];
+        bool found = false;
+        for (const Sound& alias : aliases) {
+            if (!IsSoundPlaying(alias)) {
+                voice = alias;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            if (aliases.size() < MAX_SOUND_ALIASES) {
+                aliases.push_back(LoadSoundAlias(it->second));
+                voice = aliases.back();
+            } else {
+                std::size_t& next = m_nextAlias[path];
+                voice = aliases[next % aliases.size()];
+                next = (next + 1) % aliases.size();
+            }
+        }
+    }
+    SetSoundVolume(voice, volume);
+    PlaySound(voice);
 }
 
 void AudioService::stopAllSounds() {
+    for (auto& pair : m_soundAliases) {
+        for (Sound& alias : pair.second) {
+            StopSound(alias);
+            UnloadSoundAlias(alias);
+        }
+    }
+    m_soundAliases.clear();
+    m_nextAlias.clear();
     for (auto& pair : m_soundCache) {
         StopSound(pair.second);
         UnloadSound(pair.second);
