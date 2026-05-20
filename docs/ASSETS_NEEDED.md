@@ -1,6 +1,6 @@
 # nUndertale — Assets needed (shopping list)
 
-Status as of 2026-10-17 (after synergy round 5). This file consolidates the art, audio and font needs scattered across `docs/LORE.md` §25–§27 and the `ART`/`AUD` epics in `BACKLOG.md`, and checks them against what is in `assets/` today. Use it to decide what to look for, in what format, and how many variants each asset needs.
+Status as of 2026-10-17 (synergy round 5). This file consolidates the art, audio and font needs scattered across `docs/LORE.md` §25–§27 and the `ART`/`AUD` epics in `BACKLOG.md`, and checks them against what is in `assets/` today. Use it to decide what to look for, in what format, and how many variants each asset needs.
 
 **Priorities** (LORE §26): **P0** = a playable Ruins (vertical slice) · **P1** = the rest of the Gamer route · **P2** = Furry route, Toxic route and optional content.
 
@@ -16,13 +16,13 @@ Status as of 2026-10-17 (after synergy round 5). This file consolidates the art,
 | SFX | **OGG** (or WAV under 1 s), mono, 44.1 kHz, peak about −3 dB, no silence at the start (otherwise it feels laggy). |
 | Fonts | TTF/OTF with an open license (OFL or similar). English only: ASCII plus `★ ♥ — “ ” ‘ ’ …`. |
 | File names | Put a placeholder at its **final path** (the paths below), so swapping it later is just replacing the file. |
-| Logging | Every non-final file goes in `assets/PLACEHOLDERS.md` (file, source URL, author, license). This file doesn't exist yet (ART-000). |
+| Logging | Every non-final file goes in `assets/PLACEHOLDERS.md` (file, source URL, author, license). Started in round 5 (ART-000). |
 | Undertale rips | Fine as a **size reference only**, in `assets/_ref/` (git-ignored). Never committed or shipped. |
 | Content rules | No real people (photos, meme faces), nothing explicit (the ceiling is mosaic blocks, closed objects and stink lines), **adult proportions** for every character, and any text inside art in English. |
 | Battle look | **White on black**, with color only for special moments (souls, FUR purple, yellow spare names). The overworld is colorful, with one limited palette per area (§3). |
 | Silhouette | Each character needs one element that reads in solid black (Barky's ears, Sans's body pillow, Papyrus's cardboard ears, Sharkdyne's harpoon, Asgrr's lanyards, Mettapaw's ring light, Floofy's zipper head, the Moderator's chair-mech). |
 
-> **Engine note:** today the battle sprites, souls, buttons, save star, FIGHT target and most effects are **drawn with primitives**. Dropping a PNG in place does nothing until the sprite pipeline exists (**GFX-002**: spritesheet loader + per-frame timing + hitboxes in JSON). So the art can be gathered now, and GFX-002 is the code task that unlocks it.
+> **Engine note:** today the battle sprites, souls, buttons, save star, FIGHT target and most effects are **drawn with primitives**. Dropping a PNG in place does nothing until its hook exists. **GFX-002** (round 5) added the sheet format and hooks for **Barky in battle** and **Pepe in the overworld**, so those two can be dropped in today; the rest need small per-asset hooks.
 
 ---
 
@@ -34,9 +34,9 @@ Status as of 2026-10-17 (after synergy round 5). This file consolidates the art,
 | `music/main_menu_loop.ogg` | Title / name screen | Origin unknown | Log the license or replace. |
 | `music/epic_background_loop.ogg` | Overworld **and** battle | Origin unknown | Split into an area track plus a battle track (AUD-001). |
 | `sfx/sans_type.wav` | Sans voice / name easter egg | **Likely an Undertale rip** | Replace (AUD-020). |
-| `sfx/selection_sound.wav` | Cursor move **and** confirm, plus several stand-ins | Placeholder | Split into `menu_move` and `menu_select` (AUD-003). |
+| `sfx/selection_sound.wav` | Nothing anymore | Unused | Split into `menu_move`/`menu_select` placeholders (AUD-003, done); can be deleted. |
 | `sfx/u_activate.wav`, `u1..u12.ogg`, `n.ogg`, `type*.ogg`, `areusure.ogg`, `cartoon_slip.ogg`, `pipipipopopo_backwards.ogg` | Misc. stand-ins (ding, voices, FURRY OVER, Barky's entrance) | Origin unknown | Log the license, then rename or replace to the Appendix B names. |
-| `sfx/heal.ogg` | Every healing item | **Missing**: healing is silent (BUG-32) | **P0**: make a `heal` SFX. |
+| `sfx/menu_move.wav`, `sfx/menu_select.wav`, `sfx/heal.wav` | Cursor, confirm/back, healing | **Original placeholders** from `tools/gen_placeholder_sfx.js` | Replace with final sounds (same names) when you have them. |
 | `img/lore1..9.bmp`, `img/lore10/` (271 frames) | Intro cards | Hand-made, 398×214, BMP | Redraw at 400×220 PNG in a limited sepia palette (ART-041). |
 | `img/lore4.bmp` | Intro card "BEGONE!" | **Uses a real face** | **P0** redraw with no recognizable face (ART-170). |
 | `img/pepe_char.bmp` | Pepe in the overworld | Legacy, magenta key | Replace with `sprites/ow/pepe_frog.png` (ART-001). |
@@ -159,9 +159,9 @@ Make them with **sfxr / jsfxr / Bfxr / ChipTone** (free, and the output is yours
 
 | File | What it sounds like | Used by |
 | :--- | :--- | :--- |
-| `sfx/menu_move.ogg` | A short squeak | every menu (AUD-003) |
+| `sfx/menu_move.wav` | A short squeak | every menu (AUD-003; placeholder in place) |
 | `sfx/menu_select.ogg` | "Select" | every menu |
-| `sfx/heal.ogg` | A rising chime | items, save (**missing today**) |
+| `sfx/heal.wav` | A rising chime | items, save (placeholder in place) |
 | `sfx/save_can.ogg` | A soda can opening, *tssss* | save point |
 | `sfx/hurt.ogg` | Soul hit | battle |
 | `sfx/enemy_hit.ogg` · `sfx/slash.ogg` · `sfx/hitmarker.ogg` | Attack, and an FPS hitmarker on a crit | FIGHT |
@@ -255,8 +255,8 @@ Same formats as P0. The counts are the minimum to get each area playable.
 
 | Code item | Unlocks |
 | :--- | :--- |
-| **GFX-002** sprite/spritesheet pipeline | Every sprite in this file (today they are primitives) |
-| **AUD-001** `data/music.json` + **AUD-005** loop points | Per-area/per-battle tracks without recompiling |
+| **GFX-002** sprite/spritesheet pipeline | **Done for Barky (battle) and Pepe (overworld)**: drop `png`+`json` in `assets/sprites/` (format in `assets/sprites/README.md`). Other sprites need their own hooks. |
+| **AUD-001** `data/music.json` + **AUD-005** loop points | **Done**: edit `data/music.json` to swap a track or set loop points, no recompile |
 | **AUD-002 / AUD-003** SFX names | `menu_move` / `menu_select`, `heal` and the rest of Appendix B |
 | **OVW-003** Tiled map loader | Tilesets and props |
 | **ART-000** `assets/PLACEHOLDERS.md` + **AUD-020** `assets/LICENSES.md` | License tracking before any public build |
