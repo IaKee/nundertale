@@ -8,6 +8,7 @@
 #include "core/SaveText.hpp"
 #include "core/FurReactions.hpp"
 #include "core/Cell.hpp"
+#include "core/Camera2DFollow.hpp"
 #include "services/MusicTracks.hpp"
 #include "ui/SpriteDraw.hpp"
 #include <raylib.h>
@@ -34,14 +35,59 @@ void OverworldScene::initObstacles() {
     m_obstacles.push_back({ 450, 160, 50, 80 });    // Right pillar
 }
 
+void OverworldScene::loadRoomMap(const std::string& roomId) {
+    m_tiledMap = {};
+    m_roomWidth = 640.0f;
+    m_roomHeight = 480.0f;
+    m_backgroundImage = "assets/img/test.bmp";
+    m_backgroundOffset = { 0.0f, 0.0f };
+    initObstacles();
+
+    TiledMap loaded;
+    if (!loadTiledMapFromFile("data/maps/" + roomId + ".json", loaded)) return;
+
+    m_tiledMap = std::move(loaded);
+    m_roomWidth = m_tiledMap.pixelWidth();
+    m_roomHeight = m_tiledMap.pixelHeight();
+
+    for (const TiledLayer& layer : m_tiledMap.layers) {
+        if (layer.type == TiledLayerType::Image && !layer.image.empty()) {
+            m_backgroundImage = layer.image;
+            m_backgroundOffset = { layer.offsetX, layer.offsetY };
+            break;
+        }
+    }
+
+    const TiledLayer* collision = m_tiledMap.findLayer("collision");
+    if (collision != nullptr && collision->type == TiledLayerType::Objects) {
+        m_obstacles.clear();
+        for (const TiledObject& object : collision->objects) {
+            const TiledRect bounds = object.bounds();
+            m_obstacles.push_back({ bounds.x, bounds.y, bounds.width, bounds.height });
+        }
+    }
+}
+
+Rectangle OverworldScene::objectBounds(const std::string& name, Rectangle fallback) const {
+    const TiledObject* object = m_tiledMap.findObject(name);
+    if (object == nullptr) return fallback;
+    const TiledRect bounds = object->bounds();
+    return { bounds.x, bounds.y, bounds.width, bounds.height };
+}
+
+Vector2 OverworldScene::objectPosition(const std::string& name, Vector2 fallback) const {
+    const TiledObject* object = m_tiledMap.findObject(name);
+    return object == nullptr ? fallback : Vector2{ object->x, object->y };
+}
+
 void OverworldScene::initInteractables(GameContext& context) {
     m_interactables.clear();
 
     // 1. Save Point Star (SAV-001, SAV-002)
-    m_savePoint = std::make_unique<SavePoint>(Vector2{ 320.0f, 260.0f });
+    m_savePoint = std::make_unique<SavePoint>(objectPosition("savepoint", { 320.0f, 260.0f }));
 
     // 2. Signpost on the wall
-    Rectangle signBounds = { 100, 70, 40, 30 };
+    Rectangle signBounds = objectBounds("sign", { 100, 70, 40, 30 });
     auto sign = std::make_unique<GenericInteractable>(
         signBounds,
         [this](GameContext& ctx) {
@@ -51,10 +97,14 @@ void OverworldScene::initInteractables(GameContext& context) {
                 "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
             }, "SIGN");
         },
-        [](GameContext& /*ctx*/) {
-            DrawRectangle(105, 80, 30, 20, { 140, 90, 40, 255 });
-            DrawRectangleLines(105, 80, 30, 20, BLACK);
-            DrawText("?", 115, 82, 16, WHITE);
+        [signBounds](GameContext& /*ctx*/) {
+            const int x = static_cast<int>(signBounds.x);
+            const int y = static_cast<int>(signBounds.y);
+            const int width = static_cast<int>(signBounds.width);
+            const int height = static_cast<int>(signBounds.height);
+            DrawRectangle(x + 5, y + 10, width - 10, height - 10, { 140, 90, 40, 255 });
+            DrawRectangleLines(x + 5, y + 10, width - 10, height - 10, BLACK);
+            DrawText("?", x + 15, y + 12, 16, WHITE);
         }
     );
     m_interactables.push_back(std::move(sign));
@@ -68,7 +118,7 @@ void OverworldScene::initInteractables(GameContext& context) {
 
     if (barkyState == 2) {
         // Barky is dead - leaving a pile of dust (OVW-010, BND-003)
-        Rectangle dustBounds = { 490, 90, 40, 40 };
+        Rectangle dustBounds = objectBounds("dust", { 490, 90, 40, 40 });
         auto dust = std::make_unique<GenericInteractable>(
             dustBounds,
             [this](GameContext& ctx) {
@@ -77,16 +127,18 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
                 }, "");
             },
-            [](GameContext& /*ctx*/) {
-                DrawEllipse(510, 115, 16, 6, { 150, 150, 150, 220 });
-                DrawCircle(506, 113, 2, { 180, 180, 180, 255 });
-                DrawCircle(514, 114, 2, { 130, 130, 130, 255 });
+            [dustBounds](GameContext& /*ctx*/) {
+                const int x = static_cast<int>(dustBounds.x);
+                const int y = static_cast<int>(dustBounds.y);
+                DrawEllipse(x + 20, y + 25, 16, 6, { 150, 150, 150, 220 });
+                DrawCircle(x + 16, y + 23, 2, { 180, 180, 180, 255 });
+                DrawCircle(x + 24, y + 24, 2, { 130, 130, 130, 255 });
             }
         );
         m_interactables.push_back(std::move(dust));
 
         // North Doorway is open (OVW-008, OVW-010)
-        Rectangle doorBounds = { 280, 50, 80, 30 };
+        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
@@ -95,15 +147,17 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
                 }, "");
             },
-            [](GameContext& /*ctx*/) {
-                DrawRectangleLines(280, 50, 80, 30, GREEN);
-                DrawText("OPEN", 300, 56, 16, GREEN);
+            [doorBounds](GameContext& /*ctx*/) {
+                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
+                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height), GREEN);
+                DrawText("OPEN", static_cast<int>(doorBounds.x) + 20,
+                         static_cast<int>(doorBounds.y) + 6, 16, GREEN);
             }
         );
         m_interactables.push_back(std::move(door));
     } else if (barkyState == 1) {
         // Barky is standing peacefully in the room (OVW-010, NAR-002)
-        Rectangle npcBounds = { 490, 80, 40, 50 };
+        Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
         auto npc = std::make_unique<GenericInteractable>(
             npcBounds,
             [this](GameContext& ctx) {
@@ -120,17 +174,19 @@ void OverworldScene::initInteractables(GameContext& context) {
                 });
                 m_dialogBox.startDialog(lines, "BARKY");
             },
-            [](GameContext& /*ctx*/) {
-                DrawCircle(510, 95, 16, { 120, 150, 140, 255 });
-                DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 130, 110, 255 });
-                DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 130, 110, 255 });
-                DrawRectangle(496, 110, 28, 25, { 50, 80, 70, 255 });
+            [npcBounds](GameContext& /*ctx*/) {
+                const float x = npcBounds.x;
+                const float y = npcBounds.y;
+                DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 150, 140, 255 });
+                DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 130, 110, 255 });
+                DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 130, 110, 255 });
+                DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 80, 70, 255 });
             }
         );
         m_interactables.push_back(std::move(npc));
 
         // North Doorway is open
-        Rectangle doorBounds = { 280, 50, 80, 30 };
+        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
@@ -139,15 +195,18 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
                 }, "");
             },
-            [](GameContext& /*ctx*/) {
-                DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
+            [doorBounds](GameContext& /*ctx*/) {
+                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
+                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
+                                   COLOR_UNDERTALE_YELLOW);
+                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
+                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
             }
         );
         m_interactables.push_back(std::move(door));
     } else {
         // Barky alive, initial encounter waiting (ENC-001, ENC-002)
-        Rectangle npcBounds = { 490, 80, 40, 50 };
+        Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
         auto npc = std::make_unique<GenericInteractable>(
             npcBounds,
             [this](GameContext& ctx) {
@@ -158,16 +217,18 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* Step through the north doorway if you dare face my fursona!"
                 }, "BARKY");
             },
-            [](GameContext& /*ctx*/) {
-                DrawCircle(510, 95, 16, { 120, 120, 140, 255 });
-                DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 90, 110, 255 });
-                DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 90, 110, 255 });
-                DrawRectangle(496, 110, 28, 25, { 50, 50, 70, 255 });
+            [npcBounds](GameContext& /*ctx*/) {
+                const float x = npcBounds.x;
+                const float y = npcBounds.y;
+                DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 120, 140, 255 });
+                DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 90, 110, 255 });
+                DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 90, 110, 255 });
+                DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 50, 70, 255 });
             }
         );
         m_interactables.push_back(std::move(npc));
 
-        Rectangle doorBounds = { 280, 50, 80, 30 };
+        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
@@ -193,16 +254,19 @@ void OverworldScene::initInteractables(GameContext& context) {
                     ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
                 });
             },
-            [](GameContext& /*ctx*/) {
-                DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
+            [doorBounds](GameContext& /*ctx*/) {
+                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
+                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
+                                   COLOR_UNDERTALE_YELLOW);
+                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
+                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
             }
         );
         m_interactables.push_back(std::move(door));
     }
 
     // 5. Snack Bowl with persistent take count tracking (OVW-010, OVW-011, ITM-004)
-    Rectangle bowlBounds = { 200, 160, 40, 30 };
+    Rectangle bowlBounds = objectBounds("bowl", { 200, 160, 40, 30 });
     auto snackBowl = std::make_unique<GenericInteractable>(
         bowlBounds,
         [this](GameContext& ctx) {
@@ -244,10 +308,14 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }
             }
         },
-        [](GameContext& /*ctx*/) {
-            DrawRectangle(205, 165, 30, 20, { 50, 120, 50, 255 });
-            DrawRectangleLines(205, 165, 30, 20, WHITE);
-            DrawText("DEW", 208, 168, 12, COLOR_UNDERTALE_YELLOW);
+        [bowlBounds](GameContext& /*ctx*/) {
+            const int x = static_cast<int>(bowlBounds.x);
+            const int y = static_cast<int>(bowlBounds.y);
+            const int width = static_cast<int>(bowlBounds.width);
+            const int height = static_cast<int>(bowlBounds.height);
+            DrawRectangle(x + 5, y + 5, width - 10, height - 10, { 50, 120, 50, 255 });
+            DrawRectangleLines(x + 5, y + 5, width - 10, height - 10, WHITE);
+            DrawText("DEW", x + 8, y + 8, 12, COLOR_UNDERTALE_YELLOW);
         }
     );
     m_interactables.push_back(std::move(snackBowl));
@@ -270,6 +338,7 @@ static float s_prevRaidTimeLeft = -1.0f;
 void OverworldScene::onEnter(GameContext& context) {
     const float raidStartSeconds = getRaidStartSeconds();
 
+    loadRoomMap(context.state.currentRoom);
     raidStart(context.state.raid, raidStartSeconds);
     if (s_prevRaidTimeLeft < 0.0f) {
         s_prevRaidTimeLeft = context.state.raid.timeLeft;
@@ -279,6 +348,8 @@ void OverworldScene::onEnter(GameContext& context) {
     context.audio.playMusic(enterTrack.path, true, enterTrack.loopStart, enterTrack.loopEnd);
     if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
         m_player.setPosition(context.state.playerPos);
+    } else {
+        m_player.setPosition(objectPosition("spawn", { 300.0f, 320.0f }));
     }
     initInteractables(context);
 }
@@ -903,16 +974,30 @@ void OverworldScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
     Font font8Bit = context.resources.getFont8Bit(20);
+    const Vector2 playerPosition = m_player.getPosition();
+    const CameraTopLeft cameraTopLeft = Camera2DFollow::calculate(
+        playerPosition.x, playerPosition.y, m_roomWidth, m_roomHeight);
+    Camera2D camera = {};
+    camera.target = { cameraTopLeft.x, cameraTopLeft.y };
+    camera.offset = { 0.0f, 0.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
+    BeginMode2D(camera);
 
-    // 1. Draw Background Room Texture (assets/img/test.bmp)
-    Texture2D bgTex = context.resources.getTexture("assets/img/test.bmp");
-    DrawTexture(bgTex, 0, 0, WHITE);
+    // 1. Draw Background Room Texture
+    Texture2D bgTex = context.resources.getTexture(m_backgroundImage);
+    DrawTexture(bgTex, static_cast<int>(m_backgroundOffset.x),
+                static_cast<int>(m_backgroundOffset.y), WHITE);
 
     // 2. Draw Pillars / Room Decor
-    DrawRectangle(140, 160, 50, 80, { 70, 50, 90, 255 });
-    DrawRectangleLines(140, 160, 50, 80, BLACK);
-    DrawRectangle(450, 160, 50, 80, { 70, 50, 90, 255 });
-    DrawRectangleLines(450, 160, 50, 80, BLACK);
+    const Rectangle leftPillar = objectBounds("left_pillar", { 140, 160, 50, 80 });
+    const Rectangle rightPillar = objectBounds("right_pillar", { 450, 160, 50, 80 });
+    DrawRectangleRec(leftPillar, { 70, 50, 90, 255 });
+    DrawRectangleLines(static_cast<int>(leftPillar.x), static_cast<int>(leftPillar.y),
+                       static_cast<int>(leftPillar.width), static_cast<int>(leftPillar.height), BLACK);
+    DrawRectangleRec(rightPillar, { 70, 50, 90, 255 });
+    DrawRectangleLines(static_cast<int>(rightPillar.x), static_cast<int>(rightPillar.y),
+                       static_cast<int>(rightPillar.width), static_cast<int>(rightPillar.height), BLACK);
 
     // 3. Render Interactables & SavePoint
     for (auto& item : m_interactables) {
@@ -950,6 +1035,23 @@ void OverworldScene::render(GameContext& context) {
         m_player.render(pepeTex);
     }
 
+    // 5. Hitbox Debug Overlay (QA-002)
+    if (context.debugHitboxes) {
+        for (const auto& obs : m_obstacles) {
+            DrawRectangleLinesEx(obs, 1.0f, RED);
+        }
+        for (const auto& item : m_interactables) {
+            DrawRectangleLinesEx(item->getBounds(), 1.0f, COLOR_UNDERTALE_YELLOW);
+        }
+        if (m_savePoint) {
+            DrawRectangleLinesEx(m_savePoint->getBounds(), 1.0f, UI_YELLOW);
+        }
+        DrawRectangleLinesEx(m_player.getCollisionBox(), 1.0f, BLUE);
+        DrawRectangleLinesEx(m_player.getInteractionBox(), 1.0f, COLOR_UNDERTALE_GREEN);
+    }
+
+    EndMode2D();
+
     // Ambient fluff particles (FUR-010)
     for (const auto& p : m_fluffParticles) {
         Color fluffCol = (p.colorIndex == 0) ? Color{ 255, 179, 230, 180 } : Color{ 255, 210, 127, 180 };
@@ -964,23 +1066,8 @@ void OverworldScene::render(GameContext& context) {
     // Save Point Box (SAV-002)
     renderSaveBox(context, font8Bit);
 
-    // 5. Render DialogBox if open
+    // 6. Render DialogBox if open
     m_dialogBox.render(context);
-
-    // 6. Hitbox Debug Overlay (QA-002)
-    if (context.debugHitboxes) {
-        for (const auto& obs : m_obstacles) {
-            DrawRectangleLinesEx(obs, 1.0f, RED);
-        }
-        for (const auto& item : m_interactables) {
-            DrawRectangleLinesEx(item->getBounds(), 1.0f, COLOR_UNDERTALE_YELLOW);
-        }
-        if (m_savePoint) {
-            DrawRectangleLinesEx(m_savePoint->getBounds(), 1.0f, UI_YELLOW);
-        }
-        DrawRectangleLinesEx(m_player.getCollisionBox(), 1.0f, BLUE);
-        DrawRectangleLinesEx(m_player.getInteractionBox(), 1.0f, COLOR_UNDERTALE_GREEN);
-    }
 }
 
 void OverworldScene::onExit(GameContext& context) {

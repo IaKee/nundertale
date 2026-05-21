@@ -6,8 +6,10 @@
 #include "ui/DialogBox.hpp"
 #include "core/FluffParticles.hpp"
 #include "core/Cutscene.hpp"
+#include "core/TiledMap.hpp"
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace nundertale {
 
@@ -33,7 +35,10 @@ public:
 
 private:
     void initObstacles();
+    void loadRoomMap(const std::string& roomId);
     void initInteractables(GameContext& context);
+    Rectangle objectBounds(const std::string& name, Rectangle fallback) const;
+    Vector2 objectPosition(const std::string& name, Vector2 fallback) const;
 
     void handleMenuInput(GameContext& context);
     void renderMenu(GameContext& context, Font font);
@@ -45,6 +50,11 @@ private:
     std::vector<Rectangle> m_obstacles;
     std::vector<std::unique_ptr<IInteractable>> m_interactables;
     std::unique_ptr<SavePoint> m_savePoint;
+    TiledMap m_tiledMap;
+    float m_roomWidth = 640.0f;
+    float m_roomHeight = 480.0f;
+    std::string m_backgroundImage = "assets/img/test.bmp";
+    Vector2 m_backgroundOffset = { 0.0f, 0.0f };
 
     // Overworld C Menu (MNU-001)
     OverworldMenuState m_menuState = OverworldMenuState::Closed;
