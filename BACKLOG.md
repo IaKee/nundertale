@@ -438,9 +438,10 @@ P0 · M · GFX-002
 P2 · S · TXT-001
 - **What:** a mode where each glyph jitters ±1 px randomly per frame (name screen, scared lines, Floofy's sinister mode, the FUR bar's first appearance).
 
-#### GFX-010 — 2D overworld camera `[ ]`
+#### GFX-010 — 2D overworld camera `[x]`
 P0 · M · OVW-003
 - **What:** the camera follows the player, centered and clamped to the room bounds; supports scripted pans (cutscenes) and rooms smaller than the screen (centered with black borders).
+- **Done (2026-10-17):** `include/core/Camera2DFollow.hpp`: follows the player, clamps to the room bounds and centers rooms smaller than the screen; the world draw uses it, the UI doesn't. Scripted pans can come with CORE-011's `cameraPan`.
 
 #### GFX-011 — Per-area palettes `[x]`
 P1 · S · GFX-001
@@ -965,14 +966,16 @@ P1 · S · ENC-003
 P0 · S · MNU-001
 - **What:** Undertale has no HUD while exploring. Delete the bottom bar with NAME/LV/HP/G/FURRY and the "[Z: Interact | B: Battle | ESC: Menu]" hints. That info moves to the C menu (MNU-001).
 
-#### OVW-002 — Rooms bigger than the screen + camera `[ ]`
+#### OVW-002 — Rooms bigger than the screen + camera `[~]`
 P0 · M · GFX-010, OVW-003
 - **What:** a room is a map of any size; the camera follows Pepe. Replaces the 640×480 `test.bmp` with pillars drawn by `DrawRectangle`.
+- **Partly done (2026-10-17):** Rooms can be any size now (map width × height) with the follow camera; the only room is still the 640×480 test room.
 
-#### OVW-003 — Tiled map loader `[ ]`
+#### OVW-003 — Tiled map loader `[~]`
 P0 · L · D-08
 - **What:** read Tiled JSON: tilesets, tile layers (with draw order), a collision layer (rectangles **and polygons**, for the Ruins' diagonal walls), objects (`door`, `sign`, `npc`, `savepoint`, `trigger`, `spawn`, `encounterZone`) with custom properties.
 - **Acceptance:** the current test room is rebuilt in Tiled and works the same, with no coordinates in the C++.
+- **Partly done (2026-10-17):** `include/core/TiledMap.hpp` reads Tiled JSON (tile layers, image layers, object groups with rects, polygons and custom properties). `data/maps/<room>.json` drives the room: background image, the `collision` layer and named objects (`spawn`, `sign`, `dust`, `door`, `npc_barky`, `bowl`, `savepoint`). The Ruins entrance is rebuilt as `data/maps/ruins_entrance.json` with the old coordinates; without the file the hardcoded values are used. Pending: drawing tile layers from a tileset (no tileset art yet), polygon collision (bounding boxes for now, OVW-005), and moving the object behaviors to data.
 
 #### OVW-004 — Depth sorting (Y-sort) `[ ]`
 P0 · S · OVW-003
@@ -2427,9 +2430,10 @@ P1 · M · REPO-003
 #### QA-011 — Damage formula tests `[x]`
 P1 · S · FGT-003, QA-010
 
-#### QA-012 — Data validation in the build `[ ]`
+#### QA-012 — Data validation in the build `[x]`
 P2 · M · QA-010
 - **What:** a step that validates every JSON (referenced item/enemy/room/sound IDs exist, text keys exist in `en`) and runs the content lint (LOR-005).
+- **Done (2026-10-17):** The content lint also checks that every `data/**/*.json` and `assets/lang/*.json` is well-formed (strict validator, line:col of the first error). `validate.bat` runs the lint and the strict test runner and fails if either fails; it isn't part of `build.bat`.
 
 #### QA-013 — GitHub Actions CI `[ ]`
 P2 · M · REPO-005
