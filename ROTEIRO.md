@@ -1,6 +1,8 @@
 # 🐸 nUndertale — Game Script & Game Design Document (GDD)
 
 > **Production Note:** An independent, solo indie passion project. A satirical comedic parody tribute to Toby Fox's *Undertale*, celebrating retro RPG conventions, chiptune aesthetic, and classic internet meme culture.
+>
+> **Canonical lore:** [`docs/LORE.md`](docs/LORE.md) is the source of truth for the world, cast, structure (~25–30 min), routes, endings and art/audio direction. Where this script conflicts with it, `docs/LORE.md` wins.
 
 ---
 
@@ -34,7 +36,7 @@ Legend whispered throughout the eons:
 ## 3. Major Characters
 
 ### 1. Pepe the Fallen Gamer (Protagonist)
-- **Appearance:** A classic cynical green frog with heavy dark eye circles from 48-hour MMO marathons, sporting a stained hoodie and flip-flops.
+- **Appearance:** The classic Pepe meme frog (heavy-lidded eyes, wide frowning lips) with dark eye circles from 48-hour MMO marathons, sporting a nacho-stained blue T-shirt and flip-flops.
 - **Personality:** Sarcastic, unmotivated, pragmatically blunt, yet holding an unwavering hatred for cringe.
 - **Starting Weapon:** Frayed USB Optical Mouse.
 - **Starting Armor:** One-Sided Broken Gaming Headset.
