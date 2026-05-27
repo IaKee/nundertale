@@ -2239,7 +2239,7 @@ P0 · S · D-04, LOR-001
 
 #### ART-001 — Pepe spritesheet (overworld) `[ ]`
 P0 · M · GFX-002
-- **What:** `sprites/ow/pepe_frog.png`, ~20×30 (gray nacho-stained hoodie, shorts, flip-flops, eye bags, orange fingertips); 4 directions × (standing + 4 frames up/down, 2 sideways), like Frisk; extras: lying down and getting up (R1).
+- **What:** `sprites/ow/pepe_frog.png`, ~20×30 (the classic Pepe meme look: eye domes, heavy eyelids, two-part lips; blue nacho-stained T-shirt, shorts, flip-flops, eye bags, green hands; spec in `docs/art_prompts/ruins/A01_ow_pepe_frog.md`); 4 directions × (standing + 4 frames up/down, 2 sideways), like Frisk; extras: lying down and getting up (R1).
 
 #### ART-002 — Dialogue portraits `[ ]`
 P0→P2 · L · TXT-005
