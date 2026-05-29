@@ -1,0 +1,9 @@
+{
+  "image": "uwu_letters.png",
+  "cell": [12, 14],
+  "origin": [6, 7],
+  "anims": {
+    "u": { "row": 0, "frames": 1 },
+    "w": { "row": 1, "frames": 1 }
+  }
+}

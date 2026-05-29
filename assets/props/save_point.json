@@ -1,0 +1,8 @@
+{
+  "image": "save_point.png",
+  "cell": [20, 28],
+  "origin": [10, 27],
+  "anims": {
+    "spin": { "row": 0, "frames": 8, "fps": 8 }
+  }
+}

@@ -23,7 +23,7 @@ KIT_FILES = [
 # ---------------------------------------------------------------- shared blocks
 STYLE = {
 "ow": "Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel dark outline, flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark.",
-"battle": "Undertale battle sprite, pure white 1-pixel line art on a solid black fill, monochrome (only #FFFFFF and #000000), bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark.",
+"battle": "Undertale battle sprite, monochrome white and black pixel art (only #FFFFFF and #000000): white 1-pixel line art, light materials such as fur, faces and costume heads filled solid white, dark materials such as clothes filled solid black, a continuous unbroken white 1-pixel outline around the ENTIRE outer edge of the silhouette (also around black clothes, hair, ears and tail, so no black part of the figure ever touches the background), a few long continuous white lines for folds and seams instead of scattered dots, the whole silhouette fully opaque, bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark.",
 "ui": "Tiny pixel art game element in the style of Undertale, crisp hard pixels, no anti-aliasing, no gradients, flat colors, high contrast, isolated on a solid flat #FF00FF magenta background, no watermark.",
 "tile": "Pixel art top-down RPG tileset in the style of Undertale's Ruins, 3/4 top-down view, crisp hard pixels, flat shading, no anti-aliasing, no gradients, no blur, limited palette, no watermark.",
 "prop": "Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark.",
@@ -35,8 +35,9 @@ STYLE_RULES = {
 "ow": ["Overworld é **colorido**, com paleta limitada (Ruins: roxo + verde neon).",
        "Vista 3/4 de cima, igual aos sprites de overworld do Undertale.",
        "Contorno escuro de 1 px; uma sombra por cor; sem anti-aliasing."],
-"battle": ["Batalha é **branco sobre preto**: traço e detalhes `#FFFFFF`, interior da silhueta **preto opaco** `#000000`.",
-           "Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser preto opaco.",
+"battle": ["Batalha é **só branco `#FFFFFF` e preto `#000000`**, como a Toriel e o Flowey do Undertale: traço branco; materiais claros (pelo, rosto, cabeça de fantasia) preenchidos de branco, materiais escuros (roupa) de preto.",
+           "**Contorno branco fechado em volta da silhueta inteira**, também em volta da roupa preta, do cabelo, das orelhas e do rabo: nenhum preto do personagem encosta no fundo (guia de estilo §3.1). A keyline preta de 2 px por fora é aplicada depois por `tools/art_prompts/battle_outline.py`.",
+           "Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser todo opaco (branco ou preto).",
            "Nada de cinza: \"meio-tom\" se faz com pixels brancos espaçados.",
            "Cor só em momentos especiais, e só onde esta ficha disser."],
 "ui": ["Elemento de interface/projétil: formas sólidas, legíveis em 2×, sem anti-aliasing.",
@@ -218,7 +219,7 @@ add(id="A5", slug="ow_floofy", file="sprites/ow/floofy.png", title="Floofy — o
     layout="""| Linha | Animação | Frames |
 | :---: | :--- | :--- |
 | 0 | `idle` | 2: balançando 1 px para os lados |
-| 1 | `talk` | 2: boca de plástico fechada / aberta |
+| 1 | `talk` | 2: **sem boca** (quem fala é o que está dentro da fantasia): a cabeça balança 1 px e o puxador do zíper chacoalha |
 | 2 | `sinister` | 2: zíper aberto, escuridão + dois olhos brancos (frame 2: olhos 1 px menores) |
 | 3 | `sink` (sem loop) | 3: afundando no chão (inteiro → metade → só pétalas) |
 """,
@@ -227,7 +228,7 @@ add(id="A5", slug="ow_floofy", file="sprites/ow/floofy.png", title="Floofy — o
              ("Cabeça de fursuit", "#F4F0EA / #CFC3DD"), ("Olhos de plástico", "#111111 + brilho #FFFFFF"), ("Zíper", "#9A9AAA"),
              ("Interior aberto", "#000000 + olhos #FFFFFF")],
     reference="Nenhuma. Silhueta do Flowey com a cabeça de mascote no lugar do rosto.",
-    prompt="""Small sprite sheet of a golden yellow flower with big rounded petals and a green stem with two leaves, whose face is a tiny cute white baby-goat mascot costume head with shiny black plastic eyes and a silver zipper running vertically down the middle of the face. Strict grid of 4 rows, equal 24x24 cells, stem base at the bottom center: row 1 idle gently swaying (2 frames), row 2 talking with the plastic mouth closed and open (2 frames), row 3 sinister with the face zipper pulled open revealing only pitch-black darkness and two small glowing white dot eyes (2 frames), row 4 sinking into the ground (full, half, only petals visible). About 20x20 pixels of character per frame. No text.""",
+    prompt="""Small sprite sheet of a golden yellow flower with big rounded petals and a green stem with two leaves, whose face is a tiny cute white baby-goat mascot costume head with shiny black plastic eyes, a silver zipper running down the middle of the face from the top of the head to the chin, with the pull tab at the chin, and no mouth. Strict grid of 4 rows, equal 24x24 cells, stem base at the bottom center: row 1 idle gently swaying (2 frames), row 2 talking (2 frames, no mouth: the voice comes from whatever is inside the costume, so talking is shown only by the head bobbing 1 pixel and the zipper pull tab swinging), row 3 sinister with the face zipper pulled open revealing only pitch-black darkness and two small glowing white dot eyes (2 frames), row 4 sinking into the ground (full, half, only petals visible). About 20x20 pixels of character per frame. No text.""",
     cleanup=["No modo sinistro: o interior é **preto puro** com dois pontos brancos — nada mais."],
     accept=["Lê como flor + cabeça de mascote mesmo em 20×20.", "Regra de conteúdo do modo sinistro respeitada."])
 
@@ -278,7 +279,7 @@ O Spare repetido leva às falas tristes (`...Ha ha. I can't even keep a single g
     palette=[("Traço", "#FFFFFF"), ("Preenchimento interno (opaco)", "#000000")],
     reference="Nenhuma.",
     prompt="""Battle sprite sheet of a tall motherly woman in a fluffy white goat fursuit: oversized soft costume head with small horns and floppy ears, half-moon reading glasses, a long robe with wide sleeves, an apron with a paw-print pattern, a costume zipper barely visible at the neck. Front view, waist-up to the knees, each frame in an equal 80x110 cell. Strict grid of 3 rows: row 1 idle with paws clasped in front (2 frames, subtle breathing, glasses glint), row 2 hurt (eyes shut, recoiling, glasses askew), row 3 sad (head lowered, one paw on her chest). No text.""",
-    cleanup=["Preto opaco no interior.", "Estampa de patinhas simplificada (3–4 patinhas legíveis)."],
+    cleanup=["Interior todo opaco (branco ou preto), sem buracos transparentes.", "Estampa de patinhas simplificada (3–4 patinhas legíveis)."],
     accept=["Lê como fursuit, com proporções adultas.", "Três poses claramente distintas."])
 
 add(id="B3", slug="battle_floofy", file="sprites/battle/floofy.png", title="Floofy — batalha (tutorial)",
@@ -296,7 +297,7 @@ add(id="B3", slug="battle_floofy", file="sprites/battle/floofy.png", title="Floo
     anims=[anim("idle", 0, 2, 2), anim("talking", 1, 2, 4), anim("sinister", 2, 2, 3)],
     palette=[("Traço", "#FFFFFF"), ("Preenchimento interno (opaco)", "#000000"), ("Pétalas (opcional)", "#FFD23F")],
     reference="Nenhuma.",
-    prompt="""Battle sprite sheet of a flower with big rounded petals and a short stem, its face a cute baby-goat mascot costume head with plastic eyes and a vertical zipper down the middle of the face. Front view, each frame in an equal 40x40 cell. Strict grid of 3 rows: row 1 idle swaying (2 frames), row 2 talking (2 frames), row 3 sinister with the zipper open showing only black darkness and two white dot eyes (2 frames). No text.""",
+    prompt="""Battle sprite sheet of a flower with big rounded petals and a short stem, its face a cute baby-goat mascot costume head with plastic eyes, a silver zipper running down the middle of the face from the top of the head to the chin, with the pull tab at the chin, and no mouth. Front view, each frame in an equal 40x40 cell. Strict grid of 3 rows: row 1 idle swaying (2 frames), row 2 talking (2 frames, no mouth: the voice comes from whatever is inside the costume, so talking is shown only by the head bobbing 1 pixel and the zipper pull tab swinging), row 3 sinister with the zipper open showing only black darkness and two white dot eyes (2 frames). No text.""",
     cleanup=["Modo sinistro: nada dentro do zíper além de preto e dois pontos brancos."],
     accept=["Silhueta legível em 40×40."])
 
@@ -332,7 +333,7 @@ def common(id, slug, name, parody, cell, rooms, ctx, prompt, ref_note="Nenhuma."
         anims=[anim("idle", 0, 2, 2), anim("hurt", 1, 1)],
         palette=[("Traço", "#FFFFFF"), ("Preenchimento interno (opaco)", "#000000")], reference=ref_note,
         prompt=prompt + f" Each frame in an equal {cell[0]}x{cell[1]} cell. No text.",
-        cleanup=["Preto opaco no interior.", "Frame 2 do idle muda só 1–2 px (balanço), para não \"pular\"."],
+        cleanup=["Interior todo opaco (branco ou preto), sem buracos transparentes.", "Frame 2 do idle muda só 1–2 px (balanço), para não \"pular\"."],
         accept=["A piada do personagem lê sem texto."])
 
 common("B5", "froggsona", "Froggsona", "Froggit", (40, 40), "R8 (encontro aleatório; pool com Shysona e Modsmal).",
@@ -391,10 +392,10 @@ portrait("C1", "furiell",
          "Furiell (ver A3/B2): mãe sufocante e gentil, numa fursuit de cabra branca com óculos meia-lua e avental. A expressão *flustered* é o momento em que ela fecha uma aba do navegador muito rápido quando o Pepe entra (`* She closes a tab very fast.`).",
          "Dialogue portrait sheet, 5 portraits in one row, identical framing in each (head and shoulders, 50x50 pixels each): a motherly woman in a fluffy white goat fursuit head with small horns, floppy ears and half-moon reading glasses, apron straps visible. Expressions left to right: gentle neutral smile, happy with closed ^^ eyes, sad with raised brows, stern angry with the glasses glinting, flustered wide-eyed with a sweat drop looking away as if caught closing a browser tab.")
 portrait("C2", "floofy",
-         [("floofy_cute.png", "sorriso fofo de mascote"), ("floofy_smug.png", "olhos semicerrados, sorriso torto"),
+         [("floofy_cute.png", "olhos grandes e brilhantes de mascote, sem boca"), ("floofy_smug.png", "olhos semicerrados + um sorriso torto de 1 linha: a única boca do Floofy, só porque o deboche não lê sem ela"),
           ("floofy_sinister.png", "zíper aberto: só escuridão + dois olhos brancos")],
          "Floofy (ver A5/B3): flor com cabeça de fursuit de cabritinho e zíper no meio da cara. Fofo e falso; depois sem limites. Se as pétalas forem amarelas no B3, use o mesmo aqui.",
-         "Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a flower whose face is a baby-goat mascot costume head with plastic eyes and a vertical zipper down the middle. Expressions: cute innocent smile, smug half-lidded grin, sinister with the zipper pulled open showing only darkness and two white dot eyes.")
+         "Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a flower whose face is a baby-goat mascot costume head with plastic eyes and a silver zipper running down the middle of the face from the top of the head to the chin, with the pull tab at the chin; the costume has no mouth. Expressions: cute (big shiny innocent eyes, no mouth), smug (half-lidded eyes and one thin crooked grin line, the only mouth this character ever shows), sinister with the zipper pulled open showing only darkness and two white dot eyes.")
 portrait("C3", "barky",
          [("barky_edgy.png", "olhar de lado sombrio, franja no olho"), ("barky_embarrassed.png", "corando, orelhas para trás (blush #FF77C8 opcional)"),
           ("barky_happy.png", "sorriso aberto, orelhas em pé")],
@@ -581,10 +582,11 @@ add(id="E10", slug="props_save_point", file="props/save_point.png", title="Ponto
     prompt="Eight-frame animation strip in equal 20x28 cells: a small green soda bottle with a lime label and a white cap standing still at the bottom, and floating above it a golden yellow four-pointed sparkle star (Undertale save-point style) rotating through 8 phases of a spin. No brand logos, no text.",
     cleanup=["Copie a garrafa idêntica para os 8 frames."], accept=["Loop da rotação sem salto."])
 
+UI_PALETTE = {"E11": [("Branco", "#FFFFFF"), ("Preto", "#000000"), ("HP", "#FFFF00"), ("HP perdido", "#FF0000"), ("Overlay FUR", "#B04CFF")]}
 for id_, slug, file, title, size, ctx, prompt in [
     ("E11", "ui_hud", "ui/hud.png", "Peças do HUD (opcional)", (60, 10),
      "Barra de HP (amarelo `#FFFF00` sobre vermelho `#FF0000`), overlay roxo do FUR e rótulo \"FUR\". **O código já desenha bem com primitivas** — só faça se quiser um visual desenhado à mão.",
-     "Pixel art HUD pieces on black: a short horizontal HP bar segment in yellow #FFFF00, the same segment in red #FF0000, a purple overlay segment, and the small label \"FUR\" in chunky white pixel letters."),
+     "Pixel art HUD pieces on black: a short horizontal HP bar segment in yellow #FFFF00, the same segment in red #FF0000, a purple #B04CFF overlay segment, and the small label \"FUR\" in chunky white pixel letters."),
     ("E12", "ui_dialog_box", "ui/dialog_box.png", "Caixa de diálogo (opcional)", (289, 76),
      "Caixa de diálogo do Undertale: borda branca grossa, interior preto. **Pode continuar no código.** Se fizer, faça em 9-slice (cantos fixos).",
      "Undertale dialogue box, 289x76 pixels, thick 3-pixel white border, solid black interior, square corners."),
@@ -593,7 +595,7 @@ for id_, slug, file, title, size, ctx, prompt in [
      "A 52x52 pixel square frame with a 1-pixel white border and a transparent center."),
 ]:
     add(id=id_, slug=slug, file=file, title=title, style="ui", core=False, code="Não. Opcional.", rooms="Batalha / diálogo.",
-        context=ctx, single=size, fmt_notes=["Imagem única."], palette=[("Branco", "#FFFFFF"), ("Preto", "#000000")],
+        context=ctx, single=size, fmt_notes=["Imagem única."], palette=UI_PALETTE.get(id_, [("Branco", "#FFFFFF"), ("Preto", "#000000")]),
         reference="Nenhuma; desenhado em código.", prompt=prompt, cleanup=[], accept=["Encaixa nas posições atuais do código."])
 
 # ---------------------------------------------------------------- F. tiles + props
@@ -620,9 +622,9 @@ Substitui o fundo atual do overworld (`assets/img/test.bmp`, que é o papel de p
     cleanup=["A IA não respeita grade de tiles: use o resultado como referência de textura e redesenhe/recorte cada tile em 20×20.", "Teste a emenda copiando cada tile de chão 3×3."],
     accept=["Chão sem costura visível.", "Só cores da paleta das Ruins."])
 
-def prop(id, slug, title, rooms, ctx, size, prompt, grid=None, layout=None, anims=None, text=None, notes=(), core=False):
+def prop(id, slug, title, rooms, ctx, size, prompt, grid=None, layout=None, anims=None, text=None, notes=(), core=False, extra=None):
     kw = dict(id=id, slug="props_" + slug, file=f"props/{slug}.png", title=title, style="prop", core=core,
-              code="Não. Depende do loader de mapas/objetos (OVW-003).", rooms=rooms, palette=RUINS_PALETTE,
+              code="Não. Depende do loader de mapas/objetos (OVW-003).", rooms=rooms, palette=RUINS_PALETTE + ([extra] if extra else []),
               reference="Nenhuma.", cleanup=["Mesma luz (de cima/esquerda) e contorno do tileset F1."],
               accept=["Combina com o tileset F1 lado a lado."])
     ctx_full = ctx + "\n\n**Conceito da área:** convenção furry de 2014 abandonada dentro das ruínas roxas do Undertale."
@@ -635,7 +637,7 @@ def prop(id, slug, title, rooms, ctx, size, prompt, grid=None, layout=None, anim
                   fmt_notes=["Estados/variantes em linhas separadas; frames de animação na mesma linha."] + list(notes))
     else:
         kw.update(single=size, fmt_notes=["Imagem única."] + list(notes))
-    kw["prompt"] = prompt
+    kw["prompt"] = prompt + (" Exception to the Ruins palette for this prop only: the %s use %s." % (extra[0].lower(), extra[1].replace(" / ", ", ")) if extra else "")
     add(**kw)
 
 prop("F2", "ruins_banner_welcome", "Banner principal da convenção", "R3 — Ruins Entrance (escadaria dupla).",
@@ -667,7 +669,8 @@ prop("F9", "ruins_dorito_bowl", "Tigela de chips", "R10.",
      "Tigela num pedestal com chips triangulares laranja `#F0A03A`, **sem marca**. Placa: `* \"Take one Dorito.\"` — pegar 4 derruba a tigela.", (20, 20),
      "Small pedestal bowl of orange triangular tortilla chips (no brand), three states stacked vertically in equal 20x20 cells: full; empty; knocked over with chips scattered on the floor.",
      grid=(1, 3), layout="| Linha | Animação | Estado |\n| :---: | :--- | :--- |\n| 0 | `full` | cheia |\n| 1 | `empty` | vazia |\n| 2 | `knocked` | derrubada, chips espalhados |\n",
-     anims=[anim("full", 0, 1), anim("empty", 1, 1), anim("knocked", 2, 1)], text="Take one (opcional, numa plaquinha)")
+     anims=[anim("full", 0, 1), anim("empty", 1, 1), anim("knocked", 2, 1)], text="Take one (opcional, numa plaquinha)",
+     extra=("Chips", "#F0A03A / #C0701E"))
 prop("F10", "ruins_wrapper_pile", "Pilha de embalagens de salgadinho", "R1 (cama onde o Pepe acorda) e chão crocante.",
      "Embalagens amassadas e brilhantes em cores apagadas. Variante pequena = chão crocante; variante larga = a \"cama\" da R1 sob o feixe de luz.", (40, 20),
      "Pile of crumpled shiny snack wrappers and empty chip bags in mixed muted colors, two variants stacked vertically in equal 40x20 cells: a small crunchy pile; a wide flat bed of wrappers. No brands.",
@@ -681,7 +684,8 @@ prop("F11", "ruins_cables", "Cabos que dão choque (os \"espinhos\")", "R6 — C
 prop("F12", "ruins_fireplace", "Lareira", "R11 — sala da casa da Furiell.",
      "Lareira aconchegante de pedra roxa, fogo laranja/amarelo, uma pelúcia secando na cornija. A casa \"cheira a lavanda e fursuit\".", (40, 40),
      "Cozy purple stone fireplace with a crackling orange and yellow fire, a small plush toy drying on the mantel, three animation frames of the fire in equal 40x40 cells in one row.",
-     grid=(3, 1), layout=strip_layout("burn", "3: fogo"), anims=[anim("burn", 0, 3, 6)])
+     grid=(3, 1), layout=strip_layout("burn", "3: fogo"), anims=[anim("burn", 0, 3, 6)],
+     extra=("Flames", "#FFD24A / #F0A03A / #E0602A"))
 prop("F13", "ruins_armchair", "Poltrona felpuda", "R11.",
      "Poltrona grande coberta por uma manta de pelo falso, de frente.", (30, 30),
      "Big comfy armchair covered with a fluffy faux-fur throw blanket, front view, 30x30 pixels.")

@@ -1,0 +1,11 @@
+{
+  "image": "floofy.png",
+  "cell": [24, 24],
+  "origin": [12, 23],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "talk": { "row": 1, "frames": 2, "fps": 4 },
+    "sinister": { "row": 2, "frames": 2, "fps": 3 },
+    "sink": { "row": 3, "frames": 3, "fps": 6, "loop": false }
+  }
+}

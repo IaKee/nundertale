@@ -378,7 +378,7 @@ CARD_RULES = {
            "fully opaque edges, no halo", "background: flat exact #FF00FF"],
     "prop": ["3/4 top-down view, Ruins palette", "1-px dark outline, one shadow tone per color", "hard square pixels, no anti-aliasing",
              "fully opaque edges, no halo", "background: flat exact #FF00FF"],
-    "battle": ["white #FFFFFF line art only", "OPAQUE black #000000 fill inside the silhouette", "no gray; color only where listed",
+    "battle": ["white #FFFFFF line art only", "fully OPAQUE: light parts white, dark parts black", "no gray; color only where listed",
                "hard square pixels, no anti-aliasing", "background: flat exact #FF00FF"],
     "ui": ["simple solid shapes, readable at 2x", "hard square pixels, no anti-aliasing", "fully opaque edges, no halo",
            "only the listed colors", "background: flat exact #FF00FF"],

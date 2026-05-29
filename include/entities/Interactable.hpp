@@ -37,6 +37,7 @@ public:
 private:
     Vector2 m_position;
     float m_animTimer = 0.0f;
+    float m_spriteAnimTimer = 0.0f;
     bool m_frame = false;
 };
 

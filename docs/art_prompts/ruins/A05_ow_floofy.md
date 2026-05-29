@@ -48,7 +48,7 @@ Floofy, a flor sem vergonha, paródia do Flowey (e do Asriel). Flor dourada usan
 | Linha | Animação | Frames |
 | :---: | :--- | :--- |
 | 0 | `idle` | 2: balançando 1 px para os lados |
-| 1 | `talk` | 2: boca de plástico fechada / aberta |
+| 1 | `talk` | 2: **sem boca** (quem fala é o que está dentro da fantasia): a cabeça balança 1 px e o puxador do zíper chacoalha |
 | 2 | `sinister` | 2: zíper aberto, escuridão + dois olhos brancos (frame 2: olhos 1 px menores) |
 | 3 | `sink` (sem loop) | 3: afundando no chão (inteiro → metade → só pétalas) |
 
@@ -100,7 +100,7 @@ Attached: the spec file A05_ow_floofy.md (full details) and these images, in ord
 - image 4: reference for mascot head only
 Draw a new image; never copy the reference images.
 
-Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel dark outline, flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark. Small sprite sheet of a golden yellow flower with big rounded petals and a green stem with two leaves, whose face is a tiny cute white baby-goat mascot costume head with shiny black plastic eyes and a silver zipper running vertically down the middle of the face. Strict grid of 4 rows, equal 24x24 cells, stem base at the bottom center: row 1 idle gently swaying (2 frames), row 2 talking with the plastic mouth closed and open (2 frames), row 3 sinister with the face zipper pulled open revealing only pitch-black darkness and two small glowing white dot eyes (2 frames), row 4 sinking into the ground (full, half, only petals visible). About 20x20 pixels of character per frame. No text.
+Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel dark outline, flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark. Small sprite sheet of a golden yellow flower with big rounded petals and a green stem with two leaves, whose face is a tiny cute white baby-goat mascot costume head with shiny black plastic eyes, a silver zipper running down the middle of the face from the top of the head to the chin, with the pull tab at the chin, and no mouth. Strict grid of 4 rows, equal 24x24 cells, stem base at the bottom center: row 1 idle gently swaying (2 frames), row 2 talking (2 frames, no mouth: the voice comes from whatever is inside the costume, so talking is shown only by the head bobbing 1 pixel and the zipper pull tab swinging), row 3 sinister with the face zipper pulled open revealing only pitch-black darkness and two small glowing white dot eyes (2 frames), row 4 sinking into the ground (full, half, only petals visible). About 20x20 pixels of character per frame. No text.
 
 Use only these colors: #2A1A08 (Contorno), #FFD23F (Pétalas), #E6A800 (sombra), #3FA34D (Caule e folhas), #2C7A38 (Caule e folhas), #F4F0EA (Cabeça de fursuit), #CFC3DD (Cabeça de fursuit), #111111 (Olhos de plástico), #9A9AAA (Zíper), #000000 (Interior aberto).
 Output: one image with the whole sheet laid out exactly like image 1 (3 columns x 4 rows of equal cells), on a flat, exact #FF00FF magenta background with no noise.

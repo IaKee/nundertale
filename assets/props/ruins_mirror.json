@@ -1,0 +1,9 @@
+{
+  "image": "ruins_mirror.png",
+  "cell": [20, 40],
+  "origin": [10, 39],
+  "anims": {
+    "normal": { "row": 0, "frames": 1 },
+    "fur": { "row": 1, "frames": 1 }
+  }
+}

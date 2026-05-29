@@ -1,0 +1,8 @@
+{
+  "image": "tear.png",
+  "cell": [6, 8],
+  "origin": [3, 4],
+  "anims": {
+    "idle": { "row": 0, "frames": 1 }
+  }
+}

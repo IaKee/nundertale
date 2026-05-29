@@ -898,8 +898,51 @@ void BattleSystem::drawBackgroundGrid() const {
 }
 
 void BattleSystem::drawSoul(float x, float y, Color color) const {
-    DrawCircle((int)x - 4, (int)y - 2, 5, color);
-    DrawCircle((int)x + 4, (int)y - 2, 5, color);
+    if (m_currentContext != nullptr) {
+        drawSoul(*m_currentContext, x, y, color);
+    } else {
+        DrawCircle(static_cast<int>(x) - 4, static_cast<int>(y) - 2, 5, color);
+        DrawCircle(static_cast<int>(x) + 4, static_cast<int>(y) - 2, 5, color);
+        DrawTriangle(
+            { x - 9.0f, y },
+            { x + 9.0f, y },
+            { x, y + 9.0f },
+            color
+        );
+    }
+}
+
+void BattleSystem::drawSoul(GameContext& context, float x, float y, Color color) const {
+    const SpriteSheetDef* soulSheet = spriteSheetCache().load("assets/ui/souls.png", "assets/ui/souls.json");
+    if (soulSheet != nullptr) {
+        Texture2D soulTex = context.resources.getTexture("assets/ui/souls.png");
+        if (soulTex.id > 0) {
+            SetTextureFilter(soulTex, TEXTURE_FILTER_POINT);
+            std::string anim = "red";
+            Color tint = WHITE;
+            tint.a = color.a;
+
+            if (color.r == 255 && color.g == 0 && color.b == 0) {
+                anim = "red";
+            } else if ((color.r == 0 && color.g == 255 && color.b == 0) ||
+                       (color.r == 0 && color.g == 192 && color.b == 0)) {
+                anim = "green";
+            } else if (color.r == 0 && color.g == 38 && color.b == 255) {
+                anim = "blue";
+            } else if (color.r == 255 && color.g == 255 && color.b == 0) {
+                anim = "yellow";
+            } else {
+                anim = "red";
+                tint = color;
+            }
+
+            drawSprite(soulTex, *soulSheet, anim, 0.0f, { x, y + 1.0f }, 2.0f, tint);
+            return;
+        }
+    }
+
+    DrawCircle(static_cast<int>(x) - 4, static_cast<int>(y) - 2, 5, color);
+    DrawCircle(static_cast<int>(x) + 4, static_cast<int>(y) - 2, 5, color);
     DrawTriangle(
         { x - 9.0f, y },
         { x + 9.0f, y },
@@ -969,21 +1012,56 @@ void BattleSystem::drawButtons(GameContext& context, Font font) const {
     const char* btnLabels[4] = { "FIGHT", "ACT", "ITEM", "MERCY" };
     int btnX[4] = { BATTLE_BUTTON_X_FIGHT, BATTLE_BUTTON_X_ACT, BATTLE_BUTTON_X_ITEM, BATTLE_BUTTON_X_MERCY };
 
+    const SpriteSheetDef* buttonSheet = spriteSheetCache().load(
+        "assets/ui/buttons.png",
+        "assets/ui/buttons.json"
+    );
+    Texture2D buttonTexture = { 0, 0, 0, 0, 0 };
+    if (buttonSheet != nullptr) {
+        buttonTexture = context.resources.getTexture("assets/ui/buttons.png");
+        if (buttonTexture.id > 0) {
+            SetTextureFilter(buttonTexture, TEXTURE_FILTER_POINT);
+        }
+    }
+
     for (int i = 0; i < 4; ++i) {
-        Rectangle bRec = { (float)btnX[i], (float)BATTLE_BUTTON_Y, (float)BATTLE_BUTTON_W, (float)BATTLE_BUTTON_H };
+        Rectangle bRec = { static_cast<float>(btnX[i]), static_cast<float>(BATTLE_BUTTON_Y), static_cast<float>(BATTLE_BUTTON_W), static_cast<float>(BATTLE_BUTTON_H) };
         bool isSelected = (m_selectedButton == static_cast<MainButton>(i));
-
         bool mercyLocked = (i == static_cast<int>(MainButton::Mercy) && m_enemy->isMercyLocked());
-        Color bColor = mercyLocked ? Color{ 128, 128, 128, 255 } : (isSelected ? UI_YELLOW : UI_ORANGE);
-        DrawRectangleLinesEx(bRec, 2.0f, bColor);
 
-        float textW = context.resources.measureTextWidth(font, btnLabels[i], 22, 1.0f);
-        Vector2 textPos = { bRec.x + (bRec.width - textW) * 0.5f, bRec.y + 10 };
-        context.resources.drawText(font, btnLabels[i], textPos, 22, bColor, 1.0f);
+        bool drewSprite = false;
+        if (buttonSheet != nullptr && buttonTexture.id > 0) {
+            std::string anim;
+            if (i == static_cast<int>(MainButton::Mercy) && mercyLocked) {
+                anim = "mercy_locked";
+            } else if (i == 0) {
+                anim = isSelected ? "fight_selected" : "fight";
+            } else if (i == 1) {
+                anim = isSelected ? "act_selected" : "act";
+            } else if (i == 2) {
+                anim = isSelected ? "item_selected" : "item";
+            } else {
+                anim = isSelected ? "mercy_selected" : "mercy";
+            }
+
+            if (buttonSheet->anims.find(anim) != buttonSheet->anims.end()) {
+                drawSprite(buttonTexture, *buttonSheet, anim, 0.0f, { bRec.x, bRec.y }, 2.0f, WHITE);
+                drewSprite = true;
+            }
+        }
+
+        if (!drewSprite) {
+            Color bColor = mercyLocked ? Color{ 128, 128, 128, 255 } : (isSelected ? UI_YELLOW : UI_ORANGE);
+            DrawRectangleLinesEx(bRec, 2.0f, bColor);
+
+            float textW = context.resources.measureTextWidth(font, btnLabels[i], 22, 1.0f);
+            Vector2 textPos = { bRec.x + (bRec.width - textW) * 0.5f, bRec.y + 10.0f };
+            context.resources.drawText(font, btnLabels[i], textPos, 22, bColor, 1.0f);
+        }
 
         // Undertale 1:1: Selected button replaces left icon with Soul Heart (BUI-006)
         if (isSelected && m_state == BattleState::MenuSelect) {
-            drawSoul(bRec.x + 18, bRec.y + 21, SOUL_RED);
+            drawSoul(context, bRec.x + 18.0f, bRec.y + 21.0f, SOUL_RED);
         }
     }
 }
@@ -1043,6 +1121,12 @@ void BattleSystem::drawSoulTrails() const {
 }
 
 void BattleSystem::drawAttackTarget() const {
+    if (m_currentContext != nullptr) {
+        drawAttackTarget(*m_currentContext);
+    }
+}
+
+void BattleSystem::drawAttackTarget(GameContext& context) const {
     int innerX = static_cast<int>(m_arenaRect.x) + 5;
     int innerY = static_cast<int>(m_arenaRect.y) + 5;
     int innerW = std::max(1, static_cast<int>(m_arenaRect.width) - 10);
@@ -1061,41 +1145,59 @@ void BattleSystem::drawAttackTarget() const {
     float centerX = static_cast<float>(innerX) + static_cast<float>(innerW) * 0.5f;
     float centerY = static_cast<float>(innerY) + static_cast<float>(innerH) * 0.5f;
 
-    float radiusX = (static_cast<float>(innerW) * 0.5f - 1.0f) * squish;
-    float radiusY = static_cast<float>(innerH) * 0.5f - 1.0f;
-
-    if (squish > 0.005f && radiusX >= 1.0f) {
-        // Vertical lines (bands): 8 symmetric pairs narrowing toward center
-        for (int i = 1; i <= 8; ++i) {
-            float t = static_cast<float>(i) / 9.0f;
-            float ratio = std::pow(t, 1.4f);
-            float baseDx = (static_cast<float>(innerW) * 0.5f - 1.0f) * ratio;
-            float dx = baseDx * squish;
-
-            if (dx < radiusX) {
-                float halfH = radiusY * std::sqrt(1.0f - (dx * dx) / (radiusX * radiusX));
-                Color lineColor = { 0, 160, 0, 255 };
-
-                // Right symmetric line
-                DrawLineEx({ centerX + dx, centerY - halfH }, { centerX + dx, centerY + halfH }, 1.0f, lineColor);
-                // Left symmetric line
-                DrawLineEx({ centerX - dx, centerY - halfH }, { centerX - dx, centerY + halfH }, 1.0f, lineColor);
+    bool drewTargetSprite = false;
+    if (FileExists("assets/ui/target.png")) {
+        Texture2D targetTex = context.resources.getTexture("assets/ui/target.png");
+        if (targetTex.id > 0) {
+            SetTextureFilter(targetTex, TEXTURE_FILTER_POINT);
+            float targetW = 560.0f * squish;
+            float targetH = 130.0f;
+            if (squish > 0.005f && targetW >= 1.0f) {
+                Rectangle src = { 0.0f, 0.0f, static_cast<float>(targetTex.width), static_cast<float>(targetTex.height) };
+                Rectangle dst = { centerX - targetW * 0.5f, centerY - targetH * 0.5f, targetW, targetH };
+                DrawTexturePro(targetTex, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
             }
+            drewTargetSprite = true;
         }
+    }
 
-        // Center band: slightly brighter light green translucent strip
-        float bandW = 14.0f * squish;
-        if (bandW > 1.0f) {
-            DrawRectangle(static_cast<int>(centerX - bandW * 0.5f), innerY, static_cast<int>(bandW), innerH, Color{ 0, 180, 0, 45 });
-        }
+    if (!drewTargetSprite) {
+        float radiusX = (static_cast<float>(innerW) * 0.5f - 1.0f) * squish;
+        float radiusY = static_cast<float>(innerH) * 0.5f - 1.0f;
 
-        // White center line
-        DrawLineEx({ centerX, centerY - radiusY }, { centerX, centerY + radiusY }, 2.0f, WHITE);
+        if (squish > 0.005f && radiusX >= 1.0f) {
+            // Vertical lines (bands): 8 symmetric pairs narrowing toward center
+            for (int i = 1; i <= 8; ++i) {
+                float t = static_cast<float>(i) / 9.0f;
+                float ratio = std::pow(t, 1.4f);
+                float baseDx = (static_cast<float>(innerW) * 0.5f - 1.0f) * ratio;
+                float dx = baseDx * squish;
 
-        // White ellipse outline (2 px thick)
-        DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX, radiusY, WHITE);
-        if (radiusX > 1.5f && radiusY > 1.5f) {
-            DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX - 1.0f, radiusY - 1.0f, WHITE);
+                if (dx < radiusX) {
+                    float halfH = radiusY * std::sqrt(1.0f - (dx * dx) / (radiusX * radiusX));
+                    Color lineColor = { 0, 160, 0, 255 };
+
+                    // Right symmetric line
+                    DrawLineEx({ centerX + dx, centerY - halfH }, { centerX + dx, centerY + halfH }, 1.0f, lineColor);
+                    // Left symmetric line
+                    DrawLineEx({ centerX - dx, centerY - halfH }, { centerX - dx, centerY + halfH }, 1.0f, lineColor);
+                }
+            }
+
+            // Center band: slightly brighter light green translucent strip
+            float bandW = 14.0f * squish;
+            if (bandW > 1.0f) {
+                DrawRectangle(static_cast<int>(centerX - bandW * 0.5f), innerY, static_cast<int>(bandW), innerH, Color{ 0, 180, 0, 45 });
+            }
+
+            // White center line
+            DrawLineEx({ centerX, centerY - radiusY }, { centerX, centerY + radiusY }, 2.0f, WHITE);
+
+            // White ellipse outline (2 px thick)
+            DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX, radiusY, WHITE);
+            if (radiusX > 1.5f && radiusY > 1.5f) {
+                DrawEllipseLines(static_cast<int>(std::round(centerX)), static_cast<int>(std::round(centerY)), radiusX - 1.0f, radiusY - 1.0f, WHITE);
+            }
         }
     }
 
@@ -1104,18 +1206,94 @@ void BattleSystem::drawAttackTarget() const {
     if (m_fightPhase == FightPhase::Moving || m_fightPhase == FightPhase::HitHold) {
         bool isWhite = (m_fightPhase == FightPhase::Moving) ? true : attackBarBlinkWhite(m_fightPhaseTimer);
 
-        Color barFill = isWhite ? WHITE : BLACK;
-        Color barOutline = isWhite ? BLACK : Color{ 30, 30, 30, 255 };
+        bool drewBarSprite = false;
+        const SpriteSheetDef* barSheet = spriteSheetCache().load("assets/ui/attack_bar.png", "assets/ui/attack_bar.json");
+        if (barSheet != nullptr) {
+            Texture2D barTex = context.resources.getTexture("assets/ui/attack_bar.png");
+            if (barTex.id > 0) {
+                SetTextureFilter(barTex, TEXTURE_FILTER_POINT);
+                Color barTint = isWhite ? WHITE : Color{ 30, 30, 30, 255 };
+                drawSprite(barTex, *barSheet, "idle", 0.0f, { m_targetCursorX, centerY }, 2.0f, barTint);
+                drewBarSprite = true;
+            }
+        }
 
-        Rectangle barRect = { m_targetCursorX - 7.0f, static_cast<float>(innerY), 14.0f, static_cast<float>(innerH) };
-        DrawRectangleRec(barRect, barFill);
-        DrawRectangleLinesEx(barRect, 2.0f, barOutline);
+        if (!drewBarSprite) {
+            Color barFill = isWhite ? WHITE : BLACK;
+            Color barOutline = isWhite ? BLACK : Color{ 30, 30, 30, 255 };
+
+            Rectangle barRect = { m_targetCursorX - 7.0f, static_cast<float>(innerY), 14.0f, static_cast<float>(innerH) };
+            DrawRectangleRec(barRect, barFill);
+            DrawRectangleLinesEx(barRect, 2.0f, barOutline);
+        }
     }
 
     EndScissorMode();
 }
 
+void BattleSystem::drawBullet(GameContext& context, const Bullet& b) const {
+    if (!b.active) return;
+
+    Color renderColor = b.color;
+    if (b.attackColor == AttackColor::Blue) {
+        renderColor = ATTACK_COLOR_BLUE;
+    } else if (b.attackColor == AttackColor::Orange) {
+        renderColor = ATTACK_COLOR_ORANGE;
+    } else if (b.attackColor == AttackColor::Green) {
+        renderColor = ATTACK_COLOR_GREEN;
+    }
+
+    bool drewSprite = false;
+
+    if (b.type == BulletType::UwU && !b.text.empty()) {
+        char first = static_cast<char>(std::tolower(static_cast<unsigned char>(b.text[0])));
+        if (first == 'u' || first == 'w') {
+            const SpriteSheetDef* uwuSheet = spriteSheetCache().load("assets/bullets/uwu_letters.png", "assets/bullets/uwu_letters.json");
+            if (uwuSheet != nullptr) {
+                Texture2D uwuTex = context.resources.getTexture("assets/bullets/uwu_letters.png");
+                if (uwuTex.id > 0) {
+                    SetTextureFilter(uwuTex, TEXTURE_FILTER_POINT);
+                    std::string anim = (first == 'u') ? "u" : "w";
+                    drawSprite(uwuTex, *uwuSheet, anim, 0.0f, b.position, 2.0f, renderColor);
+                    drewSprite = true;
+                }
+            }
+        }
+    } else if (b.type == BulletType::SodaCan) {
+        const SpriteSheetDef* canSheet = spriteSheetCache().load("assets/bullets/can.png", "assets/bullets/can.json");
+        if (canSheet != nullptr) {
+            Texture2D canTex = context.resources.getTexture("assets/bullets/can.png");
+            if (canTex.id > 0) {
+                SetTextureFilter(canTex, TEXTURE_FILTER_POINT);
+                drawSprite(canTex, *canSheet, "spin", m_enemyIdleTimer, b.position, 2.0f, renderColor);
+                drewSprite = true;
+            }
+        }
+    } else if (b.type == BulletType::Awoo) {
+        const SpriteSheetDef* ringSheet = spriteSheetCache().load("assets/bullets/sound_ring.png", "assets/bullets/sound_ring.json");
+        if (ringSheet != nullptr) {
+            Texture2D ringTex = context.resources.getTexture("assets/bullets/sound_ring.png");
+            if (ringTex.id > 0) {
+                SetTextureFilter(ringTex, TEXTURE_FILTER_POINT);
+                std::string anim = "large";
+                if (b.arcRadius <= 10.0f) {
+                    anim = "small";
+                } else if (b.arcRadius <= 22.0f) {
+                    anim = "medium";
+                }
+                drawSprite(ringTex, *ringSheet, anim, 0.0f, b.position, 2.0f, renderColor);
+                drewSprite = true;
+            }
+        }
+    }
+
+    if (!drewSprite) {
+        b.render();
+    }
+}
+
 void BattleSystem::render(GameContext& context) {
+    m_currentContext = &context;
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
 
@@ -1232,11 +1410,34 @@ void BattleSystem::render(GameContext& context) {
 
     // FGT-004: Slash Animation
     if (m_slashAnimTimer > 0.0f) {
-        float slashProg = 1.0f - (m_slashAnimTimer / 0.25f);
-        Vector2 slashStart = { (float)enemyCenterX - 45.0f + slashProg * 15.0f, (float)baselineY - 145.0f + slashProg * 25.0f };
-        Vector2 slashEnd   = { (float)enemyCenterX + 45.0f - slashProg * 15.0f, (float)baselineY - 65.0f + slashProg * 10.0f };
-        DrawLineEx(slashStart, slashEnd, 4.0f, WHITE);
-        DrawCircle(enemyCenterX, baselineY - 105, 8.0f * (1.0f - slashProg), UI_YELLOW);
+        bool drewSlashSprite = false;
+        const SpriteSheetDef* slashSheet = spriteSheetCache().load("assets/ui/slash.png", "assets/ui/slash.json");
+        if (slashSheet != nullptr) {
+            Texture2D slashTex = context.resources.getTexture("assets/ui/slash.png");
+            if (slashTex.id > 0) {
+                SetTextureFilter(slashTex, TEXTURE_FILTER_POINT);
+                float progress = std::clamp(1.0f - (m_slashAnimTimer / 0.25f), 0.0f, 1.0f);
+                float animTime = progress * 0.4f;
+                drawSprite(
+                    slashTex,
+                    *slashSheet,
+                    "hit",
+                    animTime,
+                    { static_cast<float>(enemyCenterX), static_cast<float>(baselineY - 105) },
+                    2.0f,
+                    WHITE
+                );
+                drewSlashSprite = true;
+            }
+        }
+
+        if (!drewSlashSprite) {
+            float slashProg = 1.0f - (m_slashAnimTimer / 0.25f);
+            Vector2 slashStart = { static_cast<float>(enemyCenterX) - 45.0f + slashProg * 15.0f, static_cast<float>(baselineY) - 145.0f + slashProg * 25.0f };
+            Vector2 slashEnd   = { static_cast<float>(enemyCenterX) + 45.0f - slashProg * 15.0f, static_cast<float>(baselineY) - 65.0f + slashProg * 10.0f };
+            DrawLineEx(slashStart, slashEnd, 4.0f, WHITE);
+            DrawCircle(enemyCenterX, baselineY - 105, 8.0f * (1.0f - slashProg), UI_YELLOW);
+        }
     }
 
     // FGT-005: Floating Damage Number & Enemy HP Bar
@@ -1315,7 +1516,7 @@ void BattleSystem::render(GameContext& context) {
                 DrawRectangleRec(zone.area, zone.color);
             }
             for (const auto& b : m_bullets) {
-                b.render();
+                drawBullet(context, b);
             }
         EndScissorMode();
 
@@ -1348,7 +1549,7 @@ void BattleSystem::render(GameContext& context) {
             context.resources.drawText(fontTiny, "ribbit", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
         }
     } else if (m_state == BattleState::FightTarget) {
-        drawAttackTarget();
+        drawAttackTarget(context);
     } else if (m_state == BattleState::ActSelect) {
         // ACT menu 2-column layout (BUI-008, ACT-001)
         const auto& acts = m_enemy->getActs();
@@ -1473,6 +1674,7 @@ void BattleSystem::render(GameContext& context) {
             }
         }
     }
+    m_currentContext = nullptr;
 }
 
 } // namespace nundertale

@@ -1,0 +1,10 @@
+{
+  "image": "ruins_dorito_bowl.png",
+  "cell": [20, 20],
+  "origin": [10, 19],
+  "anims": {
+    "full": { "row": 0, "frames": 1 },
+    "empty": { "row": 1, "frames": 1 },
+    "knocked": { "row": 2, "frames": 1 }
+  }
+}

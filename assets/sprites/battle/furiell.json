@@ -1,0 +1,10 @@
+{
+  "image": "furiell.png",
+  "cell": [80, 110],
+  "origin": [40, 110],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "hurt": { "row": 1, "frames": 1 },
+    "sad": { "row": 2, "frames": 1 }
+  }
+}

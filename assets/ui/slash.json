@@ -1,0 +1,8 @@
+{
+  "image": "slash.png",
+  "cell": [30, 30],
+  "origin": [15, 15],
+  "anims": {
+    "hit": { "row": 0, "frames": 6, "fps": 15, "loop": false }
+  }
+}

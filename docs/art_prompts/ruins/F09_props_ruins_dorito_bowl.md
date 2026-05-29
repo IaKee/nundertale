@@ -63,6 +63,7 @@ Tigela num pedestal com chips triangulares laranja `#F0A03A`, **sem marca**. Pla
 | Cortina 18+ | `#111111` |
 | Tela CRT | `#1E3FBF` |
 | Roxos intermediários (opcionais) | `#4A2A70` / `#7A55A8` / `#9C7CC4` |
+| Chips | `#F0A03A` / `#C0701E` |
 
 ## 5. Referência atual
 
@@ -96,9 +97,9 @@ Attached: the spec file F09_props_ruins_dorito_bowl.md (full details) and these 
 - image 4: reference for the chips only
 Draw a new image; never copy the reference images.
 
-Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Small pedestal bowl of orange triangular tortilla chips (no brand), three states stacked vertically in equal 20x20 cells: full; empty; knocked over with chips scattered on the floor.
+Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Small pedestal bowl of orange triangular tortilla chips (no brand), three states stacked vertically in equal 20x20 cells: full; empty; knocked over with chips scattered on the floor. Exception to the Ruins palette for this prop only: the chips use #F0A03A, #C0701E.
 
-Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários).
+Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários), #F0A03A (Chips), #C0701E (Chips).
 Output: one image with the whole sheet laid out exactly like image 1 (1 columns x 3 rows of equal cells), on a flat, exact #FF00FF magenta background with no noise.
 Avoid: blurry, anti-aliased, soft shading, smooth gradient, 3D render, realistic, photo, painterly, noisy texture, random dithering, jpeg artifacts, watermark, signature, brand logo, real person, real face, child proportions, baby face, nsfw, suggestive, cropped, cut off, inconsistent sizes between frames.
 ```

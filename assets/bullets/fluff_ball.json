@@ -1,0 +1,8 @@
+{
+  "image": "fluff_ball.png",
+  "cell": [12, 12],
+  "origin": [6, 6],
+  "anims": {
+    "pulse": { "row": 0, "frames": 2, "fps": 4 }
+  }
+}

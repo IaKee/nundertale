@@ -1,5 +1,6 @@
 #include "entities/Interactable.hpp"
 #include "core/GameContext.hpp"
+#include "ui/SpriteDraw.hpp"
 #include <raylib.h>
 
 namespace nundertale {
@@ -12,6 +13,7 @@ Rectangle SavePoint::getBounds() const {
 }
 
 void SavePoint::update(float dt) {
+    m_spriteAnimTimer += dt;
     m_animTimer += dt;
     if (m_animTimer >= 0.25f) {
         m_animTimer = 0.0f;
@@ -24,7 +26,25 @@ void SavePoint::interact(GameContext& context) {
     context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
 }
 
-void SavePoint::render(GameContext& /*context*/) {
+void SavePoint::render(GameContext& context) {
+    const SpriteSheetDef* savePointSheet = spriteSheetCache().load(
+        "assets/props/save_point.png",
+        "assets/props/save_point.json"
+    );
+    if (savePointSheet != nullptr) {
+        Texture2D savePointTexture = context.resources.getTexture("assets/props/save_point.png");
+        SetTextureFilter(savePointTexture, TEXTURE_FILTER_POINT);
+        const Rectangle bounds = getBounds();
+        drawSprite(
+            savePointTexture,
+            *savePointSheet,
+            "spin",
+            m_spriteAnimTimer,
+            { bounds.x + bounds.width * 0.5f, bounds.y + bounds.height }
+        );
+        return;
+    }
+
     int cx = static_cast<int>(m_position.x);
     int cy = static_cast<int>(m_position.y);
 

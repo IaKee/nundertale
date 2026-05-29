@@ -59,6 +59,7 @@ Lareira aconchegante de pedra roxa, fogo laranja/amarelo, uma pelúcia secando n
 | Cortina 18+ | `#111111` |
 | Tela CRT | `#1E3FBF` |
 | Roxos intermediários (opcionais) | `#4A2A70` / `#7A55A8` / `#9C7CC4` |
+| Flames | `#FFD24A` / `#F0A03A` / `#E0602A` |
 
 ## 5. Referência atual
 
@@ -92,9 +93,9 @@ Attached: the spec file F12_props_ruins_fireplace.md (full details) and these im
 - image 4: reference for the fireplace only
 Draw a new image; never copy the reference images.
 
-Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Cozy purple stone fireplace with a crackling orange and yellow fire, a small plush toy drying on the mantel, three animation frames of the fire in equal 40x40 cells in one row.
+Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Cozy purple stone fireplace with a crackling orange and yellow fire, a small plush toy drying on the mantel, three animation frames of the fire in equal 40x40 cells in one row. Exception to the Ruins palette for this prop only: the flames use #FFD24A, #F0A03A, #E0602A.
 
-Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários).
+Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários), #FFD24A (Flames), #F0A03A (Flames), #E0602A (Flames).
 Output: one image with the whole sheet laid out exactly like image 1 (3 columns x 1 rows of equal cells), on a flat, exact #FF00FF magenta background with no noise.
 Avoid: blurry, anti-aliased, soft shading, smooth gradient, 3D render, realistic, photo, painterly, noisy texture, random dithering, jpeg artifacts, watermark, signature, brand logo, real person, real face, child proportions, baby face, nsfw, suggestive, cropped, cut off, inconsistent sizes between frames.
 ```

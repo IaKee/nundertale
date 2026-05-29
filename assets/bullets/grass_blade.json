@@ -1,0 +1,9 @@
+{
+  "image": "grass_blade.png",
+  "cell": [8, 16],
+  "origin": [4, 8],
+  "anims": {
+    "white": { "row": 0, "frames": 2, "fps": 4 },
+    "green": { "row": 1, "frames": 2, "fps": 4 }
+  }
+}

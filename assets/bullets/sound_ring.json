@@ -1,0 +1,10 @@
+{
+  "image": "sound_ring.png",
+  "cell": [32, 32],
+  "origin": [16, 16],
+  "anims": {
+    "small": { "row": 0, "frames": 1 },
+    "medium": { "row": 1, "frames": 1 },
+    "large": { "row": 2, "frames": 1 }
+  }
+}

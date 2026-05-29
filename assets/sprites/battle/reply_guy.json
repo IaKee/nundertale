@@ -1,0 +1,9 @@
+{
+  "image": "reply_guy.png",
+  "cell": [40, 56],
+  "origin": [20, 56],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "hurt": { "row": 1, "frames": 1 }
+  }
+}

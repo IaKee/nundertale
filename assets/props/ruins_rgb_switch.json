@@ -1,0 +1,10 @@
+{
+  "image": "ruins_rgb_switch.png",
+  "cell": [20, 20],
+  "origin": [10, 19],
+  "anims": {
+    "off": { "row": 0, "frames": 1 },
+    "on": { "row": 1, "frames": 1 },
+    "marked": { "row": 2, "frames": 1 }
+  }
+}

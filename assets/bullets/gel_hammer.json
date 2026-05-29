@@ -1,0 +1,8 @@
+{
+  "image": "gel_hammer.png",
+  "cell": [12, 16],
+  "origin": [6, 8],
+  "anims": {
+    "wobble": { "row": 0, "frames": 2, "fps": 4 }
+  }
+}

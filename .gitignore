@@ -35,3 +35,7 @@ Thumbs.db
 Desktop.ini
 tools/content_lint_blocklist.txt
 tools/*.exe
+
+# Third-party references and raw AI generations (never committed)
+assets/_ref/
+assets/_gen/

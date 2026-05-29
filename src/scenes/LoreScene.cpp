@@ -17,20 +17,27 @@ void LoreScene::onEnter(GameContext& context) {
 
     // FRT-002 / LORE §9: the 10 canonical intro cards (gamer propaganda, biased narrator)
     m_cards = {
-        { "assets/img/lore1.bmp", { "Long ago, two races ruled", "over the internet:", "GAMERS and FURRIES." } },
-        { "assets/img/lore2.bmp", { "One day, the FURRIES tried", "to turn every GAMER", "into a FURRY." } },
-        { "assets/img/lore3.bmp", { "The GAMERS fought back with", "copypastas, raids, and a", "total lack of shame." } },
-        { "assets/img/lore4.bmp", { "After a decisive ratio,", "the GAMERS were victorious." } },
-        { "assets/img/lore4.bmp", { "Seven GAMERS sealed the", "degenerates underground", "with a magic BARRIER." } },
-        { "assets/img/lore5.bmp", { "Many years later...", "", "MT. DEW, 202X" } },
-        { "assets/img/lore6.bmp", { "Legend says that those who", "keep on yiffin'", "may never game again..." } },
+        { "assets/img/lore1.bmp", { "Long ago, two races ruled", "over the internet:", "GAMERS and FURRIES." }, "assets/img/lore/card01.png" },
+        { "assets/img/lore2.bmp", { "One day, the FURRIES tried", "to turn every GAMER", "into a FURRY." }, "assets/img/lore/card02.png" },
+        { "assets/img/lore3.bmp", { "The GAMERS fought back with", "copypastas, raids, and a", "total lack of shame." }, "assets/img/lore/card03.png" },
+        { "assets/img/lore4.bmp", { "After a decisive ratio,", "the GAMERS were victorious." }, "assets/img/lore/card04.png" },
+        { "assets/img/lore4.bmp", { "Seven GAMERS sealed the", "degenerates underground", "with a magic BARRIER." }, "assets/img/lore/card05.png" },
+        { "assets/img/lore5.bmp", { "Many years later...", "", "MT. DEW, 202X" }, "assets/img/lore/card06.png" },
+        { "assets/img/lore6.bmp", { "Legend says that those who", "keep on yiffin'", "may never game again..." }, "assets/img/lore/card07.png" },
         // Card 8: Pepe looking at the Rift
-        { "assets/img/lore7.bmp", {} },
+        { "assets/img/lore7.bmp", {}, "assets/img/lore/card08.png" },
         // Card 9: a foot slipping on a Dorito next to a tail
-        { "assets/img/lore8.bmp", {} },
+        { "assets/img/lore8.bmp", {}, "assets/img/lore/card09.png" },
         // Card 10: the fall (followed by the lore10 animation and the cut to the title)
-        { "assets/img/lore9.bmp", {} }
+        { "assets/img/lore9.bmp", {}, "assets/img/lore/card10.png" }
     };
+
+    m_usePanels = true;
+    for (const LoreCard& card : m_cards) {
+        if (!FileExists(card.panelPath.c_str())) {
+            m_usePanels = false;
+        }
+    }
 
     m_currentCard = 0;
     m_currentLine = 0;
@@ -89,6 +96,9 @@ void LoreScene::update(float dt, GameContext& context) {
     if (card.lines.empty()) {
         m_cardTimer += dt;
         float delay = (m_currentCard == SLIP_CARD) ? 2.0f : 1.5f; // the slip card has a slightly longer pause
+        if (m_usePanels && m_currentCard + 1 == m_cards.size()) {
+            delay = 2.5f; // the fall is the last image before the title
+        }
         if (m_cardTimer >= delay || context.input.isConfirmPressed()) {
             m_currentCard++;
             if (m_currentCard < m_cards.size()) {
@@ -98,6 +108,8 @@ void LoreScene::update(float dt, GameContext& context) {
                 m_currentLine = 0;
                 m_charIndex = 0;
                 m_cardTextDone = false;
+            } else if (m_usePanels) {
+                context.scenes.changeScene(std::make_unique<TitleScene>(), 0.6f);
             } else {
                 // Begin Card 10 animation
                 m_isPlayingCard10Anim = true;
@@ -179,12 +191,18 @@ void LoreScene::render(GameContext& context) {
     if (m_currentCard >= m_cards.size()) return;
 
     LoreCard& card = m_cards[m_currentCard];
-    Texture2D tex = context.resources.getTexture(card.imagePath);
-
-    // Exact original coordinates: lore_img_posx = 121, lore_img_posy = 62
     unsigned char alphaByte = static_cast<unsigned char>(m_cardAlpha * 255.0f);
     Color tint = { 255, 255, 255, alphaByte };
-    DrawTexture(tex, 121, 62, tint);
+    if (m_usePanels) {
+        // ART-041: 200x110 native panel at 2x (400x220), like Undertale's intro panels
+        Texture2D panel = context.resources.getTexture(card.panelPath);
+        SetTextureFilter(panel, TEXTURE_FILTER_POINT);
+        DrawTextureEx(panel, { 120.0f, 62.0f }, 0.0f, 2.0f, tint);
+    } else {
+        // Exact original coordinates: lore_img_posx = 121, lore_img_posy = 62
+        Texture2D tex = context.resources.getTexture(card.imagePath);
+        DrawTexture(tex, 121, 62, tint);
+    }
 
     // Exact original text coordinates: textx = 125, text1y = 310, text2y = 350, text3y = 390
     int textX = 125;

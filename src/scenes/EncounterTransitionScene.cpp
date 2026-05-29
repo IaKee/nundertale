@@ -2,6 +2,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "ui/SpriteDraw.hpp"
 
 namespace nundertale {
 
@@ -81,32 +82,60 @@ void EncounterTransitionScene::render(GameContext& context) {
 
     if (m_phase == Phase::Alert) {
         // Draw player character (Pepe)
-        Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
         Vector2 pPos = { m_startPos.x - 14.0f, m_startPos.y - 22.0f };
-        Rectangle src = { 1, 1, 19, 29 };
-        Rectangle dest = { pPos.x, pPos.y, 38, 58 };
-        DrawTexturePro(pepeTex, src, dest, { 0, 0 }, 0.0f, WHITE);
+        const SpriteSheetDef* pepeSheet = spriteSheetCache().load(
+            "assets/sprites/ow/pepe_frog.png",
+            "assets/sprites/ow/pepe_frog.json"
+        );
+        if (pepeSheet != nullptr) {
+            Texture2D pepeTexture = context.resources.getTexture("assets/sprites/ow/pepe_frog.png");
+            SetTextureFilter(pepeTexture, TEXTURE_FILTER_POINT);
+            drawSprite(
+                pepeTexture,
+                *pepeSheet,
+                "stand_down",
+                0.0f,
+                { pPos.x + 19.0f, pPos.y + 58.0f }
+            );
+        } else {
+            Texture2D pepeTexture = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
+            Rectangle src = { 1, 1, 19, 29 };
+            Rectangle dest = { pPos.x, pPos.y, 38, 58 };
+            DrawTexturePro(pepeTexture, src, dest, { 0, 0 }, 0.0f, WHITE);
+        }
 
         // Draw "!" exclamation balloon above player's head (ENC-001)
         float balloonX = pPos.x + 9.0f;
         float balloonY = pPos.y - 30.0f;
-        Rectangle bRect = { balloonX, balloonY, 20.0f, 22.0f };
-        DrawRectangleRec(bRect, WHITE);
-        DrawRectangleLinesEx(bRect, 2.0f, BLACK);
+        if (FileExists("assets/ui/exclaim.png")) {
+            Texture2D exclaimTexture = context.resources.getTexture("assets/ui/exclaim.png");
+            SetTextureFilter(exclaimTexture, TEXTURE_FILTER_POINT);
+            DrawTextureEx(
+                exclaimTexture,
+                { balloonX, balloonY + 4.0f },
+                0.0f,
+                2.0f,
+                WHITE
+            );
+        } else {
+            Rectangle bRect = { balloonX, balloonY, 20.0f, 22.0f };
+            DrawRectangleRec(bRect, WHITE);
+            DrawRectangleLinesEx(bRect, 2.0f, BLACK);
 
-        // Little speech tail pointing down to head
-        DrawTriangle(
-            { balloonX + 6.0f, balloonY + 22.0f },
-            { balloonX + 14.0f, balloonY + 22.0f },
-            { balloonX + 10.0f, balloonY + 28.0f },
-            WHITE
-        );
-        DrawLineEx({ balloonX + 6.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
-        DrawLineEx({ balloonX + 14.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
+            // Little speech tail pointing down to head
+            DrawTriangle(
+                { balloonX + 6.0f, balloonY + 22.0f },
+                { balloonX + 14.0f, balloonY + 22.0f },
+                { balloonX + 10.0f, balloonY + 28.0f },
+                WHITE
+            );
+            DrawLineEx({ balloonX + 6.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
+            DrawLineEx({ balloonX + 14.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
 
-        // "!" mark
-        DrawRectangle((int)balloonX + 8, (int)balloonY + 4, 4, 9, BLACK);
-        DrawRectangle((int)balloonX + 8, (int)balloonY + 15, 4, 3, BLACK);
+            // "!" mark
+            DrawRectangle(static_cast<int>(balloonX) + 8, static_cast<int>(balloonY) + 4, 4, 9, BLACK);
+            DrawRectangle(static_cast<int>(balloonX) + 8, static_cast<int>(balloonY) + 15, 4, 3, BLACK);
+        }
     } else {
         if (m_soulVisible) {
             drawSoul(m_currentPos.x, m_currentPos.y);

@@ -1,0 +1,8 @@
+{
+  "image": "ruins_crt.png",
+  "cell": [20, 20],
+  "origin": [10, 19],
+  "anims": {
+    "flicker": { "row": 0, "frames": 2, "fps": 4 }
+  }
+}
