@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IInputService.hpp"
+#include "core/PressLatch.hpp"
 
 namespace nundertale {
 
@@ -10,6 +11,7 @@ public:
     ~InputService() override = default;
 
     void update() override;
+    void endTick() override;
 
     bool isUp() const override;
     bool isDown() const override;
@@ -33,15 +35,16 @@ public:
 private:
     int m_lastCharPressed = 0;
 
-    mutable bool m_upPressed = false;
-    mutable bool m_downPressed = false;
-    mutable bool m_leftPressed = false;
-    mutable bool m_rightPressed = false;
-    mutable bool m_confirmPressed = false;
-    mutable bool m_cancelPressed = false;
-    mutable bool m_menuPressed = false;
-    mutable bool m_escapePressed = false;
-    mutable bool m_backspacePressed = false;
+    // Reading a press uses it up, so the latches change inside the const getters
+    mutable PressLatch m_up;
+    mutable PressLatch m_down;
+    mutable PressLatch m_left;
+    mutable PressLatch m_right;
+    mutable PressLatch m_confirm;
+    mutable PressLatch m_cancel;
+    mutable PressLatch m_menu;
+    mutable PressLatch m_escape;
+    mutable PressLatch m_backspace;
 };
 
 } // namespace nundertale

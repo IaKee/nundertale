@@ -283,6 +283,22 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 | **BUG-29** | `src/scenes/LoreScene.cpp:18-43` | Old intro cards ("FURRIES and GAMERS", "yiffing the GAMERS", "reddit posts"), 6 cards instead of LORE §9's 10. | `FRT-002`, `NAR-001`. **[x] Fixed (2026-10-17):** FRT-002: the 10 canonical cards. |
 | **BUG-30** | `data/enemies/barky.json` | Missing the `Laser` (with Toy Laser Pointer) and `Accept Hug` ACTs, the 2nd `Cringe Check` response and the `howl_wave` pattern; the Check isn't the LORE §19.1 text. | `ACT-002`, `BHL-014`. **[~] Partly fixed (2026-10-17):** `Laser` (Toy Laser Pointer), `Accept Hug`, the 2nd `Cringe Check` and the LORE Check text are in; `howl_wave` pending (BHL-014). Also fixed: JSON strings are unescaped, so the Check no longer prints a literal backslash-n and a doubled header. |
 
+
+### 4.2 Playtest notes (2026-10-18)
+
+> Reported by the user while playing the desktop test build. Each row is a backlog item; fix them before new content, since they are what a first-time player sees.
+
+| ID | Where | Problem | What to do · Priority |
+| :--- | :--- | :--- | :--- |
+| **BUG-33** | `src/services/InputService.cpp`, every menu | **Held keys repeat and carry over.** Holding Z counts as more than one press: in battle, confirming a menu instantly confirms the next one because Z is still down. | A press must be edge-triggered and consumed: one press per key-down, and after a confirm/cancel the next screen ignores that key until it is released (Undertale behaves this way). Add a test for "held Z confirms once". **P0 · S** · **[x] Fixed (2026-10-18):** the input kept every press latched until some scene asked for it, so a Z pressed while text was typing or an animation ran fired later in the next menu (and the gamepad stick repeated every frame). Every action now goes through `core/PressLatch.hpp`: one press per key-down (stick included), and `Game` drops unread presses after each 30 Hz tick (`IInputService::endTick`). Typed letters ignore the OS key repeat. Test suite 45. |
+| **BUG-34** | `ResourceService::drawText` and every caller | **Blurry text edges** in some screens (seen on the name screen). Fonts are drawn at fractional sizes or positions, so the pixel font lands between pixels. BUG-15 fixed the load size but not all call sites. | Round font size and draw position to whole pixels inside `drawText`/`drawCenteredText` (and `measureTextWidth`), use the loaded `baseSize` (or an integer multiple), keep POINT filtering. Check every scene at 1× and fullscreen. **P0 · S** · **[x] Fixed (2026-10-18):** measured: 8bitoperator only lands on whole pixels at 16/32/48 px, and the game uses it at 12–24, so the rasterizer's anti-aliasing left gray glyph edges. `ResourceService` now makes every font atlas pixel fully opaque or clear on load and rounds every text position (centered text and the per-letter jitter too); gray edge pixels on the name screen went from 1936 to 304 (the rest is text that is gray on purpose). Non-integer window scaling is still FRT-009. |
+| **OVW-020** | `data/maps/ruins_entrance.json`, `assets/img/test.bmp` | **The first room is a placeholder:** the background is the Windows XP wallpaper, there are no walls, no scenery and nowhere to go; the only content is the scripted Barky fight, which is not finished either. | Build the first Ruins room(s) as a real Tiled map with `assets/tiles/ruins.png` (ART-F01), walls/collision, exits and props from the art kit; keep the Barky fight as the room's event and finish it (BHL-014, ACT-002). See C1 for the room list. **P0 · L** |
+| **FRT-011** | `src/scenes/DisclaimerScene.cpp` | **The disclaimer is hard to read and says too much.** It doesn't make clear that the game is a parody, that it is for adults (18+), or what kind of humor it has, and nobody will read that much text. | Rewrite as 3–4 short, large lines: a fan-made parody of Undertale (not affiliated), adults only (18+), crude internet humor about gamers and furries with no explicit content, "Press Z". Big readable font, high contrast, centered. **P0 · S** · **[x] Done (2026-10-18):** `WARNING` / `A fan-made PARODY of UNDERTALE.` / `Not affiliated with UNDERTALE or its creator.` / `For ADULTS only (18+).` / `Crude internet humor about` / `gamers and furries.` / `Nothing explicit, lots of cringe.` / `[Press Z or ENTER]`, in 8bitoperator at 48/32/16 px; nothing runs off the screen any more. |
+| **FRT-012** | `data/names.json`, `old/legacy_c`, `old/legacy_python` | **More name easter eggs.** The original legacy code seems to have had more special names than FRT-008's table. | Read the legacy code for special names and their reactions, port the ones that fit LORE (no real people, LORE §2.2), and add a few new ones. **P2 · S** |
+| **BUG-35** | `src/scenes/NameSelectScene.cpp` | **The selected letter keeps shaking.** | Only unselected letters tremble; the highlighted letter stays still (yellow). **P1 · S** · **[x] Fixed (2026-10-18):** `NameSelectScene::drawGridLetter` draws the letter under the cursor without jitter. |
+| **BUG-36** | `src/scenes/NameSelectScene.cpp` | **The red subtitle under the name overlaps the alphabet** (e.g. `You only need 6 characters...` is drawn over the first letter row). | Move the reaction/subtitle line between the name and the grid with enough space (or push the grid down), and wrap long lines. **P1 · S** · **[x] Fixed (2026-10-18):** the warning was drawn 24 px tall at y=140 (the font ignores the requested 16 px and uses its loaded size) over the grid at y=152. It now uses the 16 px font at y=134, the grid starts at y=160 (lowercase at 276), and the typed name uses the 32 px font instead of a 24 px font scaled up. |
+| **ART-001b** | `assets/sprites/ow/pepe_frog.*` | **Pepe's overworld sprite is still wrong**: the animations are not well defined and the side views look very strange (the head reads as a flat profile floating over a front-facing body). | Redraw the side views (left/right) as true profiles with the body turned too, 2-frame side walk, 4-frame up/down walk, consistent pivot; use the macro-pixel pipeline as an edit of the current sheet and review every frame at 2× in the overworld. Part of ART-001. **P0 · M** |
+
 ---
 
 ## 5. Epics and items
@@ -2245,9 +2261,10 @@ P0 · M · GFX-002
 P0→P2 · L · TXT-005
 - **What (LORE §26.5, ~50×50):** `furiell_*` (neutral, happy, sad, angry, flustered/tab closed) P0 · `floofy_*` (cute, smug, sinister with the zipper open) P0 · `barky_*` (edgy, embarrassed, happy) P0 · `sans_*` · `papyrus_*` P1 · `sharkdyne_*` · `alphys_*` · `asgrr_*` (3 each) P1 · `moderator_*` · `pepe_pawsome_reflection` (2 each) P2. **No Pepe portrait** (he doesn't speak, D-15).
 
-#### ART-010 — Barky battle sprite `[ ]`
+#### ART-010 — Barky battle sprite `[~]`
 P0 · M · GFX-002
 - **What:** `sprites/battle/barky.png` ~60×80, in parts (ears, studded jacket, plastic chains, tail with a safety pin, **visible zipper**): idle 2f, hurt, blush (after Cringe Check), spared. A placeholder already exists.
+- **Redrawn (2026-10-18):** the first version had no outline, so the black jacket vanished into the black battle background (1374 black edge pixels, 2 white). Undertale's battle sprites were measured (STYLE_GUIDE §3.1: closed white contour + 2 px black keyline) and Barky was regenerated with that rule and passed through `tools/art_prompts/battle_outline.py` (`--check` clean). Pending: a hand touch-up of the face and the portraits (C03) when the portrait loader exists.
 
 #### ART-011 — Ruins bestiary sprites `[-]`
 - **Merged into ART-110.**
@@ -2303,9 +2320,10 @@ P0 · S · SAV-001
 #### ART-040 — Ruins tileset `[-]`
 - **Merged into ART-120** ("Ruins" row).
 
-#### ART-041 — Intro cards `[ ]`
+#### ART-041 — Intro cards `[~]`
 P1 · M · FRT-002
 - **What:** LORE §9's 10 cards at 400×220 (currently 398×214) with Undertale's limited sepia palette: `lore1`..`lore9` + the tall fall image (`lore10`, currently 187 BMPs) to scroll vertically. Includes the `lore4` redraw (ART-170) and the optional Seven Moderators silhouette card (`img/lore5b`, P2).
+- **Done (2026-10-18):** 10 new panels `assets/img/lore/card01..card10.png`, 200×110 native drawn at 2× (400×220) like Undertale's panels, 6 sepia tones, flat silhouettes; card 5 (the Seven sealing the barrier) has its own image; card 4 is redrawn without the real face or the logo (closes ART-170). `LoreScene` uses them when all 10 exist (the old BMPs stay as fallback) and, with them, cuts to the title after card 10 instead of playing the old `lore10` frames. Pending: a new vertical-scroll fall image to replace `lore10`.
 
 #### ART-042 — Continue menu backgrounds `[ ]`
 P2 · M · FRT-005

@@ -138,6 +138,7 @@ void Game::run() {
             }
 
             m_sceneManager->update(LOGIC_TIMESTEP, *m_context);
+            m_inputService->endTick();
             accumulator -= LOGIC_TIMESTEP;
         }
 

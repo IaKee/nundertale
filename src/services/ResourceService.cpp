@@ -1,5 +1,6 @@
 #include "services/ResourceService.hpp"
 #include "core/Constants.hpp"
+#include <cmath>
 #include <iostream>
 
 namespace nundertale {
@@ -52,6 +53,29 @@ Texture2D ResourceService::getMaskedTexture(const std::string& path, Color maskC
     return tex;
 }
 
+// BUG-34: the pixel fonts are rasterized with anti-aliasing, and they only land on whole pixels
+// at a few sizes (8bitoperator: 16/32/48). At every other size the glyph edges come out gray,
+// which reads as blurry text. Make every atlas pixel fully opaque or fully clear.
+void ResourceService::hardenGlyphEdges(Font& font) {
+    if (font.texture.id == 0) return;
+    Image atlas = LoadImageFromTexture(font.texture);
+    ImageFormat(&atlas, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    Color* pixels = static_cast<Color*>(atlas.data);
+    const int count = atlas.width * atlas.height;
+    for (int i = 0; i < count; ++i) {
+        const bool ink = pixels[i].a >= 128;
+        pixels[i] = ink ? WHITE : Color{ 255, 255, 255, 0 };
+    }
+    UnloadTexture(font.texture);
+    font.texture = LoadTextureFromImage(atlas);
+    UnloadImage(atlas);
+}
+
+// BUG-34: text drawn at a fractional position samples the atlas between pixels
+static Vector2 snapToPixel(Vector2 pos) {
+    return { std::round(pos.x), std::round(pos.y) };
+}
+
 Font ResourceService::getFont(const std::string& path, int fontSize) {
     std::string key = path + "_" + std::to_string(fontSize);
     auto it = m_fonts.find(key);
@@ -61,6 +85,7 @@ Font ResourceService::getFont(const std::string& path, int fontSize) {
 
     if (FileExists(path.c_str())) {
         Font font = LoadFontEx(path.c_str(), fontSize, nullptr, 0);
+        hardenGlyphEdges(font);
         SetTextureFilter(font.texture, TEXTURE_FILTER_POINT);
         m_fonts[key] = font;
         return font;
@@ -124,7 +149,7 @@ Music ResourceService::getMusic(const std::string& path) {
 void ResourceService::drawText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float spacing) {
     // BUG-15 & GFX-003: Render at exact font.baseSize to prevent POINT distortion
     float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
-    DrawTextEx(font, text.c_str(), pos, effectiveSize, spacing, color);
+    DrawTextEx(font, text.c_str(), snapToPixel(pos), effectiveSize, spacing, color);
 }
 
 void ResourceService::drawShakyText(Font font, const std::string& text, Vector2 pos, float fontSize, Color color, float shakeAmount, float spacing) {
@@ -143,10 +168,11 @@ void ResourceService::drawShakyText(Font font, const std::string& text, Vector2 
         }
 
         std::string s(1, c);
-        float jx = ((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount;
-        float jy = ((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount;
+        // Whole-pixel jitter (BUG-34): a fractional offset smears the glyph
+        float jx = std::round(((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount);
+        float jy = std::round(((float)GetRandomValue(-100, 100) / 100.0f) * shakeAmount);
 
-        DrawTextEx(font, s.c_str(), { curX + jx, curY + jy }, effectiveSize, spacing, color);
+        DrawTextEx(font, s.c_str(), snapToPixel({ curX + jx, curY + jy }), effectiveSize, spacing, color);
         curX += MeasureTextEx(font, s.c_str(), effectiveSize, spacing).x + spacing;
     }
 }
@@ -155,7 +181,7 @@ void ResourceService::drawCenteredText(Font font, const std::string& text, float
     float effectiveSize = (font.baseSize > 0) ? (float)font.baseSize : ((fontSize > 0.0f) ? fontSize : 20.0f);
     Vector2 size = MeasureTextEx(font, text.c_str(), effectiveSize, spacing);
     Vector2 pos = { (VIRTUAL_WIDTH - size.x) * 0.5f, centerY };
-    DrawTextEx(font, text.c_str(), pos, effectiveSize, spacing, color);
+    DrawTextEx(font, text.c_str(), snapToPixel(pos), effectiveSize, spacing, color);
 }
 
 float ResourceService::measureTextWidth(Font font, const std::string& text, float fontSize, float spacing) {
