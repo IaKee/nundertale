@@ -16,6 +16,7 @@ Every non-final file in `assets/` is listed here (ART-000). Replace a placeholde
 | `music/main_menu_loop.ogg` | "Start Menu" | Unknown | **Unknown — check** |
 | `music/epic_background_loop.ogg` | Ruins + battle tracks | Unknown | **Unknown — check** |
 | `img/lore1..9.bmp`, `img/lore10/` | Intro cards (legacy fallback; the game uses `img/lore/` when all 10 panels exist) | Project art (legacy) | Project-owned (confirm) |
+| `img/lore/card10_tall.png` | Last intro card, 200×320, scrolled bottom to top (ART-041) | OpenAI image-generation (2026-10-18) on a 4× macro-pixel grid, remake of the legacy `img/lore.jpg`, 6 sepia tones, stray-pixel cleanup | Generated/project work; check the image service's commercial-use terms |
 | `img/lore/card01..card10.png` | Intro panels, 200×110 at 2× (ART-041, ART-170) | OpenAI image-generation (2026-10-18) on a 7× macro-pixel grid, decoded to 6 sepia tones by `macro_pixel.py`; "BEGONE!" on card 4 drawn with `fonts/8bitoperator.ttf` | Generated/project work; check the image service's commercial-use terms |
 | `img/lore4.bmp` | "BEGONE!" card | Uses a real face | **Redraw (ART-170)** |
 | `img/pepe_char.bmp` | Pepe overworld sheet | Project art (legacy) | Project-owned (confirm) |

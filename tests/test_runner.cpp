@@ -39,6 +39,7 @@
 #include "core/SpriteSheet.hpp"
 #include "core/TiledMap.hpp"
 #include "core/Camera2DFollow.hpp"
+#include "scenes/LoreScroll.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -2760,6 +2761,46 @@ int main() {
         std::cout << "[PASS] BUG-33: held keys press once; unread presses are dropped at the end of the tick." << std::endl;
     }
 
-    std::cout << "\nAll 45 test suites passed successfully!" << std::endl;
+    // 46. T2 & LOR-006: Tall intro card camera rise scroll math
+    {
+        using namespace nundertale;
+        const int imgH = 320;
+        const int winH = 110;
+        const float dur = 6.0f;
+        const int startY = imgH - winH; // 210 native pixels
+
+        // 1. Starts at bottom (imgH - winH) at t = 0
+        assert(loreScrollOffset(0.0f, dur, imgH, winH) == startY);
+
+        // 2. Ends at top (0) at t = duration
+        assert(loreScrollOffset(dur, dur, imgH, winH) == 0);
+
+        // 3. Clamping: negative t clamps to startY, t > duration clamps to 0
+        assert(loreScrollOffset(-1.0f, dur, imgH, winH) == startY);
+        assert(loreScrollOffset(-100.0f, dur, imgH, winH) == startY);
+        assert(loreScrollOffset(dur + 0.5f, dur, imgH, winH) == 0);
+        assert(loreScrollOffset(dur + 10.0f, dur, imgH, winH) == 0);
+
+        // 4. Integer native pixel progression & monotonic non-increasing
+        int prevOffset = startY;
+        for (int step = 0; step <= 600; ++step) {
+            float t = static_cast<float>(step) * (dur / 600.0f);
+            int offset = loreScrollOffset(t, dur, imgH, winH);
+            assert(offset <= prevOffset); // Monotonic (moving upwards towards 0)
+            assert(offset >= 0 && offset <= startY);
+            prevOffset = offset;
+        }
+
+        // 5. Midpoint check: progress 0.5 -> floor(0.5 * 210) = 105 -> 210 - 105 = 105
+        assert(loreScrollOffset(3.0f, dur, imgH, winH) == 105);
+
+        // 6. Degenerate cases: image smaller than window or zero duration
+        assert(loreScrollOffset(0.0f, dur, 100, 110) == 0);
+        assert(loreScrollOffset(2.0f, 0.0f, imgH, winH) == 0);
+
+        std::cout << "[PASS] T2 & LOR-006: Tall intro card scroll math (starts at bottom, ends at top, clamps, monotonic, whole pixels) verified." << std::endl;
+    }
+
+    std::cout << "\nAll 46 test suites passed successfully!" << std::endl;
     return 0;
 }
