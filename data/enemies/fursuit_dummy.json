@@ -1,0 +1,45 @@
+{
+  "id": "fursuit_dummy",
+  "name": "Fursuit Dummy",
+  "hp": 15,
+  "maxHp": 15,
+  "atk": 0,
+  "def": -5,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "fursuit_dummy",
+  "check": "A mannequin wearing a fursuit head. Smells like the previous owner.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "text": "* It doesn't seem much for conversation. Furiell seems happy.",
+      "effects": { "skipAttack": true }
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* You hug the dummy. It's damp. FUR +10.",
+      "effects": { "fur": 10, "spareNow": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Fursuit Dummy stands perfectly still.",
+      "* The dummy offers no resistance.",
+      "* The damp fursuit head stares ahead."
+    ]
+  },
+  "dialogue": {
+    "default": ["..."]
+  },
+  "patterns": [],
+  "spareText": "...",
+  "deathText": "* The dummy collapses into faux fur and regret."
+}

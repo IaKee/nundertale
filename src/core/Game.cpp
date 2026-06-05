@@ -1,14 +1,48 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
+#include "scenes/OverworldScene.hpp"
 #include "services/MusicTracks.hpp"
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 
 namespace nundertale {
 
-Game::Game() {
+Game::Game(int argc, char** argv) {
+#ifdef NUNDERTALE_DEBUG
+    for (int index = 1; index < argc; ++index) {
+        const std::string argument = argv[index];
+        if (argument == "--room" && index + 1 < argc) {
+            m_debugRoom = argv[++index];
+            m_debugLaunch = true;
+        } else if (argument == "--spawn" && index + 1 < argc) {
+            m_debugSpawn = argv[++index];
+        } else if (argument == "--flag" && index + 1 < argc) {
+            const std::string assignment = argv[++index];
+            const std::size_t equals = assignment.find('=');
+            if (equals != std::string::npos && equals > 0) {
+                try {
+                    m_debugFlags.emplace_back(
+                        assignment.substr(0, equals), std::stoi(assignment.substr(equals + 1)));
+                } catch (...) {
+                }
+            }
+        } else if (argument == "--shot" && index + 1 < argc) {
+            m_debugShotPath = argv[++index];
+        } else if (argument == "--frames" && index + 1 < argc) {
+            try {
+                m_debugShotFrames = std::max(0, std::stoi(argv[++index]));
+            } catch (...) {
+                m_debugShotFrames = 20;
+            }
+        }
+    }
+#else
+    (void)argc;
+    (void)argv;
+#endif
     initWindow();
 
     m_audioService = std::make_unique<AudioService>();
@@ -41,7 +75,20 @@ Game::Game() {
     SetTextureFilter(m_virtualTarget.texture, TEXTURE_FILTER_POINT);
 
     // Initial scene: pushScene with context properly executes onEnter (BUG-01)
+#ifdef NUNDERTALE_DEBUG
+    if (m_debugLaunch) {
+        m_context->state.currentRoom = m_debugRoom;
+        m_context->state.playerPos = { 0.0f, 0.0f };
+        m_context->launchSpawn = m_debugSpawn;
+        m_context->state.setFlag("raid_msgs_shown", 0xF);
+        for (const auto& [key, value] : m_debugFlags) m_context->state.setFlag(key, value);
+        m_sceneManager->pushScene(std::make_unique<OverworldScene>(), *m_context);
+    } else {
+        m_sceneManager->pushScene(std::make_unique<DisclaimerScene>(), *m_context);
+    }
+#else
     m_sceneManager->pushScene(std::make_unique<DisclaimerScene>(), *m_context);
+#endif
 }
 
 Game::~Game() {
@@ -51,7 +98,13 @@ Game::~Game() {
 
 void Game::initWindow() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+#ifdef NUNDERTALE_DEBUG
+    const int initialWidth = m_debugShotPath.empty() ? WINDOW_WIDTH : VIRTUAL_WIDTH;
+    const int initialHeight = m_debugShotPath.empty() ? WINDOW_HEIGHT : VIRTUAL_HEIGHT;
+    InitWindow(initialWidth, initialHeight, WINDOW_TITLE);
+#else
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+#endif
     SetWindowMinSize(640, 480);
     SetTargetFPS(TARGET_FPS); // 30 FPS Undertale standard (CORE-001)
 
@@ -71,7 +124,11 @@ void Game::run() {
     UserConfig config = m_saveService->getConfig();
     m_audioService->setMusicVolume(config.musicVolume);
     m_audioService->setMasterVolume(config.masterVolume);
-    if (config.fullscreen && !IsWindowFullscreen()) {
+    bool allowConfiguredFullscreen = true;
+#ifdef NUNDERTALE_DEBUG
+    allowConfiguredFullscreen = m_debugShotPath.empty();
+#endif
+    if (allowConfiguredFullscreen && config.fullscreen && !IsWindowFullscreen()) {
         ToggleFullscreen();
     }
 
@@ -138,6 +195,9 @@ void Game::run() {
             }
 
             m_sceneManager->update(LOGIC_TIMESTEP, *m_context);
+#ifdef NUNDERTALE_DEBUG
+            ++m_debugTicks;
+#endif
             m_inputService->endTick();
             accumulator -= LOGIC_TIMESTEP;
         }
@@ -183,6 +243,20 @@ void Game::run() {
             ClearBackground(BLACK);
             renderLetterboxed();
         EndDrawing();
+
+#ifdef NUNDERTALE_DEBUG
+        if (!m_debugShotPath.empty() && m_debugTicks >= m_debugShotFrames) {
+            const std::filesystem::path shotPath(m_debugShotPath);
+            std::error_code directoryError;
+            if (shotPath.has_parent_path()) {
+                std::filesystem::create_directories(shotPath.parent_path(), directoryError);
+            }
+            Image screenshot = LoadImageFromScreen();
+            ExportImage(screenshot, m_debugShotPath.c_str());
+            UnloadImage(screenshot);
+            m_context->isRunning = false;
+        }
+#endif
     }
 }
 

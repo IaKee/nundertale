@@ -1,0 +1,8 @@
+{
+  "id": "shysona",
+  "enemies": ["shysona"],
+  "introText": "* Shysona fluttered in!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

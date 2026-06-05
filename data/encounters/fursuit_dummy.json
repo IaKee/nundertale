@@ -1,0 +1,8 @@
+{
+  "id": "fursuit_dummy",
+  "enemies": ["fursuit_dummy"],
+  "introText": "* You encountered the Fursuit Dummy.",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

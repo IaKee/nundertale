@@ -1,0 +1,60 @@
+{
+  "id": "shysona",
+  "name": "Shysona",
+  "hp": 10,
+  "maxHp": 10,
+  "atk": 5,
+  "def": 0,
+  "exp": 2,
+  "gold": 0,
+  "sprite": "shysona",
+  "check": "A brand-new fursona. Apologizes for existing. And for its commissions.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "console",
+      "label": "Console",
+      "text": "* You reassure Shysona that its fursona is valid.",
+      "effects": { "spareable": true }
+    },
+    {
+      "id": "terrorize",
+      "label": "Terrorize",
+      "text": "* You criticize Shysona's commission queue. It flees.",
+      "effects": { "flees": true }
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* You accept a very apologetic hug. FUR +10.",
+      "effects": { "fur": 10, "spareNow": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Shysona hides behind its own wings.",
+      "* Shysona apologizes to the battle box.",
+      "* Shysona quietly deletes a draft commission."
+    ],
+    "lowHp": ["* Shysona looks ready to vanish."],
+    "spareable": ["* Shysona seems a little less afraid."]
+  },
+  "dialogue": {
+    "default": ["Sorry...", "Sorry for the art...", "You weren't supposed to see that..."]
+  },
+  "patterns": [
+    {
+      "id": "sorry_moths",
+      "kind": "swarm",
+      "weight": 1,
+      "params": { "count": 2, "speed": 38, "damage": 2, "furry": 6, "text": "sorry" }
+    }
+  ],
+  "spareText": "Sorry...",
+  "deathText": "* Shysona fades before it can apologize again."
+}

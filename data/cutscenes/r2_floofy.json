@@ -1,0 +1,77 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Howdy! I'm FLOOFY! Floofy the Flower!",
+        "Down here, we share these little white... \"free hug pellets\"!"
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "You idiot. In this world, it's SHAME or be SHAMED.",
+        "HUG."
+      ]
+    },
+    {
+      "type": "flash",
+      "r": 255,
+      "g": 105,
+      "b": 180,
+      "seconds": 0.45
+    },
+    {
+      "type": "shake",
+      "intensity": 6.0,
+      "seconds": 0.5
+    },
+    {
+      "type": "setFur",
+      "value": 20
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.furiell.r2_arrived",
+      "value": 1
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/heal.wav",
+      "volume": 0.85
+    },
+    {
+      "type": "flash",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "seconds": 0.4
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "What a terrible creature, torturing an innocent soul.",
+        "Do not fear, my child... my glitter is hypoallergenic. It washes right off."
+      ]
+    },
+    {
+      "type": "setFur",
+      "value": 0
+    },
+    {
+      "type": "healFull"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floofy.met",
+      "value": 1
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <map>
 #include <vector>
 #include <string>
 #include "combat/Bullet.hpp"
@@ -38,11 +39,18 @@
 #include "core/SessionMeta.hpp"
 #include "core/SpriteSheet.hpp"
 #include "core/TiledMap.hpp"
+#include "core/RoomObjects.hpp"
+#include "core/RandomEncounters.hpp"
 #include "core/Camera2DFollow.hpp"
 #include "scenes/LoreScroll.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
+extern "C" int GetRandomValue(int minValue, int /*maxValue*/) { return minValue; }
+
+// validate.bat builds this single translation unit; include the production loader so
+// the data-file tests below exercise Enemy::loadFromJson instead of a test-only parser.
+#include "../src/combat/Enemy.cpp"
 
 
 // Test damage formula from FGT-003
@@ -1190,7 +1198,8 @@ int main() {
         using nundertale::saveLines;
 
         // savePlaceLine for ruins_entrance, snowdin_town, unknown
-        assert(savePlaceLine("ruins_entrance") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(savePlaceLine("ruins_entrance") == "* The distant hum of dial-up internet fills you with DETERMINATION.");
+        assert(savePlaceLine("ruins_fall") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
         assert(savePlaceLine("") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
         assert(savePlaceLine("snowdin_town") == "* The sight of 47 people sharing one Wi-Fi password on a fridge fills you with DETERMINATION.");
         assert(savePlaceLine("unknown_room_xyz") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
@@ -1209,12 +1218,12 @@ int main() {
         // saveLines with fur 0 (1 line)
         auto linesFur0 = saveLines("ruins_entrance", 0, false);
         assert(linesFur0.size() == 1);
-        assert(linesFur0[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(linesFur0[0] == "* The distant hum of dial-up internet fills you with DETERMINATION.");
 
         // saveLines with fur 15 (2 lines, second is the fluff line)
         auto linesFur15 = saveLines("ruins_entrance", 15, false);
         assert(linesFur15.size() == 2);
-        assert(linesFur15[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(linesFur15[0] == "* The distant hum of dial-up internet fills you with DETERMINATION.");
         assert(linesFur15[1] == "* DETERMINATION can't fix fluff.");
 
         // saveLines toxic (exactly "* Determination.")
@@ -2223,6 +2232,18 @@ int main() {
             void startBattle(const std::string& encounter) override {
                 calls.push_back("battle:" + encounter);
             }
+            void setFur(int value) override {
+                calls.push_back("fur:" + std::to_string(value));
+            }
+            void healFull() override {
+                calls.push_back("heal");
+            }
+            void facePlayer(const std::string& key) override {
+                calls.push_back("face:" + key);
+            }
+            void playerAnim(const std::string& path, const std::string& key, float seconds) override {
+                calls.push_back("anim:" + path + ":" + key + ":" + std::to_string(seconds));
+            }
         } host;
 
         Cutscene flow;
@@ -2615,17 +2636,33 @@ int main() {
         camera = Camera2DFollow::calculate(160.0f, 120.0f, 320.0f, 240.0f);
         assert(camera.x == -160.0f && camera.y == -120.0f);
 
-        TiledMap realMap;
-        if (loadTiledMapFromFile("data/maps/ruins_entrance.json", realMap)) {
-            const TiledLayer* realGround = realMap.findLayer("ground");
-            const TiledLayer* collision = realMap.findLayer("collision");
-            const TiledLayer* objects = realMap.findLayer("objects");
-            assert(realGround != nullptr && realGround->data.size() == 32 * 24);
-            assert(collision != nullptr && collision->objects.size() == 6);
-            assert(objects != nullptr && objects->objects.size() == 7);
-            assert(realMap.findObject("spawn") != nullptr);
-            assert(realMap.findObject("savepoint") != nullptr);
+        // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
+        const std::vector<std::string> ruinsRooms = {
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_notices", "ruins_barky"
+        };
+        std::map<std::string, TiledMap> rooms;
+        for (const std::string& roomId : ruinsRooms) {
+            TiledMap room;
+            assert(loadTiledMapFromFile("data/maps/" + roomId + ".json", room));
+            const TiledLayer* roomGround = room.findLayer("ground");
+            assert(roomGround != nullptr && roomGround->data.size() == static_cast<std::size_t>(room.width * room.height));
+            assert(room.findLayer("collision") != nullptr);
+            assert(room.findObject("spawn") != nullptr);
+            rooms.emplace(roomId, std::move(room));
         }
+        for (const auto& [roomId, room] : rooms) {
+            const TiledLayer* objects = room.findLayer("objects");
+            assert(objects != nullptr);
+            for (const TiledObject& object : objects->objects) {
+                if (object.type != "door") continue;
+                const std::string targetId = tiledStringProperty(object.properties, "targetRoom");
+                const std::string spawn = tiledStringProperty(object.properties, "targetSpawn", "spawn");
+                const auto targetRoom = rooms.find(targetId);
+                assert(targetRoom != rooms.end());
+                assert(targetRoom->second.findObject(spawn) != nullptr);
+            }
+        }
+        assert(rooms.at("ruins_barky").findObject("npc_barky") != nullptr);
 
         std::cout << "[PASS] OVW-003, GFX-010 & OVW-002: Tiled layers, polygons, properties, object lookup, real room, and camera bounds verified." << std::endl;
     }
@@ -2801,6 +2838,173 @@ int main() {
         std::cout << "[PASS] T2 & LOR-006: Tall intro card scroll math (starts at bottom, ends at top, clamps, monotonic, whole pixels) verified." << std::endl;
     }
 
-    std::cout << "\nAll 46 test suites passed successfully!" << std::endl;
+    // 47. OVW-020: data-driven room parser and pure room object logic
+    {
+        using namespace nundertale;
+
+        const auto flags = [](const std::string& key) {
+            if (key == "ready") return 3;
+            if (key == "fur") return 24;
+            if (key == "hp") return 7;
+            return 0;
+        };
+        bool parsed = false;
+        assert(evaluateRoomCondition("", flags, &parsed) && parsed);
+        assert(evaluateRoomCondition("ready == 3", flags));
+        assert(evaluateRoomCondition("ready != 2", flags));
+        assert(evaluateRoomCondition("ready >= 3", flags));
+        assert(evaluateRoomCondition("ready <= 3", flags));
+        assert(evaluateRoomCondition("ready > 2", flags));
+        assert(evaluateRoomCondition("ready < 4", flags));
+        assert(evaluateRoomCondition("ready == 3 && fur >= 20 && hp < 10", flags));
+        assert(!evaluateRoomCondition("ready == 4 && fur >= 20", flags));
+        assert(evaluateRoomCondition("not a condition", flags, &parsed));
+        assert(!parsed);
+
+        const std::vector<std::string> pages = splitRoomPages("first\nline||second||third");
+        assert(pages.size() == 3);
+        assert(pages[0] == "first\nline" && pages[1] == "second" && pages[2] == "third");
+        const std::vector<std::string> variants = { "zero", "one", "two" };
+        assert(selectRoomVariant(variants, 0, 0, 50, "fur") == "zero");
+        assert(selectRoomVariant(variants, 8, 0, 50, "fur") == "two");
+        assert(selectRoomVariant(variants, 1, 50, 50, "fur") == "fur");
+
+        TiledSourceRect source = gidToSourceRect(10, 1, 20, 20, 8);
+        assert(source.valid && source.x == 20 && source.y == 20 && source.width == 20 && source.height == 20);
+        source = gidToSourceRect(0xE000000Au, 1, 20, 20, 8);
+        assert(source.valid && source.x == 20 && source.y == 20);
+        assert(!gidToSourceRect(0, 1, 20, 20, 8).valid);
+
+        const std::string json = R"json({
+            "orientation":"orthogonal",
+            "tilewidth":40,
+            "tileheight":40,
+            "width":2,
+            "height":2,
+            "properties":[
+                {"name":"displayName","type":"string","value":"Test Room"},
+                {"name":"legacyBarky","type":"bool","value":false}
+            ],
+            "tilesets":[{
+                "firstgid":1,"name":"ruins","image":"assets/tiles/ruins.png",
+                "tilewidth":20,"tileheight":20,"columns":8,"tilecount":64,
+                "imagewidth":160,"imageheight":160
+            }],
+            "layers":[
+                {"type":"tilelayer","name":"above","width":2,"height":2,
+                 "properties":[{"name":"above","type":"bool","value":true}],
+                 "data":[1,0,2147483658,3]},
+                {"type":"objectgroup","name":"objects","objects":[
+                    {"id":1,"name":"spawn","class":"spawn","x":10,"y":20,
+                     "properties":[{"name":"facing","type":"string","value":"left"}]},
+                    {"id":2,"name":"north","type":"door","x":0,"y":0,"width":40,"height":20,
+                     "properties":[{"name":"targetRoom","type":"string","value":"next"}]}
+                ]}
+            ]
+        })json";
+        TiledMap map;
+        assert(parseTiledMapJson(json, map));
+        assert(map.tileWidth == 40 && map.tileHeight == 40);
+        assert(tiledStringProperty(map.properties, "displayName") == "Test Room");
+        assert(map.tilesets.size() == 1);
+        assert(map.tilesets[0].firstGid == 1 && map.tilesets[0].columns == 8);
+        const TiledLayer* above = map.findLayer("above");
+        assert(above != nullptr && tiledBoolProperty(above->properties, "above"));
+        assert(above->data[2] == 2147483658u);
+        const TiledObject* spawn = findRoomSpawn(map);
+        assert(spawn != nullptr && tiledObjectType(*spawn) == "spawn");
+        assert(tiledStringProperty(spawn->properties, "facing") == "left");
+        const TiledObject* door = findRoomDoor(map, "north");
+        assert(door != nullptr);
+        assert(tiledStringProperty(door->properties, "targetRoom") == "next");
+        assert(findRoomDoor(map, "missing") == nullptr);
+
+        const std::string cutsceneJson = R"json({"steps":[
+            {"type":"setFur","value":42},{"type":"healFull"},
+            {"type":"facePlayer","key":"up"},
+            {"type":"playerAnim","path":"wake.png","key":"get_up","seconds":0.75}
+        ]})json";
+        Cutscene roomCutscene;
+        assert(parseCutsceneJson(cutsceneJson, roomCutscene));
+        assert(roomCutscene.steps[0].type == CutsceneStepType::SetFur);
+        assert(roomCutscene.steps[1].type == CutsceneStepType::HealFull);
+        assert(roomCutscene.steps[2].type == CutsceneStepType::FacePlayer);
+        assert(roomCutscene.steps[3].type == CutsceneStepType::PlayerAnim);
+
+        std::cout << "[PASS] OVW-020: conditions, pages, variants, GIDs, typed maps, doors, and cutscene steps verified." << std::endl;
+    }
+
+    // 48. T3 / ENC-003 / ENC-006 / BHL-004: common enemy data and random encounters
+    {
+        using nundertale::ActDef;
+        using nundertale::EncounterEntry;
+        using nundertale::Enemy;
+        using nundertale::advanceEncounterStep;
+        using nundertale::encounterBudgetAllows;
+        using nundertale::parseEncounterSpec;
+        using nundertale::pickWeightedEncounter;
+        using nundertale::randomEncounterStepCountdown;
+
+        const std::vector<EncounterEntry> entries =
+            parseEncounterSpec("froggsona:2, shysona:1,modsmal:1,bad:0,broken");
+        assert(entries.size() == 3);
+        assert(entries[0].id == "froggsona" && entries[0].weight == 2);
+        assert(entries[1].id == "shysona" && entries[1].weight == 1);
+        assert(entries[2].id == "modsmal" && entries[2].weight == 1);
+
+        std::uint32_t seedA = 12345u;
+        std::uint32_t seedB = 12345u;
+        for (int index = 0; index < 12; ++index) {
+            assert(pickWeightedEncounter(entries, seedA) == pickWeightedEncounter(entries, seedB));
+        }
+        std::uint32_t stepSeed = 7u;
+        const int rolledSteps = randomEncounterStepCountdown(stepSeed);
+        assert(rolledSteps >= 90 && rolledSteps <= 200);
+        assert(encounterBudgetAllows(0, 1));
+        assert(!encounterBudgetAllows(1, 1));
+        assert(!encounterBudgetAllows(0, 0));
+
+        int steps = 2;
+        assert(!advanceEncounterStep(steps, false) && steps == 2);
+        assert(!advanceEncounterStep(steps, true) && steps == 1);
+        assert(advanceEncounterStep(steps, true) && steps == 0);
+        assert(!advanceEncounterStep(steps, true));
+
+        struct ExpectedEnemy {
+            const char* id;
+            const char* check;
+            std::size_t actCount;
+        };
+        const ExpectedEnemy expected[] = {
+            { "froggsona", "* FROGGSONA - ATK 4 DEF 2\n* A frog fursona. Every sentence ends in \":3\".", 4 },
+            { "shysona", "* SHYSONA - ATK 5 DEF 0\n* A brand-new fursona. Apologizes for existing. And for its commissions.", 4 },
+            { "modsmal", "* MODSMAL - ATK 1 DEF 0\n* A gelatinous moderator of the NSFW channel. Wobbles. Enforces. Sometimes.", 3 },
+            { "fursuit_dummy", "* FURSUIT DUMMY - ATK 0 DEF -5\n* A mannequin wearing a fursuit head. Smells like the previous owner.", 3 }
+        };
+        for (const ExpectedEnemy& item : expected) {
+            const std::unique_ptr<Enemy> enemy = Enemy::loadFromJson(
+                std::string("data/enemies/") + item.id + ".json");
+            assert(enemy->getId() == item.id);
+            assert(enemy->getCheckText() == item.check);
+            assert(enemy->getActs().size() == item.actCount);
+        }
+
+        const std::unique_ptr<Enemy> froggsona = Enemy::loadFromJson("data/enemies/froggsona.json");
+        const ActDef& threaten = froggsona->getActs()[2];
+        assert(threaten.id == "threaten" && threaten.flees);
+
+        const std::unique_ptr<Enemy> barky = Enemy::loadFromJson("data/enemies/barky.json");
+        assert(barky->getId() == "barky");
+        assert(barky->getHp() == 30 && barky->getAtk() == 4 && barky->getDef() == 2);
+        assert(barky->getCheckText() ==
+            "* BARKY - ATK 4 DEF 2\n* Alpha Wolf of the Ruins. The zipper says otherwise.");
+        assert(barky->getActs().size() == 6);
+        assert(barky->getPatternFur("uwu_rain", -1) == 6);
+        assert(barky->getPatternFur("dew_bounce", -1) == 4);
+
+        std::cout << "[PASS] T3: enemy JSONs, flees effect, encounter parsing, seeded picks, budget, and steps verified." << std::endl;
+    }
+
+    std::cout << "\nAll 48 test suites passed successfully!" << std::endl;
     return 0;
 }

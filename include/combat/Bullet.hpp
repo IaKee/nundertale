@@ -41,6 +41,14 @@ struct Bullet {
     float gravity = 0.0f;
     bool bounces = false;
     float arcRadius = 14.0f;
+    float age = 0.0f;
+    bool parabolic = false;
+    float originY = 0.0f;
+    float arcHeight = 55.0f;
+    float flightDuration = 1.5f;
+    bool homes = false;
+    float homingSpeed = 45.0f;
+    float jitter = 12.0f;
 
     // Pure rule, unit-testable: does touching this bullet hurt the soul?
     bool hurtsSoul(bool soulMoving) const {
@@ -62,6 +70,14 @@ struct Bullet {
     }
 
     void update(float dt, const Rectangle* box = nullptr) {
+        age += dt;
+        if (parabolic) {
+            position.x += velocity.x * dt;
+            const float duration = std::max(0.1f, flightDuration);
+            const float progress = std::clamp(age / duration, 0.0f, 1.0f);
+            position.y = originY - 4.0f * arcHeight * progress * (1.0f - progress);
+            return;
+        }
         if (gravity > 0.0f) {
             velocity.y += gravity * dt;
         }

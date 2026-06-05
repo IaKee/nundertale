@@ -1,0 +1,66 @@
+{
+  "id": "froggsona",
+  "name": "Froggsona",
+  "hp": 30,
+  "maxHp": 30,
+  "atk": 4,
+  "def": 2,
+  "exp": 3,
+  "gold": 2,
+  "sprite": "froggsona",
+  "check": "A frog fursona. Every sentence ends in \":3\".",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "compliment",
+      "label": "Compliment",
+      "text": "* You say \"nice tail\". It doesn't have a tail. It's flattered anyway.",
+      "effects": { "spareable": true }
+    },
+    {
+      "id": "threaten",
+      "label": "Threaten",
+      "text": "* You threaten Froggsona. It hops away in alarm.",
+      "effects": { "flees": true }
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* You accept Froggsona's hug. FUR +10.",
+      "effects": { "fur": 10, "spareNow": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Froggsona hops closer.",
+      "* Froggsona practices a tiny :3.",
+      "* (It looks like you. A little. Don't think about it.)"
+    ],
+    "lowHp": ["* Froggsona's :3 is trembling."],
+    "spareable": ["* Froggsona seems flattered."]
+  },
+  "dialogue": {
+    "default": ["ribbit :3", "*ribbits suggestively*"]
+  },
+  "patterns": [
+    {
+      "id": "colon_three_hop",
+      "kind": "hop",
+      "weight": 2,
+      "params": { "count": 4, "speed": 120, "damage": 2, "furry": 3, "text": ":3" }
+    },
+    {
+      "id": "fly_swarm",
+      "kind": "swarm",
+      "weight": 1,
+      "params": { "count": 2, "speed": 42, "damage": 2, "furry": 3 }
+    }
+  ],
+  "spareText": "ribbit :3",
+  "deathText": "* Froggsona disappears in a puff of synthetic pond fluff."
+}

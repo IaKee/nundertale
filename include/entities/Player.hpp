@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 #include <vector>
+#include <string>
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -30,6 +31,12 @@ public:
     void setDirection(Direction dir) { m_direction = dir; }
 
     bool isMoving() const { return m_isMoving; }
+    void setOverrideAnimation(const std::string& path, const std::string& key, float seconds);
+    void updateOverrideAnimation(float dt);
+    bool hasOverrideAnimation() const { return !m_overridePath.empty(); }
+    const std::string& getOverridePath() const { return m_overridePath; }
+    const std::string& getOverrideKey() const { return m_overrideKey; }
+    float getOverrideAnimationTime() const { return m_overrideAnimTimer; }
     float getSpriteAnimationTime() const { return m_spriteAnimTimer; }
     Vector2 getSpritePivot() const {
         return {
@@ -56,6 +63,10 @@ private:
     int m_clipH = 29;
     int m_drawW = 38;
     int m_drawH = 58;
+    std::string m_overridePath;
+    std::string m_overrideKey;
+    float m_overrideRemaining = 0.0f;
+    float m_overrideAnimTimer = 0.0f;
 };
 
 } // namespace nundertale

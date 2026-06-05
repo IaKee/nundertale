@@ -17,6 +17,10 @@ enum class CutsceneStepType {
     Shake,
     Flash,
     StartBattle,
+    SetFur,
+    HealFull,
+    FacePlayer,
+    PlayerAnim,
     Unsupported,
     Unknown
 };
@@ -50,6 +54,10 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "shake") return CutsceneStepType::Shake;
     if (type == "flash") return CutsceneStepType::Flash;
     if (type == "startBattle") return CutsceneStepType::StartBattle;
+    if (type == "setFur") return CutsceneStepType::SetFur;
+    if (type == "healFull") return CutsceneStepType::HealFull;
+    if (type == "facePlayer") return CutsceneStepType::FacePlayer;
+    if (type == "playerAnim") return CutsceneStepType::PlayerAnim;
     if (type == "moveNpc" || type == "cameraPan" || type == "fadeOut") {
         return CutsceneStepType::Unsupported;
     }
@@ -305,6 +313,10 @@ public:
     virtual void shake(float intensity, float seconds) = 0;
     virtual void flash(int r, int g, int b, float seconds) = 0;
     virtual void startBattle(const std::string& encounter) = 0;
+    virtual void setFur(int value) = 0;
+    virtual void healFull() = 0;
+    virtual void facePlayer(const std::string& key) = 0;
+    virtual void playerAnim(const std::string& path, const std::string& key, float seconds) = 0;
 };
 
 class CutsceneRunner {
@@ -368,6 +380,36 @@ public:
                     m_index = m_cutscene.steps.size();
                     m_running = false;
                     return;
+                case CutsceneStepType::SetFur:
+                    host.setFur(step.value);
+                    finishStep();
+                    break;
+                case CutsceneStepType::HealFull:
+                    host.healFull();
+                    finishStep();
+                    break;
+                case CutsceneStepType::FacePlayer:
+                    host.facePlayer(step.key);
+                    finishStep();
+                    break;
+                case CutsceneStepType::PlayerAnim: {
+                    if (!m_stepStarted) {
+                        m_stepStarted = true;
+                        host.playerAnim(step.path, step.key, step.seconds);
+                    }
+                    if (step.seconds <= 0.0f) {
+                        finishStep();
+                        break;
+                    }
+                    const float needed = step.seconds - m_elapsed;
+                    if (remainingDt < needed) {
+                        m_elapsed += remainingDt;
+                        return;
+                    }
+                    remainingDt -= needed;
+                    finishStep();
+                    break;
+                }
                 case CutsceneStepType::Unsupported:
                     std::clog << "Cutscene step '" << step.typeName
                               << "' not supported yet; skipping.\n";

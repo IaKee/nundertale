@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <cstdint>
 #include <fstream>
 #include <limits>
 #include <map>
@@ -83,11 +84,19 @@ struct TiledLayer {
     std::string name;
     int width = 0;
     int height = 0;
-    std::vector<int> data;
+    std::vector<std::uint32_t> data;
     std::string image;
     float offsetX = 0.0f;
     float offsetY = 0.0f;
     std::vector<TiledObject> objects;
+    std::vector<TiledProperty> properties;
+
+    const TiledProperty* findProperty(const std::string& propertyName) const {
+        for (const TiledProperty& property : properties) {
+            if (property.name == propertyName) return &property;
+        }
+        return nullptr;
+    }
 
     const TiledObject* findObject(const std::string& objectName) const {
         for (const TiledObject& object : objects) {
@@ -97,6 +106,18 @@ struct TiledLayer {
     }
 };
 
+struct TiledTileset {
+    std::uint32_t firstGid = 1;
+    std::string name;
+    std::string image;
+    int tileWidth = 0;
+    int tileHeight = 0;
+    int columns = 0;
+    int tileCount = 0;
+    int imageWidth = 0;
+    int imageHeight = 0;
+};
+
 struct TiledMap {
     std::string orientation;
     int tileWidth = 0;
@@ -104,6 +125,8 @@ struct TiledMap {
     int width = 0;
     int height = 0;
     std::vector<TiledLayer> layers;
+    std::vector<TiledTileset> tilesets;
+    std::vector<TiledProperty> properties;
 
     float pixelWidth() const {
         return static_cast<float>(width * tileWidth);
@@ -124,6 +147,14 @@ struct TiledMap {
         for (const TiledLayer& layer : layers) {
             const TiledObject* object = layer.findObject(objectName);
             if (object != nullptr) return object;
+        }
+        return nullptr;
+    }
+
+
+    const TiledProperty* findProperty(const std::string& propertyName) const {
+        for (const TiledProperty& property : properties) {
+            if (property.name == propertyName) return &property;
         }
         return nullptr;
     }
@@ -344,6 +375,16 @@ inline bool optionalIntField(const JsonValue& object, const char* key, int& outp
     return value->kind == JsonValue::Kind::Number && toInt(value->number, output);
 }
 
+inline bool uint32Field(const JsonValue& object, const char* key, std::uint32_t& output) {
+    double value = 0.0;
+    if (!numberField(object, key, value) || std::floor(value) != value ||
+        value < 0.0 || value > static_cast<double>(std::numeric_limits<std::uint32_t>::max())) {
+        return false;
+    }
+    output = static_cast<std::uint32_t>(value);
+    return true;
+}
+
 inline bool parsePoint(const JsonValue& value, TiledPoint& point) {
     if (value.kind != JsonValue::Kind::Object) return false;
     double x = 0.0;
@@ -408,6 +449,34 @@ inline bool parseObject(const JsonValue& value, TiledObject& object) {
     return true;
 }
 
+inline bool parseProperties(const JsonValue& owner, std::vector<TiledProperty>& output) {
+    const JsonValue* properties = owner.field("properties");
+    if (properties == nullptr) return true;
+    if (properties->kind != JsonValue::Kind::Array) return false;
+    for (const JsonValue& rawProperty : properties->array) {
+        TiledProperty property;
+        if (!parseProperty(rawProperty, property)) return false;
+        output.push_back(std::move(property));
+    }
+    return true;
+}
+
+inline bool parseTileset(const JsonValue& value, TiledTileset& tileset) {
+    if (value.kind != JsonValue::Kind::Object ||
+        !uint32Field(value, "firstgid", tileset.firstGid) ||
+        !optionalStringField(value, "name", tileset.name) ||
+        !optionalStringField(value, "image", tileset.image) ||
+        !optionalIntField(value, "tilewidth", tileset.tileWidth) ||
+        !optionalIntField(value, "tileheight", tileset.tileHeight) ||
+        !optionalIntField(value, "columns", tileset.columns) ||
+        !optionalIntField(value, "tilecount", tileset.tileCount) ||
+        !optionalIntField(value, "imagewidth", tileset.imageWidth) ||
+        !optionalIntField(value, "imageheight", tileset.imageHeight)) {
+        return false;
+    }
+    return tileset.firstGid > 0;
+}
+
 inline bool parseLayer(const JsonValue& value, TiledLayer& layer) {
     if (value.kind != JsonValue::Kind::Object) return false;
     std::string type;
@@ -419,9 +488,12 @@ inline bool parseLayer(const JsonValue& value, TiledLayer& layer) {
         const JsonValue* data = value.field("data");
         if (data == nullptr || data->kind != JsonValue::Kind::Array) return false;
         for (const JsonValue& entry : data->array) {
-            int tile = 0;
-            if (entry.kind != JsonValue::Kind::Number || !toInt(entry.number, tile)) return false;
-            layer.data.push_back(tile);
+            if (entry.kind != JsonValue::Kind::Number || std::floor(entry.number) != entry.number ||
+                entry.number < 0.0 ||
+                entry.number > static_cast<double>(std::numeric_limits<std::uint32_t>::max())) {
+                return false;
+            }
+            layer.data.push_back(static_cast<std::uint32_t>(entry.number));
         }
     } else if (type == "imagelayer") {
         layer.type = TiledLayerType::Image;
@@ -446,7 +518,7 @@ inline bool parseLayer(const JsonValue& value, TiledLayer& layer) {
     } else {
         layer.type = TiledLayerType::Unknown;
     }
-    return true;
+    return parseProperties(value, layer.properties);
 }
 
 } // namespace tiled_detail
@@ -475,6 +547,18 @@ inline bool parseTiledMapJson(const std::string& text, TiledMap& output) {
         TiledLayer layer;
         if (!tiled_detail::parseLayer(rawLayer, layer)) return false;
         parsed.layers.push_back(std::move(layer));
+    }
+
+
+    if (!tiled_detail::parseProperties(root, parsed.properties)) return false;
+
+    if (const tiled_detail::JsonValue* tilesets = root.field("tilesets")) {
+        if (tilesets->kind != tiled_detail::JsonValue::Kind::Array) return false;
+        for (const tiled_detail::JsonValue& rawTileset : tilesets->array) {
+            TiledTileset tileset;
+            if (!tiled_detail::parseTileset(rawTileset, tileset)) return false;
+            parsed.tilesets.push_back(std::move(tileset));
+        }
     }
 
     output = std::move(parsed);
