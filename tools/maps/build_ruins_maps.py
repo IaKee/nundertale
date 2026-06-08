@@ -133,6 +133,8 @@ def make_tiled_map(
     music="overworld.default",
     save_place=None,
     legacy_barky=False,
+    encounters=None,
+    encounter_budget=0,
     background_image=None,
     tile_size=40,
 ):
@@ -280,6 +282,10 @@ def make_tiled_map(
     ]
     if save_place:
         map_properties.append({"name": "savePlace", "type": "string", "value": save_place})
+    if encounters:
+        # ENC-003/ENC-006: weighted random encounters with a per-room budget
+        map_properties.append({"name": "encounters", "type": "string", "value": encounters})
+        map_properties.append({"name": "encounterBudget", "type": "int", "value": encounter_budget})
     if legacy_barky:
         map_properties.insert(0, {"name": "legacyBarky", "type": "bool", "value": True})
 
@@ -1036,6 +1042,8 @@ def build_ruins_notices():
         objects=objects,
         above_grid=above,
         music="overworld.default",
+        encounters="froggsona:2,shysona:1,modsmal:1",
+        encounter_budget=1,
     )
 
 

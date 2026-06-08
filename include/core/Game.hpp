@@ -38,6 +38,7 @@ private:
     bool m_debugLaunch = false;
     std::string m_debugRoom;
     std::string m_debugSpawn;
+    std::string m_debugBattle;
     std::vector<std::pair<std::string, int>> m_debugFlags;
     std::string m_debugShotPath;
     int m_debugShotFrames = 20;

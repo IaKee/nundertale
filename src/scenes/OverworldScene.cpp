@@ -327,6 +327,8 @@ void OverworldScene::initInteractables(GameContext& context) {
     m_interactables.clear();
 
     if (!m_legacyBarky) return;
+    // OVW-020: the placeholder sign and gate boxes only belong on the old test.bmp backdrop.
+    const bool backdrop = !m_backgroundImage.empty();
 
     // 1. Save Point Star (SAV-001, SAV-002)
     m_savePoint = std::make_unique<SavePoint>(objectPosition("savepoint", { 320.0f, 260.0f }));
@@ -342,7 +344,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                 "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
             }, "SIGN");
         },
-        [signBounds](GameContext& /*ctx*/) {
+        [signBounds, backdrop](GameContext& /*ctx*/) {
+            if (!backdrop) return;
             const int x = static_cast<int>(signBounds.x);
             const int y = static_cast<int>(signBounds.y);
             const int width = static_cast<int>(signBounds.width);
@@ -392,7 +395,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
                 }, "");
             },
-            [doorBounds](GameContext& /*ctx*/) {
+            [doorBounds, backdrop](GameContext& /*ctx*/) {
+                if (!backdrop) return;
                 DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
                                    static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height), GREEN);
                 DrawText("OPEN", static_cast<int>(doorBounds.x) + 20,
@@ -456,7 +460,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
                 }, "");
             },
-            [doorBounds](GameContext& /*ctx*/) {
+            [doorBounds, backdrop](GameContext& /*ctx*/) {
+                if (!backdrop) return;
                 DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
                                    static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
                                    COLOR_UNDERTALE_YELLOW);
@@ -531,7 +536,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
                 });
             },
-            [doorBounds](GameContext& /*ctx*/) {
+            [doorBounds, backdrop](GameContext& /*ctx*/) {
+                if (!backdrop) return;
                 DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
                                    static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
                                    COLOR_UNDERTALE_YELLOW);
@@ -1421,16 +1427,7 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
         return;
     }
 
-    if (type == "sign" || type == "examine") {
-        DrawRectangle(static_cast<int>(bounds.x), static_cast<int>(bounds.y),
-                      static_cast<int>(bounds.width), static_cast<int>(bounds.height),
-                      Color{ 130, 84, 45, 255 });
-        DrawRectangleLines(static_cast<int>(bounds.x), static_cast<int>(bounds.y),
-                           static_cast<int>(bounds.width), static_cast<int>(bounds.height), BLACK);
-    } else if (type == "itemPickup") {
-        DrawCircle(static_cast<int>(bounds.x + bounds.width * 0.5f),
-                   static_cast<int>(bounds.y + bounds.height * 0.5f), 5, COLOR_UNDERTALE_YELLOW);
-    }
+    // Like Undertale, signs, examinables and hidden pickups have no marker (F2 hitboxes show them).
 }
 
 void OverworldScene::drawPlayer(GameContext& context) {
@@ -1493,7 +1490,7 @@ void OverworldScene::render(GameContext& context) {
     drawTileLayers(context, false);
 
     // 2. Draw Pillars / Room Decor
-    if (m_legacyBarky) {
+    if (m_legacyBarky && !m_backgroundImage.empty()) {
         const Rectangle leftPillar = objectBounds("left_pillar", { 140, 160, 50, 80 });
         const Rectangle rightPillar = objectBounds("right_pillar", { 450, 160, 50, 80 });
         DrawRectangleRec(leftPillar, { 70, 50, 90, 255 });
