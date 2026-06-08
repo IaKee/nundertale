@@ -718,7 +718,15 @@ def build_ruins_entrance():
             "y": 460,
             "properties": {"facing": "up"},
         },
-        # North spawn (from Notices)
+        # North spawn (from Dummy and legacy Notices)
+        {
+            "name": "from_dummy",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
         {
             "name": "from_notices",
             "type": "spawn",
@@ -740,16 +748,16 @@ def build_ruins_entrance():
                 "targetSpawn": "from_entrance",
             },
         },
-        # Door north forward to ruins_notices
+        # Door north forward to ruins_dummy
         {
-            "name": "door_to_notices",
+            "name": "door_to_dummy",
             "type": "door",
             "x": 400,
             "y": 40,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_notices",
+                "targetRoom": "ruins_dummy",
                 "targetSpawn": "from_entrance",
             },
         },
@@ -851,6 +859,240 @@ def build_ruins_entrance():
 
 
 # =============================================================================
+# Room R5: Fursuit Dummy (ruins_dummy)
+# Size: 16x12 tiles (640x480 px).
+# Furiell's battle tutorial room between R3 and R8.
+# Features:
+#   - Carpet patch in center with Fursuit Dummy prop and Furiell NPC.
+#   - North door to ruins_notices, south door to ruins_entrance.
+#   - Intro trigger running r5_dummy (Furiell lines + startBattle fursuit_dummy).
+#   - Post-battle reaction triggers with mutually-exclusive showIf conditions,
+#     sharing once: "ruins.dummy.reacted".
+# =============================================================================
+def build_ruins_dummy():
+    width = 16
+    height = 12
+
+    ground = [
+        "################",
+        "#[====]  [====]#",
+        "#{---k}  {--v-}#",
+        "#.,;,..,;,..,;.#",
+        "#;.,...*,;,..,.#",
+        "#.,;.788889.,;.#",
+        "#;,..455z56..,.#",
+        "#..;.122223.w,;#",
+        "#;,..,.p..,;,..#",
+        "#.,;,..,;,..,;.#",
+        "#______  ______#",
+        "#######  #######",
+    ]
+
+    above = [
+        "................",
+        "................",
+        ".......LR.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 120, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 0, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_left"},
+        {"x": 360, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # South spawn (from entrance) & default spawn
+        {
+            "name": "from_entrance",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        # North spawn (from notices)
+        {
+            "name": "from_notices",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_entrance
+        {
+            "name": "door_to_entrance",
+            "type": "door",
+            "x": 280,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_entrance",
+                "targetSpawn": "from_dummy",
+            },
+        },
+        # Door north forward to ruins_notices
+        {
+            "name": "door_to_notices",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_notices",
+                "targetSpawn": "from_dummy",
+            },
+        },
+        # Fursuit Dummy prop on carpet
+        {
+            "name": "dummy",
+            "type": "prop",
+            "x": 250,
+            "y": 220,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/sprites/battle/fursuit_dummy.png",
+                "anim": "idle",
+                "solid": True,
+                "hideIf": "battle.fursuit_dummy.killed >= 1",
+                "lines": "* A mannequin wearing a fursuit head. Smells like the previous owner.",
+            },
+        },
+        # Furiell NPC standing beside dummy
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 350,
+            "y": 200,
+            "w": 60,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_down",
+                "speaker": "FURIELL",
+                "lines": "A warm embrace is always the best choice, my child.",
+                "solid": True,
+            },
+        },
+        # Intro trigger across the path to the dummy
+        {
+            "name": "trigger_intro",
+            "type": "trigger",
+            "x": 40,
+            "y": 320,
+            "w": 560,
+            "h": 40,
+            "properties": {
+                "cutscene": "r5_dummy",
+                "once": "ruins.dummy.intro",
+            },
+        },
+        # Post-battle reaction triggers covering the area around the dummy.
+        # Exactly one will be visible based on the battle outcome; all share once: "ruins.dummy.reacted".
+        {
+            "name": "trigger_react_hug",
+            "type": "trigger",
+            "x": 40,
+            "y": 120,
+            "w": 560,
+            "h": 315,
+            "properties": {
+                "cutscene": "r5_dummy_hug",
+                "once": "ruins.dummy.reacted",
+                "showIf": "ruins.dummy.hugged >= 1 && battle.fursuit_dummy.killed == 0",
+            },
+        },
+        {
+            "name": "trigger_react_talk",
+            "type": "trigger",
+            "x": 40,
+            "y": 120,
+            "w": 560,
+            "h": 315,
+            "properties": {
+                "cutscene": "r5_dummy_talk",
+                "once": "ruins.dummy.reacted",
+                "showIf": "ruins.dummy.talked >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0",
+            },
+        },
+        {
+            "name": "trigger_react_fight",
+            "type": "trigger",
+            "x": 40,
+            "y": 120,
+            "w": 560,
+            "h": 315,
+            "properties": {
+                "cutscene": "r5_dummy_fight",
+                "once": "ruins.dummy.reacted",
+                "showIf": "battle.fursuit_dummy.killed >= 1",
+            },
+        },
+        {
+            "name": "trigger_react_flee",
+            "type": "trigger",
+            "x": 40,
+            "y": 120,
+            "w": 560,
+            "h": 315,
+            "properties": {
+                "cutscene": "r5_dummy_other",
+                "once": "ruins.dummy.reacted",
+                "showIf": "fleesTotal >= 1 && ruins.dummy.hugged == 0 && ruins.dummy.talked == 0 && battle.fursuit_dummy.killed == 0",
+            },
+        },
+        {
+            "name": "trigger_react_spare",
+            "type": "trigger",
+            "x": 40,
+            "y": 120,
+            "w": 560,
+            "h": 315,
+            "properties": {
+                "cutscene": "r5_dummy_other",
+                "once": "ruins.dummy.reacted",
+                "showIf": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && ruins.dummy.talked == 0 && battle.fursuit_dummy.killed == 0",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_dummy",
+        display_name="Ruins - Training Room",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
 # Room R8: Notices, CRT and Art Show (ruins_notices)
 # Size: 20x14 tiles (800x560 px).
 # Notice board, flickering CRT with hidden laser pointer, Art Show booth and 18+ curtain.
@@ -903,7 +1145,15 @@ def build_ruins_notices():
     ]
 
     objects = [
-        # South spawn (from entrance) & default
+        # South spawn (from Dummy and legacy Entrance) & default
+        {
+            "name": "from_dummy",
+            "type": "spawn",
+            "point": True,
+            "x": 380,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
         {
             "name": "from_entrance",
             "type": "spawn",
@@ -929,16 +1179,16 @@ def build_ruins_notices():
             "y": 140,
             "properties": {"facing": "down"},
         },
-        # Door south back to ruins_entrance
+        # Door south back to ruins_dummy
         {
-            "name": "door_to_entrance",
+            "name": "door_to_dummy",
             "type": "door",
             "x": 360,
             "y": 520,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_entrance",
+                "targetRoom": "ruins_dummy",
                 "targetSpawn": "from_notices",
             },
         },
@@ -1214,6 +1464,7 @@ def main():
         "ruins_fall.json": build_ruins_fall,
         "ruins_floofy.json": build_ruins_floofy,
         "ruins_entrance.json": build_ruins_entrance,
+        "ruins_dummy.json": build_ruins_dummy,
         "ruins_notices.json": build_ruins_notices,
         "ruins_barky.json": build_ruins_barky,
     }

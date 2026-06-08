@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Oh, what a wonderful embrace, my child!",
+        "You are going to make so many friends down here."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.dummy.result",
+      "value": 5
+    }
+  ]
+}

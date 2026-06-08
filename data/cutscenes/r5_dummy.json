@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "When exploring the Underground, monsters may approach you, my child.",
+        "Do not worry! We shall simply practice resolving things peacefully.",
+        "You can always accept a hug, my child. It is the fastest way to make friends."
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "fursuit_dummy"
+    }
+  ]
+}

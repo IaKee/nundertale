@@ -138,6 +138,8 @@ std::string SaveService::getRoomDisplayName(const std::string& roomId) const {
         return "Ruins - Flower Bed";
     } else if (roomId == "ruins_entrance") {
         return "Ruins - Entrance";
+    } else if (roomId == "ruins_dummy") {
+        return "Ruins - Training Room";
     } else if (roomId == "ruins_notices") {
         return "Ruins - Notice Hall";
     } else if (roomId == "ruins_barky") {

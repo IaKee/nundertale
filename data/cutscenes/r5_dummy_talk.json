@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Very good, my child! Polite conversation is so important.",
+        "Monsters will appreciate such wonderful manners."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.dummy.result",
+      "value": 1
+    }
+  ]
+}
