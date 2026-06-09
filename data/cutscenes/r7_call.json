@@ -1,0 +1,35 @@
+{
+  "steps": [
+    {
+      "type": "sound",
+      "path": "assets/sfx/menu_select.wav",
+      "volume": 0.8
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/menu_select.wav",
+      "volume": 0.8
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "...You don't have allergies to faux-fur, do you?",
+        "Just checking! See you very soon, my child."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r7.call",
+      "value": 1
+    }
+  ]
+}

@@ -382,7 +382,7 @@
         {
           "height": 0,
           "id": 7,
-          "name": "from_dummy",
+          "name": "from_hallway",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -401,7 +401,7 @@
         {
           "height": 0,
           "id": 8,
-          "name": "from_entrance",
+          "name": "from_dummy",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -420,7 +420,7 @@
         {
           "height": 0,
           "id": 9,
-          "name": "spawn",
+          "name": "from_entrance",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -439,6 +439,25 @@
         {
           "height": 0,
           "id": 10,
+          "name": "spawn",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 380,
+          "y": 460,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 11,
           "name": "from_barky",
           "rotation": 0,
           "type": "spawn",
@@ -457,8 +476,8 @@
         },
         {
           "height": 40,
-          "id": 11,
-          "name": "door_to_dummy",
+          "id": 12,
+          "name": "door_to_hallway",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -469,7 +488,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_dummy"
+              "value": "ruins_hallway"
             },
             {
               "name": "targetSpawn",
@@ -480,7 +499,7 @@
         },
         {
           "height": 40,
-          "id": 12,
+          "id": 13,
           "name": "door_to_barky",
           "rotation": 0,
           "type": "door",
@@ -503,7 +522,7 @@
         },
         {
           "height": 60,
-          "id": 13,
+          "id": 14,
           "name": "notice_board",
           "rotation": 0,
           "type": "prop",
@@ -531,7 +550,7 @@
         },
         {
           "height": 40,
-          "id": 14,
+          "id": 15,
           "name": "crt_monitor",
           "rotation": 0,
           "type": "prop",
@@ -564,7 +583,7 @@
         },
         {
           "height": 20,
-          "id": 15,
+          "id": 16,
           "name": "laser_pickup",
           "rotation": 0,
           "type": "itemPickup",
@@ -597,7 +616,7 @@
         },
         {
           "height": 80,
-          "id": 16,
+          "id": 17,
           "name": "curtain_18",
           "rotation": 0,
           "type": "prop",
@@ -640,7 +659,7 @@
         },
         {
           "height": 80,
-          "id": 17,
+          "id": 18,
           "name": "art_show_booth",
           "rotation": 0,
           "type": "prop",
@@ -975,7 +994,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 18,
+  "nextobjectid": 19,
   "orientation": "orthogonal",
   "properties": [
     {

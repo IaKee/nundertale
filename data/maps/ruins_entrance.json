@@ -459,7 +459,7 @@
         {
           "height": 0,
           "id": 10,
-          "name": "from_dummy",
+          "name": "from_switches",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -478,6 +478,25 @@
         {
           "height": 0,
           "id": 11,
+          "name": "from_dummy",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 420,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 12,
           "name": "from_notices",
           "rotation": 0,
           "type": "spawn",
@@ -496,7 +515,7 @@
         },
         {
           "height": 40,
-          "id": 12,
+          "id": 13,
           "name": "door_to_floofy",
           "rotation": 0,
           "type": "door",
@@ -519,8 +538,8 @@
         },
         {
           "height": 40,
-          "id": 13,
-          "name": "door_to_dummy",
+          "id": 14,
+          "name": "door_to_switches",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -531,7 +550,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_dummy"
+              "value": "ruins_switches"
             },
             {
               "name": "targetSpawn",
@@ -542,7 +561,7 @@
         },
         {
           "height": 80,
-          "id": 14,
+          "id": 15,
           "name": "banner_welcome",
           "rotation": 0,
           "type": "prop",
@@ -570,7 +589,7 @@
         },
         {
           "height": 32,
-          "id": 15,
+          "id": 16,
           "name": "banner_deodorant",
           "rotation": 0,
           "type": "prop",
@@ -598,7 +617,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 17,
           "name": "dorito_pile",
           "rotation": 0,
           "type": "prop",
@@ -631,7 +650,7 @@
         },
         {
           "height": 0,
-          "id": 17,
+          "id": 18,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -643,7 +662,7 @@
         },
         {
           "height": 40,
-          "id": 18,
+          "id": 19,
           "name": "trigger_furiell",
           "rotation": 0,
           "type": "trigger",
@@ -666,7 +685,7 @@
         },
         {
           "height": 80,
-          "id": 19,
+          "id": 20,
           "name": "furiell_entrance",
           "rotation": 0,
           "type": "npc",
@@ -1044,7 +1063,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 21,
   "orientation": "orthogonal",
   "properties": [
     {

@@ -222,6 +222,14 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
         variants, counter, context.state.furry.value, furMin,
         tiledStringProperty(object.properties, "furLines"));
     if (!counterKey.empty()) context.state.incFlag(counterKey);
+    if (type == "npc" && !tiledBoolProperty(object.properties, "noTurn", false)) {
+        const TiledRect npcBounds = object.bounds();
+        const Rectangle playerBox = m_player.getCollisionBox();
+        m_talkingObjectId = object.id;
+        m_talkingFacing = faceTowardDirection(
+            npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height * 0.5f,
+            playerBox.x + playerBox.width * 0.5f, playerBox.y + playerBox.height * 0.5f);
+    }
     context.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
     m_dialogBox.startDialog(
         splitRoomPages(selected), tiledStringProperty(object.properties, "speaker"));
@@ -1219,6 +1227,7 @@ void OverworldScene::update(float dt, GameContext& context) {
         m_dialogBox.update(dt, context);
         return;
     }
+    m_talkingObjectId = -1;  // OVW-007: the NPC goes back to its own facing
 
     // Save Point Box update (SAV-002)
     if (m_saveBoxState != SaveBoxState::Closed) {
@@ -1411,6 +1420,10 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
                 animation = "stand_down";
             }
             if (animation.empty() && !sheet->anims.empty()) animation = sheet->anims.begin()->first;
+            if (object.id == m_talkingObjectId) {
+                const std::string turned = "stand_" + m_talkingFacing;
+                if (sheet->anims.find(turned) != sheet->anims.end()) animation = turned;
+            }
             drawSprite(texture, *sheet, animation, m_roomAnimationTime, pivot);
         } else {
             const Rectangle source = {

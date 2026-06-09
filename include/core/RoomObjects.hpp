@@ -3,6 +3,7 @@
 #include "core/TiledMap.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -106,6 +107,15 @@ inline std::string selectRoomVariant(const std::vector<std::string>& variants,
     if (variants.empty()) return {};
     const int index = std::clamp(counter, 0, static_cast<int>(variants.size()) - 1);
     return variants[static_cast<std::size_t>(index)];
+}
+
+// OVW-007: the facing ("up"/"down"/"left"/"right") an NPC at (npcX, npcY) needs to look at a
+// point at (targetX, targetY). The larger axis wins; ties go vertical, like Undertale.
+inline std::string faceTowardDirection(float npcX, float npcY, float targetX, float targetY) {
+    const float dx = targetX - npcX;
+    const float dy = targetY - npcY;
+    if (std::abs(dx) > std::abs(dy)) return dx < 0.0f ? "left" : "right";
+    return dy < 0.0f ? "up" : "down";
 }
 
 constexpr std::uint32_t TILED_GID_MASK = 0x1FFFFFFFu;

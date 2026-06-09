@@ -103,6 +103,8 @@ ABOVE_CHARS = {
     'L': 53,  # arch TL
     'R': 54,  # arch TR
     'T': 57,  # pillar top
+    'I': 58,  # pillar mid
+    'B': 59,  # pillar base
 }
 
 
@@ -718,7 +720,15 @@ def build_ruins_entrance():
             "y": 460,
             "properties": {"facing": "up"},
         },
-        # North spawn (from Dummy and legacy Notices)
+        # North spawn (from Switches, Dummy, and legacy Notices)
+        {
+            "name": "from_switches",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
         {
             "name": "from_dummy",
             "type": "spawn",
@@ -748,16 +758,16 @@ def build_ruins_entrance():
                 "targetSpawn": "from_entrance",
             },
         },
-        # Door north forward to ruins_dummy
+        # Door north forward to ruins_switches
         {
-            "name": "door_to_dummy",
+            "name": "door_to_switches",
             "type": "door",
             "x": 400,
             "y": 40,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_dummy",
+                "targetRoom": "ruins_switches",
                 "targetSpawn": "from_entrance",
             },
         },
@@ -859,6 +869,345 @@ def build_ruins_entrance():
 
 
 # =============================================================================
+# Room R4: RGB Switches (ruins_switches)
+# Size: 16x12 tiles (640x480 px).
+# Three switches on the wall. Two correct ones marked with glitter (sw1, sw3).
+# One wrong switch (sw2) with a note from Ruins Administration.
+# Gate across north exit blocked by cables until both right switches are pressed.
+# =============================================================================
+def build_ruins_switches():
+    width = 16
+    height = 12
+
+    ground = [
+        "#[====]  [====]#",
+        "#{---k}  {--v-}#",
+        "#.,;,..,;,..,;.#",
+        "#;.,...*,;,..,.#",
+        "#.,;,..,.w..,;.#",
+        "#;..,.c....,;..#",
+        "#.,;,....,;,..,#",
+        "#;.,..,p..,;,..#",
+        "#.,;....,;,..,.#",
+        "#;.,...,;,..,;.#",
+        "#______  ______#",
+        "#######  #######",
+    ]
+
+    above = [
+        "................",
+        "................",
+        ".......LR.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 120, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 0, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_left"},
+        {"x": 360, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # South spawn (from entrance) & default spawn
+        {
+            "name": "from_entrance",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        # North spawn (from dummy)
+        {
+            "name": "from_dummy",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_entrance
+        {
+            "name": "door_to_entrance",
+            "type": "door",
+            "x": 280,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_entrance",
+                "targetSpawn": "from_switches",
+            },
+        },
+        # Door north forward to ruins_dummy
+        {
+            "name": "door_to_dummy",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_dummy",
+                "targetSpawn": "from_switches",
+            },
+        },
+        # Entrance hint trigger
+        {
+            "name": "trigger_hint",
+            "type": "trigger",
+            "x": 240,
+            "y": 380,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r4_hint",
+                "once": "ruins.r4.intro",
+            },
+        },
+        # Switch 1: Right switch (marked with glitter)
+        {
+            "name": "sw1",
+            "type": "prop",
+            "x": 120,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "counter": "ruins.r4.sw1",
+                "lines": "* You flipped the switch. Click! Glitter spilled everywhere.",
+                "lines2": "* The switch is already flipped. There is glitter all over your hands.",
+            },
+        },
+        {
+            "name": "sw1_marked",
+            "type": "prop",
+            "x": 120,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "marked",
+                "hideIf": "ruins.r4.sw1 >= 1",
+                "solid": False,
+            },
+        },
+        {
+            "name": "sw1_on",
+            "type": "prop",
+            "x": 120,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "on",
+                "showIf": "ruins.r4.sw1 >= 1",
+                "solid": False,
+            },
+        },
+        # Switch 2: Wrong switch
+        {
+            "name": "sw2",
+            "type": "prop",
+            "x": 200,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "counter": "ruins.r4.sw2",
+                "lines": "* You flipped the switch. It made a hollow clunk. Nothing happened.",
+                "lines2": "* Still nothing. It feels like pressing an unmapped key.",
+            },
+        },
+        {
+            "name": "sw2_off",
+            "type": "prop",
+            "x": 200,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "off",
+                "hideIf": "ruins.r4.sw2 >= 1",
+                "solid": False,
+            },
+        },
+        {
+            "name": "sw2_on",
+            "type": "prop",
+            "x": 200,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "on",
+                "showIf": "ruins.r4.sw2 >= 1",
+                "solid": False,
+            },
+        },
+        # Note on wall next to wrong switch
+        {
+            "name": "note_switch2",
+            "type": "examine",
+            "x": 240,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "lines": "* \"Not this one. - Ruins Administration (not Furiell)\"",
+            },
+        },
+        # Sign
+        {
+            "name": "sign_courage",
+            "type": "sign",
+            "x": 400,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "lines": "* \"Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob.\"",
+            },
+        },
+        # Switch 3: Right switch (marked with glitter)
+        {
+            "name": "sw3",
+            "type": "prop",
+            "x": 480,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "counter": "ruins.r4.sw3",
+                "lines": "* You flipped the switch. Click! A distant latch clicked open.",
+                "lines2": "* The switch is already on. It emits a faint RGB glow.",
+            },
+        },
+        {
+            "name": "sw3_marked",
+            "type": "prop",
+            "x": 480,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "marked",
+                "hideIf": "ruins.r4.sw3 >= 1",
+                "solid": False,
+            },
+        },
+        {
+            "name": "sw3_on",
+            "type": "prop",
+            "x": 480,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_switch.png",
+                "anim": "on",
+                "showIf": "ruins.r4.sw3 >= 1",
+                "solid": False,
+            },
+        },
+        # North gate: solid cables blocking exit when unsolved
+        {
+            "name": "gate_cables_left",
+            "type": "prop",
+            "x": 280,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_cables.png",
+                "anim": "on",
+                "solid": True,
+                "hideIf": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1",
+            },
+        },
+        {
+            "name": "gate_cables_right",
+            "type": "prop",
+            "x": 320,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_cables.png",
+                "anim": "on",
+                "solid": True,
+                "hideIf": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1",
+            },
+        },
+        # North gate: open state (cables off, non-solid)
+        {
+            "name": "gate_open_left",
+            "type": "prop",
+            "x": 280,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_cables.png",
+                "anim": "off",
+                "solid": False,
+                "showIf": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1",
+            },
+        },
+        {
+            "name": "gate_open_right",
+            "type": "prop",
+            "x": 320,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_cables.png",
+                "anim": "off",
+                "solid": False,
+                "showIf": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_switches",
+        display_name="Ruins - Switch Room",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
 # Room R5: Fursuit Dummy (ruins_dummy)
 # Size: 16x12 tiles (640x480 px).
 # Furiell's battle tutorial room between R3 and R8.
@@ -913,7 +1262,15 @@ def build_ruins_dummy():
     ]
 
     objects = [
-        # South spawn (from entrance) & default spawn
+        # South spawn (from switches, entrance) & default spawn
+        {
+            "name": "from_switches",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
         {
             "name": "from_entrance",
             "type": "spawn",
@@ -930,7 +1287,15 @@ def build_ruins_dummy():
             "y": 370,
             "properties": {"facing": "up"},
         },
-        # North spawn (from notices)
+        # North spawn (from hallway, notices)
+        {
+            "name": "from_hallway",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
         {
             "name": "from_notices",
             "type": "spawn",
@@ -939,29 +1304,29 @@ def build_ruins_dummy():
             "y": 140,
             "properties": {"facing": "down"},
         },
-        # Door south back to ruins_entrance
+        # Door south back to ruins_switches
         {
-            "name": "door_to_entrance",
+            "name": "door_to_switches",
             "type": "door",
             "x": 280,
             "y": 440,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_entrance",
+                "targetRoom": "ruins_switches",
                 "targetSpawn": "from_dummy",
             },
         },
-        # Door north forward to ruins_notices
+        # Door north forward to ruins_hallway
         {
-            "name": "door_to_notices",
+            "name": "door_to_hallway",
             "type": "door",
             "x": 280,
             "y": 40,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_notices",
+                "targetRoom": "ruins_hallway",
                 "targetSpawn": "from_dummy",
             },
         },
@@ -1093,6 +1458,181 @@ def build_ruins_dummy():
 
 
 # =============================================================================
+# Room R7: Long Hallway (ruins_hallway)
+# Size: 52x12 tiles (2080x480 px, > 3 screens wide).
+# Independence test: Furiell gives Pepe the CELL flip phone at entrance.
+# Long hallway with pillars, decals, and Furiell hiding behind a pillar near the end.
+# Phone rings right before north exit door.
+# =============================================================================
+def build_ruins_hallway():
+    width = 52
+    height = 12
+
+    # Col 0: # (void), Cols 1-44: wall, Cols 45-46: exit doorway, Cols 47-50: wall, Col 51: # (void)
+    ground = [
+        "#[==========================================]  [==]#",
+        "#{---k-v-----v----k----v-----k----v-----k---}  {--}#",
+        "#.,;,..,;,..,;,..,;,..,;,..,;,..,;,..,;,..,;...,.;.#",
+        "#;.,...*,;,..,.c..;.,...,;,..,.w..;.,...,;,..,;;.,.#",
+        "#.,;....,;,I,..,;,..,;,I,..,;,..,;,I,..,;,I,..,.,;,#",
+        "#;..,.c....B;..,;..,...B;..,;..,...B;..,..B,;,;;..,#",
+        "#.,;,....,;,..,.,;,....,;,..,.,;,....,;,..,.,.,.,;,#",
+        "#;.,..,p..,;,..;.,..,p..,;,..;.,..,p..,;,..;..;;,..#",
+        "#.,;....,;,..,.w.,;....,;,..,.c.,;....,;,..,..,..,.#",
+        "#;.,...,;,..,;.,;.,...,;,..,;.,;.,...,;,..,;.c.;,;.#",
+        "#_  _______________________________________________#",
+        "##  ################################################",
+    ]
+
+    above = [
+        "....................................................",
+        "....................................................",
+        ".............................................LR.....",
+        "...........T...........T...........T......T.........",
+        "..........................................I.........",
+        "..........................................B.........",
+        "....................................................",
+        "....................................................",
+        "....................................................",
+        "....................................................",
+        "....................................................",
+        "....................................................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 1800, "h": 120, "name": "top_wall_left"},
+        {"x": 1880, "y": 0, "w": 200, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 2040, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 0, "y": 440, "w": 80, "h": 40, "name": "bottom_wall_left"},
+        {"x": 160, "y": 440, "w": 1920, "h": 40, "name": "bottom_wall_right"},
+        {"x": 440, "y": 160, "w": 40, "h": 80, "name": "pillar_1"},
+        {"x": 920, "y": 160, "w": 40, "h": 80, "name": "pillar_2"},
+        {"x": 1400, "y": 160, "w": 40, "h": 80, "name": "pillar_3"},
+        {"x": 1680, "y": 160, "w": 40, "h": 80, "name": "pillar_4"},
+    ]
+
+    objects = [
+        # South spawn (from dummy) & default spawn
+        {
+            "name": "from_dummy",
+            "type": "spawn",
+            "point": True,
+            "x": 120,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 120,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        # North spawn (from notices)
+        {
+            "name": "from_notices",
+            "type": "spawn",
+            "point": True,
+            "x": 1840,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_dummy
+        {
+            "name": "door_to_dummy",
+            "type": "door",
+            "x": 80,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_dummy",
+                "targetSpawn": "from_hallway",
+            },
+        },
+        # Door north forward to ruins_notices
+        {
+            "name": "door_to_notices",
+            "type": "door",
+            "x": 1800,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_notices",
+                "targetSpawn": "from_hallway",
+            },
+        },
+        # Trigger at entrance giving the CELL
+        {
+            "name": "trigger_cell",
+            "type": "trigger",
+            "x": 80,
+            "y": 260,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r7_cell",
+                "once": "ruins.r7.intro",
+            },
+        },
+        # Furiell hiding behind pillar 4
+        {
+            "name": "furiell_hiding",
+            "type": "prop",
+            "x": 1695,
+            "y": 160,
+            "w": 40,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_left",
+                "solid": False,
+            },
+        },
+        # Examine object on pillar 4 seeing her tail
+        {
+            "name": "tail_examine",
+            "type": "examine",
+            "x": 1670,
+            "y": 150,
+            "w": 70,
+            "h": 90,
+            "properties": {
+                "lines": "* (You can see her tail. She can see you seeing her tail.)",
+            },
+        },
+        # Trigger before north exit for forced phone call
+        {
+            "name": "trigger_call",
+            "type": "trigger",
+            "x": 1740,
+            "y": 120,
+            "w": 50,
+            "h": 240,
+            "properties": {
+                "cutscene": "r7_call",
+                "once": "ruins.r7.call",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_hallway",
+        display_name="Ruins - Long Hallway",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
 # Room R8: Notices, CRT and Art Show (ruins_notices)
 # Size: 20x14 tiles (800x560 px).
 # Notice board, flickering CRT with hidden laser pointer, Art Show booth and 18+ curtain.
@@ -1145,7 +1685,15 @@ def build_ruins_notices():
     ]
 
     objects = [
-        # South spawn (from Dummy and legacy Entrance) & default
+        # South spawn (from Hallway, Dummy, and legacy Entrance) & default
+        {
+            "name": "from_hallway",
+            "type": "spawn",
+            "point": True,
+            "x": 380,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
         {
             "name": "from_dummy",
             "type": "spawn",
@@ -1179,16 +1727,16 @@ def build_ruins_notices():
             "y": 140,
             "properties": {"facing": "down"},
         },
-        # Door south back to ruins_dummy
+        # Door south back to ruins_hallway
         {
-            "name": "door_to_dummy",
+            "name": "door_to_hallway",
             "type": "door",
             "x": 360,
             "y": 520,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_dummy",
+                "targetRoom": "ruins_hallway",
                 "targetSpawn": "from_notices",
             },
         },
@@ -1464,7 +2012,9 @@ def main():
         "ruins_fall.json": build_ruins_fall,
         "ruins_floofy.json": build_ruins_floofy,
         "ruins_entrance.json": build_ruins_entrance,
+        "ruins_switches.json": build_ruins_switches,
         "ruins_dummy.json": build_ruins_dummy,
+        "ruins_hallway.json": build_ruins_hallway,
         "ruins_notices.json": build_ruins_notices,
         "ruins_barky.json": build_ruins_barky,
     }

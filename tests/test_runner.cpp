@@ -2638,7 +2638,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_dummy", "ruins_notices", "ruins_barky"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {

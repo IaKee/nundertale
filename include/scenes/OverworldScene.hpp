@@ -80,6 +80,8 @@ private:
     float m_roomAnimationTime = 0.0f;
     std::unordered_set<std::string> m_loggedConditions;
     std::unordered_set<int> m_triggerOverlaps;
+    int m_talkingObjectId = -1;     // OVW-007: the NPC turned toward Pepe while talking
+    std::string m_talkingFacing;
     std::vector<EncounterEntry> m_roomEncounters;
     int m_encounterBudget = 0;
     int m_encounterStepsRemaining = 0;

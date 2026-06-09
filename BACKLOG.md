@@ -1013,10 +1013,10 @@ P0 · S · CORE-001
 - **What:** 3 room px per frame, which at the 2× view is 6 screen px per frame = 180 px/s at 30 fps (confirm). **No diagonal normalization** (diagonally, Frisk moves 3 px on each axis). The sprite facing follows Undertale's rule: on a diagonal, keep the direction that was pressed first. No running (D-10).
 - **Before:** `PLAYER_SPEED = 180 px/s` already matched in straight lines, but the diagonal was normalized and facing used the dominant axis → changed.
 
-#### OVW-007 — Undertale-style interaction `[~]`
+#### OVW-007 — Undertale-style interaction `[x]`
 P0 · S · OVW-003
 - **What:** Z interacts with the object **in front of** Pepe (a short interaction box in the facing direction); NPCs turn toward the player while talking and go back to their original facing afterward.
-- **Partly done (2026-10-18):** Z interacts with the typed object in front of Pepe (his facing interaction box). Pending: NPCs turning toward the player and back.
+- **Partly done (2026-10-18):** Z interacts with the typed object in front of Pepe (his facing interaction box). **Done (2026-10-18):** an `npc` talked to turns to face Pepe (`stand_<dir>` from its sheet, larger axis wins, `faceTowardDirection` in `RoomObjects.hpp`) and goes back to its own anim when the dialog closes; `noTurn=true` opts out.
 
 #### OVW-008 — Doors and room transitions `[x]`
 P0 · M · OVW-003, CORE-003
@@ -1856,9 +1856,10 @@ P0 · M · OVW-003, ART-120
 - **Save:** `* The distant hum of dial-up internet fills you with DETERMINATION.` (modem SFX).
 - **Partly done (2026-10-18):** `ruins_entrance`: the double staircase, the two banners (examinable), the Dorito-bag pile, the save point with the dial-up line, Furiell's intro cutscene. Pending: the crunch SFX (OVW-014) and a modem SFX on save.
 
-#### C1-004 — R4: RGB Switches `[ ]`
+#### C1-004 — R4: RGB Switches `[~]`
 P1 · M · OVW-012
 - **What:** a tutorial puzzle; the right switches are marked with glitter; note `Not this one. — Ruins Administration (not Furiell)`. **Sign:** `* "Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob."`
+- **Partly done (2026-10-18):** `ruins_switches` sits between R3 and R5: three `ruins_rgb_switch` switches (1 and 3 glitter-`marked` until pressed, counters `ruins.r4.sw1..3`), the wrong one gets a joke line, the `Not this one.` note and the noob sign; a solid cable barrier across the north exit disappears once both right switches are on; Furiell hint cutscene on entry (`r4_hint`, `ruins.r4.intro`). Pending: a click SFX and a clearer "barrier off" sprite (the cable `on`/`off` frames look alike at 2x).
 
 #### C1-005 — R5: Fursuit Dummy `[~]`
 P0 · M · BFL-001, ACT-005, NAR-003
@@ -1869,9 +1870,10 @@ P0 · M · BFL-001, ACT-005, NAR-003
 P1 · M · CORE-011, OVW-012
 - **What:** network cables that shock you (the spikes parody); Furiell holds Pepe's "hand" and guides him with scripted movement: `* Her paw is very soft. Suspiciously soft.` `* (Good stitching.)` (a hint at his secret, NAR-029).
 
-#### C1-007 — R7: Long Hallway `[ ]`
+#### C1-007 — R7: Long Hallway `[~]`
 P1 · M · CORE-011, MNU-004
 - **What:** the independence test; Pepe gets the **CELL** (a flip phone with paw stickers, `ruins.cell.given`); behind the pillar, Furiell's tail sticks out: `* (You can see her tail. She can see you seeing her tail.)`. After the room, a forced call: `...You don't have allergies to faux-fur, do you?`
+- **Partly done (2026-10-18):** `ruins_hallway` (52 tiles wide) sits between R5 and R8 (R6 is skipped for now): on entry Furiell gives the CELL (`r7_cell`, sets `ruins.cell.given` and `cell_furiell`); at the far end she hides behind a pillar with her tail showing (examine line); a trigger before the exit plays the forced call (`r7_call`, `ruins.r7.call`). Pending: a phone-ring SFX (uses `menu_select.wav`) and R6 between R5 and R7.
 
 #### C1-008 — R8: Notices, CRT and Art Show `[~]`
 P0 · M · OVW-011, ENC-003, LOR-007

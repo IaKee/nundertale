@@ -1,0 +1,1125 @@
+{
+  "compressionlevel": -1,
+  "height": 12,
+  "infinite": false,
+  "layers": [
+    {
+      "data": [
+        8,
+        25,
+        26,
+        26,
+        26,
+        26,
+        27,
+        8,
+        8,
+        25,
+        26,
+        26,
+        26,
+        26,
+        27,
+        8,
+        8,
+        28,
+        29,
+        29,
+        29,
+        31,
+        30,
+        8,
+        8,
+        28,
+        29,
+        29,
+        32,
+        29,
+        30,
+        8,
+        8,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        3,
+        1,
+        8,
+        8,
+        3,
+        1,
+        2,
+        1,
+        1,
+        1,
+        5,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        1,
+        8,
+        8,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        1,
+        6,
+        1,
+        1,
+        2,
+        3,
+        1,
+        8,
+        8,
+        3,
+        1,
+        1,
+        2,
+        1,
+        7,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        1,
+        1,
+        8,
+        8,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        8,
+        8,
+        3,
+        1,
+        2,
+        1,
+        1,
+        2,
+        22,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        8,
+        8,
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        1,
+        8,
+        8,
+        3,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        2,
+        3,
+        1,
+        8,
+        8,
+        39,
+        39,
+        39,
+        39,
+        39,
+        39,
+        8,
+        8,
+        39,
+        39,
+        39,
+        39,
+        39,
+        39,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "height": 12,
+      "id": 1,
+      "name": "ground",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 2,
+      "name": "collision",
+      "objects": [
+        {
+          "height": 120,
+          "id": 1,
+          "name": "top_wall_left",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 120,
+          "id": 2,
+          "name": "top_wall_right",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 360,
+          "y": 0
+        },
+        {
+          "height": 480,
+          "id": 3,
+          "name": "left_wall",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 40,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 480,
+          "id": 4,
+          "name": "right_wall",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 40,
+          "x": 600,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": 5,
+          "name": "bottom_wall_left",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 0,
+          "y": 440
+        },
+        {
+          "height": 40,
+          "id": 6,
+          "name": "bottom_wall_right",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 360,
+          "y": 440
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 3,
+      "name": "objects",
+      "objects": [
+        {
+          "height": 0,
+          "id": 7,
+          "name": "from_entrance",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 370,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 8,
+          "name": "spawn",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 370,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 9,
+          "name": "from_dummy",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 10,
+          "name": "door_to_entrance",
+          "rotation": 0,
+          "type": "door",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 440,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_entrance"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_switches"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 11,
+          "name": "door_to_dummy",
+          "rotation": 0,
+          "type": "door",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 40,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_dummy"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_switches"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 12,
+          "name": "trigger_hint",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 240,
+          "y": 380,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_hint"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r4.intro"
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 13,
+          "name": "sw1",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 120,
+          "y": 80,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r4.sw1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* You flipped the switch. Click! Glitter spilled everywhere."
+            },
+            {
+              "name": "lines2",
+              "type": "string",
+              "value": "* The switch is already flipped. There is glitter all over your hands."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 14,
+          "name": "sw1_marked",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 120,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "marked"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 15,
+          "name": "sw1_on",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 120,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "on"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 16,
+          "name": "sw2",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 200,
+          "y": 80,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r4.sw2"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* You flipped the switch. It made a hollow clunk. Nothing happened."
+            },
+            {
+              "name": "lines2",
+              "type": "string",
+              "value": "* Still nothing. It feels like pressing an unmapped key."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 17,
+          "name": "sw2_off",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 200,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "off"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.sw2 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 18,
+          "name": "sw2_on",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 200,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "on"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r4.sw2 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 19,
+          "name": "note_switch2",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 240,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* \"Not this one. - Ruins Administration (not Furiell)\""
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 20,
+          "name": "sign_courage",
+          "rotation": 0,
+          "type": "sign",
+          "visible": true,
+          "width": 40,
+          "x": 400,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* \"Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob.\""
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 21,
+          "name": "sw3",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 80,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r4.sw3"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* You flipped the switch. Click! A distant latch clicked open."
+            },
+            {
+              "name": "lines2",
+              "type": "string",
+              "value": "* The switch is already on. It emits a faint RGB glow."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 22,
+          "name": "sw3_marked",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "marked"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.sw3 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 23,
+          "name": "sw3_on",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_switch.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "on"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r4.sw3 >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 24,
+          "name": "gate_cables_left",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 280,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "on"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 25,
+          "name": "gate_cables_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 320,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "on"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 26,
+          "name": "gate_open_left",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 280,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "off"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 27,
+          "name": "gate_open_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 320,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "off"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            }
+          ]
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        53,
+        54,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 12,
+      "id": 4,
+      "name": "above",
+      "opacity": 1,
+      "properties": [
+        {
+          "name": "above",
+          "type": "bool",
+          "value": true
+        }
+      ],
+      "type": "tilelayer",
+      "visible": true,
+      "width": 16,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 5,
+  "nextobjectid": 28,
+  "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "displayName",
+      "type": "string",
+      "value": "Ruins - Switch Room"
+    },
+    {
+      "name": "music",
+      "type": "string",
+      "value": "overworld.default"
+    }
+  ],
+  "renderorder": "right-down",
+  "tiledversion": "1.11.2",
+  "tileheight": 40,
+  "tilesets": [
+    {
+      "columns": 8,
+      "firstgid": 1,
+      "image": "assets/tiles/ruins.png",
+      "imageheight": 160,
+      "imagewidth": 160,
+      "name": "ruins",
+      "tilecount": 64,
+      "tileheight": 20,
+      "tilewidth": 20
+    }
+  ],
+  "tilewidth": 40,
+  "type": "map",
+  "version": "1.10",
+  "width": 16
+}
