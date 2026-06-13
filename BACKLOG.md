@@ -1859,7 +1859,7 @@ P0 · M · OVW-003, ART-120
 #### C1-004 — R4: RGB Switches `[~]`
 P1 · M · OVW-012
 - **What:** a tutorial puzzle; the right switches are marked with glitter; note `Not this one. — Ruins Administration (not Furiell)`. **Sign:** `* "Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob."`
-- **Partly done (2026-10-18):** `ruins_switches` sits between R3 and R5: three `ruins_rgb_switch` switches (1 and 3 glitter-`marked` until pressed, counters `ruins.r4.sw1..3`), the wrong one gets a joke line, the `Not this one.` note and the noob sign; a solid cable barrier across the north exit disappears once both right switches are on; Furiell hint cutscene on entry (`r4_hint`, `ruins.r4.intro`). Pending: a click SFX and a clearer "barrier off" sprite (the cable `on`/`off` frames look alike at 2x).
+- **Partly done (2026-10-18):** `ruins_switches` sits between R3 and R5: three `ruins_rgb_switch` switches (1 and 3 glitter-`marked` until pressed, counters `ruins.r4.sw1..3`), the wrong one gets a joke line, the `Not this one.` note and the noob sign; a solid cable barrier across the north exit disappears once both right switches are on; Furiell hint cutscene on entry (`r4_hint`, `ruins.r4.intro`). The sparking cable barrier stands in front of the north arch (examinable) and vanishes when solved. Pending: a click SFX on the switches.
 
 #### C1-005 — R5: Fursuit Dummy `[~]`
 P0 · M · BFL-001, ACT-005, NAR-003

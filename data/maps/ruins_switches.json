@@ -804,13 +804,13 @@
         {
           "height": 40,
           "id": 26,
-          "name": "gate_open_left",
+          "name": "gate_front_left",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 40,
           "x": 280,
-          "y": 80,
+          "y": 120,
           "properties": [
             {
               "name": "sprite",
@@ -820,30 +820,35 @@
             {
               "name": "anim",
               "type": "string",
-              "value": "off"
+              "value": "on"
             },
             {
               "name": "solid",
               "type": "bool",
-              "value": false
+              "value": true
             },
             {
-              "name": "showIf",
+              "name": "hideIf",
               "type": "string",
               "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A tangle of live cables blocks the way.\n* Somewhere, a switch is waiting."
             }
           ]
         },
         {
           "height": 40,
           "id": 27,
-          "name": "gate_open_right",
+          "name": "gate_front_right",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 40,
           "x": 320,
-          "y": 80,
+          "y": 120,
           "properties": [
             {
               "name": "sprite",
@@ -853,17 +858,22 @@
             {
               "name": "anim",
               "type": "string",
-              "value": "off"
+              "value": "on"
             },
             {
               "name": "solid",
               "type": "bool",
-              "value": false
+              "value": true
             },
             {
-              "name": "showIf",
+              "name": "hideIf",
               "type": "string",
               "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A tangle of live cables blocks the way.\n* Somewhere, a switch is waiting."
             }
           ]
         }
