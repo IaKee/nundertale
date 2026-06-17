@@ -119,6 +119,7 @@ void OverworldScene::initRoomObjects(GameContext& context) {
     m_hazardLinesShown.clear();
     m_hiddenRoomObjects.clear();
     m_roomObjectAnimations.clear();
+    m_bumpTrackers.clear();
     m_hazardCooldown = 0;
     m_lastHazardSafePosition = m_player.getPosition();
 
@@ -175,6 +176,29 @@ void OverworldScene::refreshDynamicObstacles(GameContext& context) {
         if (!solid) continue;
         const TiledRect bounds = object.bounds();
         m_obstacles.push_back({ bounds.x, bounds.y, bounds.width, bounds.height });
+    }
+}
+
+void OverworldScene::updateBumpCutscenes(float dt, GameContext& context) {
+    for (const TiledObject& object : m_roomObjects) {
+        const std::string type = tiledObjectType(object);
+        const bool solid = type == "npc"
+            ? tiledBoolProperty(object.properties, "solid", true)
+            : type == "prop" && tiledBoolProperty(object.properties, "solid", false);
+        const std::string cutsceneId = tiledStringProperty(object.properties, "bumpCutscene");
+        if (!solid || cutsceneId.empty()) continue;
+
+        bool pushingInto = false;
+        if (roomObjectVisible(object, context)) {
+            const TiledRect tiledBounds = object.bounds();
+            pushingInto = m_player.wasBlockedBy({
+                tiledBounds.x, tiledBounds.y, tiledBounds.width, tiledBounds.height
+            });
+        }
+        if (m_bumpTrackers[object.id].update(pushingInto, dt)) {
+            startCutscene(cutsceneId);
+            if (m_cutscene.running()) return;
+        }
     }
 }
 
@@ -1180,6 +1204,7 @@ void OverworldScene::renderSaveBox(GameContext& context, Font font) {
 
 void OverworldScene::update(float dt, GameContext& context) {
     context.raidPaused = (m_menuState != OverworldMenuState::Closed);
+    m_controlsLockedRemaining = std::max(0.0f, m_controlsLockedRemaining - std::max(0.0f, dt));
     m_roomAnimationTime += dt;
     m_player.updateOverrideAnimation(dt);
     refreshDynamicObstacles(context);
@@ -1197,11 +1222,14 @@ void OverworldScene::update(float dt, GameContext& context) {
         class OverworldCutsceneHost final : public CutsceneHost {
         public:
             OverworldCutsceneHost(DialogBox& dialogBox, Player& player, GameContext& context,
+                                  std::vector<TiledObject>& roomObjects,
                                   std::unordered_set<std::string>& hidden,
                                   std::unordered_map<std::string, std::string>& animations,
-                                  std::unordered_set<std::string>& logged)
+                                  std::unordered_set<std::string>& logged,
+                                  float& controlsLockedRemaining)
                 : m_dialogBox(dialogBox), m_player(player), m_context(context),
-                  m_hidden(hidden), m_animations(animations), m_logged(logged) {}
+                  m_roomObjects(roomObjects), m_hidden(hidden), m_animations(animations),
+                  m_logged(logged), m_controlsLockedRemaining(controlsLockedRemaining) {}
 
             void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
                 m_dialogBox.startDialog(lines, speaker);
@@ -1306,17 +1334,62 @@ void OverworldScene::update(float dt, GameContext& context) {
                 else if (!npc.empty()) m_hidden.insert(npc);
             }
 
+            bool moveNpc(const std::string& npc, float x, float y, float speed, float dt) override {
+                for (TiledObject& object : m_roomObjects) {
+                    const std::string type = tiledObjectType(object);
+                    if (object.name != npc || (type != "npc" && type != "prop")) continue;
+                    const Vector2 position = { object.x, object.y };
+                    const Vector2 target = { x, y };
+                    const Vector2 next = stepToward(position, target, speed, dt);
+                    const float dx = next.x - position.x;
+                    const float dy = next.y - position.y;
+                    if (dx != 0.0f || dy != 0.0f) {
+                        const std::string direction = std::abs(dx) > std::abs(dy)
+                            ? (dx < 0.0f ? "left" : "right")
+                            : (dy < 0.0f ? "up" : "down");
+                        const std::string sprite = tiledStringProperty(object.properties, "sprite");
+                        const SpriteSheetDef* sheet = sprite.empty()
+                            ? nullptr : spriteSheetCache().load(sprite, spriteJsonPath(sprite));
+                        const std::string walk = "walk_" + direction;
+                        if (sheet != nullptr && sheet->anims.find(walk) != sheet->anims.end()) {
+                            m_animations[npc] = walk;
+                        } else if (sheet != nullptr && sheet->anims.find(direction) != sheet->anims.end()) {
+                            m_animations[npc] = direction;
+                        }
+                    }
+                    object.x = next.x;
+                    object.y = next.y;
+                    return next.x == target.x && next.y == target.y;
+                }
+                return true;
+            }
+
+            bool movePlayer(float x, float y, float speed, float dt) override {
+                const bool arrived = m_player.moveToward({ x, y }, speed, dt);
+                m_context.state.playerPos = m_player.getPosition();
+                m_context.state.playerFacing = static_cast<int>(m_player.getDirection());
+                return arrived;
+            }
+
+            void lockControls(float seconds) override {
+                m_controlsLockedRemaining = std::max(
+                    m_controlsLockedRemaining, std::max(0.0f, seconds));
+            }
+
         private:
             DialogBox& m_dialogBox;
             Player& m_player;
             GameContext& m_context;
+            std::vector<TiledObject>& m_roomObjects;
             std::unordered_set<std::string>& m_hidden;
             std::unordered_map<std::string, std::string>& m_animations;
             std::unordered_set<std::string>& m_logged;
-        } host(m_dialogBox, m_player, context, m_hiddenRoomObjects,
-               m_roomObjectAnimations, m_loggedConditions);
+            float& m_controlsLockedRemaining;
+        } host(m_dialogBox, m_player, context, m_roomObjects, m_hiddenRoomObjects,
+               m_roomObjectAnimations, m_loggedConditions, m_controlsLockedRemaining);
 
         m_cutscene.update(dt, host);
+        refreshDynamicObstacles(context);
         if (m_dialogBox.isActive()) {
             m_dialogBox.update(dt, context);
         }
@@ -1329,6 +1402,8 @@ void OverworldScene::update(float dt, GameContext& context) {
         return;
     }
     m_talkingObjectId = -1;  // OVW-007: the NPC goes back to its own facing
+
+    if (m_controlsLockedRemaining > 0.0f) return;
 
     // Save Point Box update (SAV-002)
     if (m_saveBoxState != SaveBoxState::Closed) {
@@ -1389,6 +1464,9 @@ void OverworldScene::update(float dt, GameContext& context) {
 
     // Keep GameState synchronized (CORE-004)
     context.state.playerPos = m_player.getPosition();
+
+    updateBumpCutscenes(dt, context);
+    if (m_cutscene.running()) return;
 
     updateHazards(context);
     if (m_dialogBox.isActive()) return;

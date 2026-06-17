@@ -2202,7 +2202,7 @@ int main() {
         assert(parsed.steps[5].r == 12 && parsed.steps[5].g == 34 && parsed.steps[5].b == 56);
         assert(parsed.steps[6].type == CutsceneStepType::StartBattle);
         assert(parsed.steps[6].encounter == "barky");
-        assert(parsed.steps[7].type == CutsceneStepType::Unsupported);
+        assert(parsed.steps[7].type == CutsceneStepType::MoveNpc);
         assert(parsed.steps[8].type == CutsceneStepType::Unsupported);
         assert(parsed.steps[9].type == CutsceneStepType::Unsupported);
         assert(parsed.steps[10].type == CutsceneStepType::Unknown);
@@ -2638,7 +2638,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {
@@ -3095,6 +3095,93 @@ int main() {
         std::cout << "[PASS] R7-A: alternate animations and content allow-lists verified." << std::endl;
     }
 
-    std::cout << "\nAll 52 test suites passed successfully!" << std::endl;
+    // Suite 53: R8-A movement steps, input locking, and exact movement helper
+    {
+        using namespace nundertale;
+        const std::string json = R"json({"steps":[
+            {"type":"moveNpc","if":"ruins.guide == 1","npc":"furiell","x":320,"y":200},
+            {"type":"movePlayer","x":320,"y":240,"speed":96},
+            {"type":"lockControls","seconds":5}
+        ]})json";
+        Cutscene parsed;
+        assert(parseCutsceneJson(json, parsed));
+        assert(parsed.steps.size() == 3);
+        assert(parsed.steps[0].type == CutsceneStepType::MoveNpc);
+        assert(parsed.steps[0].npc == "furiell" && parsed.steps[0].x == 320.0f);
+        assert(parsed.steps[0].y == 200.0f && parsed.steps[0].speed == 80.0f);
+        assert(parsed.steps[0].condition == "ruins.guide == 1");
+        assert(parsed.steps[1].type == CutsceneStepType::MovePlayer);
+        assert(parsed.steps[1].x == 320.0f && parsed.steps[1].y == 240.0f);
+        assert(parsed.steps[1].speed == 96.0f);
+        assert(parsed.steps[2].type == CutsceneStepType::LockControls);
+        assert(parsed.steps[2].seconds == 5.0f);
+
+        struct MovementHost final : CutsceneHost {
+            int npcCalls = 0;
+            int playerCalls = 0;
+            int lockCalls = 0;
+            void dialog(const std::string&, const std::vector<std::string>&) override {}
+            bool dialogOpen() const override { return false; }
+            void sound(const std::string&, float) override {}
+            void setFlag(const std::string&, int) override {}
+            void shake(float, float) override {}
+            void flash(int, int, int, float) override {}
+            void startBattle(const std::string&) override {}
+            void setFur(int) override {}
+            void healFull() override {}
+            void facePlayer(const std::string&) override {}
+            void playerAnim(const std::string&, const std::string&, float) override {}
+            bool moveNpc(const std::string& npc, float x, float y, float speed, float dt) override {
+                assert(npc == "furiell" && x == 320.0f && y == 200.0f);
+                assert(speed == 80.0f && dt == 0.1f);
+                return ++npcCalls >= 2;
+            }
+            bool movePlayer(float x, float y, float speed, float dt) override {
+                assert(x == 320.0f && y == 240.0f);
+                assert(speed == 96.0f && dt == 0.1f);
+                return ++playerCalls >= 2;
+            }
+            void lockControls(float seconds) override {
+                assert(seconds == 5.0f);
+                ++lockCalls;
+            }
+        } host;
+
+        CutsceneRunner runner;
+        runner.start(parsed);
+        runner.update(0.1f, host);
+        assert(runner.running() && host.npcCalls == 1 && host.playerCalls == 0);
+        runner.update(0.1f, host);
+        assert(runner.running() && host.npcCalls == 2 && host.playerCalls == 1);
+        runner.update(0.1f, host);
+        assert(!runner.running() && host.playerCalls == 2 && host.lockCalls == 1);
+
+        const Vector2 partial = stepToward({ 0.0f, 0.0f }, { 3.0f, 4.0f }, 2.0f, 1.0f);
+        assert(std::abs(partial.x - 1.2f) < 0.0001f);
+        assert(std::abs(partial.y - 1.6f) < 0.0001f);
+        const Vector2 landed = stepToward(partial, { 3.0f, 4.0f }, 100.0f, 1.0f);
+        assert(landed.x == 3.0f && landed.y == 4.0f);
+        const Vector2 reverse = stepToward({ 10.0f, 0.0f }, { 0.0f, 0.0f }, 6.0f, 1.0f);
+        assert(reverse.x == 4.0f && reverse.y == 0.0f);
+        assert(validateJson(json));
+        std::cout << "[PASS] R8-A: movement steps block, control lock does not, and movement never overshoots." << std::endl;
+    }
+
+    // Suite 54: R8-C bump cutscene timing and re-arming
+    {
+        using nundertale::BumpTracker;
+        BumpTracker tracker;
+        assert(!tracker.update(true, 0.10f));
+        assert(!tracker.update(true, 0.14f));
+        assert(tracker.update(true, 0.01f));
+        assert(!tracker.update(true, 1.0f));
+        assert(!tracker.update(false, 0.0f));
+        assert(!tracker.update(true, 0.24f));
+        assert(tracker.update(true, 0.01f));
+        assert(nundertale::isKnownRoomObjectProperty("bumpCutscene"));
+        std::cout << "[PASS] R8-C: bump timing, single fire per push, and release re-arm verified." << std::endl;
+    }
+
+    std::cout << "\nAll 54 test suites passed successfully!" << std::endl;
     return 0;
 }

@@ -445,45 +445,7 @@
         {
           "height": 40,
           "id": 12,
-          "name": "dorito_bowl_pickup",
-          "rotation": 0,
-          "type": "itemPickup",
-          "visible": true,
-          "width": 40,
-          "x": 120,
-          "y": 140,
-          "properties": [
-            {
-              "name": "item",
-              "type": "string",
-              "value": "Stale Doritos"
-            },
-            {
-              "name": "flag",
-              "type": "string",
-              "value": "ruins.bowl.taken"
-            },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "* \"Take one Dorito.\"\n* (You take one stale Dorito. Vintage cheese dust coats your fingers.)"
-            },
-            {
-              "name": "emptyLines",
-              "type": "string",
-              "value": "* \"Take one Dorito.\"\n* (The bowl is empty. You already took your one.)"
-            },
-            {
-              "name": "fullLines",
-              "type": "string",
-              "value": "* \"Take one Dorito.\"\n* (You try to take one, but you're carrying too much.)"
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 13,
-          "name": "dorito_bowl_full",
+          "name": "dorito_bowl",
           "rotation": 0,
           "type": "prop",
           "visible": true,
@@ -502,9 +464,29 @@
               "value": "full"
             },
             {
+              "name": "altAnim",
+              "type": "string",
+              "value": "empty"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.bowl.takes >= 3"
+            },
+            {
               "name": "hideIf",
               "type": "string",
-              "value": "ruins.bowl.taken >= 1"
+              "value": "ruins.bowl.broken >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_bowl"
+            },
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.bowl.takes"
             },
             {
               "name": "solid",
@@ -515,8 +497,8 @@
         },
         {
           "height": 40,
-          "id": 14,
-          "name": "dorito_bowl_empty",
+          "id": 13,
+          "name": "dorito_bowl_knocked",
           "rotation": 0,
           "type": "prop",
           "visible": true,
@@ -532,12 +514,22 @@
             {
               "name": "anim",
               "type": "string",
-              "value": "empty"
+              "value": "knocked"
             },
             {
               "name": "showIf",
               "type": "string",
-              "value": "ruins.bowl.taken >= 1"
+              "value": "ruins.bowl.broken >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_bowl"
+            },
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.bowl.takes"
             },
             {
               "name": "solid",
@@ -548,7 +540,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 14,
           "name": "dorito_sign",
           "rotation": 0,
           "type": "sign",
@@ -566,10 +558,10 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 15,
           "name": "mod_rock",
           "rotation": 0,
-          "type": "examine",
+          "type": "prop",
           "visible": true,
           "width": 40,
           "x": 280,
@@ -599,12 +591,22 @@
               "name": "lines3",
               "type": "string",
               "value": "Don't push your luck."
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "bumpCutscene",
+              "type": "string",
+              "value": "r10_modrock_push"
             }
           ]
         },
         {
           "height": 40,
-          "id": 17,
+          "id": 16,
           "name": "sample_donut",
           "rotation": 0,
           "type": "itemPickup",
@@ -642,7 +644,7 @@
         },
         {
           "height": 80,
-          "id": 18,
+          "id": 17,
           "name": "bakesale_booth",
           "rotation": 0,
           "type": "prop",
@@ -670,7 +672,7 @@
         },
         {
           "height": 40,
-          "id": 19,
+          "id": 18,
           "name": "north_doorway",
           "rotation": 0,
           "type": "examine",
@@ -955,7 +957,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 19,
   "orientation": "orthogonal",
   "properties": [
     {

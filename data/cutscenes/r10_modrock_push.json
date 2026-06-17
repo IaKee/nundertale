@@ -1,0 +1,9 @@
+{
+  "steps": [
+    {"type": "dialog", "speaker": "MOD ROCK", "lines": ["Hey. HEY. No pushing without permission."], "if": "ruins.modrock.talks == 0"},
+    {"type": "dialog", "speaker": "MOD ROCK", "lines": ["I said permission granted. Not permission to SHOVE."], "if": "ruins.modrock.talks >= 1"},
+    {"type": "dialog", "lines": ["* You have been muted for 5 seconds."]},
+    {"type": "addFlag", "key": "ruins.modrock.mutes", "value": 1},
+    {"type": "lockControls", "seconds": 5}
+  ]
+}

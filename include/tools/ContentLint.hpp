@@ -618,7 +618,8 @@ inline bool validateJson(const std::string& text, LintFinding* errorOut = nullpt
             type == "startBattle" || type == "setFur" || type == "healFull" ||
             type == "facePlayer" || type == "playerAnim" || type == "giveItem" ||
             type == "addFlag" || type == "addFur" || type == "npcFace" ||
-            type == "npcAnim" || type == "hideNpc" || type == "showNpc";
+            type == "npcAnim" || type == "hideNpc" || type == "showNpc" ||
+            type == "moveNpc" || type == "movePlayer" || type == "lockControls";
         if (!known) {
             if (errorOut != nullptr) {
                 *errorOut = {1, 1, "unknown-cutscene-step", type};
@@ -638,6 +639,7 @@ inline bool isKnownRoomObjectType(const std::string& type) {
 
 inline bool isKnownRoomObjectProperty(const std::string& property) {
     return property == "showIf" || property == "hideIf" || property == "cutscene" ||
+        property == "bumpCutscene" ||
         property == "altAnim" || property == "altAnimIf" || property == "damage" ||
         property == "lines" || property == "sound";
 }

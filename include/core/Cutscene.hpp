@@ -28,6 +28,9 @@ enum class CutsceneStepType {
     NpcAnim,
     HideNpc,
     ShowNpc,
+    MoveNpc,
+    MovePlayer,
+    LockControls,
     Unsupported,
     Unknown
 };
@@ -51,6 +54,9 @@ struct CutsceneStep {
     std::string item;
     std::vector<std::string> fullLines;
     std::string npc;
+    float x = 0.0f;
+    float y = 0.0f;
+    float speed = 80.0f;
 };
 
 struct Cutscene {
@@ -76,7 +82,10 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "npcAnim") return CutsceneStepType::NpcAnim;
     if (type == "hideNpc") return CutsceneStepType::HideNpc;
     if (type == "showNpc") return CutsceneStepType::ShowNpc;
-    if (type == "moveNpc" || type == "movePlayer" || type == "cameraPan" || type == "fadeOut") {
+    if (type == "moveNpc") return CutsceneStepType::MoveNpc;
+    if (type == "movePlayer") return CutsceneStepType::MovePlayer;
+    if (type == "lockControls") return CutsceneStepType::LockControls;
+    if (type == "cameraPan" || type == "fadeOut") {
         return CutsceneStepType::Unsupported;
     }
     return CutsceneStepType::Unknown;
@@ -178,6 +187,9 @@ private:
         if (key == "seconds") return parseNumber(step.seconds);
         if (key == "volume") return parseNumber(step.volume);
         if (key == "intensity") return parseNumber(step.intensity);
+        if (key == "x") return parseNumber(step.x);
+        if (key == "y") return parseNumber(step.y);
+        if (key == "speed") return parseNumber(step.speed);
 
         if (key == "value") return parseInteger(step.value);
         if (key == "r") return parseInteger(step.r);
@@ -347,6 +359,9 @@ public:
     virtual void npcFace(const std::string&, const std::string&) {}
     virtual void npcAnim(const std::string&, const std::string&, float) {}
     virtual void setNpcVisible(const std::string&, bool) {}
+    virtual bool moveNpc(const std::string&, float, float, float, float) { return true; }
+    virtual bool movePlayer(float, float, float, float) { return true; }
+    virtual void lockControls(float) {}
 };
 
 class CutsceneRunner {
@@ -494,6 +509,18 @@ public:
                     break;
                 case CutsceneStepType::ShowNpc:
                     host.setNpcVisible(step.npc, true);
+                    finishStep();
+                    break;
+                case CutsceneStepType::MoveNpc:
+                    if (!host.moveNpc(step.npc, step.x, step.y, step.speed, remainingDt)) return;
+                    finishStep();
+                    break;
+                case CutsceneStepType::MovePlayer:
+                    if (!host.movePlayer(step.x, step.y, step.speed, remainingDt)) return;
+                    finishStep();
+                    break;
+                case CutsceneStepType::LockControls:
+                    host.lockControls(step.seconds);
                     finishStep();
                     break;
                 case CutsceneStepType::Unsupported:

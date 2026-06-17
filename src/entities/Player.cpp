@@ -1,4 +1,5 @@
 #include "entities/Player.hpp"
+#include "core/RoomObjects.hpp"
 #include <cmath>
 
 namespace nundertale {
@@ -28,6 +29,7 @@ void Player::updateOverrideAnimation(float dt) {
 }
 
 void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& obstacles) {
+    m_blockingObstacles.clear();
     m_isMoving = (inputDir.x != 0.0f || inputDir.y != 0.0f);
 
     if (m_isMoving) {
@@ -55,6 +57,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         for (const auto& obs : obstacles) {
             if (CheckCollisionRecs(testBoxX, obs)) {
                 collideX = true;
+                if (inputDir.x != 0.0f) m_blockingObstacles.push_back(obs);
                 break;
             }
         }
@@ -69,6 +72,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         for (const auto& obs : obstacles) {
             if (CheckCollisionRecs(testBoxY, obs)) {
                 collideY = true;
+                if (inputDir.y != 0.0f) m_blockingObstacles.push_back(obs);
                 break;
             }
         }
@@ -121,6 +125,45 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
             m_drawW = 30;
             break;
     }
+}
+
+bool Player::wasBlockedBy(Rectangle obstacle) const {
+    for (const Rectangle& blocking : m_blockingObstacles) {
+        if (blocking.x == obstacle.x && blocking.y == obstacle.y &&
+            blocking.width == obstacle.width && blocking.height == obstacle.height) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Player::moveToward(Vector2 target, float speed, float dt) {
+    const Vector2 position = m_position;
+    const Vector2 next = stepToward(position, target, speed, dt);
+    const Vector2 delta = { next.x - position.x, next.y - position.y };
+    static const std::vector<Rectangle> noObstacles;
+
+    if (delta.x == 0.0f && delta.y == 0.0f) {
+        update(0.0f, { 0.0f, 0.0f }, noObstacles);
+        return position.x == target.x && position.y == target.y;
+    }
+
+    if (std::abs(delta.x) > std::abs(delta.y)) {
+        m_direction = delta.x < 0.0f ? Direction::Left : Direction::Right;
+    } else {
+        m_direction = delta.y < 0.0f ? Direction::Up : Direction::Down;
+    }
+
+    const float effectiveDt = std::max(0.0f, dt);
+    if (effectiveDt > 0.0f) {
+        const Vector2 input = {
+            delta.x / (PLAYER_SPEED * effectiveDt),
+            delta.y / (PLAYER_SPEED * effectiveDt)
+        };
+        update(effectiveDt, input, noObstacles);
+        m_position = next;
+    }
+    return next.x == target.x && next.y == target.y;
 }
 
 void Player::render(Texture2D spriteSheet) {

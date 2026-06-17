@@ -13,6 +13,24 @@
 
 namespace nundertale {
 
+struct BumpTracker {
+    float pushingSeconds = 0.0f;
+    bool armed = true;
+
+    bool update(bool pushingInto, float dt) {
+        if (!pushingInto) {
+            pushingSeconds = 0.0f;
+            armed = true;
+            return false;
+        }
+        if (!armed) return false;
+        pushingSeconds += std::max(0.0f, dt);
+        if (pushingSeconds < 0.25f) return false;
+        armed = false;
+        return true;
+    }
+};
+
 struct RoomConditionTerm {
     std::string flag;
     std::string op;
@@ -120,6 +138,17 @@ inline std::string faceTowardDirection(float npcX, float npcY, float targetX, fl
 
 inline int applyHazardDamage(int hp, int damage) {
     return std::max(1, hp - std::max(0, damage));
+}
+
+inline Vector2 stepToward(Vector2 position, Vector2 target, float speed, float dt) {
+    const float dx = target.x - position.x;
+    const float dy = target.y - position.y;
+    const float distance = std::sqrt(dx * dx + dy * dy);
+    const float step = std::max(0.0f, speed) * std::max(0.0f, dt);
+    if (distance == 0.0f || step >= distance) return target;
+    if (step == 0.0f) return position;
+    const float scale = step / distance;
+    return { position.x + dx * scale, position.y + dy * scale };
 }
 
 inline std::string selectRoomAnimation(const std::string& animation,

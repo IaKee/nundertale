@@ -1,0 +1,36 @@
+{
+  "steps": [
+    {"type": "dialog", "speaker": "FURIELL", "lines": [
+      "This room is a bit tricky, my child.",
+      "The convention staff never taped down these live network cables.",
+      "Take my paw. I will guide you safely across."
+    ]},
+    {"type": "movePlayer", "x": 120, "y": 330, "speed": 120},
+    {"type": "moveNpc", "npc": "furiell", "x": 250, "y": 300, "speed": 140},
+    {"type": "movePlayer", "x": 230, "y": 330, "speed": 140},
+    {"type": "moveNpc", "npc": "furiell", "x": 250, "y": 70, "speed": 140},
+    {"type": "movePlayer", "x": 260, "y": 130, "speed": 140},
+    {"type": "dialog", "lines": ["* Her paw is very soft. Suspiciously soft."]},
+    {"type": "moveNpc", "npc": "furiell", "x": 370, "y": 70, "speed": 140},
+    {"type": "moveNpc", "npc": "furiell", "x": 370, "y": 300, "speed": 140},
+    {"type": "movePlayer", "x": 380, "y": 100, "speed": 140},
+    {"type": "movePlayer", "x": 380, "y": 280, "speed": 140},
+    {"type": "dialog", "lines": ["* (Good stitching.)"]},
+    {"type": "moveNpc", "npc": "furiell", "x": 490, "y": 300, "speed": 140},
+    {"type": "moveNpc", "npc": "furiell", "x": 490, "y": 70, "speed": 140},
+    {"type": "movePlayer", "x": 380, "y": 330, "speed": 140},
+    {"type": "movePlayer", "x": 500, "y": 330, "speed": 140},
+    {"type": "movePlayer", "x": 500, "y": 130, "speed": 140},
+    {"type": "moveNpc", "npc": "furiell", "x": 610, "y": 70, "speed": 140},
+    {"type": "movePlayer", "x": 500, "y": 100, "speed": 140},
+    {"type": "movePlayer", "x": 580, "y": 100, "speed": 140},
+    {"type": "npcAnim", "npc": "furiell", "key": "stand_down"},
+    {"type": "dialog", "speaker": "FURIELL", "lines": [
+      "See? Nothing to worry about.",
+      "I will go ahead to prepare the next room. Please follow carefully!"
+    ]},
+    {"type": "moveNpc", "npc": "furiell", "x": 610, "y": 10, "speed": 140},
+    {"type": "hideNpc", "npc": "furiell"},
+    {"type": "setFlag", "key": "ruins.r6.guided", "value": 1}
+  ]
+}

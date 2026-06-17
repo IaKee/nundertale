@@ -403,6 +403,7 @@ P1 · L · CORE-010, TXT-001
 - **Partly done (2026-10-17):** `include/core/Cutscene.hpp`: a JSON-loaded step runner (`wait`, `dialog` blocking until the box closes, `sound`, `setFlag`, `shake`, `flash`, `startBattle`), and player input is blocked while it runs. Barky's entrance is now `data/cutscenes/barky_entrance.json` (sound → shake → wait → BARKY's 3 lines → battle), with the old hardcoded version as the fallback. `moveNpc`, `cameraPan` and `fadeOut` are parsed but skipped (no NPC movement or camera yet), and `startBattle` only knows `barky` (BFL-004).
 - **Round 6 (2026-10-18):** new steps `setFur`, `healFull`, `facePlayer`, `playerAnim` (Pepe drawn with another sheet, e.g. the R1 wake-up). Room triggers start `data/cutscenes/<id>.json`.
 - **Round 7b (2026-10-18):** any step can carry `"if": "<condition>"` (room-condition syntax, `fur`/`hp` pseudo-flags; false skips the step); new steps `giveItem`, `addFlag`, `addFur`, `npcFace`, `npcAnim`, `hideNpc`/`showNpc`. Room objects: a `cutscene` property on sign/examine/prop/npc runs instead of `lines`, `altAnim` + `altAnimIf` on props/NPCs, a `hazard` rect type (damage, HP floor 1, push-back). ContentLint rejects unknown step types.
+- **Round 8 (2026-10-18):** `moveNpc` {npc, x, y, speed} and `movePlayer` {x, y, speed} (blocking, dt-based, walk animations; NPC positions reset on room entry), `lockControls` {seconds} (non-blocking). Room objects: `bumpCutscene` on solid props/NPCs runs a cutscene after 0.25 s of pushing into them. Pending: `cameraPan`, `fadeOut`.
 
 #### CORE-012 — Play time clock `[x]`
 P1 · S · CORE-004
@@ -1867,9 +1868,10 @@ P0 · M · BFL-001, ACT-005, NAR-003
 - **What:** the battle tutorial; Furiell teaches **Talk** and **Accept Hug** (`You can always accept a hug, my child. It is the fastest way to make friends.` — plants the love-bombing). Reactions to each outcome: Talk → happy; Accept Hug → beaming; FIGHT → `Ah... the dummy is for hugging!`; flee → `...that is also a choice.` `ruins.dummy.result` (0 none · 1 talk · 2 fight · 3 flee · 4 spare · 5 hug).
 - **Partly done (2026-10-18):** `ruins_dummy` sits between R3 and R8: Furiell introduces practice with the LORE hug line and starts the `fursuit_dummy` battle; Talk/Accept Hug set `ruins.dummy.talked`/`ruins.dummy.hugged`; afterwards one of four reactions plays (hug → beaming, talk → happy, kill → `Ah... the dummy is for hugging!`, flee → `...that is also a choice.`) and sets `ruins.dummy.result` (1/2/3/5; 4 = plain spare isn't reachable, the dummy only spares through Accept Hug). Pending: an overworld dummy sprite (it uses the white battle sprite) and Furiell walking the player to the next room.
 
-#### C1-006 — R6: Cable Maze `[ ]`
+#### C1-006 — R6: Cable Maze `[~]`
 P1 · M · CORE-011, OVW-012
 - **What:** network cables that shock you (the spikes parody); Furiell holds Pepe's "hand" and guides him with scripted movement: `* Her paw is very soft. Suspiciously soft.` `* (Good stitching.)` (a hint at his secret, NAR-029).
+- **Partly done (2026-10-18, round 8):** `ruins_cables` sits between R5 and R7: four live cable runs (`ruins_cables` props + `hazard` rects, 2 damage, a first-touch line) with a zig-zag safe path; a step into the room starts `r6_guide`: Furiell takes Pepe's paw and walks him through (`moveNpc`/`movePlayer`), the two LORE lines on the way, then she goes ahead (`ruins.r6.guided`). A Ruins Administration sign. Pending: a hurt SFX for the cables.
 
 #### C1-007 — R7: Long Hallway `[~]`
 P1 · M · CORE-011, MNU-004
@@ -1890,6 +1892,7 @@ P0 · M · NAR-002, CORE-011, C1-021
 P1 · L · OVW-011, SHP-002, C1-023
 - **What:** the bowl `* "Take one Dorito."` (take 4 → it tips over, `ruins.bowl.broken`) · the Commission Bake Sale (SHP-002) · Napstablurk in the hallway (optional, C1-023) · the **mod rock**: `Hey. No pushing without permission. ...Permission granted.`; pushing without asking → `* You have been muted for 5 seconds.` and controls lock for 5 s · random encounters (budget 1: Lurkeye, Reply Guy, Grasstoid) · two forced calls (`Do you prefer glitter or MORE glitter? ...No reason.` and `I put something in your closet. Just in case. No pressure!`).
 - **Partly done (2026-10-18, round 7b):** `ruins_bakesale` opens north of R9 once Barky is resolved (`ruins.barky.state >= 1`): the Dorito bowl (`Stale Doritos` pickup, `ruins.bowl.taken`, empty bowl afterwards), the Commission Bake Sale booth with its sign and a one-time `Commissioned Donut` sample (`ruins.bakesale.sample`), the mod rock (3 lines, `ruins.modrock.talks`), the glitter forced call (`r10_call`, `ruins.r10.call`), a save point and a dark doorway to R11. Pending: take 4 → tipped bowl (`ruins.bowl.broken`), the shop menu (SHP-002), Napstablurk (C1-023), pushing the rock / 5 s mute, random encounters, the closet call.
+- **Round 8 (2026-10-18):** the bowl is one prop with a cutscene (`r10_bowl`, counter `ruins.bowl.takes`): three Doritos with guiltier lines, the 4th tips it over (`ruins.bowl.broken`, `knocked` sprite). Pushing the mod rock (`bumpCutscene` `r10_modrock_push`) → `* You have been muted for 5 seconds.` and controls lock for 5 s. Still pending: the shop menu (SHP-002), Napstablurk (C1-023), random encounters, the closet call.
 
 #### C1-011 — R11: Furiell's House `[ ]`
 P0 · L · NAR-003, ART-120, OVW-011

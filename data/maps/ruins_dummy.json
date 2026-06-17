@@ -351,7 +351,7 @@
         {
           "height": 0,
           "id": 10,
-          "name": "from_hallway",
+          "name": "from_cables",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -370,6 +370,25 @@
         {
           "height": 0,
           "id": 11,
+          "name": "from_hallway",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 12,
           "name": "from_notices",
           "rotation": 0,
           "type": "spawn",
@@ -388,7 +407,7 @@
         },
         {
           "height": 40,
-          "id": 12,
+          "id": 13,
           "name": "door_to_switches",
           "rotation": 0,
           "type": "door",
@@ -411,8 +430,8 @@
         },
         {
           "height": 40,
-          "id": 13,
-          "name": "door_to_hallway",
+          "id": 14,
+          "name": "door_to_cables",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -423,7 +442,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_hallway"
+              "value": "ruins_cables"
             },
             {
               "name": "targetSpawn",
@@ -434,7 +453,7 @@
         },
         {
           "height": 40,
-          "id": 14,
+          "id": 15,
           "name": "dummy",
           "rotation": 0,
           "type": "prop",
@@ -472,7 +491,7 @@
         },
         {
           "height": 60,
-          "id": 15,
+          "id": 16,
           "name": "furiell",
           "rotation": 0,
           "type": "npc",
@@ -510,7 +529,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 17,
           "name": "trigger_intro",
           "rotation": 0,
           "type": "trigger",
@@ -533,7 +552,7 @@
         },
         {
           "height": 315,
-          "id": 17,
+          "id": 18,
           "name": "trigger_react_hug",
           "rotation": 0,
           "type": "trigger",
@@ -561,7 +580,7 @@
         },
         {
           "height": 315,
-          "id": 18,
+          "id": 19,
           "name": "trigger_react_talk",
           "rotation": 0,
           "type": "trigger",
@@ -589,7 +608,7 @@
         },
         {
           "height": 315,
-          "id": 19,
+          "id": 20,
           "name": "trigger_react_fight",
           "rotation": 0,
           "type": "trigger",
@@ -617,7 +636,7 @@
         },
         {
           "height": 315,
-          "id": 20,
+          "id": 21,
           "name": "trigger_react_flee",
           "rotation": 0,
           "type": "trigger",
@@ -645,7 +664,7 @@
         },
         {
           "height": 315,
-          "id": 21,
+          "id": 22,
           "name": "trigger_react_spare",
           "rotation": 0,
           "type": "trigger",
@@ -892,7 +911,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 22,
+  "nextobjectid": 23,
   "orientation": "orthogonal",
   "properties": [
     {
