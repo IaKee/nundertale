@@ -1,0 +1,34 @@
+{
+  "steps": [
+    {
+      "type": "sound",
+      "path": "assets/sfx/menu_select.wav",
+      "volume": 0.8
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/menu_select.wav",
+      "volume": 0.8
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Do you prefer glitter or MORE glitter? ...No reason."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r10.call",
+      "value": 1
+    }
+  ]
+}

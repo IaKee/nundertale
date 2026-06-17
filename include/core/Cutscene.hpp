@@ -21,6 +21,13 @@ enum class CutsceneStepType {
     HealFull,
     FacePlayer,
     PlayerAnim,
+    GiveItem,
+    AddFlag,
+    AddFur,
+    NpcFace,
+    NpcAnim,
+    HideNpc,
+    ShowNpc,
     Unsupported,
     Unknown
 };
@@ -40,6 +47,10 @@ struct CutsceneStep {
     int g = 255;
     int b = 255;
     std::string encounter;
+    std::string condition;
+    std::string item;
+    std::vector<std::string> fullLines;
+    std::string npc;
 };
 
 struct Cutscene {
@@ -58,7 +69,14 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "healFull") return CutsceneStepType::HealFull;
     if (type == "facePlayer") return CutsceneStepType::FacePlayer;
     if (type == "playerAnim") return CutsceneStepType::PlayerAnim;
-    if (type == "moveNpc" || type == "cameraPan" || type == "fadeOut") {
+    if (type == "giveItem") return CutsceneStepType::GiveItem;
+    if (type == "addFlag") return CutsceneStepType::AddFlag;
+    if (type == "addFur") return CutsceneStepType::AddFur;
+    if (type == "npcFace") return CutsceneStepType::NpcFace;
+    if (type == "npcAnim") return CutsceneStepType::NpcAnim;
+    if (type == "hideNpc") return CutsceneStepType::HideNpc;
+    if (type == "showNpc") return CutsceneStepType::ShowNpc;
+    if (type == "moveNpc" || type == "movePlayer" || type == "cameraPan" || type == "fadeOut") {
         return CutsceneStepType::Unsupported;
     }
     return CutsceneStepType::Unknown;
@@ -152,6 +170,10 @@ private:
         if (key == "path") return parseString(step.path);
         if (key == "key") return parseString(step.key);
         if (key == "encounter") return parseString(step.encounter);
+        if (key == "if") return parseString(step.condition);
+        if (key == "item") return parseString(step.item);
+        if (key == "fullLines") return parseStringArray(step.fullLines);
+        if (key == "npc") return parseString(step.npc);
 
         if (key == "seconds") return parseNumber(step.seconds);
         if (key == "volume") return parseNumber(step.volume);
@@ -317,6 +339,14 @@ public:
     virtual void healFull() = 0;
     virtual void facePlayer(const std::string& key) = 0;
     virtual void playerAnim(const std::string& path, const std::string& key, float seconds) = 0;
+    virtual bool condition(const std::string&) { return true; }
+    virtual void giveItem(const std::string&, const std::vector<std::string>&,
+                          const std::vector<std::string>&) {}
+    virtual void addFlag(const std::string&, int) {}
+    virtual void addFur(int) {}
+    virtual void npcFace(const std::string&, const std::string&) {}
+    virtual void npcAnim(const std::string&, const std::string&, float) {}
+    virtual void setNpcVisible(const std::string&, bool) {}
 };
 
 class CutsceneRunner {
@@ -326,6 +356,7 @@ public:
         m_index = 0;
         m_elapsed = 0.0f;
         m_stepStarted = false;
+        m_conditionChecked = false;
         m_running = !m_cutscene.steps.empty();
     }
 
@@ -335,6 +366,13 @@ public:
 
         while (m_running) {
             const CutsceneStep& step = m_cutscene.steps[m_index];
+            if (!m_conditionChecked) {
+                m_conditionChecked = true;
+                if (!step.condition.empty() && !host.condition(step.condition)) {
+                    finishStep();
+                    continue;
+                }
+            }
             switch (step.type) {
                 case CutsceneStepType::Wait: {
                     if (step.seconds <= 0.0f) {
@@ -410,6 +448,54 @@ public:
                     finishStep();
                     break;
                 }
+                case CutsceneStepType::GiveItem:
+                    if (!m_stepStarted) {
+                        m_stepStarted = true;
+                        host.giveItem(step.item, step.lines, step.fullLines);
+                        if (host.dialogOpen()) return;
+                    } else if (host.dialogOpen()) {
+                        return;
+                    }
+                    finishStep();
+                    break;
+                case CutsceneStepType::AddFlag:
+                    host.addFlag(step.key, step.value);
+                    finishStep();
+                    break;
+                case CutsceneStepType::AddFur:
+                    host.addFur(step.value);
+                    finishStep();
+                    break;
+                case CutsceneStepType::NpcFace:
+                    host.npcFace(step.npc, step.key);
+                    finishStep();
+                    break;
+                case CutsceneStepType::NpcAnim: {
+                    if (!m_stepStarted) {
+                        m_stepStarted = true;
+                        host.npcAnim(step.npc, step.key, step.seconds);
+                    }
+                    if (step.seconds <= 0.0f) {
+                        finishStep();
+                        break;
+                    }
+                    const float needed = step.seconds - m_elapsed;
+                    if (remainingDt < needed) {
+                        m_elapsed += remainingDt;
+                        return;
+                    }
+                    remainingDt -= needed;
+                    finishStep();
+                    break;
+                }
+                case CutsceneStepType::HideNpc:
+                    host.setNpcVisible(step.npc, false);
+                    finishStep();
+                    break;
+                case CutsceneStepType::ShowNpc:
+                    host.setNpcVisible(step.npc, true);
+                    finishStep();
+                    break;
                 case CutsceneStepType::Unsupported:
                     std::clog << "Cutscene step '" << step.typeName
                               << "' not supported yet; skipping.\n";
@@ -429,6 +515,7 @@ private:
         ++m_index;
         m_elapsed = 0.0f;
         m_stepStarted = false;
+        m_conditionChecked = false;
         if (m_index >= m_cutscene.steps.size()) m_running = false;
     }
 
@@ -436,6 +523,7 @@ private:
     std::size_t m_index = 0;
     float m_elapsed = 0.0f;
     bool m_stepStarted = false;
+    bool m_conditionChecked = false;
     bool m_running = false;
 };
 

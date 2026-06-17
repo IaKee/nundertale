@@ -402,6 +402,7 @@ P1 · L · CORE-010, TXT-001
 - **Acceptance:** Barky's entrance (the dramatic drop + line, ROTEIRO Scene 3) is done purely with data.
 - **Partly done (2026-10-17):** `include/core/Cutscene.hpp`: a JSON-loaded step runner (`wait`, `dialog` blocking until the box closes, `sound`, `setFlag`, `shake`, `flash`, `startBattle`), and player input is blocked while it runs. Barky's entrance is now `data/cutscenes/barky_entrance.json` (sound → shake → wait → BARKY's 3 lines → battle), with the old hardcoded version as the fallback. `moveNpc`, `cameraPan` and `fadeOut` are parsed but skipped (no NPC movement or camera yet), and `startBattle` only knows `barky` (BFL-004).
 - **Round 6 (2026-10-18):** new steps `setFur`, `healFull`, `facePlayer`, `playerAnim` (Pepe drawn with another sheet, e.g. the R1 wake-up). Room triggers start `data/cutscenes/<id>.json`.
+- **Round 7b (2026-10-18):** any step can carry `"if": "<condition>"` (room-condition syntax, `fur`/`hp` pseudo-flags; false skips the step); new steps `giveItem`, `addFlag`, `addFur`, `npcFace`, `npcAnim`, `hideNpc`/`showNpc`. Room objects: a `cutscene` property on sign/examine/prop/npc runs instead of `lines`, `altAnim` + `altAnimIf` on props/NPCs, a `hazard` rect type (damage, HP floor 1, push-back). ContentLint rejects unknown step types.
 
 #### CORE-012 — Play time clock `[x]`
 P1 · S · CORE-004
@@ -1885,9 +1886,10 @@ P0 · M · NAR-002, CORE-011, C1-021
 - **What:** ROTEIRO Scene 3: an echoing howl, Barky drops from the ceiling into a crouch, his introduction line, the fight (C1-021). **Examinable:** lamp `* Barky's natural enemy. Or his moon. He hasn't decided.` Afterward: spared → an NPC recruiting Pepe into the Shadow Fang Pack; killed → a pile of synthetic fur + a flag. A test version exists in `OverworldScene` today (BUG-18): move it to data.
 - **Partly done (2026-10-18):** the old test room is now `ruins_barky`, tiled (purple walls, pillars, north gate) and reached from R8; the lamp can be examined. Barky's behaviors are still the hard-coded ones (map property `legacyBarky`).
 
-#### C1-010 — R10: Bowl, Commission Bake Sale and Napstablurk `[ ]`
+#### C1-010 — R10: Bowl, Commission Bake Sale and Napstablurk `[~]`
 P1 · L · OVW-011, SHP-002, C1-023
 - **What:** the bowl `* "Take one Dorito."` (take 4 → it tips over, `ruins.bowl.broken`) · the Commission Bake Sale (SHP-002) · Napstablurk in the hallway (optional, C1-023) · the **mod rock**: `Hey. No pushing without permission. ...Permission granted.`; pushing without asking → `* You have been muted for 5 seconds.` and controls lock for 5 s · random encounters (budget 1: Lurkeye, Reply Guy, Grasstoid) · two forced calls (`Do you prefer glitter or MORE glitter? ...No reason.` and `I put something in your closet. Just in case. No pressure!`).
+- **Partly done (2026-10-18, round 7b):** `ruins_bakesale` opens north of R9 once Barky is resolved (`ruins.barky.state >= 1`): the Dorito bowl (`Stale Doritos` pickup, `ruins.bowl.taken`, empty bowl afterwards), the Commission Bake Sale booth with its sign and a one-time `Commissioned Donut` sample (`ruins.bakesale.sample`), the mod rock (3 lines, `ruins.modrock.talks`), the glitter forced call (`r10_call`, `ruins.r10.call`), a save point and a dark doorway to R11. Pending: take 4 → tipped bowl (`ruins.bowl.broken`), the shop menu (SHP-002), Napstablurk (C1-023), pushing the rock / 5 s mute, random encounters, the closet call.
 
 #### C1-011 — R11: Furiell's House `[ ]`
 P0 · L · NAR-003, ART-120, OVW-011

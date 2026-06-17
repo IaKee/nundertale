@@ -118,6 +118,22 @@ inline std::string faceTowardDirection(float npcX, float npcY, float targetX, fl
     return dy < 0.0f ? "up" : "down";
 }
 
+inline int applyHazardDamage(int hp, int damage) {
+    return std::max(1, hp - std::max(0, damage));
+}
+
+inline std::string selectRoomAnimation(const std::string& animation,
+                                       const std::string& alternate,
+                                       const std::string& alternateCondition,
+                                       const std::function<int(const std::string&)>& flagLookup,
+                                       bool* parsed = nullptr) {
+    if (alternate.empty() || alternateCondition.empty()) {
+        if (parsed != nullptr) *parsed = true;
+        return animation;
+    }
+    return evaluateRoomCondition(alternateCondition, flagLookup, parsed) ? alternate : animation;
+}
+
 constexpr std::uint32_t TILED_GID_MASK = 0x1FFFFFFFu;
 
 inline std::uint32_t maskTiledGid(std::uint32_t gid) {

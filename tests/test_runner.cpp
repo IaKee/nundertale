@@ -2638,7 +2638,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {
@@ -3015,6 +3015,86 @@ int main() {
         std::cout << "[PASS] OVW-007: NPC face-toward direction verified." << std::endl;
     }
 
-    std::cout << "\nAll 49 test suites passed successfully!" << std::endl;
+    // Suite 50: R7-A cutscene conditions and new step parsing
+    {
+        using namespace nundertale;
+        const std::string json = R"json({"steps":[
+            {"type":"giveItem","if":"hp > 1","item":"Mt. Dew","lines":["got"],"fullLines":["full"]},
+            {"type":"addFlag","key":"ruins.test","value":-2},
+            {"type":"addFur","value":15},
+            {"type":"npcFace","npc":"furiell","key":"left"},
+            {"type":"npcAnim","npc":"furiell","key":"wave","seconds":0.5},
+            {"type":"hideNpc","npc":"furiell"},
+            {"type":"showNpc","npc":"furiell"}
+        ]})json";
+        Cutscene parsed;
+        assert(parseCutsceneJson(json, parsed));
+        assert(parsed.steps.size() == 7);
+        assert(parsed.steps[0].type == CutsceneStepType::GiveItem);
+        assert(parsed.steps[0].condition == "hp > 1" && parsed.steps[0].item == "Mt. Dew");
+        assert(parsed.steps[0].lines[0] == "got" && parsed.steps[0].fullLines[0] == "full");
+        assert(parsed.steps[1].type == CutsceneStepType::AddFlag && parsed.steps[1].value == -2);
+        assert(parsed.steps[2].type == CutsceneStepType::AddFur && parsed.steps[2].value == 15);
+        assert(parsed.steps[3].type == CutsceneStepType::NpcFace);
+        assert(parsed.steps[3].npc == "furiell" && parsed.steps[3].key == "left");
+
+        struct ConditionalHost final : CutsceneHost {
+            int sounds = 0;
+            void dialog(const std::string&, const std::vector<std::string>&) override {}
+            bool dialogOpen() const override { return false; }
+            void sound(const std::string&, float) override { ++sounds; }
+            void setFlag(const std::string&, int) override {}
+            void shake(float, float) override {}
+            void flash(int, int, int, float) override {}
+            void startBattle(const std::string&) override {}
+            void setFur(int) override {}
+            void healFull() override {}
+            void facePlayer(const std::string&) override {}
+            void playerAnim(const std::string&, const std::string&, float) override {}
+            bool condition(const std::string& value) override { return value != "skip == 1"; }
+        } host;
+        Cutscene conditional;
+        CutsceneStep skipped;
+        skipped.type = CutsceneStepType::Sound;
+        skipped.condition = "skip == 1";
+        conditional.steps.push_back(skipped);
+        CutsceneStep played;
+        played.type = CutsceneStepType::Sound;
+        conditional.steps.push_back(played);
+        CutsceneRunner runner;
+        runner.start(conditional);
+        runner.update(0.0f, host);
+        assert(!runner.running() && host.sounds == 1);
+        std::cout << "[PASS] R7-A: cutscene conditions and new step parsing verified." << std::endl;
+    }
+
+    // Suite 51: R7-A hazard damage floor
+    {
+        assert(nundertale::applyHazardDamage(20, 2) == 18);
+        assert(nundertale::applyHazardDamage(2, 9) == 1);
+        assert(nundertale::applyHazardDamage(1, 2) == 1);
+        assert(nundertale::applyHazardDamage(7, -3) == 7);
+        std::cout << "[PASS] R7-A: hazard HP floor verified." << std::endl;
+    }
+
+    // Suite 52: R7-A alternate animation selection and content allow-lists
+    {
+        const auto flags = [](const std::string& key) { return key == "switch" ? 1 : 0; };
+        bool parsed = false;
+        assert(nundertale::selectRoomAnimation("off", "on", "switch == 1", flags, &parsed) == "on");
+        assert(parsed);
+        assert(nundertale::selectRoomAnimation("off", "on", "switch == 0", flags) == "off");
+        assert(nundertale::selectRoomAnimation("off", "on", "bad", flags, &parsed) == "on");
+        assert(!parsed);
+        assert(nundertale::isKnownRoomObjectType("hazard"));
+        assert(nundertale::isKnownRoomObjectProperty("altAnimIf"));
+        nundertale::LintFinding finding{};
+        assert(nundertale::validateJson("{\"steps\":[{\"type\":\"giveItem\"}]}", &finding));
+        assert(!nundertale::validateJson("{\"steps\":[{\"type\":\"mystery\"}]}", &finding));
+        assert(finding.rule == "unknown-cutscene-step");
+        std::cout << "[PASS] R7-A: alternate animations and content allow-lists verified." << std::endl;
+    }
+
+    std::cout << "\nAll 52 test suites passed successfully!" << std::endl;
     return 0;
 }
