@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
@@ -31,6 +32,8 @@ enum class CutsceneStepType {
     MoveNpc,
     MovePlayer,
     LockControls,
+    FadeOut,
+    FadeIn,
     Unsupported,
     Unknown
 };
@@ -57,6 +60,7 @@ struct CutsceneStep {
     float x = 0.0f;
     float y = 0.0f;
     float speed = 80.0f;
+    bool secondsSpecified = false;
 };
 
 struct Cutscene {
@@ -85,7 +89,9 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "moveNpc") return CutsceneStepType::MoveNpc;
     if (type == "movePlayer") return CutsceneStepType::MovePlayer;
     if (type == "lockControls") return CutsceneStepType::LockControls;
-    if (type == "cameraPan" || type == "fadeOut") {
+    if (type == "fadeOut") return CutsceneStepType::FadeOut;
+    if (type == "fadeIn") return CutsceneStepType::FadeIn;
+    if (type == "cameraPan") {
         return CutsceneStepType::Unsupported;
     }
     return CutsceneStepType::Unknown;
@@ -169,6 +175,10 @@ private:
         }
 
         step.type = cutsceneStepTypeFromString(step.typeName);
+        if ((step.type == CutsceneStepType::FadeOut || step.type == CutsceneStepType::FadeIn) &&
+            !step.secondsSpecified) {
+            step.seconds = 0.5f;
+        }
         return true;
     }
 
@@ -184,7 +194,10 @@ private:
         if (key == "fullLines") return parseStringArray(step.fullLines);
         if (key == "npc") return parseString(step.npc);
 
-        if (key == "seconds") return parseNumber(step.seconds);
+        if (key == "seconds") {
+            step.secondsSpecified = true;
+            return parseNumber(step.seconds);
+        }
         if (key == "volume") return parseNumber(step.volume);
         if (key == "intensity") return parseNumber(step.intensity);
         if (key == "x") return parseNumber(step.x);
@@ -337,6 +350,14 @@ inline bool parseCutsceneJson(const std::string& text, Cutscene& cutscene) {
     return CutsceneJsonParser(text).parse(cutscene);
 }
 
+inline float fadeAlpha(float start, float target, float elapsed, float seconds) {
+    start = std::clamp(start, 0.0f, 1.0f);
+    target = std::clamp(target, 0.0f, 1.0f);
+    if (seconds <= 0.0f || elapsed >= seconds) return target;
+    const float progress = std::clamp(elapsed / seconds, 0.0f, 1.0f);
+    return start + (target - start) * progress;
+}
+
 class CutsceneHost {
 public:
     virtual ~CutsceneHost() = default;
@@ -362,6 +383,8 @@ public:
     virtual bool moveNpc(const std::string&, float, float, float, float) { return true; }
     virtual bool movePlayer(float, float, float, float) { return true; }
     virtual void lockControls(float) {}
+    virtual bool fadeOut(float, float) { return true; }
+    virtual bool fadeIn(float, float) { return true; }
 };
 
 class CutsceneRunner {
@@ -521,6 +544,14 @@ public:
                     break;
                 case CutsceneStepType::LockControls:
                     host.lockControls(step.seconds);
+                    finishStep();
+                    break;
+                case CutsceneStepType::FadeOut:
+                    if (!host.fadeOut(step.seconds, remainingDt)) return;
+                    finishStep();
+                    break;
+                case CutsceneStepType::FadeIn:
+                    if (!host.fadeIn(step.seconds, remainingDt)) return;
                     finishStep();
                     break;
                 case CutsceneStepType::Unsupported:

@@ -264,17 +264,28 @@
         {
           "height": 80,
           "id": 1,
-          "name": "top_wall",
+          "name": "top_wall_left",
           "rotation": 0,
           "type": "collision",
           "visible": true,
-          "width": 800,
+          "width": 600,
           "x": 0,
           "y": 0
         },
         {
-          "height": 40,
+          "height": 80,
           "id": 2,
+          "name": "top_wall_right",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 120,
+          "x": 680,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": 3,
           "name": "bottom_wall_left",
           "rotation": 0,
           "type": "collision",
@@ -285,7 +296,7 @@
         },
         {
           "height": 40,
-          "id": 3,
+          "id": 4,
           "name": "bottom_wall_right",
           "rotation": 0,
           "type": "collision",
@@ -296,7 +307,7 @@
         },
         {
           "height": 480,
-          "id": 4,
+          "id": 5,
           "name": "left_wall",
           "rotation": 0,
           "type": "collision",
@@ -307,7 +318,7 @@
         },
         {
           "height": 480,
-          "id": 5,
+          "id": 6,
           "name": "right_wall",
           "rotation": 0,
           "type": "collision",
@@ -318,7 +329,7 @@
         },
         {
           "height": 40,
-          "id": 6,
+          "id": 7,
           "name": "col_modrock",
           "rotation": 0,
           "type": "collision",
@@ -341,7 +352,7 @@
       "objects": [
         {
           "height": 0,
-          "id": 7,
+          "id": 8,
           "name": "from_barky",
           "rotation": 0,
           "type": "spawn",
@@ -360,7 +371,7 @@
         },
         {
           "height": 0,
-          "id": 8,
+          "id": 9,
           "name": "spawn",
           "rotation": 0,
           "type": "spawn",
@@ -378,8 +389,27 @@
           ]
         },
         {
+          "height": 0,
+          "id": 10,
+          "name": "from_house",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 640,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
           "height": 40,
-          "id": 9,
+          "id": 11,
           "name": "door_to_barky",
           "rotation": 0,
           "type": "door",
@@ -402,7 +432,7 @@
         },
         {
           "height": 0,
-          "id": 10,
+          "id": 12,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -421,7 +451,7 @@
         },
         {
           "height": 40,
-          "id": 11,
+          "id": 13,
           "name": "trigger_call",
           "rotation": 0,
           "type": "trigger",
@@ -444,7 +474,7 @@
         },
         {
           "height": 40,
-          "id": 12,
+          "id": 14,
           "name": "dorito_bowl",
           "rotation": 0,
           "type": "prop",
@@ -497,7 +527,7 @@
         },
         {
           "height": 40,
-          "id": 13,
+          "id": 15,
           "name": "dorito_bowl_knocked",
           "rotation": 0,
           "type": "prop",
@@ -540,7 +570,7 @@
         },
         {
           "height": 40,
-          "id": 14,
+          "id": 16,
           "name": "dorito_sign",
           "rotation": 0,
           "type": "sign",
@@ -558,7 +588,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 17,
           "name": "mod_rock",
           "rotation": 0,
           "type": "prop",
@@ -606,7 +636,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 18,
           "name": "sample_donut",
           "rotation": 0,
           "type": "itemPickup",
@@ -644,7 +674,7 @@
         },
         {
           "height": 80,
-          "id": 17,
+          "id": 19,
           "name": "bakesale_booth",
           "rotation": 0,
           "type": "prop",
@@ -672,19 +702,24 @@
         },
         {
           "height": 40,
-          "id": 18,
-          "name": "north_doorway",
+          "id": 20,
+          "name": "door_to_house",
           "rotation": 0,
-          "type": "examine",
+          "type": "door",
           "visible": true,
           "width": 80,
           "x": 600,
-          "y": 60,
+          "y": 40,
           "properties": [
             {
-              "name": "lines",
+              "name": "targetRoom",
               "type": "string",
-              "value": "* (The hallway beyond smells like lavender and printer toner. Not yet.)"
+              "value": "ruins_house"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_bakesale"
             }
           ]
         }
@@ -957,7 +992,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 19,
+  "nextobjectid": 21,
   "orientation": "orthogonal",
   "properties": [
     {

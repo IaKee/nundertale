@@ -90,6 +90,12 @@ private:
     Vector2 m_lastHazardSafePosition = { 0.0f, 0.0f };
     int m_hazardCooldown = 0;
     float m_controlsLockedRemaining = 0.0f;
+    float m_cutsceneFadeAlpha = 0.0f;
+    float m_cutsceneFadeStart = 0.0f;
+    float m_cutsceneFadeTarget = 0.0f;
+    float m_cutsceneFadeElapsed = 0.0f;
+    bool m_cutsceneFadeActive = false;
+    bool m_autoFadeIn = false;
     int m_talkingObjectId = -1;     // OVW-007: the NPC turned toward Pepe while talking
     std::string m_talkingFacing;
     std::vector<EncounterEntry> m_roomEncounters;

@@ -2204,7 +2204,7 @@ int main() {
         assert(parsed.steps[6].encounter == "barky");
         assert(parsed.steps[7].type == CutsceneStepType::MoveNpc);
         assert(parsed.steps[8].type == CutsceneStepType::Unsupported);
-        assert(parsed.steps[9].type == CutsceneStepType::Unsupported);
+        assert(parsed.steps[9].type == CutsceneStepType::FadeOut);
         assert(parsed.steps[10].type == CutsceneStepType::Unknown);
 
         struct FakeCutsceneHost final : CutsceneHost {
@@ -2638,7 +2638,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {
@@ -3182,6 +3182,62 @@ int main() {
         std::cout << "[PASS] R8-C: bump timing, single fire per push, and release re-arm verified." << std::endl;
     }
 
-    std::cout << "\nAll 54 test suites passed successfully!" << std::endl;
+    // Suite 55: R9-A cutscene fades and exact alpha ramp
+    {
+        using namespace nundertale;
+        const std::string json = R"json({"steps":[
+            {"type":"fadeOut","seconds":0.5},
+            {"type":"fadeIn"}
+        ]})json";
+        Cutscene parsed;
+        assert(parseCutsceneJson(json, parsed));
+        assert(parsed.steps.size() == 2);
+        assert(parsed.steps[0].type == CutsceneStepType::FadeOut);
+        assert(parsed.steps[0].seconds == 0.5f);
+        assert(parsed.steps[1].type == CutsceneStepType::FadeIn);
+        assert(parsed.steps[1].seconds == 0.5f);
+
+        struct FadeHost final : CutsceneHost {
+            int outCalls = 0;
+            int inCalls = 0;
+            void dialog(const std::string&, const std::vector<std::string>&) override {}
+            bool dialogOpen() const override { return false; }
+            void sound(const std::string&, float) override {}
+            void setFlag(const std::string&, int) override {}
+            void shake(float, float) override {}
+            void flash(int, int, int, float) override {}
+            void startBattle(const std::string&) override {}
+            void setFur(int) override {}
+            void healFull() override {}
+            void facePlayer(const std::string&) override {}
+            void playerAnim(const std::string&, const std::string&, float) override {}
+            bool fadeOut(float seconds, float dt) override {
+                assert(seconds == 0.5f && dt == 0.1f);
+                return ++outCalls >= 2;
+            }
+            bool fadeIn(float seconds, float dt) override {
+                assert(seconds == 0.5f && dt == 0.1f);
+                return ++inCalls >= 2;
+            }
+        } host;
+
+        CutsceneRunner runner;
+        runner.start(parsed);
+        runner.update(0.1f, host);
+        assert(runner.running() && host.outCalls == 1 && host.inCalls == 0);
+        runner.update(0.1f, host);
+        assert(runner.running() && host.outCalls == 2 && host.inCalls == 1);
+        runner.update(0.1f, host);
+        assert(!runner.running() && host.inCalls == 2);
+
+        assert(fadeAlpha(-1.0f, 2.0f, 0.5f, 1.0f) == 0.5f);
+        assert(fadeAlpha(1.0f, 0.0f, 0.25f, 1.0f) == 0.75f);
+        assert(fadeAlpha(0.2f, 1.0f, 2.0f, 1.0f) == 1.0f);
+        assert(fadeAlpha(0.8f, 0.0f, 0.0f, 0.0f) == 0.0f);
+        assert(validateJson(json));
+        std::cout << "[PASS] R9-A: fade steps block and alpha ramp clamps exactly." << std::endl;
+    }
+
+    std::cout << "\nAll 55 test suites passed successfully!" << std::endl;
     return 0;
 }

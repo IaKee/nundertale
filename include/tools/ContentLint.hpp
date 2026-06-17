@@ -619,7 +619,8 @@ inline bool validateJson(const std::string& text, LintFinding* errorOut = nullpt
             type == "facePlayer" || type == "playerAnim" || type == "giveItem" ||
             type == "addFlag" || type == "addFur" || type == "npcFace" ||
             type == "npcAnim" || type == "hideNpc" || type == "showNpc" ||
-            type == "moveNpc" || type == "movePlayer" || type == "lockControls";
+            type == "moveNpc" || type == "movePlayer" || type == "lockControls" ||
+            type == "fadeOut" || type == "fadeIn";
         if (!known) {
             if (errorOut != nullptr) {
                 *errorOut = {1, 1, "unknown-cutscene-step", type};
