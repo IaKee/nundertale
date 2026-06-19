@@ -15,7 +15,7 @@ Conversa nova no gerador → enviar **5 anexos**: `F13_props_ruins_armchair.md` 
 
 ## 1. Contexto
 
-Poltrona grande coberta por uma manta de pelo falso, de frente.
+Poltrona grande de estofado vermelho quente, de frente, com uma manta de pelo falso creme dobrada sobre um dos braços.
 
 **Conceito da área:** convenção furry de 2014 abandonada dentro das ruínas roxas do Undertale.
 
@@ -27,7 +27,7 @@ Poltrona grande coberta por uma manta de pelo falso, de frente.
 - **Pivô (`origin`):** o mesmo ponto (pé / base central) em todas as células.
 - **Conteúdo:** nada explícito; proporções **adultas**; nenhum rosto real; nenhuma marca real (nada de logo Doritos / Mountain Dew; use "CITRUS BLAST", chips sem marca); todo texto dentro da arte em **inglês**.
 - **Undertale:** pode servir de referência de tamanho/estilo, mas nada copiado vai para o repositório.
-- Mesma vista 3/4 e mesma paleta do tileset das Ruins.
+- Mesma vista 3/4 do tileset das Ruins. **Legibilidade sobre roxo:** contorno de 1 px **quase preto `#141018`** fechando a silhueta inteira, e massas grandes em cores **claras ou quentes**, fora dos roxos do chão e da parede (`#3B1F5C` `#4A2A70` `#5E3A87` `#7A55A8` `#9C7CC4`), que ficam só para detalhes pequenos. (Regra de 2026-10-18: com a paleta só do tileset, booth, poltrona, interruptor e cabos sumiam no chão.)
 - Texto em placas/banners: gere **sem texto** e escreva à mão depois em fonte pixel de 5 px (a IA não escreve legível nesse tamanho). Texto sempre em inglês, exatamente como indicado.
 
 ## 3. Formato de output esperado
@@ -83,7 +83,7 @@ Attached: the spec file F13_props_ruins_armchair.md (full details) and these ima
 - image 4: reference for the fluffy throw only
 Draw a new image; never copy the reference images.
 
-Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Big comfy armchair covered with a fluffy faux-fur throw blanket, front view, 30x30 pixels.
+Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, a continuous 1-pixel near-black #141018 outline closing the whole silhouette, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette; it stands on a purple floor (#3B1F5C, #4A2A70, #5E3A87) against purple walls (#7A55A8, #9C7CC4), so its large areas use light or warm colours that contrast with purple and the Ruins purples appear only in small details, isolated on a solid flat #FF00FF magenta background, no text, no watermark. Big comfy armchair in warm red upholstery (#B0383E), front 3/4 view, short dark wooden legs, a folded cream faux-fur throw draped over one armrest, 30x30 pixels.
 
 Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários).
 Output: one image with aspect ratio 30:30, on a flat, exact #FF00FF magenta background with no noise.

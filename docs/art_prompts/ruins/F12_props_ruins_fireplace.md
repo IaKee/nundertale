@@ -28,7 +28,7 @@ Lareira aconchegante de pedra roxa, fogo laranja/amarelo, uma pelúcia secando n
 - **Pivô (`origin`):** o mesmo ponto (pé / base central) em todas as células.
 - **Conteúdo:** nada explícito; proporções **adultas**; nenhum rosto real; nenhuma marca real (nada de logo Doritos / Mountain Dew; use "CITRUS BLAST", chips sem marca); todo texto dentro da arte em **inglês**.
 - **Undertale:** pode servir de referência de tamanho/estilo, mas nada copiado vai para o repositório.
-- Mesma vista 3/4 e mesma paleta do tileset das Ruins.
+- Mesma vista 3/4 do tileset das Ruins. **Legibilidade sobre roxo:** contorno de 1 px **quase preto `#141018`** fechando a silhueta inteira, e massas grandes em cores **claras ou quentes**, fora dos roxos do chão e da parede (`#3B1F5C` `#4A2A70` `#5E3A87` `#7A55A8` `#9C7CC4`), que ficam só para detalhes pequenos. (Regra de 2026-10-18: com a paleta só do tileset, booth, poltrona, interruptor e cabos sumiam no chão.)
 - Texto em placas/banners: gere **sem texto** e escreva à mão depois em fonte pixel de 5 px (a IA não escreve legível nesse tamanho). Texto sempre em inglês, exatamente como indicado.
 
 ## 3. Formato de output esperado
@@ -93,7 +93,7 @@ Attached: the spec file F12_props_ruins_fireplace.md (full details) and these im
 - image 4: reference for the fireplace only
 Draw a new image; never copy the reference images.
 
-Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark. Cozy purple stone fireplace with a crackling orange and yellow fire, a small plush toy drying on the mantel, three animation frames of the fire in equal 40x40 cells in one row. Exception to the Ruins palette for this prop only: the flames use #FFD24A, #F0A03A, #E0602A.
+Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, a continuous 1-pixel near-black #141018 outline closing the whole silhouette, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette; it stands on a purple floor (#3B1F5C, #4A2A70, #5E3A87) against purple walls (#7A55A8, #9C7CC4), so its large areas use light or warm colours that contrast with purple and the Ruins purples appear only in small details, isolated on a solid flat #FF00FF magenta background, no text, no watermark. Cozy purple stone fireplace with a crackling orange and yellow fire, a small plush toy drying on the mantel, three animation frames of the fire in equal 40x40 cells in one row. Required colours for this prop: the flames use #FFD24A, #F0A03A, #E0602A.
 
 Use only these colors: #3B1F5C (Base escura), #5E3A87 (Base média), #7CFF3A (Acento neon), #F4E3FF (Realce), #C9A0DC (Banners), #111111 (Cortina 18+), #1E3FBF (Tela CRT), #4A2A70 (Roxos intermediários), #7A55A8 (Roxos intermediários), #9C7CC4 (Roxos intermediários), #FFD24A (Flames), #F0A03A (Flames), #E0602A (Flames).
 Output: one image with the whole sheet laid out exactly like image 1 (3 columns x 1 rows of equal cells), on a flat, exact #FF00FF magenta background with no noise.

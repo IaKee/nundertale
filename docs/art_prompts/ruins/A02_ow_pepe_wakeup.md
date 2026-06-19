@@ -28,7 +28,7 @@ Abertura do jogo: Pepe acorda numa cama de embalagens de salgadinho sob um feixe
 - **Undertale:** pode servir de referência de tamanho/estilo, mas nada copiado vai para o repositório.
 - Overworld é **colorido**, com paleta limitada (Ruins: roxo + verde neon).
 - Vista 3/4 de cima, igual aos sprites de overworld do Undertale.
-- Contorno escuro de 1 px; uma sombra por cor; sem anti-aliasing.
+- Contorno de 1 px **quase preto `#141018`** fechando a silhueta inteira (nunca roxo escuro: o chão das Ruins é roxo e engole o contorno). O Pepe mantém o contorno próprio `#3D120E`. Uma sombra por cor; sem anti-aliasing.
 
 ## 3. Formato de output esperado
 
@@ -94,7 +94,7 @@ Attached: the spec file A02_ow_pepe_wakeup.md (full details) and these images, i
 - image 4: reference for lying and getting-up pose only
 Draw a new image; never copy the reference images.
 
-Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel dark outline, flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark. Small sprite sheet of the same cartoon frog man as the anchor sprite, in the classic sad-frog comic look (wide lumpy head with two eye domes on top, heavy droopy eyelids, wide two-part reddish-brown lips, medium frog-green skin #5FA33A, plain blue T-shirt #2F62D6 with orange nacho stains, light blue shorts, black flip-flops, short pudgy adult body). Row 1: lying flat on his back on the ground, eyes closed, arms spread, seen from a 3/4 top-down view. Row 2, three frames: sitting up rubbing one eye, kneeling and pushing himself up, standing facing the viewer slouched. Same scale as a 20x30 pixel character, each frame in an equal 32x32 cell, feet aligned to the bottom. Dark brown outline #3D120E. No text.
+Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel near-black outline (never dark purple: the Ruins floor is purple), flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark. Small sprite sheet of the same cartoon frog man as the anchor sprite, in the classic sad-frog comic look (wide lumpy head with two eye domes on top, heavy droopy eyelids, wide two-part reddish-brown lips, medium frog-green skin #5FA33A, plain blue T-shirt #2F62D6 with orange nacho stains, light blue shorts, black flip-flops, short pudgy adult body). Row 1: lying flat on his back on the ground, eyes closed, arms spread, seen from a 3/4 top-down view. Row 2, three frames: sitting up rubbing one eye, kneeling and pushing himself up, standing facing the viewer slouched. Same scale as a 20x30 pixel character, each frame in an equal 32x32 cell, feet aligned to the bottom. Dark brown outline #3D120E. No text.
 
 Use only these colors: #3D120E (Contorno), #5FA33A (Pele), #3F7A2A (sombra), #2E5E22 (Linha da olheira), #FFFFFF (Olho), #141414 (pupila), #C8553D (Lábios), #A8432E (Lábios), #2F62D6 (Camiseta), #1F449E (sombra), #F0A03A (Nacho), #67A4E0 (Short), #4A80BC (Short), #2B2B2B (Chinelo).
 Output: one image with the whole sheet laid out exactly like image 1 (3 columns x 2 rows of equal cells), on a flat, exact #FF00FF magenta background with no noise.

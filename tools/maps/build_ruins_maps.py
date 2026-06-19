@@ -1349,7 +1349,7 @@ def build_ruins_dummy():
             "w": 40,
             "h": 40,
             "properties": {
-                "sprite": "assets/sprites/battle/fursuit_dummy.png",
+                "sprite": "assets/sprites/ow/fursuit_dummy.png",
                 "anim": "idle",
                 "solid": True,
                 "hideIf": "battle.fursuit_dummy.killed >= 1",
