@@ -1,0 +1,53 @@
+{
+  "image": "ruins_rgb_keys.png",
+  "cell": [
+    18,
+    18
+  ],
+  "origin": [
+    9,
+    17
+  ],
+  "anims": {
+    "red_off": {
+      "row": 0,
+      "frames": 1
+    },
+    "red_on": {
+      "row": 1,
+      "frames": 1
+    },
+    "yellow_off": {
+      "row": 2,
+      "frames": 1
+    },
+    "yellow_on": {
+      "row": 3,
+      "frames": 1
+    },
+    "green_off": {
+      "row": 4,
+      "frames": 1
+    },
+    "green_on": {
+      "row": 5,
+      "frames": 1
+    },
+    "blue_off": {
+      "row": 6,
+      "frames": 1
+    },
+    "blue_on": {
+      "row": 7,
+      "frames": 1
+    },
+    "magenta_off": {
+      "row": 8,
+      "frames": 1
+    },
+    "magenta_on": {
+      "row": 9,
+      "frames": 1
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "image": "grub_ears.png",
+  "cell": [
+    32,
+    32
+  ],
+  "origin": [
+    16,
+    31
+  ],
+  "anims": {
+    "stand_down": {
+      "row": 0,
+      "frames": 1
+    },
+    "walk_down": {
+      "row": 0,
+      "frames": 4,
+      "fps": 6
+    },
+    "stand_up": {
+      "row": 1,
+      "frames": 1
+    },
+    "walk_up": {
+      "row": 1,
+      "frames": 4,
+      "fps": 6
+    },
+    "stand_left": {
+      "row": 2,
+      "frames": 1
+    },
+    "walk_left": {
+      "row": 2,
+      "frames": 2,
+      "fps": 4
+    },
+    "stand_right": {
+      "row": 3,
+      "frames": 1
+    },
+    "walk_right": {
+      "row": 3,
+      "frames": 2,
+      "fps": 4
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "image": "ruins_apurrture_cube.png",
+  "cell": [
+    30,
+    60
+  ],
+  "origin": [
+    15,
+    59
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "image": "fursuit_dummy_close.png",
+  "cell": [
+    120,
+    120
+  ],
+  "origin": [
+    60,
+    120
+  ],
+  "anims": {
+    "shake": {
+      "row": 0,
+      "frames": 4,
+      "fps": 12
+    }
+  }
+}

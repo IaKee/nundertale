@@ -1,0 +1,17 @@
+{
+  "image": "pollen.png",
+  "cell": [
+    14,
+    14
+  ],
+  "origin": [
+    7,
+    7
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}

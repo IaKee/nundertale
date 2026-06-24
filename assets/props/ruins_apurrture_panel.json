@@ -1,0 +1,23 @@
+{
+  "image": "ruins_apurrture_panel.png",
+  "cell": [
+    25,
+    60
+  ],
+  "origin": [
+    12,
+    59
+  ],
+  "anims": {
+    "closed": {
+      "row": 0,
+      "frames": 1
+    },
+    "open": {
+      "row": 0,
+      "frames": 2,
+      "fps": 0,
+      "loop": false
+    }
+  }
+}
