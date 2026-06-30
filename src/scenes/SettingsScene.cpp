@@ -20,6 +20,7 @@ bool SettingsScene::isConfigChanged() const {
     return std::fabs(m_config.musicVolume - m_initialConfig.musicVolume) > 1e-4f ||
            std::fabs(m_config.masterVolume - m_initialConfig.masterVolume) > 1e-4f ||
            m_config.fullscreen != m_initialConfig.fullscreen ||
+           m_config.integerScale != m_initialConfig.integerScale ||
            m_config.spareDing != m_initialConfig.spareDing;
 }
 
@@ -44,10 +45,10 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
     }
 
     if (context.input.isUpPressed()) {
-        m_selectedIndex = wrapIndex(m_selectedIndex, -1, 5);
+        m_selectedIndex = wrapIndex(m_selectedIndex, -1, 6);
         context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     } else if (context.input.isDownPressed()) {
-        m_selectedIndex = wrapIndex(m_selectedIndex, +1, 5);
+        m_selectedIndex = wrapIndex(m_selectedIndex, +1, 6);
         context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     }
 
@@ -104,7 +105,14 @@ void SettingsScene::update(float /*dt*/, GameContext& context) {
             }
             break;
 
-        case 4: // SPARE DING
+        case 4: // INTEGER SCALE
+            if (context.input.isConfirmPressed() || context.input.isLeftPressed() || context.input.isRightPressed()) {
+                m_config.integerScale = !m_config.integerScale;
+                context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
+            }
+            break;
+
+        case 5: // SPARE DING
             if (context.input.isConfirmPressed() || context.input.isLeftPressed() || context.input.isRightPressed()) {
                 m_config.spareDing = !m_config.spareDing;
                 context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
@@ -130,20 +138,21 @@ void SettingsScene::render(GameContext& context) {
         std::string value;
     };
 
-    OptionItem options[5] = {
+    OptionItem options[6] = {
         { "EXIT", "" },
         { "MUSIC VOLUME", "< " + std::to_string(volumePercent(m_config.musicVolume)) + "% >" },
         { "MASTER VOLUME", "< " + std::to_string(volumePercent(m_config.masterVolume)) + "% >" },
         { "FULLSCREEN", m_config.fullscreen ? "ON" : "OFF" },
+        { "INTEGER SCALE", m_config.integerScale ? "ON" : "OFF" },
         { "SPARE DING", m_config.spareDing ? "ON" : "OFF" }
     };
 
-    const float startY = 120.0f;
-    const float stepY = 40.0f;
+    const float startY = 110.0f;
+    const float stepY = 36.0f;
     const float labelX = 80.0f;
     const float valueRightX = 480.0f;
 
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         float y = startY + static_cast<float>(i) * stepY;
         Color color = (m_selectedIndex == i) ? UI_YELLOW : WHITE;
 

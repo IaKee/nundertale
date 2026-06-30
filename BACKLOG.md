@@ -393,15 +393,15 @@ P0 · M · —
 - **What:** split from `PlayerData` (in `GameContext.hpp`) a `GameState { PlayerStats, Inventory, Equipment, Flags (map<string,int>), RoomId, Position, PlayTime, KillsByArea, FurryState }`. Everything that goes into the save lives here. LORE v2 adds `fur`, `fluff`, `raid` and the route (SAV-007).
 - **Acceptance:** `GameState` round-trips JSON → struct → JSON without loss (test in QA-010).
 
-#### CORE-005 — F4 fullscreen and optional integer scaling `[~]`
+#### CORE-005 — F4 fullscreen and optional integer scaling `[x]`
 P1 · S · —
-- **Correction (2026-10-18):** F4 works, but the integer-scale option is not in the code (`Game::renderLetterboxed` uses a float scale). Tracked in BUG-39.
+- **Done (2026-10-19):** F4 remains a global fullscreen toggle. The 640×480 canvas now uses the largest whole-number scale that fits (minimum 1×) by default, centered on physical pixels with black letterboxing; Settings exposes a persisted `INTEGER SCALE` ON/OFF toggle, and OFF retains the prior fractional fit. Geometry and config round-trip are covered by focused tests. The decorative border remains an optional P3 follow-up.
 - **What:** F4 toggles fullscreen (as in Undertale). "Integer scale" option (letterbox in multiples of 640×480) for always-square pixels; decorative border option (P3, like Undertale's PS4/Switch borders).
 
-#### CORE-006 — "Hold ESC to quit" `[~]`
+#### CORE-006 — "Hold ESC to quit" `[x]`
 P1 · S · BUG-14
-- **Reopened (2026-10-18):** ESC still closes the window at once (raylib's default exit key); the hold becomes 1.5 s with a fading corner hint. See BUG-37.
-- **What:** holding ESC for ~1 s shows "QUITTING..." in the top-left corner with progressing dots; releasing cancels; completing closes the game. ESC no longer goes back to the title.
+- **Done (2026-10-19):** raylib's default ESC exit is disabled. Holding ESC for 45 fixed logic ticks (1.5 s at 30 Hz) shows a fading `QUITTING...` hint and progress bar in the top-left; releasing resets and hides it, while completion closes the game. The ESC press is consumed globally so it no longer returns a scene to the title. Covered by focused short-press, accumulation, cancellation, and completion tests.
+- **What:** holding ESC for 1.5 s shows "QUITTING..." in the top-left corner with visible progress; releasing cancels; completing closes the game. ESC no longer goes back to the title.
 
 #### CORE-007 — User configuration `[x]`
 P1 · S · —
@@ -621,10 +621,10 @@ P1 · M · GFX-002
 P1 · S · BND-002
 - **What:** once spared, the sprite goes ~50% transparent and stops animating until the battle ends (in multi-enemy fights, the others keep going).
 
-#### BUI-012 — Yellow name and notification sound on spare `[~]`
+#### BUI-012 — Yellow name and notification sound on spare `[x]`
 P2 · S · BUI-009, AUD-011
 - **What (LORE §8.8):** spare stays 1:1 (yellow name), with an optional notification *ding* (configurable) alongside `spare_poof`.
-- **Done (2026-10-16), pending a real SFX:** the ding plays once, on the ACT that turns the name yellow; toggle `"spareDing"` in `config.json` (default `true`, no in-game options menu yet). It reuses `u_activate.wav` as a placeholder until AUD-011 ships the ding/`spare_poof`.
+- **Done (2026-10-19):** the ding uses `assets/sfx/notify.ogg` once, on the false→true spareability transition, gated by `"spareDing"` in `config.json` (default `true` and exposed in Settings). The actual spare keeps its separate `assets/sfx/spare_poof.ogg`. This closes BUI-012 only; the broader AUD-011 SFX inventory remains open.
 
 #### BUI-013 — Per-encounter battle backgrounds `[~]`
 P1 · M · BUI-002, GFX-002
@@ -1311,7 +1311,7 @@ P2 · S · FRT-007
 #### FRT-009 — Settings `[~]`
 P2 · M · CORE-007
 - **What:** the "SETTINGS" screen with `EXIT`, music/SFX volume, fullscreen, integer scaling and controls (no language option, D-03). Undertale's background/style (big text, selected option in yellow).
-- **Partly done (2026-10-17):** `SettingsScene` pushed from the start menu and the Continue card: EXIT, music volume, master volume (live, 10% steps), fullscreen, spare ding, a static controls block; saved to the config on exit. Pending: SFX volume and integer scaling (need engine support) and a remapping UI.
+- **Partly done (2026-10-19):** `SettingsScene` pushed from the start menu and the Continue card: EXIT, music volume, master volume (live, 10% steps), fullscreen, persisted integer scaling (ON by default), spare ding, and a static controls block; saved to the config on exit. Pending: SFX volume and a remapping UI.
 
 #### FRT-010 — Disclaimer `[x]`
 P3 · S · BUG-01
@@ -1987,6 +1987,7 @@ P0 · M · BFL-001, ACT-005, NAR-003, AUD-014
 - **What:** the battle tutorial; Furiell teaches **Talk** and **Accept Hug** (`You can always accept a hug, my child. It is the fastest way to make friends.` — plants the love-bombing). Reactions to each outcome: Talk → happy; Accept Hug → beaming; FIGHT → `Ah... the dummy is for hugging!`; flee → `...that is also a choice.` `ruins.dummy.result` (0 none · 1 talk · 2 fight · 3 flee · 4 spare · 5 hug).
 - **Partly done (2026-10-18):** `ruins_dummy` sits between R3 and R8: Furiell introduces practice with the LORE hug line and starts the `fursuit_dummy` battle; Talk/Accept Hug set `ruins.dummy.talked`/`ruins.dummy.hugged`; afterwards one of four reactions plays (hug → beaming, talk → happy, kill → `Ah... the dummy is for hugging!`, flee → `...that is also a choice.`) and sets `ruins.dummy.result` (1/2/3/5; 4 = plain spare isn't reachable, the dummy only spares through Accept Hug). Pending: an overworld dummy sprite (it uses the white battle sprite) and Furiell walking the player to the next room.
 - **The Bass Shake done (2026-10-18, synergy):** `assets/music/bass_shake.ogg` (the meme loop, 130 BPM, 3.692 s; the menu loops the calm bar), `IAudioService::musicTime/seekMusic`, `include/combat/BeatMap.hpp` + `data/beatmaps/bass_shake.json` (pure scheduler, suite BSK-T2), `EnemyPatternKind::Beat`. The enemy turn plays the loop ×3 (8.77 s): a close-up per accelerated part with a burst of 10 fluff tufts on the notes and a new expression (smug, wink, pout, smirk), the wide shot dancing on the eighths. New key-pose sprites from the clip (wide 48×64 dance, high-angle chibi close-up, tuft bullets), LORE ACTs (`Shake to the Bass` ×3, `Turn It Down` = `stopsBeat`), Check, Furiell's v3.1 reactions and `r5_dummy_spare` (result 4 now reachable). Playtested 2026-10-19 with the new debug record mode (`--record <dir> --input <script> --seconds n`, `tools/record/render_demo.py`, script `tools/record/r5_bass_shake.input`): the full fight runs through; demo in `assets/_gen/demo/`. Pending: a human playtest for difficulty and `latencyMs`; uses 2 and 3 of Shake share the same text (the engine only tells use 1 from ≥2).
+- **Timing synchronized (2026-10-20):** the 130 BPM grid now uses `double` and the exact `L = 8×60/130`, rejects stale post-seek menu samples including exact `L/2`, consumes `(prev, now]` across validated wraps, samples shot/pose/frame directly from audio during render, and keeps `latencyMs` event-only. Deterministic coverage passes for 30/60 Hz, coarse/irregular partitions, non-zero offset, jitter/stall safety and 10,000 loops without accumulated drift; debug build and all 72 validation suites pass.
 
 #### C1-006 — R6: Cable Maze `[~]`
 P1 · M · CORE-011, OVW-012
@@ -2023,6 +2024,7 @@ P0 · L · NAR-003, ART-120, OVW-011
 - **House items:** `Glitter Pop-Tart` (full HP), `Faux-Fur Bandana` (room to be decided, NAR-030). Line: `Do you prefer glitter or MORE glitter?`.
 - **Partly done (2026-10-18, round 9):** `ruins_house` (the living room) through R10's north doorway: fireplace, armchair, bookshelf (fanfic book), desk with the laptop and letterhead lines, a `Glitter Pop-Tart` pickup (`ruins.house.poptart`), her locked door (printer line), the basement stairs (blocked for now) and the mirror (`* It's you!`, FUR >= 20 → `* It's... still you. With ears.` and the `fur` mirror sprite). Pending: the hallway, Pepe's room (bed: full HP + 5 FUR, closet with the Fursuit Head), the stairs to R12.
 - **Round 10 (2026-10-18):** `ruins_house_pepe` through the living room's east opening: bed (`r11_bed`: nap, fade, full HP, FUR +5, repeatable), closet (`r11_closet`: `Fursuit Head`, `ruins.fursuit_head.taken`), lamp, beanbag; the basement stairs are now a door to R12. Still pending: the mirror hallway as its own room.
+- **Mirror hallway done (2026-10-20, T4):** `ruins_house_hallway` is now a dedicated hallway room connecting `ruins_house` (east doorway) and `ruins_house_pepe` (west doorway) bidirectionally with non-overlapping spawns; the mirror was moved from the living room to the hallway north wall and updated to LORE v3.1 (`FUR == 0` → `normal` sprite and `* It's you!`; `FUR > 0` → `fur` cat-ears sprite and two-page `* It's you. ...With cat ears?` / `* (You touch your head. Nothing there.)`, test suite 73). Still pending: the package by her door (`D-19`) and `Faux-Fur Bandana` placement (`NAR-030`).
 
 #### C1-012 — R12: Basement and Furiell's fight `[~]`
 P0 · XL · NAR-003, C1-022

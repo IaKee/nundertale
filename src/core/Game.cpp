@@ -163,6 +163,7 @@ void Game::initWindow() {
 #else
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 #endif
+    SetExitKey(KEY_NULL); // ESC is handled by the fixed-tick hold-to-quit state.
     SetWindowMinSize(640, 480);
 #ifdef NUNDERTALE_DEBUG
     SetTargetFPS(m_debugRecordDirectory.empty() ? TARGET_FPS : 0);
@@ -180,7 +181,7 @@ void Game::initWindow() {
 
 void Game::run() {
     float accumulator = 0.0f;
-    float escQuitTimer = 0.0f;
+    HoldToQuitState quitHold;
 
 #ifdef NUNDERTALE_DEBUG
     if (!m_debugRecordDirectory.empty() && m_debugRecordTickLimit <= 0) return;
@@ -189,14 +190,14 @@ void Game::run() {
 #endif
 
     // CORE-007: Apply user settings from %LOCALAPPDATA%/nUndertale/config.json
-    UserConfig config = m_saveService->getConfig();
-    m_audioService->setMusicVolume(config.musicVolume);
-    m_audioService->setMasterVolume(config.masterVolume);
+    const UserConfig initialConfig = m_saveService->getConfig();
+    m_audioService->setMusicVolume(initialConfig.musicVolume);
+    m_audioService->setMasterVolume(initialConfig.masterVolume);
     bool allowConfiguredFullscreen = true;
 #ifdef NUNDERTALE_DEBUG
     allowConfiguredFullscreen = m_debugShotPath.empty() && m_debugRecordDirectory.empty();
 #endif
-    if (allowConfiguredFullscreen && config.fullscreen && !IsWindowFullscreen()) {
+    if (allowConfiguredFullscreen && initialConfig.fullscreen && !IsWindowFullscreen()) {
         ToggleFullscreen();
     }
 
@@ -221,24 +222,17 @@ void Game::run() {
         if (IsKeyPressed(KEY_F4)) {
 #endif
             ToggleFullscreen();
+            UserConfig config = m_saveService->getConfig();
             config.fullscreen = IsWindowFullscreen();
             m_saveService->saveConfig(config);
         }
 
-        // Hold ESC for 1 second to quit (CORE-006, BUG-14)
+        // ESC is a global hold-to-quit action. Its transition runs in the fixed loop below.
 #ifdef NUNDERTALE_DEBUG
-        if (!ignorePhysicalInput && IsKeyDown(KEY_ESCAPE)) {
+        const bool escapeHeld = !ignorePhysicalInput && IsKeyDown(KEY_ESCAPE);
 #else
-        if (IsKeyDown(KEY_ESCAPE)) {
+        const bool escapeHeld = IsKeyDown(KEY_ESCAPE);
 #endif
-            escQuitTimer += frameDt;
-            if (escQuitTimer >= 1.0f) {
-                m_context->isRunning = false;
-                break;
-            }
-        } else {
-            escQuitTimer = 0.0f;
-        }
 
 #ifdef NUNDERTALE_DEBUG
         static bool s_showDebugOverlay = false;
@@ -252,6 +246,10 @@ void Game::run() {
 
         // 1. Update services
         m_inputService->update();
+        if (escapeHeld) {
+            // Keep keyboard ESC from reaching scenes (for example, returning to the title).
+            (void)m_inputService->isEscapePressed();
+        }
         m_audioService->updateMusic();
 
         // 2. Fixed 30 Hz logic update loop (CORE-001)
@@ -287,9 +285,15 @@ void Game::run() {
 #ifdef NUNDERTALE_DEBUG
             ++m_debugTicks;
 #endif
+            const bool quitReached = quitHold.update(escapeHeld);
             m_inputService->endTick();
             accumulator -= LOGIC_TIMESTEP;
+            if (quitReached) {
+                m_context->isRunning = false;
+                break;
+            }
         }
+        if (!m_context->isRunning) break;
 
         // 3. Render into virtual 640x480 canvas
         BeginTextureMode(m_virtualTarget);
@@ -305,10 +309,18 @@ void Game::run() {
             }
 
             // Visual feedback for quitting on held ESC (CORE-006)
-            if (escQuitTimer > 0.2f) {
-                int dots = static_cast<int>(escQuitTimer * 4.0f) % 4;
-                std::string quitText = "QUITTING" + std::string(dots, '.');
-                DrawText(quitText.c_str(), 16, 16, 20, WHITE);
+            if (quitHold.active()) {
+                const float progress = quitHold.progress();
+                Color quitColor = WHITE;
+                quitColor.a = static_cast<unsigned char>(
+                    std::lround(64.0f + 191.0f * progress));
+                const Font quitFont = m_resourceService->getFont8Bit(16);
+                m_resourceService->drawText(
+                    quitFont, "QUITTING...", { 16.0f, 16.0f }, 16.0f, quitColor, 1.0f);
+                DrawRectangle(16, 38, 120, 2, { 255, 255, 255, 48 });
+                DrawRectangle(16, 38,
+                              static_cast<int>(std::lround(120.0f * progress)), 2,
+                              quitColor);
             }
 
 #ifdef NUNDERTALE_DEBUG
@@ -367,15 +379,14 @@ void Game::run() {
 }
 
 void Game::renderLetterboxed() {
-    float scale = std::min((float)GetScreenWidth() / VIRTUAL_WIDTH, (float)GetScreenHeight() / VIRTUAL_HEIGHT);
-
-    float destWidth = VIRTUAL_WIDTH * scale;
-    float destHeight = VIRTUAL_HEIGHT * scale;
-    float destX = (static_cast<float>(GetScreenWidth()) - destWidth) * 0.5f + m_context->shakeOffset.x * scale;
-    float destY = (static_cast<float>(GetScreenHeight()) - destHeight) * 0.5f + m_context->shakeOffset.y * scale;
+    const bool integerScale = m_saveService->getConfig().integerScale;
+    const VirtualCanvasGeometry geometry = calculateVirtualCanvasGeometry(
+        GetScreenWidth(), GetScreenHeight(), integerScale);
+    const float destX = geometry.x + m_context->shakeOffset.x * geometry.scale;
+    const float destY = geometry.y + m_context->shakeOffset.y * geometry.scale;
 
     Rectangle sourceRec = { 0.0f, 0.0f, (float)m_virtualTarget.texture.width, -(float)m_virtualTarget.texture.height };
-    Rectangle destRec = { destX, destY, destWidth, destHeight };
+    Rectangle destRec = { destX, destY, geometry.width, geometry.height };
 
     DrawTexturePro(m_virtualTarget.texture, sourceRec, destRec, { 0, 0 }, 0.0f, WHITE);
 }

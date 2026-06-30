@@ -2660,7 +2660,7 @@ def build_ruins_bakesale():
 # Size: 20x12 tiles (800x480 px).
 # Cozy living room with fireplace, armchair, bookshelf, desk with laptop and
 # letterhead, Glitter Pop-Tart pickup, locked door to her room, basement stairs,
-# and the mirror.
+# and the east doorway to the mirror hallway.
 # =============================================================================
 def build_ruins_house():
     width = 20
@@ -2773,25 +2773,33 @@ def build_ruins_house():
                 "targetSpawn": "from_house",
             },
         },
-        # Spawn returning from Pepe's room (east)
+        # Spawns returning from the mirror hallway (east)
+        {
+            "name": "from_hallway",
+            "type": "spawn",
+            "point": True,
+            "x": 700,
+            "y": 240,
+            "properties": {"facing": "left"},
+        },
         {
             "name": "from_pepe",
             "type": "spawn",
             "point": True,
-            "x": 720,
-            "y": 280,
+            "x": 700,
+            "y": 240,
             "properties": {"facing": "left"},
         },
-        # Door east to Pepe's room
+        # Door east to the mirror hallway
         {
-            "name": "door_to_pepe",
+            "name": "door_to_hallway",
             "type": "door",
             "x": 760,
             "y": 240,
             "w": 40,
             "h": 80,
             "properties": {
-                "targetRoom": "ruins_house_pepe",
+                "targetRoom": "ruins_house_hallway",
                 "targetSpawn": "from_house",
             },
         },
@@ -2878,25 +2886,6 @@ def build_ruins_house():
                 "lines": "* \"Fanfics of Questionable Quality, Vol. 7\". You read one sentence. You put it down very carefully.",
             },
         },
-        # Mirror with normal and fur lines
-        {
-            "name": "mirror",
-            "type": "prop",
-            "x": 680,
-            "y": 40,
-            "w": 40,
-            "h": 80,
-            "properties": {
-                "sprite": "assets/props/ruins_mirror.png",
-                "anim": "normal",
-                "altAnim": "fur",
-                "altAnimIf": "fur >= 20",
-                "solid": True,
-                "lines": "* It's you!",
-                "furMin": 20,
-                "furLines": "* It's... still you. With ears.",
-            },
-        },
         # Furiell NPC in the living room
         {
             "name": "furiell",
@@ -2917,6 +2906,130 @@ def build_ruins_house():
 
     return make_tiled_map(
         room_id="ruins_house",
+        display_name="Ruins - Furiell's House",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
+# Room R11-H: Mirror Hallway (ruins_house_hallway)
+# Size: 16x12 tiles (640x480 px).
+# Short hallway between the living room and Grub's bedroom with the mirror on
+# the north wall.
+# =============================================================================
+def build_ruins_house_hallway():
+    width = 16
+    height = 12
+
+    ground = [
+        "################",
+        "#[============]#",
+        "#{--h------o--}#",
+        "#.,;..;,..;.,..#",
+        "#;.,..*....*..;#",
+        "#.,7888888889.,#",
+        ".,;4555z55556;,.",
+        ";.,455555p556.,;",
+        "#.,1222222223.,#",
+        "#;.,..;,..;.,.;#",
+        "#______________#",
+        "################",
+    ]
+
+    above = ["." * width] * height
+
+    collision = [
+        {"x": 0, "y": 0, "w": 640, "h": 120, "name": "top_wall"},
+        {"x": 0, "y": 400, "w": 640, "h": 80, "name": "bottom_wall"},
+        {"x": 0, "y": 0, "w": 40, "h": 240, "name": "left_wall_top"},
+        {"x": 0, "y": 320, "w": 40, "h": 160, "name": "left_wall_bottom"},
+        {"x": 600, "y": 0, "w": 40, "h": 240, "name": "right_wall_top"},
+        {"x": 600, "y": 320, "w": 40, "h": 160, "name": "right_wall_bottom"},
+    ]
+
+    objects = [
+        # Default spawn in front of the mirror
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 220,
+            "properties": {"facing": "up"},
+        },
+        # West spawn from the living room
+        {
+            "name": "from_house",
+            "type": "spawn",
+            "point": True,
+            "x": 80,
+            "y": 240,
+            "properties": {"facing": "right"},
+        },
+        # East spawn from Grub's room
+        {
+            "name": "from_pepe",
+            "type": "spawn",
+            "point": True,
+            "x": 520,
+            "y": 240,
+            "properties": {"facing": "left"},
+        },
+        # Door west back to ruins_house
+        {
+            "name": "door_to_house",
+            "type": "door",
+            "x": 0,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_house",
+                "targetSpawn": "from_hallway",
+            },
+        },
+        # Door east to ruins_house_pepe
+        {
+            "name": "door_to_pepe",
+            "type": "door",
+            "x": 600,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_house_pepe",
+                "targetSpawn": "from_hallway",
+            },
+        },
+        # Hallway mirror (LORE v3.1: cat ears reflection at any FUR > 0)
+        {
+            "name": "mirror",
+            "type": "prop",
+            "x": 300,
+            "y": 80,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_mirror.png",
+                "anim": "normal",
+                "altAnim": "fur",
+                "altAnimIf": "fur > 0",
+                "solid": True,
+                "lines": "* It's you!",
+                "furMin": 1,
+                "furLines": "* It's you. ...With cat ears?||* (You touch your head. Nothing there.)",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_house_hallway",
         display_name="Ruins - Furiell's House",
         width=width,
         height=height,
@@ -2963,33 +3076,41 @@ def build_ruins_house_pepe():
     ]
 
     objects = [
-        # West spawn from living room & default spawn
+        # West spawns from the mirror hallway & default spawn
+        {
+            "name": "from_hallway",
+            "type": "spawn",
+            "point": True,
+            "x": 100,
+            "y": 240,
+            "properties": {"facing": "right"},
+        },
         {
             "name": "from_house",
             "type": "spawn",
             "point": True,
-            "x": 120,
-            "y": 280,
+            "x": 100,
+            "y": 240,
             "properties": {"facing": "right"},
         },
         {
             "name": "spawn",
             "type": "spawn",
             "point": True,
-            "x": 120,
-            "y": 280,
+            "x": 100,
+            "y": 240,
             "properties": {"facing": "right"},
         },
-        # Door west back to ruins_house
+        # Door west back to ruins_house_hallway
         {
-            "name": "door_to_house",
+            "name": "door_to_hallway",
             "type": "door",
             "x": 0,
             "y": 240,
             "w": 40,
             "h": 80,
             "properties": {
-                "targetRoom": "ruins_house",
+                "targetRoom": "ruins_house_hallway",
                 "targetSpawn": "from_pepe",
             },
         },
@@ -3471,6 +3592,7 @@ def main():
         "ruins_barky.json": build_ruins_barky,
         "ruins_bakesale.json": build_ruins_bakesale,
         "ruins_house.json": build_ruins_house,
+        "ruins_house_hallway.json": build_ruins_house_hallway,
         "ruins_house_pepe.json": build_ruins_house_pepe,
         "ruins_basement.json": build_ruins_basement,
         "ruins_exit.json": build_ruins_exit,

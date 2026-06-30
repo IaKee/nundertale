@@ -506,9 +506,9 @@ void BattleSystem::handleActInput(GameContext& context) {
                     m_musicDucked = true;
                 }
             }
-            // BUI-012: optional ding the moment the name turns yellow (placeholder SFX until AUD-011)
+            // BUI-012: optional ding the moment the name turns yellow
             if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {
-                context.audio.playSound("assets/sfx/bell.ogg", 0.5f);
+                context.audio.playSound("assets/sfx/notify.ogg", 0.5f);
             }
         }
 
@@ -793,42 +793,30 @@ bool BattleSystem::beatPatternSelected() const {
 }
 
 void BattleSystem::startBeatTurn(GameContext& context) {
-    context.audio.setMusicLoopPoints(0.0f, m_beatMap.loopLength);
-    context.audio.seekMusic(m_beatMap.offset);
+    context.audio.setMusicLoopPoints(static_cast<float>(m_beatMap.offset),
+                                     static_cast<float>(m_beatMap.offset + m_beatMap.loopLength));
+    context.audio.seekMusic(static_cast<float>(m_beatMap.offset));
     m_beatClock = BeatTurnClock{};
-    m_enemyTurnDuration = beatTurnDuration(m_beatMap);
-    // start just before the first note so the note at t = 0 fires (same as the BSK-T2 tests)
-    m_beatPrevTime = -0.001f - m_beatMap.latencyMs / 1000.0f;
-    m_beatTurnTime = 0.0f;
-    m_beatLean = 0;
-    m_beatInCloseup = false;
-    m_closeupZoomTimer = 0.0f;
+    m_beatClock.beginSeek();
+    m_enemyTurnDuration = static_cast<float>(beatTurnDuration(m_beatMap));
+    // (prev, now]: begin immediately below the compensated first event so note zero fires once.
+    m_beatPrevTime = initialBeatEventCursor(m_beatMap);
+    m_beatTurnTime = 0.0;
     m_beatTurnActive = true;
 }
 
 bool BattleSystem::updateBeatTurn(float dt, GameContext& context) {
-    const float raw = context.audio.musicTime();
-    // the first sample after the seek may still report the pre-seek (calm bar) position
-    const bool staleFirstSample = m_beatClock.lastRaw < 0.0f && raw > m_beatMap.loopLength * 0.5f;
-    if (raw > 0.0f && !staleFirstSample) {
-        m_beatTurnTime = m_beatClock.advance(m_beatMap, raw);
-    } else if (m_beatClock.lastRaw < 0.0f) {
-        m_beatTurnTime = m_enemyTurnTimer; // no track / not started yet: turn timer fallback
+    (void)dt; // gameplay remains fixed-step; musical transport comes only from audio samples
+    const double raw = static_cast<double>(context.audio.musicTime());
+    const BeatClockSample clockSample = m_beatClock.advance(m_beatMap, raw);
+    if (clockSample.accepted) {
+        m_beatTurnTime = clockSample.turnTime;
+        const auto& patterns = m_enemy->getPatterns();
+        for (const BeatEvent& event : beatEventsBetween(m_beatMap, m_beatPrevTime, m_beatTurnTime)) {
+            spawnBeatTuft(patterns[m_genericPatternIndex], event);
+        }
+        m_beatPrevTime = m_beatTurnTime;
     }
-
-    const auto& patterns = m_enemy->getPatterns();
-    for (const BeatEvent& event : beatEventsBetween(m_beatMap, m_beatPrevTime, m_beatTurnTime)) {
-        spawnBeatTuft(patterns[m_genericPatternIndex], event);
-        m_beatLean = event.noteIndex % 2;
-    }
-    m_beatPrevTime = std::max(m_beatPrevTime, m_beatTurnTime);
-
-    // hard cut between shots; each cut to the close-up snaps a 1.15 -> 1.0 zoom
-    const bool closeup = beatShotAt(m_beatMap, m_beatTurnTime) == "closeup" &&
-                         !beatTurnFinished(m_beatMap, m_beatTurnTime);
-    if (closeup && !m_beatInCloseup) m_closeupZoomTimer = 0.08f;
-    m_beatInCloseup = closeup;
-    m_closeupZoomTimer = std::max(0.0f, m_closeupZoomTimer - dt);
 
     // safety net: a stalled music clock never traps the player in the turn
     return beatTurnFinished(m_beatMap, m_beatTurnTime) ||
@@ -837,10 +825,9 @@ bool BattleSystem::updateBeatTurn(float dt, GameContext& context) {
 
 void BattleSystem::endBeatTurn(GameContext& context) {
     // the track is already in the calm bar: only restore the loop, no seek
-    context.audio.setMusicLoopPoints(m_beatMap.menuLoopStart, m_beatMap.menuLoopEnd);
+    context.audio.setMusicLoopPoints(static_cast<float>(m_beatMap.offset + m_beatMap.menuLoopStart),
+                                     static_cast<float>(m_beatMap.offset + m_beatMap.menuLoopEnd));
     m_beatTurnActive = false;
-    m_beatInCloseup = false;
-    m_closeupZoomTimer = 0.0f;
     m_enemyTurnDuration = 5.0f;
 }
 
@@ -1756,6 +1743,23 @@ void BattleSystem::render(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
 
+    // Rendering samples the wrapped audio clock without mutating gameplay transport.
+    // If the sample is jitter/rejected, the last accepted musical anchor is retained.
+    const double renderRawMusicTime = m_beatMapLoaded
+        ? static_cast<double>(context.audio.musicTime())
+        : 0.0;
+    const bool beatRenderReady = m_beatMapLoaded && m_beatTurnActive &&
+                                 m_beatClock.hasAcceptedSeek();
+    double beatRenderTurnTime = m_beatTurnTime;
+    if (beatRenderReady) {
+        const BeatClockSample renderSample = m_beatClock.sample(m_beatMap, renderRawMusicTime);
+        if (renderSample.accepted) beatRenderTurnTime = renderSample.turnTime;
+    }
+    const BeatVisualState beatRenderVisual = m_beatMapLoaded
+        ? beatVisualStateAt(m_beatMap, m_turnCount - 1, beatRenderTurnTime)
+        : BeatVisualState{};
+    const bool renderBeatCloseup = beatRenderReady && beatRenderVisual.closeup;
+
     // 1. Battle Background (BUI-002, BUI-013)
     drawBattleBackground(m_background, m_backgroundAnimTimer);
 
@@ -1785,30 +1789,35 @@ void BattleSystem::render(GameContext& context) {
 
         // BSK (C7): close-up shot during the beat burst (hard cut, snap zoom, never over the box)
         bool drewBeatCloseup = false;
-        if (m_beatMapLoaded && m_beatTurnActive && m_beatInCloseup && !m_isSpared &&
+        if (renderBeatCloseup && !m_isSpared &&
             m_enemyShakeTimer <= 0.0f) {
             const std::string closePng = spriteBase + "_close.png";
             const SpriteSheetDef* closeSheet = spriteSheetCache().load(closePng, spriteBase + "_close.json");
             Texture2D closeTex = { 0, 0, 0, 0, 0 };
             if (closeSheet != nullptr) closeTex = context.resources.getTexture(closePng);
             if (closeSheet != nullptr && closeTex.id > 0) {
-                const int pass = static_cast<int>(std::floor(std::max(0.0f, m_beatTurnTime) / m_beatMap.loopLength));
                 std::string expression = "smug";
                 if (!m_beatMap.expressions.empty()) {
-                    expression = m_beatMap.expressions[beatExpressionIndex(m_beatMap, m_turnCount - 1, pass)];
+                    expression = m_beatMap.expressions[beatRenderVisual.expressionIndex];
                 }
-                float animTime = 0.0f;
                 const auto anim = closeSheet->anims.find(expression);
+                const int frames = anim != closeSheet->anims.end() ? anim->second.frames : 1;
+                const int frame = beatCloseColumn(beatRenderVisual.pose.sway, frames);
+                float animTime = 0.0f;
                 if (anim != closeSheet->anims.end() && anim->second.fps > 0.0f) {
-                    animTime = (static_cast<float>(m_beatLean) + 0.5f) / anim->second.fps;
+                    animTime = (static_cast<float>(frame) + 0.5f) / anim->second.fps;
                 }
                 const float bottom = std::min(static_cast<float>(baselineY), m_arenaRect.y - 4.0f);
                 const float cellH = static_cast<float>(std::max(1, closeSheet->originY));
                 const float fitScale = std::min(2.0f, bottom / cellH);
-                const float zoom = 1.0f + 0.15f * std::clamp(m_closeupZoomTimer / 0.08f, 0.0f, 1.0f);
+                const double zoomPhase = std::clamp(
+                    beatRenderVisual.phase / beatSixteenth(m_beatMap), 0.0, 1.0);
+                const float zoom = static_cast<float>(1.0 + 0.15 * (1.0 - zoomPhase));
+                const float swayX = static_cast<float>(beatRenderVisual.pose.sway) * 6.0f * fitScale;
                 SetTextureFilter(closeTex, TEXTURE_FILTER_POINT);
                 drawSprite(closeTex, *closeSheet, expression, animTime,
-                           { static_cast<float>(enemyCenterX), bottom }, fitScale * zoom, WHITE);
+                           { static_cast<float>(enemyCenterX) + swayX, bottom },
+                           fitScale * zoom * static_cast<float>(beatRenderVisual.pose.squash), WHITE);
                 drewBeatCloseup = true;
             }
         }
@@ -1834,14 +1843,18 @@ void BattleSystem::render(GameContext& context) {
 
             float animTime = m_enemyIdleTimer;
             if (m_beatMapLoaded && animation == "idle" && m_beatMap.bpm > 0.0f) {
-                // BSK (C7): wide shot dance steps on the eighth notes of the music clock
-                float loopTime = m_beatTurnActive ? m_beatTurnTime
-                                                  : context.audio.musicTime() - m_beatMap.offset;
-                if (!m_beatTurnActive && context.audio.musicTime() <= 0.0f) loopTime = m_enemyIdleTimer;
-                loopTime = std::max(0.0f, loopTime);
-                const float eighth = 60.0f / m_beatMap.bpm / 2.0f;
-                const int frame = static_cast<int>(std::floor(loopTime / eighth)) % 4;
                 const auto idle = enemySheet->anims.find("idle");
+                const int danceFrames = idle != enemySheet->anims.end() ? idle->second.frames : 4;
+                double danceTime = m_enemyIdleTimer;
+                if (m_beatTurnActive) {
+                    // Freeze on the musical origin while seek acknowledgement is pending.
+                    danceTime = beatRenderReady ? beatRenderTurnTime : m_beatTurnTime;
+                } else if (!m_beatTurnActive && renderRawMusicTime > 0.0) {
+                    danceTime = positiveBeatModulo(renderRawMusicTime - m_beatMap.offset,
+                                                   m_beatMap.loopLength);
+                }
+                const int frame = beatVisualStateAt(
+                    m_beatMap, m_turnCount - 1, danceTime, danceFrames).wideFrame;
                 if (idle != enemySheet->anims.end() && idle->second.fps > 0.0f) {
                     animTime = (static_cast<float>(frame) + 0.5f) / idle->second.fps;
                 }
@@ -1991,7 +2004,7 @@ void BattleSystem::render(GameContext& context) {
             bubbleH = 64.0f;
         }
         // the Bass Shake close-up is much wider than the wide sprite: keep the bubble clear of it
-        const float bubbleOffsetX = (m_beatTurnActive && m_beatInCloseup) ? 150.0f : 45.0f;
+        const float bubbleOffsetX = renderBeatCloseup ? 150.0f : 45.0f;
         Rectangle bubbleRect = { (float)enemyCenterX + bubbleOffsetX, (float)baselineY - 165.0f, bubbleW, bubbleH };
         bubbleRect.x = std::min(bubbleRect.x, static_cast<float>(VIRTUAL_WIDTH) - bubbleW - 8.0f); // never off-screen
 

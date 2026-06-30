@@ -496,13 +496,32 @@
         {
           "height": 0,
           "id": 16,
+          "name": "from_hallway",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 700,
+          "y": 240,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "left"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 17,
           "name": "from_pepe",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
           "width": 0,
-          "x": 720,
-          "y": 280,
+          "x": 700,
+          "y": 240,
           "point": true,
           "properties": [
             {
@@ -514,8 +533,8 @@
         },
         {
           "height": 80,
-          "id": 17,
-          "name": "door_to_pepe",
+          "id": 18,
+          "name": "door_to_hallway",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -526,7 +545,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_house_pepe"
+              "value": "ruins_house_hallway"
             },
             {
               "name": "targetSpawn",
@@ -537,7 +556,7 @@
         },
         {
           "height": 40,
-          "id": 18,
+          "id": 19,
           "name": "laptop",
           "rotation": 0,
           "type": "examine",
@@ -555,7 +574,7 @@
         },
         {
           "height": 40,
-          "id": 19,
+          "id": 20,
           "name": "letterhead",
           "rotation": 0,
           "type": "examine",
@@ -573,7 +592,7 @@
         },
         {
           "height": 40,
-          "id": 20,
+          "id": 21,
           "name": "poptart_pickup",
           "rotation": 0,
           "type": "itemPickup",
@@ -611,7 +630,7 @@
         },
         {
           "height": 60,
-          "id": 21,
+          "id": 22,
           "name": "armchair",
           "rotation": 0,
           "type": "prop",
@@ -639,7 +658,7 @@
         },
         {
           "height": 80,
-          "id": 22,
+          "id": 23,
           "name": "fireplace",
           "rotation": 0,
           "type": "prop",
@@ -672,7 +691,7 @@
         },
         {
           "height": 80,
-          "id": 23,
+          "id": 24,
           "name": "bookshelf",
           "rotation": 0,
           "type": "prop",
@@ -695,59 +714,6 @@
               "name": "lines",
               "type": "string",
               "value": "* \"Fanfics of Questionable Quality, Vol. 7\". You read one sentence. You put it down very carefully."
-            }
-          ]
-        },
-        {
-          "height": 80,
-          "id": 24,
-          "name": "mirror",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 680,
-          "y": 40,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_mirror.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "normal"
-            },
-            {
-              "name": "altAnim",
-              "type": "string",
-              "value": "fur"
-            },
-            {
-              "name": "altAnimIf",
-              "type": "string",
-              "value": "fur >= 20"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "* It's you!"
-            },
-            {
-              "name": "furMin",
-              "type": "int",
-              "value": 20
-            },
-            {
-              "name": "furLines",
-              "type": "string",
-              "value": "* It's... still you. With ears."
             }
           ]
         },
