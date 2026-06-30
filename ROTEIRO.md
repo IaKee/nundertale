@@ -1,3 +1,4 @@
+> **Notice:** This document is superseded by [docs/LORE.md](docs/LORE.md) (canonical v3).
 # 🐸 nUndertale — Game Script & Game Design Document (GDD)
 
 > **Production Note:** An independent, solo indie passion project. A satirical comedic parody tribute to Toby Fox's *Undertale*, celebrating retro RPG conventions, chiptune aesthetic, and classic internet meme culture.

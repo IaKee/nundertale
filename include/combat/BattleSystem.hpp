@@ -13,6 +13,7 @@
 #include "AttackTarget.hpp"
 #include "BarkyPatterns.hpp"
 #include "FurHud.hpp"
+#include "BeatMap.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -105,6 +106,7 @@ public:
     float getFightPhaseTimer() const { return m_fightPhaseTimer; }
     float getFurTrembleTimer() const { return m_furTrembleTimer; }
     bool isFurTrembling() const { return furHudShouldTremble(m_furTrembleTimer); }
+    bool isHealNextAttack() const { return m_healNextAttack; }
 
 private:
     void handleMenuInput(GameContext& context);
@@ -169,6 +171,7 @@ private:
     float m_howlWallTimer = 0.0f;
     std::size_t m_genericPatternIndex = 0;
     int m_patternSpawnCount = 0;
+    std::size_t m_patternWordIndex = 0;
 
     // Messages
     std::string m_narratorText;
@@ -217,6 +220,8 @@ private:
     // ACT-006/007: Per-battle ACT use counts and queued skipped enemy attacks
     std::unordered_map<std::string, int> m_actUseCounts;
     int m_frozenTurns = 0;
+    bool m_healNextAttack = false;
+    int m_tempAtkDelta = 0;
 
     // BUI-010: Enemy idle animation
     float m_enemyIdleTimer = 0.0f;
@@ -246,6 +251,24 @@ private:
     bool m_furTrembleTriggered = false;
     bool m_furVisibleAtStart = false;
     bool m_furStartChecked = false;
+
+    // BSK (C7): Bass Shake beat turn
+    bool beatPatternSelected() const;
+    void startBeatTurn(GameContext& context);
+    bool updateBeatTurn(float dt, GameContext& context); // returns true when the turn is over
+    void endBeatTurn(GameContext& context);
+    void spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent& event);
+    BeatMap m_beatMap;
+    bool m_beatMapLoaded = false;
+    bool m_beatTurnActive = false;
+    BeatTurnClock m_beatClock;
+    float m_beatPrevTime = 0.0f;
+    float m_beatTurnTime = 0.0f;
+    int m_beatLean = 0;              // 0 = left, 1 = right (latest note parity)
+    bool m_beatInCloseup = false;
+    float m_closeupZoomTimer = 0.0f; // snap zoom 1.15 -> 1.0
+    bool m_beatStopped = false;      // stopsBeat ACT used
+    bool m_musicDucked = false;
 
     // Context reference during render for sub-draw helpers
     mutable GameContext* m_currentContext = nullptr;

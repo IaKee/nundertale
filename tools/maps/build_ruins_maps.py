@@ -454,6 +454,35 @@ def build_ruins_fall():
                 "once": "ruins.r1.woke",
             },
         },
+        # Tide Pod pickup next to where Grub wakes
+        {
+            "name": "tide_pod",
+            "type": "prop",
+            "x": 380,
+            "y": 240,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/tide_pod.png",
+                "solid": False,
+                "hideIf": "item.tide_pod.taken >= 1",
+                "cutscene": "r1_tide_pod",
+            },
+        },
+        # Floor message (OVW-022, LORE §30.4)
+        {
+            "name": "floor_message",
+            "type": "prop",
+            "x": 220,
+            "y": 260,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/floor_message.png",
+                "solid": False,
+                "cutscene": "floormsg_r1",
+            },
+        },
     ]
 
     return make_tiled_map(
@@ -1410,7 +1439,7 @@ def build_ruins_dummy():
             "properties": {
                 "cutscene": "r5_dummy_talk",
                 "once": "ruins.dummy.reacted",
-                "showIf": "ruins.dummy.talked >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0",
+                "showIf": "ruins.dummy.talked >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.spared == 0 && battle.fursuit_dummy.killed == 0",
             },
         },
         {
@@ -1447,9 +1476,9 @@ def build_ruins_dummy():
             "w": 560,
             "h": 315,
             "properties": {
-                "cutscene": "r5_dummy_other",
+                "cutscene": "r5_dummy_spare",
                 "once": "ruins.dummy.reacted",
-                "showIf": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && ruins.dummy.talked == 0 && battle.fursuit_dummy.killed == 0",
+                "showIf": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0",
             },
         },
     ]
@@ -2277,6 +2306,20 @@ def build_ruins_barky():
                 "lines": "* Barky's natural enemy. Or his moon. He hasn't decided.",
             },
         },
+        # Floor message (OVW-022, LORE §30.4)
+        {
+            "name": "floor_message",
+            "type": "prop",
+            "x": 220,
+            "y": 280,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/floor_message.png",
+                "solid": False,
+                "cutscene": "floormsg_r9",
+            },
+        },
         # Door north forward to ruins_bakesale (revealed once Barky is resolved)
         {
             "name": "to_bakesale",
@@ -2523,7 +2566,62 @@ def build_ruins_bakesale():
             "properties": {
                 "sprite": "assets/props/ruins_booth.png",
                 "solid": True,
-                "lines": "* \"All proceeds go to spider artists. Slots open. ETA: yes.\"",
+                "cutscene": "r10_shop",
+            },
+        },
+        # Napstablurk: lies on the floor "lurking" in the hallway
+        {
+            "name": "napstablurk",
+            "type": "examine",
+            "x": 620,
+            "y": 240,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "cutscene": "r10_napstablurk",
+                "hideIf": "ruins.napstablurk.state == 1 || ruins.napstablurk.state == 2",
+            },
+        },
+        # Post-battle trigger when spared (plays LORE ending line)
+        {
+            "name": "trigger_napstablurk",
+            "type": "trigger",
+            "x": 560,
+            "y": 180,
+            "w": 160,
+            "h": 140,
+            "properties": {
+                "cutscene": "r10_napstablurk_spared",
+                "once": "ruins.napstablurk.spared_cutscene",
+                "showIf": "battle.napstablurk.spared >= 1 && ruins.napstablurk.state == 0",
+            },
+        },
+        # Post-battle trigger when killed
+        {
+            "name": "trigger_napstablurk_killed",
+            "type": "trigger",
+            "x": 560,
+            "y": 180,
+            "w": 160,
+            "h": 140,
+            "properties": {
+                "cutscene": "r10_napstablurk_killed",
+                "once": "ruins.napstablurk.killed_cutscene",
+                "showIf": "battle.napstablurk.killed >= 1 && ruins.napstablurk.state == 0",
+            },
+        },
+        # Post-battle trigger when fled
+        {
+            "name": "trigger_napstablurk_fled",
+            "type": "trigger",
+            "x": 560,
+            "y": 180,
+            "w": 160,
+            "h": 140,
+            "properties": {
+                "cutscene": "r10_napstablurk_fled",
+                "once": "ruins.napstablurk.fled_cutscene",
+                "showIf": "ruins.napstablurk.met >= 1 && battle.napstablurk.spared == 0 && battle.napstablurk.killed == 0 && ruins.napstablurk.state == 0",
             },
         },
         # Door north forward to ruins_house
@@ -2552,7 +2650,7 @@ def build_ruins_bakesale():
         above_grid=above,
         music="overworld.default",
         save_place="* The smell of baked goods and spider-art fills you with DETERMINATION.",
-        encounters="froggsona:2,shysona:1,modsmal:1",
+        encounters="lurkeye:1,reply_guy:1,grasstoid:1",
         encounter_budget=1,
     )
 
@@ -2575,8 +2673,8 @@ def build_ruins_house():
         "#;.,..;,..,;,..;.,.#",
         "#.,.::.78888889.,;.#",
         "#;..c..45555556;.,.#",
-        "#.,.,..455z5556.,;,#",
-        "#;.,...45555p56;.,.#",
+        "#.,.,..455z5556.,;,.",
+        "#;.,...45555p56;.,..",
         "#.,;,..12222223.,;.#",
         "#;.,..*....*....;..#",
         "#________  ________#",
@@ -2599,11 +2697,14 @@ def build_ruins_house():
     ]
 
     collision = [
-        {"x": 0, "y": 0, "w": 800, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 0, "w": 360, "h": 80, "name": "top_wall_left"},
+        {"x": 480, "y": 0, "w": 320, "h": 80, "name": "top_wall_right"},
+        {"x": 360, "y": 0, "w": 120, "h": 40, "name": "top_wall_stairs_back"},
         {"x": 0, "y": 440, "w": 360, "h": 40, "name": "bottom_wall_left"},
         {"x": 440, "y": 440, "w": 360, "h": 40, "name": "bottom_wall_right"},
         {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
-        {"x": 760, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 760, "y": 0, "w": 40, "h": 240, "name": "right_wall_top"},
+        {"x": 760, "y": 320, "w": 40, "h": 160, "name": "right_wall_bottom"},
         {"x": 80, "y": 180, "w": 160, "h": 40, "name": "col_desk"},
     ]
 
@@ -2650,16 +2751,48 @@ def build_ruins_house():
                 "lines": "* It's locked. You hear a printer.",
             },
         },
-        # Stairs to basement blocked with examine
+        # Spawn returning from Basement (stairs)
         {
-            "name": "stairs_basement",
-            "type": "examine",
-            "x": 240,
+            "name": "from_basement",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 90,
+            "properties": {"facing": "down"},
+        },
+        # Door to basement on the stairs
+        {
+            "name": "door_to_basement",
+            "type": "door",
+            "x": 360,
             "y": 40,
-            "w": 80,
+            "w": 120,
             "h": 40,
             "properties": {
-                "lines": "* (The basement. Not yet.)",
+                "targetRoom": "ruins_basement",
+                "targetSpawn": "from_house",
+            },
+        },
+        # Spawn returning from Pepe's room (east)
+        {
+            "name": "from_pepe",
+            "type": "spawn",
+            "point": True,
+            "x": 720,
+            "y": 280,
+            "properties": {"facing": "left"},
+        },
+        # Door east to Pepe's room
+        {
+            "name": "door_to_pepe",
+            "type": "door",
+            "x": 760,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_house_pepe",
+                "targetSpawn": "from_house",
             },
         },
         # Table / desk area - Laptop examine
@@ -2764,6 +2897,22 @@ def build_ruins_house():
                 "furLines": "* It's... still you. With ears.",
             },
         },
+        # Furiell NPC in the living room
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 340,
+            "y": 140,
+            "w": 64,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_down",
+                "showIf": "ruins.r12.walk == 0 && ruins.furiell.killed == 0",
+                "solid": True,
+                "cutscene": "r11_furiell",
+            },
+        },
     ]
 
     return make_tiled_map(
@@ -2779,8 +2928,534 @@ def build_ruins_house():
     )
 
 
+# =============================================================================
+# Room R11-B: Pepe's Room (ruins_house_pepe)
+# Size: 16x11 tiles (640x440 px).
+# Cozy bedroom with bed, bedside lamp, closet with fursuit head, and beanbag.
+# =============================================================================
+def build_ruins_house_pepe():
+    width = 16
+    height = 11
+
+    ground = [
+        "#[============]#",
+        "#{------------}#",
+        "#.,;..;,..;.,..#",
+        "#;.,..;,..;,..;#",
+        "#.,;.78888889.,#",
+        "#;.,.45555556;.#",
+        "..;,.45555556.,#",
+        "..;,.45555556;.#",
+        "#.,;,12222223.,#",
+        "#;.,..;.,..*.;.#",
+        "################",
+    ]
+
+    above = ["." * width] * height
+
+    collision = [
+        {"x": 0, "y": 0, "w": 640, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 400, "w": 640, "h": 40, "name": "bottom_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 440, "name": "right_wall"},
+        {"x": 0, "y": 0, "w": 40, "h": 240, "name": "left_wall_top"},
+        {"x": 0, "y": 320, "w": 40, "h": 120, "name": "left_wall_bottom"},
+        {"x": 480, "y": 250, "w": 60, "h": 50, "name": "col_beanbag"},
+    ]
+
+    objects = [
+        # West spawn from living room & default spawn
+        {
+            "name": "from_house",
+            "type": "spawn",
+            "point": True,
+            "x": 120,
+            "y": 280,
+            "properties": {"facing": "right"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 120,
+            "y": 280,
+            "properties": {"facing": "right"},
+        },
+        # Door west back to ruins_house
+        {
+            "name": "door_to_house",
+            "type": "door",
+            "x": 0,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_house",
+                "targetSpawn": "from_pepe",
+            },
+        },
+        # Bed (solid prop with nap cutscene)
+        {
+            "name": "bed",
+            "type": "prop",
+            "x": 120,
+            "y": 80,
+            "w": 80,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_bed.png",
+                "solid": True,
+                "cutscene": "r11_bed",
+            },
+        },
+        # Lamp (solid prop)
+        {
+            "name": "lamp",
+            "type": "prop",
+            "x": 220,
+            "y": 80,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_lamp.png",
+                "anim": "lit",
+                "solid": True,
+                "lines": "* A small bedside lamp. It casts a cozy glow.",
+            },
+        },
+        # Closet (solid prop with fursuit head cutscene)
+        {
+            "name": "closet",
+            "type": "prop",
+            "x": 360,
+            "y": 80,
+            "w": 60,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_closet.png",
+                "anim": "closed",
+                "altAnim": "open",
+                "altAnimIf": "ruins.fursuit_head.taken >= 1",
+                "solid": True,
+                "cutscene": "r11_closet",
+            },
+        },
+        # Beanbag examine
+        {
+            "name": "beanbag",
+            "type": "examine",
+            "x": 480,
+            "y": 240,
+            "w": 60,
+            "h": 60,
+            "properties": {
+                "lines": "* A beanbag. It has a Grub-shaped dent already. Suspicious.",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_house_pepe",
+        display_name="Ruins - Furiell's House",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
+# Room R12: Basement Corridor (ruins_basement)
+# Size: 16x38 tiles (640x1520 px).
+# Long, dark, narrow corridor leading north to the iron door and ruins exit.
+# =============================================================================
+def build_ruins_basement():
+    width = 16
+    height = 38
+
+    ground = [
+        "#####[====]#####",
+        "#####{-u--}#####",
+        "#####{-j--}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{...,}#####",
+        "#####{....}#####",
+        "#####{..c.}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{....}#####",
+        "#####{...,}#####",
+        "#####{....}#####",
+        "#####{..w.}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{....}#####",
+        "#####{...,}#####",
+        "#####{....}#####",
+        "#####{:...}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{....}#####",
+        "#####{...,}#####",
+        "#####{....}#####",
+        "#####{..c.}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{....}#####",
+        "#####{...,}#####",
+        "#####{....}#####",
+        "#####{.;..}#####",
+        "#####{....}#####",
+        "#####{....}#####",
+        "#####{....}#####",
+        "#####{-QWE}#####",
+        "#####{-ASD}#####",
+        "################",
+    ]
+
+    above = ["." * width] * height
+
+    collision = [
+        {"x": 0, "y": 0, "w": 240, "h": 1520, "name": "left_void_wall"},
+        {"x": 400, "y": 0, "w": 240, "h": 1520, "name": "right_void_wall"},
+        {"x": 240, "y": 0, "w": 40, "h": 80, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 40, "h": 80, "name": "top_wall_right"},
+        {"x": 240, "y": 1480, "w": 40, "h": 40, "name": "bottom_wall_left"},
+        {"x": 360, "y": 1480, "w": 40, "h": 40, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # South spawn (from house) & default spawn
+        {
+            "name": "from_house",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 1380,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 1380,
+            "properties": {"facing": "up"},
+        },
+        # South door back to ruins_house
+        {
+            "name": "door_to_house",
+            "type": "door",
+            "x": 280,
+            "y": 1440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_house",
+                "targetSpawn": "from_basement",
+            },
+        },
+        # North door forward to ruins_exit
+        {
+            "name": "door_to_exit",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_exit",
+                "targetSpawn": "from_basement",
+            },
+        },
+        # North spawn (returning from ruins_exit)
+        {
+            "name": "from_exit",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 120,
+            "properties": {"facing": "down"},
+        },
+        # Furiell NPC (visible only before fight is resolved)
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 288,
+            "y": 1240,
+            "w": 64,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_up",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+                "solid": False,
+            },
+        },
+        # Entry trigger for Furiell walk-ahead cutscene
+        {
+            "name": "trigger_r12_entry",
+            "type": "trigger",
+            "x": 240,
+            "y": 1340,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r12_entry",
+                "once": "ruins.r12.walk",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+            },
+        },
+        # North fight trigger before iron door
+        {
+            "name": "trigger_r12_boss",
+            "type": "trigger",
+            "x": 240,
+            "y": 240,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r12_boss",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_basement",
+        display_name="Ruins - Basement",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
+# Room R13: Ruins Exit (ruins_exit) - R10-C (T3)
+# Size: 16x18 tiles (640x720 px).
+# =============================================================================
+def ensure_aurora_glimpse_prop(repo_root):
+    prop_path = os.path.join(repo_root, "assets", "props", "ruins_aurora_glimpse.png")
+    if os.path.exists(prop_path):
+        return
+    try:
+        from PIL import Image, ImageDraw
+        w, h = 40, 40
+        im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(im)
+
+        # Sky background (dark blue #0A0F2C)
+        for y in range(h):
+            draw.line([(0, y), (w - 1, y)], fill=(10, 15, 44, 255))
+
+        # Aurora bands: #FF4FD8, #4FD8FF, #7CFF3A
+        for x in range(w):
+            y = int(6 + 2 * (x % 7) / 7.0)
+            draw.point((x, y), fill=(255, 79, 216, 230))
+            draw.point((x, y + 1), fill=(255, 79, 216, 255))
+
+        for x in range(w):
+            y = int(9 + 3 * ((x + 3) % 9) / 9.0)
+            draw.point((x, y), fill=(79, 216, 255, 230))
+            draw.point((x, y + 1), fill=(79, 216, 255, 255))
+
+        for x in range(w):
+            y = int(13 + 2 * ((x + 5) % 8) / 8.0)
+            draw.point((x, y), fill=(124, 255, 58, 230))
+            draw.point((x, y + 1), fill=(124, 255, 58, 255))
+
+        # Distant pine trees silhouette
+        trees = [(8, 24), (16, 22), (24, 25), (32, 23)]
+        for tx, ty in trees:
+            for dy in range(12):
+                span = dy // 2
+                for dx in range(-span, span + 1):
+                    if 0 <= tx + dx < w and ty + dy < h:
+                        draw.point((tx + dx, ty + dy), fill=(5, 8, 20, 255))
+
+        # Pale snow ground #E8F0FF (232, 240, 255)
+        for y in range(30, h):
+            draw.line([(0, y), (w - 1, y)], fill=(232, 240, 255, 255))
+        draw.line([(0, 30), (w - 1, 30)], fill=(200, 215, 240, 255))
+
+        # Iron door frame on the sides
+        for y in range(h):
+            draw.point((0, y), fill=(50, 50, 65, 255))
+            draw.point((1, y), fill=(65, 65, 80, 255))
+            draw.point((w - 2, y), fill=(65, 65, 80, 255))
+            draw.point((w - 1, y), fill=(50, 50, 65, 255))
+
+        os.makedirs(os.path.dirname(prop_path), exist_ok=True)
+        im.save(prop_path)
+    except Exception as e:
+        pass
+
+
+def build_ruins_exit():
+    width = 16
+    height = 12
+
+    ground = [
+        "################",
+        "###[==]  [==]###",
+        "###{-v}  {-k}###",
+        "###.;.7889.,.###",
+        "###.,.4556.;.###",
+        "###;.,4556.,.###",
+        "###.,*45z6.;.###",
+        "###;.,4556.w.###",
+        "###.,.4556.,.###",
+        "###;..1223.;.###",
+        "###___    ___###",
+        "######    ######",
+    ]
+
+    above = [
+        "................",
+        "................",
+        ".......LR.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 80, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 80, "name": "top_wall_right"},
+        {"x": 280, "y": 0, "w": 80, "h": 80, "name": "door_blocker"},
+        {"x": 0, "y": 0, "w": 120, "h": 480, "name": "left_void"},
+        {"x": 520, "y": 0, "w": 120, "h": 480, "name": "right_void"},
+        {"x": 0, "y": 400, "w": 280, "h": 80, "name": "bottom_wall_left"},
+        {"x": 360, "y": 400, "w": 280, "h": 80, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # South spawn (from Basement) & default spawn
+        {
+            "name": "from_basement",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        # Door south back to ruins_basement
+        {
+            "name": "door_to_basement",
+            "type": "door",
+            "x": 280,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_basement",
+                "targetSpawn": "from_exit",
+            },
+        },
+        # Aurora glimpse prop in the iron doorway
+        {
+            "name": "prop_aurora_glimpse",
+            "type": "prop",
+            "x": 280,
+            "y": 0,
+            "w": 80,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_aurora_glimpse.png",
+                "solid": True,
+            },
+        },
+        # Big iron door examine
+        {
+            "name": "examine_iron_door",
+            "type": "examine",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 60,
+            "properties": {
+                "lines": "* Cold air. A neon aurora flickers over a frozen forest.||* Far away, someone is asleep at a sentry station.||* (Snowdinha. The demo ends here. For now.)",
+            },
+        },
+        # Save point
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 180,
+            "y": 200,
+            "properties": {
+                "lines": "* The cold air and the faint smell of ozone fill you with DETERMINATION.",
+            },
+        },
+        # Floofy NPC (appears on entry for cutscene, hides afterwards)
+        {
+            "name": "floofy",
+            "type": "npc",
+            "x": 300,
+            "y": 220,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/sprites/ow/floofy.png",
+                "anim": "idle",
+                "showIf": "ruins.r13.floofy_pop == 1",
+                "solid": True,
+            },
+        },
+        # Entry trigger for Floofy cutscene
+        {
+            "name": "trigger_r13_floofy",
+            "type": "trigger",
+            "x": 120,
+            "y": 360,
+            "w": 400,
+            "h": 80,
+            "properties": {
+                "cutscene": "r13_floofy",
+                "once": "ruins.r13.floofy",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_exit",
+        display_name="Ruins - Exit",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+        save_place="* The cold air and the faint smell of ozone fill you with DETERMINATION.",
+    )
+
+
 def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    ensure_aurora_glimpse_prop(repo_root)
     maps_dir = os.path.join(repo_root, "data", "maps")
     os.makedirs(maps_dir, exist_ok=True)
 
@@ -2796,6 +3471,9 @@ def main():
         "ruins_barky.json": build_ruins_barky,
         "ruins_bakesale.json": build_ruins_bakesale,
         "ruins_house.json": build_ruins_house,
+        "ruins_house_pepe.json": build_ruins_house_pepe,
+        "ruins_basement.json": build_ruins_basement,
+        "ruins_exit.json": build_ruins_exit,
     }
 
     print("Building Ruins maps...")
@@ -2811,4 +3489,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "uwu~ that was a bop, pup! Even my fwiend's suit is smiling!",
+        "*wiggles and does a little dance* Peaceful vibes are the best vibes!"
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.dummy.result",
+      "value": 4
+    }
+  ]
+}

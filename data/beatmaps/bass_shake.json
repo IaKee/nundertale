@@ -1,0 +1,20 @@
+{
+  "track": "battle.bass_shake",
+  "bpm": 130,
+  "offset": 0.0,
+  "loopLength": 3.692,
+  "menuLoop": [1.846, 3.692],
+  "passesPerTurn": 3,
+  "turnEndsAt": 1.385,
+  "latencyMs": 0,
+  "shots": [
+    { "from": 0.0,   "to": 1.385, "shot": "closeup" },
+    { "from": 1.385, "to": 3.692, "shot": "wide" }
+  ],
+  "burst": {
+    "notes": [0.000, 0.115, 0.231, 0.346, 0.462, 0.692, 0.923, 1.038, 1.154, 1.269],
+    "bigNotes": [4, 5],
+    "kicks": [0.000, 0.462, 0.923]
+  },
+  "expressions": ["smug", "wink", "pout", "smirk"]
+}

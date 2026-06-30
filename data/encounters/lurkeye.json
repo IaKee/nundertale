@@ -1,0 +1,8 @@
+{
+  "id": "lurkeye",
+  "enemies": ["lurkeye"],
+  "introText": "* Lurkeye lurks in the shadows!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

@@ -2,10 +2,19 @@
 #include "scenes/DisclaimerScene.hpp"
 #include "scenes/OverworldScene.hpp"
 #include "scenes/BattleScene.hpp"
+#include "services/AudioService.hpp"
+#include "services/InputService.hpp"
 #include "services/MusicTracks.hpp"
+#ifdef NUNDERTALE_DEBUG
+#include "services/RecordingAudioService.hpp"
+#include "services/ScriptedInputService.hpp"
+#endif
 #include <algorithm>
+#include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <filesystem>
 
@@ -41,17 +50,52 @@ Game::Game(int argc, char** argv) {
             } catch (...) {
                 m_debugShotFrames = 20;
             }
+        } else if (argument == "--record" && index + 1 < argc) {
+            m_debugRecordDirectory = argv[++index];
+        } else if (argument == "--seconds" && index + 1 < argc) {
+            try {
+                m_debugRecordSeconds = std::max(0.0, std::stod(argv[++index]));
+            } catch (...) {
+                m_debugRecordSeconds = 30.0;
+            }
+        } else if (argument == "--input" && index + 1 < argc) {
+            m_debugInputPath = argv[++index];
         }
     }
+    m_debugRecordTickLimit = static_cast<int>(std::llround(
+        m_debugRecordSeconds * static_cast<double>(TARGET_FPS)));
 #else
     (void)argc;
     (void)argv;
 #endif
     initWindow();
 
+#ifdef NUNDERTALE_DEBUG
+    if (!m_debugRecordDirectory.empty()) {
+        std::error_code directoryError;
+        std::filesystem::create_directories(m_debugRecordDirectory, directoryError);
+        if (directoryError) {
+            throw std::runtime_error("Cannot create recording directory: " +
+                                     m_debugRecordDirectory);
+        }
+        SetRandomSeed(0U);
+        m_audioService = std::make_unique<RecordingAudioService>(m_debugRecordDirectory);
+    } else {
+        m_audioService = std::make_unique<AudioService>();
+    }
+#else
     m_audioService = std::make_unique<AudioService>();
+#endif
     m_resourceService = std::make_unique<ResourceService>();
+#ifdef NUNDERTALE_DEBUG
+    if (!m_debugInputPath.empty()) {
+        m_inputService = std::make_unique<ScriptedInputService>(m_debugInputPath);
+    } else {
+        m_inputService = std::make_unique<InputService>();
+    }
+#else
     m_inputService = std::make_unique<InputService>();
+#endif
     m_saveService = std::make_unique<SaveService>();
     m_sceneManager = std::make_unique<SceneManager>();
 
@@ -106,16 +150,25 @@ Game::~Game() {
 }
 
 void Game::initWindow() {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    unsigned int windowFlags = FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT;
 #ifdef NUNDERTALE_DEBUG
-    const int initialWidth = m_debugShotPath.empty() ? WINDOW_WIDTH : VIRTUAL_WIDTH;
-    const int initialHeight = m_debugShotPath.empty() ? WINDOW_HEIGHT : VIRTUAL_HEIGHT;
+    if (!m_debugRecordDirectory.empty()) windowFlags = FLAG_WINDOW_RESIZABLE;
+#endif
+    SetConfigFlags(windowFlags);
+#ifdef NUNDERTALE_DEBUG
+    const bool useVirtualWindow = !m_debugShotPath.empty() || !m_debugRecordDirectory.empty();
+    const int initialWidth = useVirtualWindow ? VIRTUAL_WIDTH : WINDOW_WIDTH;
+    const int initialHeight = useVirtualWindow ? VIRTUAL_HEIGHT : WINDOW_HEIGHT;
     InitWindow(initialWidth, initialHeight, WINDOW_TITLE);
 #else
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 #endif
     SetWindowMinSize(640, 480);
+#ifdef NUNDERTALE_DEBUG
+    SetTargetFPS(m_debugRecordDirectory.empty() ? TARGET_FPS : 0);
+#else
     SetTargetFPS(TARGET_FPS); // 30 FPS Undertale standard (CORE-001)
+#endif
 
     // Window icon
     if (FileExists("assets/img/icon.png")) {
@@ -129,13 +182,19 @@ void Game::run() {
     float accumulator = 0.0f;
     float escQuitTimer = 0.0f;
 
+#ifdef NUNDERTALE_DEBUG
+    if (!m_debugRecordDirectory.empty() && m_debugRecordTickLimit <= 0) return;
+    const bool recording = !m_debugRecordDirectory.empty();
+    const bool ignorePhysicalInput = recording || !m_debugInputPath.empty();
+#endif
+
     // CORE-007: Apply user settings from %LOCALAPPDATA%/nUndertale/config.json
     UserConfig config = m_saveService->getConfig();
     m_audioService->setMusicVolume(config.musicVolume);
     m_audioService->setMasterVolume(config.masterVolume);
     bool allowConfiguredFullscreen = true;
 #ifdef NUNDERTALE_DEBUG
-    allowConfiguredFullscreen = m_debugShotPath.empty();
+    allowConfiguredFullscreen = m_debugShotPath.empty() && m_debugRecordDirectory.empty();
 #endif
     if (allowConfiguredFullscreen && config.fullscreen && !IsWindowFullscreen()) {
         ToggleFullscreen();
@@ -144,17 +203,34 @@ void Game::run() {
     while (!WindowShouldClose() && m_context->isRunning && m_sceneManager->hasScenes()) {
         float frameDt = GetFrameTime();
         if (frameDt > 0.2f) frameDt = 0.2f; // prevent spiral of death
+#ifdef NUNDERTALE_DEBUG
+        if (recording) {
+            frameDt = LOGIC_TIMESTEP;
+            accumulator = LOGIC_TIMESTEP;
+        } else {
+            accumulator += frameDt;
+        }
+#else
         accumulator += frameDt;
+#endif
 
         // F4 toggle fullscreen (CORE-005)
+#ifdef NUNDERTALE_DEBUG
+        if (!ignorePhysicalInput && IsKeyPressed(KEY_F4)) {
+#else
         if (IsKeyPressed(KEY_F4)) {
+#endif
             ToggleFullscreen();
             config.fullscreen = IsWindowFullscreen();
             m_saveService->saveConfig(config);
         }
 
         // Hold ESC for 1 second to quit (CORE-006, BUG-14)
+#ifdef NUNDERTALE_DEBUG
+        if (!ignorePhysicalInput && IsKeyDown(KEY_ESCAPE)) {
+#else
         if (IsKeyDown(KEY_ESCAPE)) {
+#endif
             escQuitTimer += frameDt;
             if (escQuitTimer >= 1.0f) {
                 m_context->isRunning = false;
@@ -166,10 +242,10 @@ void Game::run() {
 
 #ifdef NUNDERTALE_DEBUG
         static bool s_showDebugOverlay = false;
-        if (IsKeyPressed(KEY_F1)) {
+        if (!ignorePhysicalInput && IsKeyPressed(KEY_F1)) {
             s_showDebugOverlay = !s_showDebugOverlay;
         }
-        if (IsKeyPressed(KEY_F2)) {
+        if (!ignorePhysicalInput && IsKeyPressed(KEY_F2)) {
             m_context->debugHitboxes = !m_context->debugHitboxes;
         }
 #endif
@@ -182,7 +258,11 @@ void Game::run() {
         while (accumulator >= LOGIC_TIMESTEP) {
             m_context->state.playTime += LOGIC_TIMESTEP;
             raidTick(m_context->state.raid, LOGIC_TIMESTEP,
+#ifdef NUNDERTALE_DEBUG
+                     (!recording && !IsWindowFocused()) || m_context->raidPaused);
+#else
                      !IsWindowFocused() || m_context->raidPaused);
+#endif
 
             // GFX-006: Update screen shake
             if (m_context->shakeTimer > 0.0f) {
@@ -247,6 +327,20 @@ void Game::run() {
 #endif
         EndTextureMode();
 
+#ifdef NUNDERTALE_DEBUG
+        if (recording) {
+            std::ostringstream frameName;
+            frameName << "frame_" << std::setfill('0') << std::setw(5)
+                      << (m_debugTicks - 1) << ".png";
+            const std::filesystem::path framePath =
+                std::filesystem::path(m_debugRecordDirectory) / frameName.str();
+            Image frame = LoadImageFromTexture(m_virtualTarget.texture);
+            ImageFlipVertical(&frame);
+            ExportImage(frame, framePath.string().c_str());
+            UnloadImage(frame);
+        }
+#endif
+
         // 4. Draw virtual canvas scaled & letterboxed into window
         BeginDrawing();
             ClearBackground(BLACK);
@@ -254,6 +348,9 @@ void Game::run() {
         EndDrawing();
 
 #ifdef NUNDERTALE_DEBUG
+        if (recording && m_debugTicks >= m_debugRecordTickLimit) {
+            m_context->isRunning = false;
+        }
         if (!m_debugShotPath.empty() && m_debugTicks >= m_debugShotFrames) {
             const std::filesystem::path shotPath(m_debugShotPath);
             std::error_code directoryError;

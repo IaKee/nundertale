@@ -694,15 +694,122 @@
               "value": true
             },
             {
-              "name": "lines",
+              "name": "cutscene",
               "type": "string",
-              "value": "* \"All proceeds go to spider artists. Slots open. ETA: yes.\""
+              "value": "r10_shop"
             }
           ]
         },
         {
           "height": 40,
           "id": 20,
+          "name": "napstablurk",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 620,
+          "y": 240,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_napstablurk"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.napstablurk.state == 1 || ruins.napstablurk.state == 2"
+            }
+          ]
+        },
+        {
+          "height": 140,
+          "id": 21,
+          "name": "trigger_napstablurk",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 560,
+          "y": 180,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_napstablurk_spared"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.napstablurk.spared_cutscene"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "battle.napstablurk.spared >= 1 && ruins.napstablurk.state == 0"
+            }
+          ]
+        },
+        {
+          "height": 140,
+          "id": 22,
+          "name": "trigger_napstablurk_killed",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 560,
+          "y": 180,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_napstablurk_killed"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.napstablurk.killed_cutscene"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "battle.napstablurk.killed >= 1 && ruins.napstablurk.state == 0"
+            }
+          ]
+        },
+        {
+          "height": 140,
+          "id": 23,
+          "name": "trigger_napstablurk_fled",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 560,
+          "y": 180,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r10_napstablurk_fled"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.napstablurk.fled_cutscene"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.napstablurk.met >= 1 && battle.napstablurk.spared == 0 && battle.napstablurk.killed == 0 && ruins.napstablurk.state == 0"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 24,
           "name": "door_to_house",
           "rotation": 0,
           "type": "door",
@@ -992,7 +1099,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 21,
+  "nextobjectid": 25,
   "orientation": "orthogonal",
   "properties": [
     {
@@ -1013,7 +1120,7 @@
     {
       "name": "encounters",
       "type": "string",
-      "value": "froggsona:2,shysona:1,modsmal:1"
+      "value": "lurkeye:1,reply_guy:1,grasstoid:1"
     },
     {
       "name": "encounterBudget",

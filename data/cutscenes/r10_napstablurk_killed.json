@@ -1,0 +1,9 @@
+{
+  "steps": [
+    {
+      "type": "setFlag",
+      "key": "ruins.napstablurk.state",
+      "value": 2
+    }
+  ]
+}

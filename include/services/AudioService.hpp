@@ -22,6 +22,8 @@ public:
     void pauseMusic() override;
     void resumeMusic() override;
     void updateMusic() override;
+    float musicTime() const override;
+    void seekMusic(float seconds) override;
     void setMusicVolume(float volume) override;
     void fadeOutMusic(float seconds) override;
     void fadeInMusic(const std::string& path, float seconds, bool loop = true) override;

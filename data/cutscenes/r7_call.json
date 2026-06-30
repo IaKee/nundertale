@@ -2,7 +2,7 @@
   "steps": [
     {
       "type": "sound",
-      "path": "assets/sfx/menu_select.wav",
+      "path": "assets/sfx/phone_ring.ogg",
       "volume": 0.8
     },
     {
@@ -11,7 +11,7 @@
     },
     {
       "type": "sound",
-      "path": "assets/sfx/menu_select.wav",
+      "path": "assets/sfx/notify.ogg",
       "volume": 0.8
     },
     {

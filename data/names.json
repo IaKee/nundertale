@@ -7,18 +7,25 @@
     "effect": "gold"
   },
   {
-    "names": ["PEPE"],
+    "names": ["GRUB"],
     "tag": "[THE PROTAGONIST]",
     "message": "Feels good man. Ready to climb down Mt. Dew.",
     "allowed": true,
     "effect": "frog_soul"
   },
   {
-    "names": ["FROG"],
+    "names": ["GOBLIN", "FROG"],
     "tag": "[RIBBIT]",
     "message": "Feels froggy man.",
     "allowed": true,
     "effect": "frog_soul"
+  },
+  {
+    "names": ["PEPE"],
+    "tag": "",
+    "message": "* Not that frog.",
+    "allowed": true,
+    "effect": "none"
   },
   {
     "names": ["SKYRIM"],

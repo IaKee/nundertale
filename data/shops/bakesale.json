@@ -1,0 +1,18 @@
+{
+  "id": "bakesale",
+  "name": "Commission Bake Sale",
+  "greeting": "* Welcome to the Commission Bake Sale.\n* There is no one here. There is a jar.",
+  "items": [
+    {"item": "Commissioned Donut", "price": 7},
+    {"item": "Commissioned Cider", "price": 18}
+  ],
+  "talk": [
+    {"label": "About the sale", "lines": ["* \"All proceeds go to spider artists. Slots open. ETA: yes.\""]},
+    {"label": "Who runs this?", "lines": ["* A note: \"we are very busy. please commission us.\"", "* It has eight signatures."]}
+  ],
+  "sellRefusal": "* The jar does not buy things. It only receives.",
+  "buyText": "* You put the gold in the jar.\n* Something under the table says \"ty!!\"",
+  "noGold": "* You don't have enough G.",
+  "fullText": "* You're carrying too much.",
+  "exitText": "* The jar watches you leave."
+}

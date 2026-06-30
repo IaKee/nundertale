@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <filesystem>
+#include <cstdlib>
 #include "combat/Bullet.hpp"
 #include "combat/DamageZone.hpp"
 #include "combat/Enemy.hpp"
@@ -14,6 +16,8 @@
 #include "combat/ResidualDamage.hpp"
 #include "combat/AttackTarget.hpp"
 #include "combat/BarkyPatterns.hpp"
+#include "combat/BeatMap.hpp"
+#include "combat/FuriellMechanics.hpp"
 #include "ui/DialogBox.hpp"
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
@@ -41,8 +45,12 @@
 #include "core/TiledMap.hpp"
 #include "core/RoomObjects.hpp"
 #include "core/RandomEncounters.hpp"
+#include "core/ToxicTrack.hpp"
 #include "core/Camera2DFollow.hpp"
 #include "scenes/LoreScroll.hpp"
+#include "scenes/ShopModel.hpp"
+#include "scenes/OverworldScene.hpp"
+#include "services/SaveService.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -51,6 +59,7 @@ extern "C" int GetRandomValue(int minValue, int /*maxValue*/) { return minValue;
 // validate.bat builds this single translation unit; include the production loader so
 // the data-file tests below exercise Enemy::loadFromJson instead of a test-only parser.
 #include "../src/combat/Enemy.cpp"
+#include "../src/services/SaveService.cpp"
 
 
 // Test damage formula from FGT-003
@@ -924,16 +933,25 @@ int main() {
         assert(rChadUpper.effect == NameEffect::Gold);
         assert(rChadUpper.allowed);
 
-        // PEPE & FROG: FrogSoul
-        auto rPepe = reactionFor("Pepe");
-        assert(rPepe.effect == NameEffect::FrogSoul);
-        assert(rPepe.allowed);
-        assert(rPepe.tag == "[THE PROTAGONIST]");
+        // GRUB & GOBLIN: FrogSoul, PEPE: "* Not that frog."
+        auto rGrub = reactionFor("Grub");
+        assert(rGrub.effect == NameEffect::FrogSoul);
+        assert(rGrub.allowed);
+        assert(rGrub.tag == "[THE PROTAGONIST]");
+
+        auto rGoblin = reactionFor("goblin");
+        assert(rGoblin.effect == NameEffect::FrogSoul);
+        assert(rGoblin.allowed);
+        assert(rGoblin.tag == "[RIBBIT]");
 
         auto rFrog = reactionFor("frog");
         assert(rFrog.effect == NameEffect::FrogSoul);
         assert(rFrog.allowed);
         assert(rFrog.tag == "[RIBBIT]");
+
+        auto rPepe = reactionFor("Pepe");
+        assert(rPepe.message == "* Not that frog.");
+        assert(rPepe.allowed);
 
         // SKYRIM: Skyrim
         auto rSkyrim = reactionFor("skyrim");
@@ -1338,10 +1356,10 @@ int main() {
 
         // withName with two tokens
         std::string twoTokens = "Don't give up, [NAME]! I believe in you, [NAME].";
-        assert(withName(twoTokens, "PEPE") == "Don't give up, PEPE! I believe in you, PEPE.");
+        assert(withName(twoTokens, "GRUB") == "Don't give up, GRUB! I believe in you, GRUB.");
 
         // withName with zero and one token
-        assert(withName("No token here.", "PEPE") == "No token here.");
+        assert(withName("No token here.", "GRUB") == "No token here.");
         assert(withName("One [NAME] here.", "FROG") == "One FROG here.");
 
         // asgrrLines() returns the 6 canonical lines
@@ -1355,37 +1373,37 @@ int main() {
         assert(lines[5] == "Your SOUL said no, [NAME]. ...This time.");
 
         // furryOverLines: toxic -> empty
-        auto toxicLines = furryOverLines("PEPE", "barky", 0, true, 2);
+        auto toxicLines = furryOverLines("GRUB", "barky", 0, true, 2);
         assert(toxicLines.empty());
-        auto toxicNoEnemy = furryOverLines("PEPE", "", 5, true, 0);
+        auto toxicNoEnemy = furryOverLines("GRUB", "", 5, true, 0);
         assert(toxicNoEnemy.empty());
 
-        // pick 2 + name "PEPE" -> This is not the end, PEPE. It is a... rebrand.
-        auto pick2 = furryOverLines("PEPE", "", 0, false, 2);
+        // pick 2 + name "GRUB" -> This is not the end, GRUB. It is a... rebrand.
+        auto pick2 = furryOverLines("GRUB", "", 0, false, 2);
         assert(pick2.size() == 1);
-        assert(pick2[0] == "This is not the end, PEPE. It is a... rebrand.");
+        assert(pick2[0] == "This is not the end, GRUB. It is a... rebrand.");
 
         // enemy barky -> 2 lines, 2nd is the Barky line
-        auto barkyLines = furryOverLines("PEPE", "barky", 0, false, 2);
+        auto barkyLines = furryOverLines("GRUB", "barky", 0, false, 2);
         assert(barkyLines.size() == 2);
-        assert(barkyLines[0] == "This is not the end, PEPE. It is a... rebrand.");
+        assert(barkyLines[0] == "This is not the end, GRUB. It is a... rebrand.");
         assert(barkyLines[1] == "...welcome to the pack? no? ok.");
 
-        // timesTransformed 3 -> ...Again? Keep the tail, PEPE.
-        auto trans3 = furryOverLines("PEPE", "", 3, false, 2);
+        // timesTransformed 3 -> ...Again? Keep the tail, GRUB.
+        auto trans3 = furryOverLines("GRUB", "", 3, false, 2);
         assert(trans3.size() == 1);
-        assert(trans3[0] == "...Again? Keep the tail, PEPE.");
+        assert(trans3[0] == "...Again? Keep the tail, GRUB.");
 
         // timesTransformed > 3 preserves the line and still appends barky line if enemy is barky
-        auto trans4Barky = furryOverLines("PEPE", "barky", 4, false, 0);
+        auto trans4Barky = furryOverLines("GRUB", "barky", 4, false, 0);
         assert(trans4Barky.size() == 2);
-        assert(trans4Barky[0] == "...Again? Keep the tail, PEPE.");
+        assert(trans4Barky[0] == "...Again? Keep the tail, GRUB.");
         assert(trans4Barky[1] == "...welcome to the pack? no? ok.");
 
         // pick 8 -> index 2 (8 % 6 = 2)
-        auto pick8 = furryOverLines("PEPE", "", 0, false, 8);
+        auto pick8 = furryOverLines("GRUB", "", 0, false, 8);
         assert(pick8.size() == 1);
-        assert(pick8[0] == "This is not the end, PEPE. It is a... rebrand.");
+        assert(pick8[0] == "This is not the end, GRUB. It is a... rebrand.");
 
         // picks 0, 1, 3, 4, 5 coverage
         assert(furryOverLines("CHAD", "", 0, false, 0)[0] == "Don't lose hope, CHAD... The ears suit you, honestly.");
@@ -2638,7 +2656,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house", "ruins_house_pepe", "ruins_basement", "ruins_exit"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {
@@ -2674,7 +2692,7 @@ int main() {
         // Valid JSON passes
         LintFinding finding;
         const std::string validJson = R"json({
-            "name": "Pepe",
+            "name": "Grub",
             "hp": 20,
             "speed": 120.5,
             "negative": -42,
@@ -2979,7 +2997,7 @@ int main() {
             { "froggsona", "* FROGGSONA - ATK 4 DEF 2\n* A frog fursona. Every sentence ends in \":3\".", 4 },
             { "shysona", "* SHYSONA - ATK 5 DEF 0\n* A brand-new fursona. Apologizes for existing. And for its commissions.", 4 },
             { "modsmal", "* MODSMAL - ATK 1 DEF 0\n* A gelatinous moderator of the NSFW channel. Wobbles. Enforces. Sometimes.", 3 },
-            { "fursuit_dummy", "* FURSUIT DUMMY - ATK 0 DEF -5\n* A mannequin wearing a fursuit head. Smells like the previous owner.", 3 }
+            { "fursuit_dummy", "* FURSUIT DUMMY - ATK 0 DEF -5\n* A friend's spare fursuit on a coat rack. The friend wants it back.", 5 }
         };
         for (const ExpectedEnemy& item : expected) {
             const std::unique_ptr<Enemy> enemy = Enemy::loadFromJson(
@@ -3238,6 +3256,860 @@ int main() {
         std::cout << "[PASS] R9-A: fade steps block and alpha ramp clamps exactly." << std::endl;
     }
 
-    std::cout << "\nAll 55 test suites passed successfully!" << std::endl;
+    // Suite 56: R10-A Furiell's fight (C1-022) and merciful bullets (BHL-020)
+    {
+        using namespace nundertale;
+        const std::unique_ptr<Enemy> furiell = Enemy::loadFromJson("data/enemies/furiell.json");
+        assert(furiell->getId() == "furiell" && furiell->getName() == "Furiell");
+        assert(furiell->getMaxHp() == 250 && furiell->getAtk() == 6 && furiell->getDef() == 1);
+        assert(furiell->getExp() == 150 && furiell->getGold() == 0);
+        assert(furiell->getSpareLines().size() == 13);
+        assert(furiell->getSpareLines().front() == "...");
+        assert(furiell->getSpareLines().back() == "...No. You'd be unhappy down here. Even with the fursuit head.");
+        assert(furiell->getSpareFlag() == "ruins.furiell.spared");
+        assert(furiell->getKillFlag() == "ruins.furiell.killed");
+        assert(furiell->getDeathLines().size() == 2);
+        assert(!furiell->getSpareOutro().empty());
+        assert(furiell->hasMercifulBullets());
+        assert(furiell->getPatterns().size() == 3);
+        assert(furiell->getPatterns()[2].kind == EnemyPatternKind::Ring);
+        assert(furiell->getPatternFur("fluff_balls", 0) == 6);
+        assert(furiell->getPatternFur("glitter_hands", 0) == 6);
+        assert(furiell->getPatternFur("hug_ring", 0) == 10);
+
+        bool hugFound = false;
+        for (const ActDef& act : furiell->getActs()) {
+            if (act.id != "accept_hug") continue;
+            hugFound = true;
+            assert(act.spareNow && act.fur == 30 && act.setFlag == "ruins.furiell.hugged");
+        }
+        assert(hugFound);
+
+        // 13 Spares show the 13 lines in order; she turns spareable on the 13th; the 14th spares her
+        std::size_t shown = 0;
+        bool spareable = false;
+        for (std::size_t press = 0; press < 13; ++press) {
+            const RepeatedSpareOutcome outcome = advanceRepeatedSpare(shown, 13, spareable);
+            assert(outcome.showLine && !outcome.spared && outcome.lineIndex == press);
+            shown = outcome.linesShown;
+            spareable = outcome.nowSpareable;
+            assert(spareable == (press == 12));
+        }
+        const RepeatedSpareOutcome last = advanceRepeatedSpare(shown, 13, spareable);
+        assert(last.spared && !last.showLine);
+
+        // BHL-020: no damage at HP <= 4, normal damage from HP 5; non-merciful enemies always hit
+        assert(!mercifulBulletCanDamage(true, 4));
+        assert(!mercifulBulletCanDamage(true, 1));
+        assert(mercifulBulletCanDamage(true, 5));
+        assert(mercifulBulletCanDamage(false, 1));
+        const Vector2 soul{ 100.0f, 100.0f };
+        assert(mercifulBulletWithinSteerRange({ 110.0f, 100.0f }, soul, 28.0f));
+        assert(!mercifulBulletWithinSteerRange({ 140.0f, 100.0f }, soul, 28.0f));
+        const Vector2 away = mercifulBulletVelocityAway({ 110.0f, 100.0f }, soul, { -60.0f, 0.0f });
+        assert(away.x >= 90.0f && std::fabs(away.y) < 0.001f);
+
+        std::ifstream encounterFile("data/encounters/furiell.json");
+        assert(encounterFile.is_open());
+        std::stringstream encounterJson;
+        encounterJson << encounterFile.rdbuf();
+        assert(validateJson(encounterJson.str()));
+        assert(encounterJson.str().find("\"black\"") != std::string::npos);
+        std::cout << "[PASS] R10-A: Furiell data, 13-line spare, hug and merciful bullets verified." << std::endl;
+    }
+
+    // Suite 57: BSK-T2 beat-map parsing, scheduling, clock wrap, shots, and Beat pattern data
+    {
+        using namespace nundertale;
+
+        BeatMap map;
+        assert(loadBeatMap("data/beatmaps/bass_shake.json", map));
+        assert(map.track == "battle.bass_shake");
+        assert(map.notes.size() == 10U && map.shots.size() == 2U);
+        assert(map.bigNotes.size() == 2U && map.kicks.size() == 3U);
+        assert(map.expressions.size() == 4U);
+        assert(!parseBeatMap("{", map));
+
+        for (int pass = 0; pass < map.passesPerTurn; ++pass) {
+            const float downbeat = static_cast<float>(pass) * map.loopLength;
+            const std::vector<BeatEvent> closeup =
+                beatEventsBetween(map, downbeat - 0.001f, downbeat + map.turnEndsAt);
+            assert(closeup.size() == 10U);
+            const std::vector<BeatEvent> wide = beatEventsBetween(
+                map, downbeat + map.turnEndsAt, downbeat + map.loopLength - 0.0001f);
+            assert(wide.empty());
+        }
+
+        const float duration = beatTurnDuration(map);
+        assert(std::fabs(duration - 8.769f) <= 0.001f);
+        assert(!beatTurnFinished(map, duration - 0.001f));
+        assert(beatTurnFinished(map, duration));
+        const std::vector<BeatEvent> fullTurn = beatEventsBetween(map, -0.001f, duration);
+        assert(fullTurn.size() == 30U);
+
+        int bigCount = 0;
+        int kickCount = 0;
+        for (const BeatEvent& event : fullTurn) {
+            if (event.big) {
+                ++bigCount;
+                assert(event.noteIndex == 4 || event.noteIndex == 5);
+            }
+            if (event.kick) {
+                ++kickCount;
+                assert(event.noteIndex == 0 || event.noteIndex == 4 || event.noteIndex == 6);
+            }
+        }
+        assert(bigCount == 6 && kickCount == 9);
+
+        const auto verifyFrameSplit = [&map, duration](float dt) {
+            bool seen[3][10]{};
+            int count = 0;
+            float previous = -0.001f;
+            while (previous < duration) {
+                const float now = std::min(duration, previous + dt);
+                for (const BeatEvent& event : beatEventsBetween(map, previous, now)) {
+                    assert(event.pass >= 0 && event.pass < 3);
+                    assert(event.noteIndex >= 0 && event.noteIndex < 10);
+                    assert(!seen[event.pass][event.noteIndex]);
+                    seen[event.pass][event.noteIndex] = true;
+                    ++count;
+                }
+                previous = now;
+            }
+            assert(count == 30);
+        };
+        verifyFrameSplit(1.0f / 60.0f);
+        verifyFrameSplit(1.0f / 30.0f);
+        verifyFrameSplit(0.25f);
+
+        BeatTurnClock clock;
+        assert(std::fabs(clock.advance(map, 0.0f)) < 0.0001f);
+        assert(std::fabs(clock.advance(map, 3.680f) - 3.680f) < 0.0001f);
+        assert(std::fabs(clock.advance(map, 0.020f) - 3.712f) < 0.0001f);
+        assert(clock.pass == 1);
+        const std::vector<BeatEvent> toWrap = beatEventsBetween(map, 3.680f, 3.692f);
+        const std::vector<BeatEvent> fromWrap = beatEventsBetween(map, 3.692f, 3.712f);
+        assert(toWrap.size() == 1U && toWrap[0].pass == 1 && toWrap[0].noteIndex == 0);
+        assert(fromWrap.empty());
+
+        assert(beatShotAt(map, 0.0f) == "closeup");
+        assert(beatShotAt(map, 1.384f) == "closeup");
+        assert(beatShotAt(map, 1.386f) == "wide");
+        assert(beatShotAt(map, 3.691f) == "wide");
+        assert(beatShotAt(map, 3.693f) == "closeup");
+        assert(beatExpressionIndex(map, 1, 2) == 3U);
+
+        assert(enemyPatternKindFromString("beat") == EnemyPatternKind::Beat);
+        tiled_detail::JsonValue patternJson;
+        assert(tiled_detail::JsonParser(
+            R"json({"id":"bass_fluff_fast","kind":"beat","params":{"beatmap":"bass_shake","speed":110,"damage":1,"furry":2}})json")
+                   .parse(patternJson));
+        const EnemyPatternDef pattern = parsePattern(patternJson);
+        assert(pattern.kind == EnemyPatternKind::Beat && pattern.beatmap == "bass_shake");
+        assert(pattern.speed == 110.0f && pattern.damage == 1 && pattern.furry == 2);
+
+        std::cout << "[PASS] BSK-T2: beat map, frame-safe events, wrap clock, shots, and Beat pattern verified."
+                  << std::endl;
+    }
+
+    // Suite 58: ACT-009 per-use ACT text (useTexts/useResponses win over text/repeatText; last entry repeats)
+    {
+        nundertale::ActDef act;
+        act.text = "* first";
+        act.repeatText = "* again";
+        act.response = "a";
+        assert(nundertale::actTextForUse(act, 1) == "* first" && nundertale::actTextForUse(act, 3) == "* again");
+        act.useTexts = { "* one", "* two", "* three" };
+        act.useResponses = { "r1", "r2" };
+        assert(nundertale::actTextForUse(act, 1) == "* one" && nundertale::actTextForUse(act, 2) == "* two");
+        assert(nundertale::actTextForUse(act, 3) == "* three" && nundertale::actTextForUse(act, 9) == "* three");
+        assert(nundertale::actResponseForUse(act, 0) == "r1" && nundertale::actResponseForUse(act, 2) == "r2" && nundertale::actResponseForUse(act, 5) == "r2");
+
+        auto dummy = nundertale::Enemy::loadFromJson("data/enemies/fursuit_dummy.json");
+        assert(dummy != nullptr);
+        bool foundShake = false;
+        for (const nundertale::ActDef& candidate : dummy->getActs()) {
+            if (candidate.id != "shake") continue;
+            foundShake = true;
+            assert(candidate.useTexts.size() == 3 && candidate.useResponses.size() == 3);
+            assert(nundertale::actResponseForUse(candidate, 3) == "uwu~ pump the bass, pup!");
+            assert(nundertale::actResponseForUse(candidate, 2) != nundertale::actResponseForUse(candidate, 3));
+        }
+        assert(foundShake);
+        std::cout << "[PASS] ACT-009: per-use ACT text and the Bass Shake x3 lines verified." << std::endl;
+    }
+
+    // Suite 59: R10-D — Lurkeye, Reply Guy, Grasstoid LORE stats, ACT effects, heal pattern, and negative FUR
+    {
+        // 1. Lurkeye
+        auto lurkeye = nundertale::Enemy::loadFromJson("data/enemies/lurkeye.json");
+        assert(lurkeye != nullptr);
+        assert(lurkeye->getName() == "Lurkeye");
+        assert(lurkeye->getId() == "lurkeye");
+        assert(lurkeye->getSprite() == "lurkeye");
+        assert(lurkeye->getHp() == 50 && lurkeye->getMaxHp() == 50);
+        assert(lurkeye->getAtk() == 6 && lurkeye->getDef() == 4);
+        assert(lurkeye->getExp() == 5 && lurkeye->getGold() == 5);
+        assert(lurkeye->getCheckFlavor() == "Has watched the 18+ channel since 2016. Has never typed. Not once.");
+        assert(lurkeye->getCheckText().find("LURKEYE - ATK 6 DEF 4") != std::string::npos);
+
+        bool foundDontPickOn = false;
+        bool foundPickOn = false;
+        for (const auto& act : lurkeye->getActs()) {
+            if (act.id == "dont_pick_on") {
+                foundDontPickOn = true;
+                assert(act.spareable);
+            } else if (act.id == "pick_on") {
+                foundPickOn = true;
+                assert(act.spareable);
+                assert(act.atkDelta == 2);
+                assert(act.atkDeltaOnce);
+            }
+        }
+        assert(foundDontPickOn && foundPickOn);
+        assert(lurkeye->getPatterns().size() == 1);
+        assert(lurkeye->getPatterns()[0].id == "seen_rings");
+        assert(lurkeye->getPatterns()[0].kind == nundertale::EnemyPatternKind::Ring);
+        assert(lurkeye->getPatterns()[0].furry == 2);
+        assert(lurkeye->getSpareText() == "...");
+        assert(lurkeye->getDeathText() == "* Lurkeye closes the tab and vanishes.");
+
+        // 2. Reply Guy
+        auto replyGuy = nundertale::Enemy::loadFromJson("data/enemies/reply_guy.json");
+        assert(replyGuy != nullptr);
+        assert(replyGuy->getName() == "Reply Guy");
+        assert(replyGuy->getId() == "reply_guy");
+        assert(replyGuy->getSprite() == "reply_guy");
+        assert(replyGuy->getHp() == 40 && replyGuy->getMaxHp() == 40);
+        assert(replyGuy->getAtk() == 6 && replyGuy->getDef() == 4);
+        assert(replyGuy->getExp() == 5 && replyGuy->getGold() == 3);
+        assert(replyGuy->getCheckFlavor() == "Has a correction about your fursona's species.");
+
+        bool foundTalk = false;
+        for (const auto& act : replyGuy->getActs()) {
+            if (act.id == "talk") {
+                foundTalk = true;
+                assert(act.spareable);
+                assert(act.response == "...yeah, it's a wolf, man.");
+            }
+        }
+        assert(foundTalk);
+        assert(replyGuy->getPatterns().size() == 1);
+        assert(replyGuy->getPatterns()[0].id == "well_actually");
+        assert(replyGuy->getPatterns()[0].text == "Well, actually");
+        assert(replyGuy->getPatterns()[0].kind == nundertale::EnemyPatternKind::Rain);
+        assert(replyGuy->getPatterns()[0].furry == 2);
+
+        // 3. Grasstoid
+        auto grasstoid = nundertale::Enemy::loadFromJson("data/enemies/grasstoid.json");
+        assert(grasstoid != nullptr);
+        assert(grasstoid->getName() == "Grasstoid");
+        assert(grasstoid->getId() == "grasstoid");
+        assert(grasstoid->getSprite() == "grasstoid");
+        assert(grasstoid->getHp() == 72 && grasstoid->getMaxHp() == 72);
+        assert(grasstoid->getAtk() == 6 && grasstoid->getDef() == 6);
+        assert(grasstoid->getExp() == 6 && grasstoid->getGold() == 4);
+        assert(grasstoid->getCheckFlavor() == "A living patch of grass. Nobody down here has touched it. Ever.");
+
+        bool foundTouch = false;
+        bool foundDinner = false;
+        for (const auto& act : grasstoid->getActs()) {
+            if (act.id == "touch") {
+                foundTouch = true;
+                assert(act.spareable);
+                assert(act.fur == -10);
+            } else if (act.id == "dinner") {
+                foundDinner = true;
+                assert(act.healNextAttack);
+            }
+        }
+        assert(foundTouch && foundDinner);
+        assert(grasstoid->getPatterns().size() == 1);
+        assert(grasstoid->getPatterns()[0].id == "grass_blades");
+        assert(grasstoid->getPatterns()[0].kind == nundertale::EnemyPatternKind::Rain);
+        assert(grasstoid->getPatterns()[0].furry == 2);
+        assert(grasstoid->getPatterns()[0].heal == 2);
+
+        // 4. Negative FUR mechanics: Touch reduces FUR by 10 and clamps at 0
+        int furVal = 25;
+        int stageMax = 1;
+        auto c1 = nundertale::applyFurCapped(furVal, stageMax, -10, false);
+        assert(furVal == 15 && c1.after == 15 && c1.before == 25);
+        auto c2 = nundertale::applyFurCapped(furVal, stageMax, -10, false);
+        assert(furVal == 5 && c2.after == 5 && c2.before == 15);
+        auto c3 = nundertale::applyFurCapped(furVal, stageMax, -10, false);
+        assert(furVal == 0 && c3.after == 0 && c3.before == 5);
+        auto c4 = nundertale::applyFurCapped(furVal, stageMax, -10, false);
+        assert(furVal == 0 && c4.after == 0 && c4.before == 0);
+
+        std::cout << "[PASS] R10-D: Lurkeye, Reply Guy, Grasstoid LORE stats, ACT effects, heal pattern, and negative FUR verified." << std::endl;
+    }
+
+    // Suite 60: R10-E shop data, purchase rules, wrapping, and openShop parsing
+    {
+        using namespace nundertale;
+
+        ShopData shop;
+        assert(loadShopData("data/shops/bakesale.json", shop));
+        assert(shop.id == "bakesale" && shop.name == "Commission Bake Sale");
+        assert(shop.items.size() == 2U && shop.talk.size() == 2U);
+        assert(shop.items[0].item == "Commissioned Donut" && shop.items[0].price == 7);
+        assert(shop.items[1].item == "Commissioned Cider" && shop.items[1].price == 18);
+
+        std::ifstream itemsFile("data/items/items.json");
+        assert(itemsFile.is_open());
+        std::stringstream itemsJson;
+        itemsJson << itemsFile.rdbuf();
+        ItemDatabase itemDatabase;
+        assert(itemDatabase.parse(itemsJson.str()));
+        const ItemDef* donut = itemDatabase.findItemByName("Commissioned Donut");
+        const ItemDef* cider = itemDatabase.findItemByName("Commissioned Cider");
+        assert(donut != nullptr && donut->buyPrice == 7 && donut->heal == 12);
+        assert(cider != nullptr && cider->buyPrice == 18 && cider->heal == 24);
+
+        int gold = 20;
+        std::vector<std::string> inventory;
+        assert(tryShopPurchase(shop.items[0], gold, inventory, 8U) == ShopPurchaseResult::Success);
+        assert(gold == 13 && inventory.size() == 1U && inventory[0] == "Commissioned Donut");
+
+        gold = 6;
+        inventory.clear();
+        assert(tryShopPurchase(shop.items[0], gold, inventory, 8U) == ShopPurchaseResult::NotEnoughGold);
+        assert(gold == 6 && inventory.empty());
+
+        gold = 20;
+        inventory.assign(8U, "Bottle");
+        assert(tryShopPurchase(shop.items[0], gold, inventory, 8U) == ShopPurchaseResult::InventoryFull);
+        assert(gold == 20 && inventory.size() == 8U);
+
+        assert(wrapShopIndex(0, -1, 4) == 3);
+        assert(wrapShopIndex(3, 1, 4) == 0);
+        assert(wrapShopIndex(1, 9, 4) == 2);
+
+        Cutscene parsed;
+        assert(parseCutsceneJson(
+            R"json({"steps":[{"type":"openShop","shop":"bakesale","if":"ruins.bakesale.open >= 0"}]})json",
+            parsed));
+        assert(parsed.steps.size() == 1U);
+        assert(parsed.steps[0].type == CutsceneStepType::OpenShop);
+        assert(parsed.steps[0].shop == "bakesale");
+        assert(parsed.steps[0].condition == "ruins.bakesale.open >= 0");
+
+        std::cout << "[PASS] R10-E: shop data, purchases, capacity/funds checks, wrapping, and openShop verified."
+                  << std::endl;
+    }
+
+    // Suite 61: R10-F - Napstablurk loads with LORE stats, Cheer per-use texts + spareable only on the 3rd use, R10 trigger in map
+    {
+        using namespace nundertale;
+
+        // 1. Napstablurk stats & LORE check
+        auto napstablurk = Enemy::loadFromJson("data/enemies/napstablurk.json");
+        assert(napstablurk != nullptr);
+        assert(napstablurk->getName() == "Napstablurk");
+        assert(napstablurk->getId() == "napstablurk");
+        assert(napstablurk->getSprite() == "napstablurk");
+        assert(napstablurk->getHp() == 88 && napstablurk->getMaxHp() == 88);
+        assert(napstablurk->getAtk() == 10 && napstablurk->getDef() == 10);
+        assert(napstablurk->getExp() == 0 && napstablurk->getGold() == 0);
+        assert(napstablurk->getCheckFlavor() == "Lurks in the NSFW channel \"for the lo-fi beats\".");
+        assert(napstablurk->getCheckText().find("NAPSTABLURK - ATK 10 DEF 10") != std::string::npos);
+        assert(napstablurk->getSpareText() == "oh... i usually come here because nobody's online... but today i met somebody nice...");
+        assert(napstablurk->getSpareFlag() == "ruins.napstablurk.spared");
+        assert(napstablurk->getKillFlag() == "ruins.napstablurk.killed");
+
+        // 2. Pattern seen_tears (kind rain, damage 1, furry 1)
+        assert(napstablurk->getPatterns().size() == 1);
+        const auto& pattern = napstablurk->getPatterns()[0];
+        assert(pattern.id == "seen_tears");
+        assert(pattern.kind == EnemyPatternKind::Rain);
+        assert(pattern.damage == 1);
+        assert(pattern.furry == 1);
+
+        // 3. Cheer ACT per-use texts + spareable only on 3rd use
+        bool foundCheer = false;
+        bool foundFlirt = false;
+        for (const auto& act : napstablurk->getActs()) {
+            if (act.id == "cheer") {
+                foundCheer = true;
+                assert(act.label == "Cheer");
+                assert(act.minUses == 3);
+                assert(act.spareable);
+                assert(act.useTexts.size() == 3);
+                assert(act.useTexts[0].find("Like their post") != std::string::npos);
+                assert(act.useTexts[1].find("Leave a comment") != std::string::npos);
+                assert(act.useTexts[2].find("Share") != std::string::npos);
+                assert(act.useResponses.size() == 3);
+                // Effect applies strictly on the 3rd use onwards
+                assert(!actEffectApplies(1, act.minUses));
+                assert(!actEffectApplies(2, act.minUses));
+                assert(actEffectApplies(3, act.minUses));
+                assert(actEffectApplies(4, act.minUses));
+                assert(actTextForUse(act, 1) == act.useTexts[0]);
+                assert(actTextForUse(act, 2) == act.useTexts[1]);
+                assert(actTextForUse(act, 3) == act.useTexts[2]);
+                assert(actResponseForUse(act, 1) == act.useResponses[0]);
+                assert(actResponseForUse(act, 2) == act.useResponses[1]);
+                assert(actResponseForUse(act, 3) == act.useResponses[2]);
+            } else if (act.id == "flirt") {
+                foundFlirt = true;
+                assert(act.text.find("You slide into their DMs. They leave you on read. Out of nervousness.") != std::string::npos);
+            }
+        }
+        assert(foundCheer);
+        assert(foundFlirt);
+
+        // 4. R10 trigger exists in the generated map
+        TiledMap bakesale;
+        assert(loadTiledMapFromFile("data/maps/ruins_bakesale.json", bakesale));
+        const TiledObject* trig = bakesale.findObject("trigger_napstablurk");
+        assert(trig != nullptr);
+        assert(trig->type == "trigger");
+        assert(tiledStringProperty(trig->properties, "cutscene") == "r10_napstablurk_spared");
+        const TiledObject* exam = bakesale.findObject("napstablurk");
+        assert(exam != nullptr);
+        assert(exam->type == "examine");
+        assert(tiledStringProperty(exam->properties, "cutscene") == "r10_napstablurk");
+
+        // 5. Encounter file loads
+        std::ifstream encounterFile("data/encounters/napstablurk.json");
+        assert(encounterFile.is_open());
+
+        std::cout << "[PASS] R10-F: Napstablurk loads with LORE stats, Cheer per-use texts + spareable only on the 3rd use, and R10 trigger verified."
+                  << std::endl;
+    }
+
+    // Suite 62: PRG-032 toxic track state, MERCY label, yiff rotation, and flag persistence
+    {
+        using namespace nundertale;
+
+        GameState state;
+        assert(toxicTrack(state) == 0);
+        assert(mercyLabel(state) == "Yiff");
+        assert(toxicTrackOnKill(state, "froggsona"));
+        assert(toxicTrack(state) == 1 && state.getFlag("toxic.kills") == 1);
+        assert(mercyLabel(state) == "Spare");
+        assert(toxicTrackOnKill(state, "shysona"));
+        assert(state.getFlag("toxic.kills") == 2);
+        assert(toxicTrackOnSpare(state, "froggsona"));
+        assert(toxicTrack(state) == 2 && mercyLabel(state) == "Yiff");
+        assert(!toxicTrackOnKill(state, "lurkeye"));
+        assert(state.getFlag("toxic.kills") == 2);
+
+        GameState sparedFirst;
+        assert(toxicTrackOnSpare(sparedFirst, "froggsona"));
+        assert(toxicTrack(sparedFirst) == 2);
+        assert(!toxicTrackOnKill(sparedFirst, "shysona"));
+        assert(sparedFirst.getFlag("toxic.kills") == 0);
+
+        GameState excluded;
+        assert(!toxicTrackOnKill(excluded, "fursuit_dummy"));
+        assert(!toxicTrackOnSpare(excluded, "fursuit_dummy"));
+        assert(!toxicTrackOnKill(excluded, "gladowos"));
+        assert(!toxicTrackOnSpare(excluded, "gladowos"));
+        assert(toxicTrack(excluded) == 0 && excluded.getFlag("toxic.kills") == 0);
+
+        const YiffNarration first = yiffNarration("Froggsona", 0);
+        const YiffNarration second = yiffNarration("Froggsona", 0, static_cast<int>(first.index));
+        const YiffNarration third = yiffNarration("Froggsona", 1, static_cast<int>(second.index));
+        assert(first.text == "* You yiffed Froggsona. The narrator is not elaborating.");
+        assert(second.index != first.index && second.text == "* Froggsona leaves, flustered.");
+        assert(third.index != second.index && third.text == "* You yiffed Froggsona. Nobody will speak of this.");
+        assert(usesRegularYiffNarration("froggsona"));
+        assert(!usesRegularYiffNarration("barky") && !usesRegularYiffNarration("furiell"));
+
+        const char* oldLocalAppData = std::getenv("LOCALAPPDATA");
+        const std::string oldLocalAppDataValue = oldLocalAppData != nullptr ? oldLocalAppData : "";
+        const std::filesystem::path tempRoot = "tests/.tmp_prg032_save";
+        std::error_code ec;
+        std::filesystem::remove_all(tempRoot, ec);
+        assert(_putenv_s("LOCALAPPDATA", tempRoot.string().c_str()) == 0);
+        {
+            SaveService saves;
+            GameState saved;
+            saved.setFlag("toxic.track", 1);
+            saved.setFlag("toxic.kills", 7);
+            assert(saves.saveGame(saved));
+
+            GameState loaded;
+            assert(saves.loadGame(loaded));
+            assert(loaded.getFlag("toxic.track") == 1);
+            assert(loaded.getFlag("toxic.kills") == 7);
+        }
+        assert(_putenv_s("LOCALAPPDATA", oldLocalAppDataValue.c_str()) == 0);
+        std::filesystem::remove_all(tempRoot, ec);
+
+        std::cout << "[PASS] PRG-032: toxic track, MERCY label, yiff rotation, and save round trip verified."
+                  << std::endl;
+    }
+
+    // Suite 63: C1-026 Tide Pod key item, R1 pickup, and R11 Furiell reaction
+    {
+        using namespace nundertale;
+
+        // 1. Item loads as key / undroppable with correct texts
+        std::ifstream itemsFile("data/items/items.json");
+        assert(itemsFile.is_open());
+        std::stringstream itemsJson;
+        itemsJson << itemsFile.rdbuf();
+        ItemDatabase itemDatabase;
+        assert(itemDatabase.parse(itemsJson.str()));
+
+        const ItemDef* pod = itemDatabase.findItemByName("Tide Pod");
+        assert(pod != nullptr);
+        assert(pod->id == "tide_pod");
+        assert(pod->type == "key");
+        assert(pod->noDrop == true);
+        assert(pod->info == "* The Tide Pod you slipped on. It fell in with you.");
+        assert(pod->useText == "* You consider it.||* The narrator stops you.");
+        assert(pod->dropText == "* (Forbidden candy.)");
+
+        // Inventory condition evaluation
+        std::vector<std::string> invWithPod = { "Bottle", "Tide Pod" };
+        std::vector<std::string> invWithoutPod = { "Bottle", "Mt. Dew" };
+        auto idLookup = [&itemDatabase](const std::string& name) {
+            const ItemDef* def = itemDatabase.findItemByName(name);
+            return def != nullptr ? def->id : "";
+        };
+        assert(evaluateInventoryCondition("hasItem.tide_pod", invWithPod, idLookup) == 1);
+        assert(evaluateInventoryCondition("hasItem.tide_pod", invWithoutPod, idLookup) == 0);
+        assert(evaluateInventoryCondition("hasItem.Tide_Pod", invWithPod, idLookup) == 1);
+        assert(evaluateInventoryCondition("some_other_flag", invWithPod, idLookup) == -1);
+
+        // Combined room condition evaluation
+        bool parsed = false;
+        auto flagLookupWithPod = [&](const std::string& key) -> int {
+            int inv = evaluateInventoryCondition(key, invWithPod, idLookup);
+            if (inv >= 0) return inv;
+            if (key == "item.tide_pod.shown") return 0;
+            return 0;
+        };
+        assert(evaluateRoomCondition("hasItem.tide_pod == 1 && item.tide_pod.shown == 0", flagLookupWithPod, &parsed) && parsed);
+
+        auto flagLookupShown = [&](const std::string& key) -> int {
+            int inv = evaluateInventoryCondition(key, invWithPod, idLookup);
+            if (inv >= 0) return inv;
+            if (key == "item.tide_pod.shown") return 1;
+            return 0;
+        };
+        assert(!evaluateRoomCondition("hasItem.tide_pod == 1 && item.tide_pod.shown == 0", flagLookupShown));
+
+        // 2. R1 pickup exists in the generated map and cutscene exists
+        TiledMap fallMap;
+        assert(loadTiledMapFromFile("data/maps/ruins_fall.json", fallMap));
+        const TiledObject* podObj = fallMap.findObject("tide_pod");
+        assert(podObj != nullptr);
+        assert(podObj->type == "prop");
+        assert(tiledStringProperty(podObj->properties, "sprite") == "assets/props/tide_pod.png");
+        assert(tiledStringProperty(podObj->properties, "cutscene") == "r1_tide_pod");
+        assert(tiledStringProperty(podObj->properties, "hideIf") == "item.tide_pod.taken >= 1");
+
+        std::ifstream r1CutsceneFile("data/cutscenes/r1_tide_pod.json");
+        assert(r1CutsceneFile.is_open());
+        std::stringstream r1CutsceneJson;
+        r1CutsceneJson << r1CutsceneFile.rdbuf();
+        Cutscene r1Cutscene;
+        assert(parseCutsceneJson(r1CutsceneJson.str(), r1Cutscene));
+        assert(!r1Cutscene.steps.empty());
+        bool foundGivePod = false;
+        for (const auto& step : r1Cutscene.steps) {
+            if (step.type == CutsceneStepType::GiveItem && step.item == "Tide Pod") {
+                foundGivePod = true;
+                assert(!step.lines.empty() && step.lines[0] == "* The Tide Pod you slipped on. It fell in with you.");
+            }
+        }
+        assert(foundGivePod);
+
+        // 3. R11 Furiell NPC exists in map and line exists behind its condition in cutscene
+        TiledMap houseMap;
+        assert(loadTiledMapFromFile("data/maps/ruins_house.json", houseMap));
+        const TiledObject* furiellObj = houseMap.findObject("furiell");
+        assert(furiellObj != nullptr);
+        assert(furiellObj->type == "npc");
+        assert(tiledStringProperty(furiellObj->properties, "cutscene") == "r11_furiell");
+
+        std::ifstream r11CutsceneFile("data/cutscenes/r11_furiell.json");
+        assert(r11CutsceneFile.is_open());
+        std::stringstream r11CutsceneJson;
+        r11CutsceneJson << r11CutsceneFile.rdbuf();
+        Cutscene r11Cutscene;
+        assert(parseCutsceneJson(r11CutsceneJson.str(), r11Cutscene));
+        assert(!r11Cutscene.steps.empty());
+
+        bool foundTidePodLine = false;
+        for (const auto& step : r11Cutscene.steps) {
+            if (step.type == CutsceneStepType::Dialog && step.speaker == "FURIELL") {
+                for (const auto& line : step.lines) {
+                    if (line.find("Is this candy, pup? It smells like a laundromat. uwu") != std::string::npos) {
+                        foundTidePodLine = true;
+                        assert(step.condition.find("hasItem.tide_pod") != std::string::npos);
+                        assert(step.condition.find("item.tide_pod.shown") != std::string::npos);
+                    }
+                }
+            }
+        }
+        assert(foundTidePodLine);
+
+        std::cout << "[PASS] C1-026: Tide Pod key item, R1 pickup, and R11 Furiell reaction verified."
+                  << std::endl;
+    }
+
+    // Suite 64: BHL-018 text bullet rectangles, words, text wall gap, colors, and strike timing
+    {
+        using namespace nundertale;
+
+        const Rectangle bounds = textBulletRect({ 100.0f, 50.0f }, 40.0f, 16.0f);
+        assert(bounds.x == 80.0f && bounds.y == 42.0f);
+        assert(bounds.width == 40.0f && bounds.height == 16.0f);
+        assert(rectHitsCircle(bounds, { 76.0f, 50.0f }, 4.0f));
+        assert(!rectHitsCircle(bounds, { 75.9f, 50.0f }, 4.0f));
+        assert(rectHitsCircle(bounds, { 100.0f, 38.0f }, 4.0f));
+        assert(!rectHitsCircle(bounds, { 100.0f, 37.9f }, 4.0f));
+
+        const std::vector<std::string> dogeWords = { "wow", "such", "very" };
+        const std::string noFallback;
+        assert(textBulletWord(dogeWords, 0U, noFallback) == "wow");
+        assert(textBulletWord(dogeWords, 1U, noFallback) == "such");
+        assert(textBulletWord(dogeWords, 2U, noFallback) == "very");
+        assert(textBulletWord(dogeWords, 3U, noFallback) == "wow");
+
+        constexpr float arenaTop = 200.0f;
+        constexpr float arenaBottom = 340.0f;
+        for (float requestedTop : { 150.0f, 200.0f, 246.0f, 320.0f, 380.0f }) {
+            const float gapTop = textWallGapTop(requestedTop, arenaTop, arenaBottom);
+            assert(gapTop >= arenaTop);
+            assert(gapTop + TEXT_WALL_GAP_HEIGHT <= arenaBottom);
+            const Vector2 soulInGap = { 320.0f, gapTop + TEXT_WALL_GAP_HEIGHT * 0.5f };
+            for (float y = arenaTop; y <= arenaBottom; y += TEXT_BULLET_FONT_SIZE + 4.0f) {
+                if (textWallWordOverlapsGap(y, TEXT_BULLET_FONT_SIZE, gapTop)) continue;
+                const Rectangle wordRect = textBulletRect({ 320.0f, y }, 80.0f, TEXT_BULLET_FONT_SIZE);
+                assert(!rectHitsCircle(wordRect, soulInGap, 4.0f));
+            }
+        }
+
+        Bullet struckWord;
+        struckWord.text = "excuse";
+        struckWord.strike = true;
+        struckWord.strikeAfter = 1.0f;
+        struckWord.age = 0.999f;
+        assert(struckWord.hurtsSoul(false));
+        assert(!struckWord.isStruck());
+        struckWord.age = 1.0f;
+        assert(!struckWord.hurtsSoul(false));
+        assert(struckWord.isStruck());
+        assert(!textBulletExpired(true, 1.249f, 1.0f));
+        assert(textBulletExpired(true, 1.25f, 1.0f));
+
+        const std::filesystem::path tempEnemyPath = "tests/.tmp_bhl018_doge.json";
+        {
+            std::ofstream tempEnemy(tempEnemyPath);
+            assert(tempEnemy.is_open());
+            tempEnemy << R"json({
+                "id":"doge_test","name":"Doge Test","patterns":[
+                    {"id":"doge_words","kind":"rain","params":{
+                        "words":["wow","such","very"],"color":"blue"
+                    }},
+                    {"id":"copypasta_wall","kind":"text_wall","params":{
+                        "words":["copy","paste"],"color":"orange"
+                    }},
+                    {"id":"excuse_text","kind":"rain","params":{
+                        "text":"excuse","strike":true,"strikeAfter":1.5
+                    }}
+                ]
+            })json";
+        }
+        auto doge = Enemy::loadFromJson(tempEnemyPath.string());
+        std::error_code removeError;
+        std::filesystem::remove(tempEnemyPath, removeError);
+        assert(doge != nullptr);
+        assert(doge->getPatterns().size() == 3U);
+        assert(doge->getPatterns()[0].words == dogeWords);
+        assert(doge->getPatterns()[0].color == AttackColor::Blue);
+        assert(doge->getPatterns()[1].kind == EnemyPatternKind::TextWall);
+        assert(doge->getPatterns()[1].color == AttackColor::Orange);
+        assert(doge->getPatterns()[2].strike);
+        assert(std::abs(doge->getPatterns()[2].strikeAfter - 1.5f) < 0.001f);
+
+        std::cout << "[PASS] BHL-018: text rect collision, word cycling, passable text wall, colors, and strike timing verified."
+                  << std::endl;
+    }
+
+    // 65. NAR-032: Rename Pepe to Grub
+    {
+        // 1. Default player name is GRUB
+        nundertale::PlayerData player;
+        assert(player.name == "GRUB");
+
+        // 2. PEPE easter egg answers "* Not that frog."
+        auto rPepe = nundertale::reactionFor("PEPE");
+        assert(rPepe.message == "* Not that frog.");
+        assert(rPepe.allowed == true);
+
+        // 3. GRUB & GOBLIN easter eggs
+        auto rGrub = nundertale::reactionFor("GRUB");
+        assert(rGrub.tag == "[THE PROTAGONIST]");
+        assert(rGrub.effect == nundertale::NameEffect::FrogSoul);
+
+        auto rGoblin = nundertale::reactionFor("GOBLIN");
+        assert(rGoblin.tag == "[RIBBIT]");
+        assert(rGoblin.effect == nundertale::NameEffect::FrogSoul);
+
+        // 4. Content lint flags a "Pepe" line but not the allowed egg
+        auto findingsBad = nundertale::lintText("* Pepe entered the room.", {});
+        assert(!findingsBad.empty());
+        assert(findingsBad[0].rule == "pepe-word");
+
+        auto findingsBadLower = nundertale::lintText("Here comes pepe!", {});
+        assert(!findingsBadLower.empty());
+        assert(findingsBadLower[0].rule == "pepe-word");
+
+        auto findingsEgg = nundertale::lintText("    \"names\": [\"PEPE\"],", {}, "data/names.json");
+        assert(findingsEgg.empty());
+
+        auto findingsEggNoPath = nundertale::lintText("    \"names\": [\"PEPE\"],", {});
+        assert(findingsEggNoPath.empty());
+
+        auto findingsOtherFile = nundertale::lintText("    \"names\": [\"PEPE\"],", {}, "data/dialogue/en/ruins.json");
+        assert(!findingsOtherFile.empty());
+
+        std::cout << "[PASS] NAR-032: rename Pepe to Grub, name easter eggs, and content lint verified."
+                  << std::endl;
+    }
+
+    // Suite 66: K10 - STAT FUR text and toxic encounter cap/budget rules
+    {
+        using namespace nundertale;
+
+        const FurStatText frog = furStatText(0);
+        const FurStatText ears = furStatText(21);
+        const FurStatText paws = furStatText(40);
+        assert(frog.valueLine == "FUR  0" && frog.stageLine == "Frog");
+        assert(ears.valueLine == "FUR  21" && ears.stageLine == "Ears");
+        assert(paws.valueLine == "FUR  40" && paws.stageLine == "Paws");
+
+        assert(encounterAreaForRoom("ruins_entrance") == "ruins");
+        assert(encounterAreaForRoom("snowdinha") == "snowdinha");
+        assert(toxicEncounterCap("ruins") == 6);
+        assert(toxicEncounterCap("snowdinha") == 6);
+        assert(toxicEncounterCap("wetfall") == 5);
+        assert(toxicEncounterCap("hotland") == 3);
+
+        // Active toxic track ignores an exhausted (or absent) room budget.
+        assert(encounterAllowed(1, 1, 1, 5, "ruins"));
+        assert(encounterAllowed(0, 0, 1, 5, "ruins"));
+        assert(!encounterAllowed(1, 1, 1, 6, "ruins"));
+
+        // Every other track keeps the existing per-room budget behavior.
+        assert(encounterAllowed(0, 1, 0, 0, "ruins"));
+        assert(!encounterAllowed(1, 1, 0, 0, "ruins"));
+        assert(!encounterAllowed(1, 1, 2, 0, "ruins"));
+
+        std::cout << "[PASS] K10: STAT FUR text and toxic encounter cap/budget rules verified."
+                  << std::endl;
+    }
+
+    // Suite 67: AUD-004 slow-motion Ruins music on the toxic track
+    {
+        using nundertale::overworldMusicPitch;
+        assert(overworldMusicPitch(1, "ruins_notices") == nundertale::TOXIC_RUINS_MUSIC_PITCH);
+        assert(overworldMusicPitch(0, "ruins_notices") == 1.0f);
+        assert(overworldMusicPitch(2, "ruins_entrance") == 1.0f);
+        assert(overworldMusicPitch(1, "snow_town") == 1.0f);
+        std::cout << "[PASS] AUD-004: toxic-track Ruins music pitch verified." << std::endl;
+    }
+
+    // Suite 68: OVW-022 Floor messages in the Ruins (R1 and R9)
+    {
+        using namespace nundertale;
+
+        // 1. R1 Fall Room map object and cutscene
+        TiledMap fallMap;
+        assert(loadTiledMapFromFile("data/maps/ruins_fall.json", fallMap));
+        const TiledObject* r1MsgObj = fallMap.findObject("floor_message");
+        assert(r1MsgObj != nullptr);
+        assert(r1MsgObj->type == "prop");
+        assert(tiledStringProperty(r1MsgObj->properties, "sprite") == "assets/props/floor_message.png");
+        assert(tiledStringProperty(r1MsgObj->properties, "cutscene") == "floormsg_r1");
+        assert(tiledBoolProperty(r1MsgObj->properties, "solid", true) == false);
+
+        std::ifstream r1File("data/cutscenes/floormsg_r1.json");
+        assert(r1File.is_open());
+        std::stringstream r1Stream;
+        r1Stream << r1File.rdbuf();
+        Cutscene r1Cutscene;
+        assert(parseCutsceneJson(r1Stream.str(), r1Cutscene));
+        assert(!r1Cutscene.steps.empty());
+
+        bool r1FoundMessageLine = false;
+        bool r1FoundRatingLine = false;
+        bool r1FoundSetFlag = false;
+        for (const auto& step : r1Cutscene.steps) {
+            if (step.type == CutsceneStepType::Dialog) {
+                for (const auto& line : step.lines) {
+                    if (line.find("hole ahead") != std::string::npos) {
+                        r1FoundMessageLine = true;
+                        assert(step.condition.find("ruins.floormsg.r1.read == 0") != std::string::npos);
+                    }
+                    if (line.find("xX_AFK_Xx") != std::string::npos && line.find("Rated: 47") != std::string::npos) {
+                        r1FoundRatingLine = true;
+                        assert(step.condition.find("ruins.floormsg.r1.read >= 1") != std::string::npos);
+                    }
+                }
+            } else if (step.type == CutsceneStepType::SetFlag && step.key == "ruins.floormsg.r1.read") {
+                r1FoundSetFlag = true;
+                assert(step.value == 1);
+            }
+        }
+        assert(r1FoundMessageLine);
+        assert(r1FoundRatingLine);
+        assert(r1FoundSetFlag);
+
+        // 2. R9 Barky's Arena map object and cutscene
+        TiledMap barkyMap;
+        assert(loadTiledMapFromFile("data/maps/ruins_barky.json", barkyMap));
+        const TiledObject* r9MsgObj = barkyMap.findObject("floor_message");
+        assert(r9MsgObj != nullptr);
+        assert(r9MsgObj->type == "prop");
+        assert(tiledStringProperty(r9MsgObj->properties, "sprite") == "assets/props/floor_message.png");
+        assert(tiledStringProperty(r9MsgObj->properties, "cutscene") == "floormsg_r9");
+        assert(tiledBoolProperty(r9MsgObj->properties, "solid", true) == false);
+
+        std::ifstream r9File("data/cutscenes/floormsg_r9.json");
+        assert(r9File.is_open());
+        std::stringstream r9Stream;
+        r9Stream << r9File.rdbuf();
+        Cutscene r9Cutscene;
+        assert(parseCutsceneJson(r9Stream.str(), r9Cutscene));
+        assert(!r9Cutscene.steps.empty());
+
+        bool r9FoundMessageLine = false;
+        bool r9FoundRatingLine = false;
+        bool r9FoundSetFlag = false;
+        for (const auto& step : r9Cutscene.steps) {
+            if (step.type == CutsceneStepType::Dialog) {
+                for (const auto& line : step.lines) {
+                    if (line.find("try zipper, but hole") != std::string::npos) {
+                        r9FoundMessageLine = true;
+                        assert(step.condition.find("ruins.floormsg.r9.read == 0") != std::string::npos);
+                    }
+                    if (line.find("xX_BarkSc0p3_Xx") != std::string::npos && line.find("Rated: 312") != std::string::npos) {
+                        r9FoundRatingLine = true;
+                        assert(step.condition.find("ruins.floormsg.r9.read >= 1") != std::string::npos);
+                    }
+                }
+            } else if (step.type == CutsceneStepType::SetFlag && step.key == "ruins.floormsg.r9.read") {
+                r9FoundSetFlag = true;
+                assert(step.value == 1);
+            }
+        }
+        assert(r9FoundMessageLine);
+        assert(r9FoundRatingLine);
+        assert(r9FoundSetFlag);
+
+        std::cout << "[PASS] OVW-022: Ruins floor messages and cutscene variants verified."
+                  << std::endl;
+    }
+
+    std::cout << "\nAll 68 test suites passed successfully!" << std::endl;
     return 0;
 }

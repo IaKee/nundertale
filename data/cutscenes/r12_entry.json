@@ -1,0 +1,39 @@
+{
+  "steps": [
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 288,
+      "y": 1160,
+      "speed": 80
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "down"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Go upstairs. Your room has a beanbag. And a fursuit head. No pressure."
+      ]
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 288,
+      "y": 800,
+      "speed": 160
+    },
+    {
+      "type": "hideNpc",
+      "npc": "furiell"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r12.walk",
+      "value": 1
+    }
+  ]
+}

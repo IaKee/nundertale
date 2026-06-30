@@ -154,7 +154,7 @@ void LoreScene::update(float dt, GameContext& context) {
                     char c = line[m_charIndex];
                     m_charIndex++;
                     if (c != ' ' && c != '\t') {
-                        context.audio.playSound("assets/sfx/type.ogg", 0.35f);
+                        context.audio.playSound("assets/sfx/voice_default.ogg", 0.35f);
                     }
                 } else {
                     m_currentLine++;

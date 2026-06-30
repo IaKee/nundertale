@@ -17,6 +17,23 @@
     "priceTodo": true
   },
   {
+    "id": "tide_pod",
+    "name": "Tide Pod",
+    "shortName": "TidePod",
+    "type": "key",
+    "heal": 0,
+    "at": 0,
+    "df": 0,
+    "furry": 0,
+    "speedBuff": 1.0,
+    "noDrop": true,
+    "info": "* The Tide Pod you slipped on. It fell in with you.",
+    "useText": "* You consider it.||* The narrator stops you.",
+    "dropText": "* (Forbidden candy.)",
+    "buyPrice": 0,
+    "sellPrice": 0
+  },
+  {
     "id": "mtn_dew_warm",
     "name": "Mountain Dew (Warm)",
     "shortName": "MtnDew",

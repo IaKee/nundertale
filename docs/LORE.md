@@ -813,7 +813,8 @@ See the Furry ending (§22.3).
 - **The Bass Shake:** the battle music is **"The Bass" (巴巴贝斯) by DJ Wave**, and the fight copies the meme's editing: it **cuts between two shots**, exactly on the track's tempo changes.
   - **Fast beat, close-up:** a hard cut to a zoomed-in **close-up of the fursuit head**, shaking side to side very fast, ears and fur tufts whipping, staring right at you. Bullets: quick little bursts of fluff thrown left and right on every beat (`bass_fluff_fast`).
   - **Slow rhythm, wide shot:** a cut back to the **whole coat rack**, swaying slowly side to side in a little dance. Bullets: slow, wide waves of fluff that sweep across the box (`bass_fluff_slow`).
-  - The cuts and the pattern changes come from a **beat map** of the track (timestamps of each tempo change), so they land on the music. On each drop, the battle box gives a short shake. Only the choreography is referenced: the meme's original character (Milk, by SeanWayStudio) is **not** used.
+  - **Turn structure (2026-10-18, see `docs/fights/R5_fursuit_dummy_bass_shake.md`):** the menu turn stays on the wide shot and the calm part; each enemy turn plays the meme loop three times, and **each accelerated part (close-up) is one burst of fluff on its notes: 3 bursts per turn**, with no bullets in the wide-shot gaps (this replaces `bass_fluff_slow`).
+  - The cuts and the bullets come from a **beat map** of the track, timed by the music's playback position, so they land on the music. On each drop, the battle box gives a short shake. Only the choreography is referenced: the meme's original character (Milk, by SeanWayStudio) is **not** used.
 - ACTs: `Talk` (`* It doesn't seem much for conversation. It's busy vibing.`) · `Shake to the Bass` ×3 (you join in; on the 3rd, Furiell joins too and it's spareable) · `Turn It Down` (it stops shaking, sad; spareable) · `Accept Hug` (`* You hug the dummy. It's damp. FUR +10.`; spares)
 - Furiell's reactions: Shake → she dances (`uwu~ pump the bass, pup!`); Accept Hug → **beaming**; FIGHT → `Hey! That's my fwiend's suit!`; flee → `...that is also a choice.`
 - **Doesn't count** for the toxic track (it's not a monster, §22.0).
@@ -1485,7 +1486,7 @@ Standard: 4 directions × 2–4 walk frames; magenta `#FF00FF` as transparency (
 
 | File | Frames | Size | Prio. |
 | :--- | :--- | :---: | :---: |
-| `sprites/battle/fursuit_dummy.png` | wide shot: the coat rack swaying (loop) · close-up: the fursuit head shaking fast (loop, its own larger sprite) | ~40×60 / ~120×120 | P0 |
+| `sprites/battle/fursuit_dummy.png` | wide shot: the coat rack swaying, one step per beat (3f + hurt) · close-up: the fursuit head shaking, 4 expressions (smug, wink, pout, smirk) × lean L/R (its own larger sprite; spec in `docs/fights/R5_fursuit_dummy_bass_shake.md`) | ~40×60 / ~120×120 | P0 |
 | `sprites/battle/froggsona.png` · `shysona.png` · `modsmal.png` · `lurkeye.png` · `reply_guy.png` · `grasstoid.png` | idle 2f + hurt | 30–60 | P0 |
 | `sprites/battle/barky.png` | idle 2f, hurt, blush, spared | ~60×80 | P0 (placeholder already exists) |
 | `sprites/battle/furiell.png` | idle, hurt, sad | ~80×110 | P0 |

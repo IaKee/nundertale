@@ -8,7 +8,7 @@
   "exp": 0,
   "gold": 0,
   "sprite": "fursuit_dummy",
-  "check": "A mannequin wearing a fursuit head. Smells like the previous owner.",
+  "check": "A friend's spare fursuit on a coat rack. The friend wants it back.",
   "acts": [
     {
       "id": "check",
@@ -19,8 +19,32 @@
     {
       "id": "talk",
       "label": "Talk",
-      "text": "* It doesn't seem much for conversation. Furiell seems happy.",
+      "text": "* It doesn't seem much for conversation. It's busy vibing.",
       "effects": { "skipAttack": true, "setFlag": "ruins.dummy.talked" }
+    },
+    {
+      "id": "shake",
+      "label": "Shake to the Bass",
+      "text": "* You bob your head to the bass. The dummy sways along.",
+      "response": "* thump... thump...",
+      "useTexts": [
+        "* You bob your head to the bass. The dummy sways along.",
+        "* You shake harder. The coat rack rattles in rhythm.",
+        "* You go all in. Furiell joins in, bouncing on her paws."
+      ],
+      "useResponses": [
+        "* thump... thump...",
+        "* THUMP. THUMP.",
+        "uwu~ pump the bass, pup!"
+      ],
+      "minUses": 3,
+      "effects": { "spareable": true, "setFlag": "ruins.dummy.shook" }
+    },
+    {
+      "id": "turn_down",
+      "label": "Turn It Down",
+      "text": "* You turn the bass down. The dummy stops swaying and slumps. It looks sad.",
+      "effects": { "spareable": true, "stopsBeat": true, "setFlag": "ruins.dummy.quiet" }
     },
     {
       "id": "accept_hug",
@@ -31,15 +55,28 @@
   ],
   "flavor": {
     "default": [
-      "* Fursuit Dummy stands perfectly still.",
-      "* The dummy offers no resistance.",
-      "* The damp fursuit head stares ahead."
+      "* Fursuit Dummy sways on its coat rack.",
+      "* The bass rattles the dummy's fluffy ears.",
+      "* The damp fursuit head nods along to a beat only it can hear.",
+      "* Fursuit Dummy is vibing."
+    ],
+    "spareable": [
+      "* Fursuit Dummy is bobbing along happily. It doesn't want to fight.",
+      "* The bass has mellowed out. The dummy looks content.",
+      "* Fursuit Dummy sways gently, waiting for the next song."
     ]
   },
   "dialogue": {
     "default": ["..."]
   },
-  "patterns": [],
+  "patterns": [
+    {
+      "id": "bass_fluff_fast",
+      "kind": "beat",
+      "weight": 1,
+      "params": { "beatmap": "bass_shake", "speed": 110, "damage": 1 }
+    }
+  ],
   "spareText": "...",
   "deathText": "* The dummy collapses into faux fur and regret."
 }

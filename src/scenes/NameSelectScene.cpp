@@ -110,7 +110,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
         // Backspace / Cancel key deletes last letter
         if ((context.input.isBackspacePressed() || context.input.isCancelPressed()) && !m_currentName.empty()) {
             m_currentName.pop_back();
-            context.audio.playSound("assets/sfx/type.ogg", 0.5f);
+            context.audio.playSound("assets/sfx/voice_default.ogg", 0.5f);
             m_tooManyAttempts = 0;
         }
 
@@ -126,11 +126,11 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 if (m_currentName.size() < NAME_MAX_LEN) {
                     char c = getLetterAt(m_cursorY, m_cursorX);
                     m_currentName.push_back(c);
-                    context.audio.playSound("assets/sfx/type.ogg", 0.6f);
+                    context.audio.playSound("assets/sfx/voice_default.ogg", 0.6f);
                     m_tooManyAttempts = 0;
                 } else {
                     m_tooManyAttempts++;
-                    context.audio.playSound("assets/sfx/areusure.ogg", 0.6f);
+                    context.audio.playSound("assets/sfx/menu_error.ogg", 0.6f);
                 }
             } else {
                 // Bottom row: Quit (0), Backspace (1), Done (2)
@@ -140,7 +140,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 } else if (m_cursorX == 1) {
                     if (!m_currentName.empty()) {
                         m_currentName.pop_back();
-                        context.audio.playSound("assets/sfx/type.ogg", 0.5f);
+                        context.audio.playSound("assets/sfx/voice_default.ogg", 0.5f);
                         m_tooManyAttempts = 0;
                     }
                 } else if (m_cursorX == 2) {
@@ -185,13 +185,13 @@ void NameSelectScene::update(float dt, GameContext& context) {
                     context.player.isWaifuFan = (m_reaction.effect == NameEffect::Waifu);
 
                     if (m_reaction.effect == NameEffect::RestartGame) {
-                        context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 1.0f);
+                        context.audio.playSound("assets/sfx/intro_noise.ogg", 1.0f);
                         context.scenes.changeScene(std::make_unique<DisclaimerScene>(), cut());
                     } else {
                         MetaData meta = context.save.getMeta();
                         meta.lastName = m_currentName;
                         context.save.saveMeta(meta);
-                        context.audio.playSound("assets/sfx/u_activate.wav", 1.0f);
+                        context.audio.playSound("assets/sfx/name_swoosh.ogg", 1.0f);
                         context.audio.fadeOutMusic(2.5f); // AUD-006: the title music fades with the long white fade
                         context.scenes.changeScene(std::make_unique<OverworldScene>(), fadeWhite(3.0f, 0.6f));
                     }

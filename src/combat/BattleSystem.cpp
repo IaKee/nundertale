@@ -2,6 +2,8 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/FurReactions.hpp"
+#include "core/ToxicTrack.hpp"
+#include "combat/FuriellMechanics.hpp"
 #include "ui/SpriteDraw.hpp"
 #include <cmath>
 #include <algorithm>
@@ -9,6 +11,10 @@
 #include <cstdint>
 
 namespace nundertale {
+
+namespace {
+int g_lastYiffNarration = -1;
+}
 
 BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy, std::string introText, bool canFlee)
     : m_enemy(std::move(enemy)) {
@@ -20,6 +26,16 @@ BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy, std::string introText, 
             ? "* " + m_enemy->getName() + " blocked your path!"
             : std::move(introText);
         m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
+        // BSK (C7): load the beat map once per battle (first Beat pattern with a beatmap)
+        if (!m_isBarky) {
+            for (const EnemyPatternDef& pattern : m_enemy->getPatterns()) {
+                if (pattern.kind != EnemyPatternKind::Beat || pattern.beatmap.empty()) continue;
+                m_beatMapLoaded = loadBeatMap("data/beatmaps/" + pattern.beatmap + ".json", m_beatMap) &&
+                                  m_beatMap.loopLength > 0.0f;
+                if (!m_beatMapLoaded) TraceLog(LOG_WARNING, "BattleSystem: beat map '%s' failed to load", pattern.beatmap.c_str());
+                break;
+            }
+        }
     }
 }
 
@@ -134,6 +150,11 @@ void BattleSystem::update(float dt, GameContext& context) {
                     m_state = BattleState::Fled;
                     m_residual.clear();
                 } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
+                    m_healNextAttack = false;
+                    if (m_tempAtkDelta != 0) {
+                        m_enemy->modifyAtk(-m_tempAtkDelta);
+                        m_tempAtkDelta = 0;
+                    }
                     m_state = BattleState::Victory;
                     m_residual.clear();
                     if (m_isSpared) {
@@ -145,7 +166,9 @@ void BattleSystem::update(float dt, GameContext& context) {
                         } else {
                             context.state.incFlag("battle." + m_enemy->getId() + ".spared");
                         }
+                        if (!m_enemy->getSpareFlag().empty()) context.state.setFlag(m_enemy->getSpareFlag(), 1);
                         context.state.sparesTotal += 1;
+                        toxicTrackOnSpare(context.state, m_enemy->getId());
                         m_narratorText = "* YOU WON!\n* You earned 0 EXP and " +
                             std::to_string(gold) + " gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
@@ -161,7 +184,9 @@ void BattleSystem::update(float dt, GameContext& context) {
                             context.state.incFlag("battle." + m_enemy->getId() + ".killed");
                             context.state.incFlag("kills.ruins");
                         }
+                        if (!m_enemy->getKillFlag().empty()) context.state.setFlag(m_enemy->getKillFlag(), 1);
                         context.state.killsTotal += 1;
+                        toxicTrackOnKill(context.state, m_enemy->getId());
                         sessionOnKill(context.session);
                         context.state.killsByArea["ruins"] += 1;
                         m_narratorText = "* YOU WON!\n* You earned " + std::to_string(exp) +
@@ -185,7 +210,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                             context.player.maxHp = (newLevel == 20) ? 99 : (16 + 4 * newLevel);
                             context.player.hp = context.player.maxHp;
                             m_narratorText += "\n* Your LEVEL OF VITRIOL increased."; // LORE §8.2 (BUG-22)
-                            context.audio.playSound("assets/sfx/heal.wav", 0.9f);
+                            context.audio.playSound("assets/sfx/level_up.ogg", 0.9f);
                         }
                     }
                 } else {
@@ -208,6 +233,14 @@ void BattleSystem::update(float dt, GameContext& context) {
     }
     if (isFinished() && m_furTrembleTriggered && context.state.getFlag("fur_hud_seen", 0) == 0) {
         context.state.setFlag("fur_hud_seen", 1);
+    }
+    // BSK (C7): leave the audio as we found it once the battle is over
+    if (isFinished()) {
+        if (m_beatTurnActive) endBeatTurn(context);
+        if (m_musicDucked) {
+            context.audio.setMusicVolume(context.save.getConfig().musicVolume);
+            m_musicDucked = false;
+        }
     }
 }
 
@@ -285,7 +318,7 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 m_lastDamage = 0;
                 m_damageDisplayTimer = 1.2f;
                 m_enemyShakeTimer = 0.0f;
-                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
+                context.audio.playSound("assets/sfx/slash.ogg", 0.7f);
                 m_fightPhase = FightPhase::Fade;
                 m_fightPhaseTimer = 0.0f;
             } else if (context.input.isConfirmPressed()) {
@@ -312,20 +345,29 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 // FGT-008: Hitmarker on critical hit, slice sound on normal hit
                 if (dist <= ATTACK_CRIT_RADIUS) {
                     m_lastPlayerAction = PlayerTurnAction::FightCrit;
-                    context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
+                    context.audio.playSound("assets/sfx/hitmarker.ogg", 0.9f);
+                    context.audio.playSound("assets/sfx/enemy_hit.ogg", 0.8f);
                     context.shake(5.0f, 0.22f); // GFX-006: Critical screen shake
                     context.flash(WHITE, 0.12f); // GFX-007: Impact flash
                     m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
                 } else {
                     m_lastPlayerAction = PlayerTurnAction::FightHit;
-                    context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
+                    context.audio.playSound("assets/sfx/slash.ogg", 0.8f);
+                    context.audio.playSound("assets/sfx/enemy_hit.ogg", 0.7f);
                     context.shake(2.0f, 0.1f);
                     m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
                 }
 
                 if (m_enemy->isDead()) {
                     m_narratorText += "\n" + m_enemy->getDeathText();
+                    // C1-022: last words in the bubble while the dust settles
+                    std::string lastWords;
+                    for (const std::string& line : m_enemy->getDeathLines()) {
+                        lastWords += (lastWords.empty() ? "" : "\n") + line;
+                    }
+                    if (!lastWords.empty()) m_enemySpeechBubble = lastWords;
                     spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
+                    context.audio.playSound("assets/sfx/vaporize.ogg", 0.9f);
                 }
 
                 m_fightPhase = FightPhase::HitHold;
@@ -402,6 +444,10 @@ void BattleSystem::handleActInput(GameContext& context) {
         m_lastActionDetail = act.id;
         m_lastActResponse = actResponseForUse(act, useCount);
 
+        if (act.id == "accept_hug") {
+            context.audio.playSound("assets/sfx/plush_squeak.ogg", 0.85f);
+        }
+
         if (act.id == "check") {
             // BUG-06 & ACT-001: Data-driven check text matching enemy instance stats
             m_narratorText = m_enemy->getCheckText();
@@ -432,6 +478,7 @@ void BattleSystem::handleActInput(GameContext& context) {
                 // ACT-005: spares on the spot; the dialog then ends the battle as a spare
                 m_isSpared = true;
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
+                context.audio.playSound("assets/sfx/spare_poof.ogg", 0.9f);
             }
             if (applies && act.flees) {
                 m_enemyFledPending = true;
@@ -443,13 +490,25 @@ void BattleSystem::handleActInput(GameContext& context) {
                     m_enemy->setSpareable(true);
                 }
                 m_enemy->modifyAtk(act.atkDelta);
+                if (act.atkDelta != 0 && act.atkDeltaOnce) {
+                    m_tempAtkDelta += act.atkDelta;
+                }
                 m_enemy->modifyDef(act.defDelta);
                 m_frozenTurns += std::max(0, act.freezeTurns) + (act.skipAttack ? 1 : 0);
+                if (act.healNextAttack) {
+                    m_healNextAttack = true;
+                }
                 if (!act.setFlag.empty()) context.state.setFlag(act.setFlag, 1);
+                if (act.stopsBeat && !m_beatStopped) {
+                    // BSK (C7): no more attack turns this battle; music drops to ~25 %
+                    m_beatStopped = true;
+                    context.audio.setMusicVolume(context.save.getConfig().musicVolume * 0.25f);
+                    m_musicDucked = true;
+                }
             }
             // BUI-012: optional ding the moment the name turns yellow (placeholder SFX until AUD-011)
             if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {
-                context.audio.playSound("assets/sfx/u_activate.wav", 0.5f);
+                context.audio.playSound("assets/sfx/bell.ogg", 0.5f);
             }
         }
 
@@ -591,12 +650,35 @@ void BattleSystem::handleMercyInput(GameContext& context) {
     if (context.input.isConfirmPressed()) {
         context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
         if (m_subOptionIndex == 0) { // Spare
-            if (m_enemy->isSpareable()) {
-                m_isSpared = true;
+            const std::vector<std::string>& spareLines = m_enemy->getSpareLines();
+            if (!m_enemy->isSpareable() && !spareLines.empty()) {
+                // C1-022: each Spare shows her next line; after the last one she can be spared
+                const RepeatedSpareOutcome outcome = advanceRepeatedSpare(
+                    m_enemy->getSpareLinesShown(), spareLines.size(), false);
+                m_enemy->setSpareLinesShown(outcome.linesShown);
+                if (outcome.showLine) m_lastActResponse = spareLines[outcome.lineIndex];
+                if (outcome.nowSpareable) m_enemy->setSpareable(true);
+                m_lastPlayerAction = PlayerTurnAction::MercySpareFail;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".";
+            } else if (m_enemy->isSpareable()) {
+                m_isSpared = true;
+                const bool yiffed = toxicTrack(context.state) != 1 &&
+                                    usesRegularYiffNarration(m_enemy->getId());
+                if (yiffed) {
+                    const YiffNarration narration = yiffNarration(
+                        m_enemy->getName(),
+                        static_cast<std::size_t>(GetRandomValue(0, 2)),
+                        g_lastYiffNarration);
+                    g_lastYiffNarration = static_cast<int>(narration.index);
+                    m_narratorText = narration.text;
+                } else {
+                    m_narratorText = m_enemy->getSpareOutro().empty()
+                        ? "* You spared " + m_enemy->getName() + "."
+                        : m_enemy->getSpareOutro();
+                }
                 m_enemySpeechBubble = m_enemy->getSpareText();
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
-                context.audio.playSound("assets/sfx/menu_select.wav", 1.0f);
+                context.audio.playSound("assets/sfx/spare_poof.ogg", 1.0f);
             } else {
                 m_lastPlayerAction = PlayerTurnAction::MercySpareFail;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
@@ -611,7 +693,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_fleeSoulX = m_arenaRect.x + 35.0f;
                 m_fleeSoulY = m_arenaRect.y + 55.0f + 10.0f;
                 m_fleeTimer = 0.0f;
-                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
+                context.audio.playSound("assets/sfx/flee.ogg", 0.7f);
             } else {
                 m_narratorText = m_isBarky
                     ? "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!"
@@ -627,8 +709,8 @@ void BattleSystem::handleMercyInput(GameContext& context) {
 void BattleSystem::startEnemyTurn(GameContext& context) {
     m_turnCount++;
 
-    if (m_frozenTurns > 0) {
-        m_frozenTurns--;
+    if (m_frozenTurns > 0 || m_beatStopped) {
+        if (m_frozenTurns > 0) m_frozenTurns--;
         m_bullets.clear();
         m_zones.clear();
         m_soulTrails.clear();
@@ -650,6 +732,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     m_zones.clear();
     m_ribbitState = RibbitState{};
     m_patternSpawnCount = 0;
+    m_patternWordIndex = 0;
     if (m_isBarky) {
         const auto cringeUses = m_actUseCounts.find("cringe_check");
         const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
@@ -670,6 +753,8 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
         const std::uint32_t randomValue = static_cast<std::uint32_t>(GetRandomValue(0, 1000000));
         m_genericPatternIndex = pickWeightedPatternIndex(patterns, randomValue);
         if (m_genericPatternIndex >= patterns.size()) m_genericPatternIndex = 0;
+        m_enemyTurnDuration = 5.0f;
+        if (beatPatternSelected()) startBeatTurn(context);
     }
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
@@ -700,6 +785,96 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     m_lastActResponse = "";
 }
 
+bool BattleSystem::beatPatternSelected() const {
+    if (m_isBarky || !m_beatMapLoaded || !m_enemy) return false;
+    const auto& patterns = m_enemy->getPatterns();
+    return m_genericPatternIndex < patterns.size() &&
+           patterns[m_genericPatternIndex].kind == EnemyPatternKind::Beat;
+}
+
+void BattleSystem::startBeatTurn(GameContext& context) {
+    context.audio.setMusicLoopPoints(0.0f, m_beatMap.loopLength);
+    context.audio.seekMusic(m_beatMap.offset);
+    m_beatClock = BeatTurnClock{};
+    m_enemyTurnDuration = beatTurnDuration(m_beatMap);
+    // start just before the first note so the note at t = 0 fires (same as the BSK-T2 tests)
+    m_beatPrevTime = -0.001f - m_beatMap.latencyMs / 1000.0f;
+    m_beatTurnTime = 0.0f;
+    m_beatLean = 0;
+    m_beatInCloseup = false;
+    m_closeupZoomTimer = 0.0f;
+    m_beatTurnActive = true;
+}
+
+bool BattleSystem::updateBeatTurn(float dt, GameContext& context) {
+    const float raw = context.audio.musicTime();
+    // the first sample after the seek may still report the pre-seek (calm bar) position
+    const bool staleFirstSample = m_beatClock.lastRaw < 0.0f && raw > m_beatMap.loopLength * 0.5f;
+    if (raw > 0.0f && !staleFirstSample) {
+        m_beatTurnTime = m_beatClock.advance(m_beatMap, raw);
+    } else if (m_beatClock.lastRaw < 0.0f) {
+        m_beatTurnTime = m_enemyTurnTimer; // no track / not started yet: turn timer fallback
+    }
+
+    const auto& patterns = m_enemy->getPatterns();
+    for (const BeatEvent& event : beatEventsBetween(m_beatMap, m_beatPrevTime, m_beatTurnTime)) {
+        spawnBeatTuft(patterns[m_genericPatternIndex], event);
+        m_beatLean = event.noteIndex % 2;
+    }
+    m_beatPrevTime = std::max(m_beatPrevTime, m_beatTurnTime);
+
+    // hard cut between shots; each cut to the close-up snaps a 1.15 -> 1.0 zoom
+    const bool closeup = beatShotAt(m_beatMap, m_beatTurnTime) == "closeup" &&
+                         !beatTurnFinished(m_beatMap, m_beatTurnTime);
+    if (closeup && !m_beatInCloseup) m_closeupZoomTimer = 0.08f;
+    m_beatInCloseup = closeup;
+    m_closeupZoomTimer = std::max(0.0f, m_closeupZoomTimer - dt);
+
+    // safety net: a stalled music clock never traps the player in the turn
+    return beatTurnFinished(m_beatMap, m_beatTurnTime) ||
+           m_enemyTurnTimer >= m_enemyTurnDuration + 2.0f;
+}
+
+void BattleSystem::endBeatTurn(GameContext& context) {
+    // the track is already in the calm bar: only restore the loop, no seek
+    context.audio.setMusicLoopPoints(m_beatMap.menuLoopStart, m_beatMap.menuLoopEnd);
+    m_beatTurnActive = false;
+    m_beatInCloseup = false;
+    m_closeupZoomTimer = 0.0f;
+    m_enemyTurnDuration = 5.0f;
+}
+
+void BattleSystem::spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent& event) {
+    // thrown from the side the head leans to (even note = left), straight across the box
+    const bool fromLeft = (event.noteIndex % 2) == 0;
+    const Rectangle box = m_targetBoxRect;
+    const float innerTop = box.y + 18.0f;
+    const float innerHeight = std::max(1.0f, box.height - 36.0f);
+    // low-discrepancy lanes so consecutive tufts never stack into a wall
+    const float lane = std::fmod(static_cast<float>(event.noteIndex) * 0.618034f +
+                                 static_cast<float>(event.pass) * 0.29f, 1.0f);
+    const float speed = pattern.speed > 0.0f ? pattern.speed : 110.0f;
+
+    Bullet bullet;
+    bullet.type = BulletType::Normal;
+    bullet.radius = event.big ? 6.0f : 4.0f;
+    bullet.color = WHITE;
+    bullet.position = { fromLeft ? box.x - 8.0f : box.x + box.width + 8.0f, innerTop + lane * innerHeight };
+    // gentle drift toward the middle row
+    const float drift = (lane < 0.5f ? 1.0f : -1.0f) * speed * 0.10f;
+    bullet.velocity = { fromLeft ? speed : -speed, drift };
+    bullet.damage = std::max(1, pattern.damage);
+    bullet.fur = std::max(0, pattern.furry);
+    bullet.spritePath = event.big ? "assets/sprites/bullets/fluff_tuft_big.png"
+                                  : "assets/sprites/bullets/fluff_tuft_small.png";
+    m_bullets.push_back(bullet);
+
+    if (event.kick) {
+        // nudge the box toward the lean; the box lerp in update() decays it within ~0.1 s
+        m_arenaRect.x += fromLeft ? -2.0f : 2.0f;
+    }
+}
+
 bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur) {
     int reducedDamage = rawDamage + m_enemy->getAtk() - (context.player.df + context.player.armorDf);
     int finalDamage = std::max(1, reducedDamage);
@@ -717,7 +892,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         fur,
         isToxic,
         armorMult);
-    context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
+    context.audio.playSound("assets/sfx/hurt.ogg", 0.6f);
     context.shake(6.0f, 0.25f);
     context.flash({ 255, 0, 0, 255 }, 0.15f);
 
@@ -726,6 +901,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         spawnDust(m_soulPosition, 18, fluffPink);
         context.flash(fluffPink, 0.12f);
         m_furStageUpPending = true;
+        context.audio.playSound("assets/sfx/pomf.ogg", 0.75f);
     }
     if (furChange.reachedMirror) {
         context.state.setFlag("fur_mirror_pending", 1);
@@ -741,7 +917,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         m_furStageUpPending = false;
         context.state.setFlag("fur_toxic_cap_pending", 0);
         m_narratorText.clear(); // BUG-21: no narrator line, straight to the FURRY OVER sequence
-        context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
+        context.audio.playSound("assets/sfx/soul_crack.ogg", 1.0f);
         return true;
     }
 
@@ -751,10 +927,20 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
 void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     m_enemyTurnTimer += dt;
     m_howlWallTimer += dt;
-    if (m_enemyTurnTimer >= m_enemyTurnDuration) {
+    bool turnOver = m_enemyTurnTimer >= m_enemyTurnDuration;
+    if (m_beatTurnActive) {
+        turnOver = updateBeatTurn(dt, context);
+    }
+    if (turnOver) {
+        if (m_beatTurnActive) endBeatTurn(context);
         m_bullets.clear();
         m_zones.clear();
         m_soulTrails.clear();
+        m_healNextAttack = false;
+        if (m_tempAtkDelta != 0) {
+            m_enemy->modifyAtk(-m_tempAtkDelta);
+            m_tempAtkDelta = 0;
+        }
         if (m_soulSpeedBuffTurns > 0) {
             m_soulSpeedBuffTurns--;
         }
@@ -808,12 +994,13 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
         context.audio.playSound("assets/sfx/menu_select.wav", 0.3f);
     }
 
-    // Spawn bullets
+    // Spawn bullets (beat turns spawn from the music clock in updateBeatTurn)
     m_spawnTimer += dt;
     const float spawnInterval = m_isBarky ? 0.38f : 0.72f;
-    if (m_spawnTimer >= spawnInterval) {
+    if (!m_beatTurnActive && m_spawnTimer >= spawnInterval) {
         m_spawnTimer = 0.0f;
         spawnBulletWave();
+        context.audio.playSound("assets/sfx/bullet_spawn.ogg", 0.22f);
     }
 
     // Update & check bullet collisions (BHL-003: 8x8 soul hitbox)
@@ -834,20 +1021,43 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
                 };
             }
         }
+        // BHL-020: at HP <= 4 her bullets bend away from the soul
+        const bool bulletMerciful = !mercifulBulletCanDamage(m_enemy->hasMercifulBullets(), context.player.hp);
+        if (bulletMerciful && mercifulBulletWithinSteerRange(m_bullets[i].position, m_soulPosition, 28.0f)) {
+            m_bullets[i].homes = false;
+            m_bullets[i].parabolic = false;
+            m_bullets[i].gravity = 0.0f;
+            m_bullets[i].velocity = mercifulBulletVelocityAway(
+                m_bullets[i].position, m_soulPosition, m_bullets[i].velocity);
+        }
         m_bullets[i].update(dt, &m_arenaRect);
 
-        if (m_bullets[i].isOutOfBounds(m_arenaRect, 40.0f)) {
+        if ((m_bullets[i].strike && !m_bullets[i].active) ||
+            m_bullets[i].isOutOfBounds(m_arenaRect, 40.0f)) {
             m_bullets.erase(m_bullets.begin() + i);
             continue;
         }
 
-        if (m_bullets[i].active && CheckCollisionRecs(soulHitbox, m_bullets[i].getBounds())) {
+        bool bulletHitsSoul = false;
+        if (!m_bullets[i].text.empty()) {
+            Font textFont = context.resources.getFont8Bit(static_cast<int>(m_bullets[i].textFontSize));
+            const float textWidth = context.resources.measureTextWidth(
+                textFont, m_bullets[i].text, m_bullets[i].textFontSize, 1.0f);
+            bulletHitsSoul = rectHitsCircle(
+                textBulletRect(m_bullets[i].position, textWidth, m_bullets[i].textFontSize),
+                m_soulPosition,
+                4.0f);
+        } else {
+            bulletHitsSoul = CheckCollisionRecs(soulHitbox, m_bullets[i].getBounds());
+        }
+
+        if (m_bullets[i].active && !m_bullets[i].isStruck() && bulletHitsSoul) {
             if (m_bullets[i].healsSoul()) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + m_bullets[i].heal);
                 context.audio.playSound("assets/sfx/heal.wav", 0.8f);
                 m_bullets.erase(m_bullets.begin() + i);
                 continue;
-            } else if (m_bullets[i].hurtsSoul(soulMoving) && m_invulnTimer <= 0.0f) {
+            } else if (m_bullets[i].hurtsSoul(soulMoving) && m_invulnTimer <= 0.0f && !bulletMerciful) {
                 m_invulnTimer = 1.0f; // 30 frames of i-frame
                 if (applySoulDamage(context, m_bullets[i].damage, m_bullets[i].fur)) {
                     return;
@@ -956,12 +1166,26 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
     const int maxCount = std::max(1, pattern.count);
     if (m_patternSpawnCount >= maxCount) return;
 
-    const auto finishBullet = [&pattern](Bullet& bullet) {
+    const auto finishBullet = [&pattern, this](Bullet& bullet) {
         bullet.damage = std::max(1, pattern.damage);
         bullet.fur = std::max(0, pattern.furry);
-        if (!pattern.text.empty()) {
+        bullet.attackColor = pattern.color;
+        if (m_healNextAttack && pattern.heal > 0) {
+            bullet.attackColor = AttackColor::Green;
+            bullet.heal = pattern.heal;
+            bullet.damage = 0;
+            bullet.color = ATTACK_COLOR_GREEN;
+        } else if (pattern.id == "grass_blades") {
+            bullet.color = Color{ 120, 240, 140, 255 };
+        }
+        const std::string& word = textBulletWord(pattern.words, m_patternWordIndex, pattern.text);
+        if (!word.empty()) {
             bullet.type = BulletType::UwU;
-            bullet.text = pattern.text;
+            bullet.text = word;
+            bullet.color = WHITE;
+            bullet.strike = pattern.strike;
+            bullet.strikeAfter = pattern.strikeAfter;
+            if (!pattern.words.empty()) ++m_patternWordIndex;
         }
     };
 
@@ -1034,6 +1258,23 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
             finishBullet(bullet);
             m_bullets.push_back(std::move(bullet));
         }
+    } else if (pattern.kind == EnemyPatternKind::TextWall) {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(55.0f, pattern.speed);
+        const float top = m_arenaRect.y + TEXT_BULLET_FONT_SIZE * 0.5f + 5.0f;
+        const float bottom = m_arenaRect.y + m_arenaRect.height - TEXT_BULLET_FONT_SIZE * 0.5f - 5.0f;
+        const float requestedGapTop = static_cast<float>(GetRandomValue(
+            static_cast<int>(top), static_cast<int>(bottom - TEXT_WALL_GAP_HEIGHT)));
+        const float gapTop = textWallGapTop(requestedGapTop, top, bottom, TEXT_WALL_GAP_HEIGHT);
+        const float startX = fromLeft ? m_arenaRect.x - 8.0f : m_arenaRect.x + m_arenaRect.width + 8.0f;
+        for (float y = top; y <= bottom; y += TEXT_BULLET_FONT_SIZE + 4.0f) {
+            if (textWallWordOverlapsGap(y, TEXT_BULLET_FONT_SIZE, gapTop, TEXT_WALL_GAP_HEIGHT)) continue;
+            Bullet bullet;
+            bullet.position = { startX, y };
+            bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
     } else if (pattern.kind == EnemyPatternKind::Bounce) {
         Bullet bullet;
         bullet.position = {
@@ -1048,6 +1289,27 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
         bullet.color = Color{ 180, 120, 230, 255 };
         finishBullet(bullet);
         m_bullets.push_back(std::move(bullet));
+    } else if (pattern.kind == EnemyPatternKind::Ring) {
+        // C1-022 hug_ring: a ring of bullets closes in on the soul, with a 3-bullet gap to slip out of
+        constexpr int ringSize = 14;
+        constexpr float ringRadius = 62.0f;
+        const float speed = std::max(30.0f, pattern.speed);
+        const int gapStart = GetRandomValue(0, ringSize - 1);
+        for (int index = 0; index < ringSize; ++index) {
+            if ((index - gapStart + ringSize) % ringSize < 3) continue;
+            const float angle = (static_cast<float>(index) / static_cast<float>(ringSize)) * 2.0f * PI;
+            const Vector2 direction = { std::cos(angle), std::sin(angle) };
+            Bullet bullet;
+            bullet.position = {
+                m_soulPosition.x + direction.x * ringRadius,
+                m_soulPosition.y + direction.y * ringRadius
+            };
+            bullet.velocity = { -direction.x * speed, -direction.y * speed };
+            bullet.radius = 5.0f;
+            bullet.color = Color{ 255, 190, 225, 255 };
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
     }
 
     ++m_patternSpawnCount;
@@ -1414,7 +1676,35 @@ void BattleSystem::drawBullet(GameContext& context, const Bullet& b) const {
 
     bool drewSprite = false;
 
-    if (b.type == BulletType::UwU && !b.text.empty()) {
+    if (!b.text.empty()) {
+        Font textFont = context.resources.getFont8Bit(static_cast<int>(b.textFontSize));
+        const float textWidth = context.resources.measureTextWidth(textFont, b.text, b.textFontSize, 1.0f);
+        const Rectangle bounds = textBulletRect(b.position, textWidth, b.textFontSize);
+        context.resources.drawText(
+            textFont, b.text, { bounds.x, bounds.y }, b.textFontSize, renderColor, 1.0f);
+        if (b.isStruck()) {
+            DrawLineEx(
+                { bounds.x, b.position.y },
+                { bounds.x + bounds.width, b.position.y },
+                2.0f,
+                renderColor);
+        }
+        drewSprite = true;
+    } else if (!b.spritePath.empty()) {
+        // BSK (C7): fluff tuft PNG, drawn a bit larger than its forgiving hitbox
+        Texture2D tuftTex = context.resources.getTexture(b.spritePath);
+        if (tuftTex.id > 0) {
+            SetTextureFilter(tuftTex, TEXTURE_FILTER_POINT);
+            constexpr float tuftScale = 1.5f;
+            const float w = static_cast<float>(tuftTex.width) * tuftScale;
+            const float h = static_cast<float>(tuftTex.height) * tuftScale;
+            DrawTexturePro(tuftTex,
+                           { 0.0f, 0.0f, static_cast<float>(tuftTex.width), static_cast<float>(tuftTex.height) },
+                           { b.position.x - w * 0.5f, b.position.y - h * 0.5f, w, h },
+                           { 0.0f, 0.0f }, 0.0f, renderColor);
+            drewSprite = true;
+        }
+    } else if (b.type == BulletType::UwU && !b.text.empty()) {
         char first = static_cast<char>(std::tolower(static_cast<unsigned char>(b.text[0])));
         if (first == 'u' || first == 'w') {
             const SpriteSheetDef* uwuSheet = spriteSheetCache().load("assets/bullets/uwu_letters.png", "assets/bullets/uwu_letters.json");
@@ -1493,7 +1783,39 @@ void BattleSystem::render(GameContext& context) {
         Texture2D enemyTexture = { 0, 0, 0, 0, 0 };
         if (enemySheet != nullptr) enemyTexture = context.resources.getTexture(spritePng);
 
-        if (enemySheet != nullptr && enemyTexture.id > 0) {
+        // BSK (C7): close-up shot during the beat burst (hard cut, snap zoom, never over the box)
+        bool drewBeatCloseup = false;
+        if (m_beatMapLoaded && m_beatTurnActive && m_beatInCloseup && !m_isSpared &&
+            m_enemyShakeTimer <= 0.0f) {
+            const std::string closePng = spriteBase + "_close.png";
+            const SpriteSheetDef* closeSheet = spriteSheetCache().load(closePng, spriteBase + "_close.json");
+            Texture2D closeTex = { 0, 0, 0, 0, 0 };
+            if (closeSheet != nullptr) closeTex = context.resources.getTexture(closePng);
+            if (closeSheet != nullptr && closeTex.id > 0) {
+                const int pass = static_cast<int>(std::floor(std::max(0.0f, m_beatTurnTime) / m_beatMap.loopLength));
+                std::string expression = "smug";
+                if (!m_beatMap.expressions.empty()) {
+                    expression = m_beatMap.expressions[beatExpressionIndex(m_beatMap, m_turnCount - 1, pass)];
+                }
+                float animTime = 0.0f;
+                const auto anim = closeSheet->anims.find(expression);
+                if (anim != closeSheet->anims.end() && anim->second.fps > 0.0f) {
+                    animTime = (static_cast<float>(m_beatLean) + 0.5f) / anim->second.fps;
+                }
+                const float bottom = std::min(static_cast<float>(baselineY), m_arenaRect.y - 4.0f);
+                const float cellH = static_cast<float>(std::max(1, closeSheet->originY));
+                const float fitScale = std::min(2.0f, bottom / cellH);
+                const float zoom = 1.0f + 0.15f * std::clamp(m_closeupZoomTimer / 0.08f, 0.0f, 1.0f);
+                SetTextureFilter(closeTex, TEXTURE_FILTER_POINT);
+                drawSprite(closeTex, *closeSheet, expression, animTime,
+                           { static_cast<float>(enemyCenterX), bottom }, fitScale * zoom, WHITE);
+                drewBeatCloseup = true;
+            }
+        }
+
+        if (drewBeatCloseup) {
+            // close-up drawn
+        } else if (enemySheet != nullptr && enemyTexture.id > 0) {
             std::string animation = "idle";
             Color tint = WHITE;
             if (m_isSpared) {
@@ -1510,12 +1832,27 @@ void BattleSystem::render(GameContext& context) {
                 }
             }
 
+            float animTime = m_enemyIdleTimer;
+            if (m_beatMapLoaded && animation == "idle" && m_beatMap.bpm > 0.0f) {
+                // BSK (C7): wide shot dance steps on the eighth notes of the music clock
+                float loopTime = m_beatTurnActive ? m_beatTurnTime
+                                                  : context.audio.musicTime() - m_beatMap.offset;
+                if (!m_beatTurnActive && context.audio.musicTime() <= 0.0f) loopTime = m_enemyIdleTimer;
+                loopTime = std::max(0.0f, loopTime);
+                const float eighth = 60.0f / m_beatMap.bpm / 2.0f;
+                const int frame = static_cast<int>(std::floor(loopTime / eighth)) % 4;
+                const auto idle = enemySheet->anims.find("idle");
+                if (idle != enemySheet->anims.end() && idle->second.fps > 0.0f) {
+                    animTime = (static_cast<float>(frame) + 0.5f) / idle->second.fps;
+                }
+            }
+
             SetTextureFilter(enemyTexture, TEXTURE_FILTER_POINT);
             drawSprite(
                 enemyTexture,
                 *enemySheet,
                 animation,
-                m_enemyIdleTimer,
+                animTime,
                 { static_cast<float>(enemyCenterX), static_cast<float>(baselineY) },
                 2.0f,
                 tint
@@ -1643,7 +1980,9 @@ void BattleSystem::render(GameContext& context) {
 
     // TXT-008: Enemy Speech Bubble with auto-sizing and tail pointer
     // The bubble also shows on the spare dialog (Barky's spare / Accept Hug lines, LORE §19.1)
-    const bool showBubble = m_state == BattleState::EnemyTurn || (m_state == BattleState::DialogMessage && m_isSpared);
+    const bool showBubble = m_state == BattleState::EnemyTurn ||
+        (m_state == BattleState::DialogMessage &&
+         (m_isSpared || (m_enemy->isDead() && !m_enemy->getDeathLines().empty())));
     if (showBubble && !m_enemySpeechBubble.empty()) {
         float textW = context.resources.measureTextWidth(fontSmall, m_enemySpeechBubble, 16, 1.0f);
         float bubbleW = std::clamp(textW + 24.0f, 100.0f, 240.0f);
@@ -1651,7 +1990,10 @@ void BattleSystem::render(GameContext& context) {
         if (textW > 220.0f) {
             bubbleH = 64.0f;
         }
-        Rectangle bubbleRect = { (float)enemyCenterX + 45.0f, (float)baselineY - 165.0f, bubbleW, bubbleH };
+        // the Bass Shake close-up is much wider than the wide sprite: keep the bubble clear of it
+        const float bubbleOffsetX = (m_beatTurnActive && m_beatInCloseup) ? 150.0f : 45.0f;
+        Rectangle bubbleRect = { (float)enemyCenterX + bubbleOffsetX, (float)baselineY - 165.0f, bubbleW, bubbleH };
+        bubbleRect.x = std::min(bubbleRect.x, static_cast<float>(VIRTUAL_WIDTH) - bubbleW - 8.0f); // never off-screen
 
         DrawRectangleRec(bubbleRect, WHITE);
         DrawRectangleLinesEx(bubbleRect, 2.0f, BLACK);
@@ -1769,7 +2111,8 @@ void BattleSystem::render(GameContext& context) {
         if (m_subOptionIndex == 0) drawSoul(m_arenaRect.x + 35, spareY + 10, SOUL_RED);
         if (m_canFlee && m_subOptionIndex == 1) drawSoul(m_arenaRect.x + 35, fleeY + 10, SOUL_RED);
 
-        context.resources.drawText(font8Bit, "* Spare", { m_arenaRect.x + 55, spareY }, 20, spareColor, 1.0f);
+        const std::string spareOption = "* " + std::string(mercyLabel(context.state));
+        context.resources.drawText(font8Bit, spareOption, { m_arenaRect.x + 55, spareY }, 20, spareColor, 1.0f);
         if (m_canFlee) {
             context.resources.drawText(font8Bit, "* Flee", { m_arenaRect.x + 55, fleeY }, 20, WHITE, 1.0f);
         }
@@ -1840,7 +2183,16 @@ void BattleSystem::render(GameContext& context) {
             Rectangle soulHb = { m_soulPosition.x - 4.0f, m_soulPosition.y - 4.0f, 8.0f, 8.0f };
             DrawRectangleLinesEx(soulHb, 1.0f, RED);
             for (const auto& b : m_bullets) {
-                DrawRectangleLinesEx(b.getBounds(), 1.0f, COLOR_UNDERTALE_GREEN);
+                if (!b.text.empty()) {
+                    Font textFont = context.resources.getFont8Bit(static_cast<int>(b.textFontSize));
+                    const float textWidth = context.resources.measureTextWidth(textFont, b.text, b.textFontSize, 1.0f);
+                    DrawRectangleLinesEx(
+                        textBulletRect(b.position, textWidth, b.textFontSize),
+                        1.0f,
+                        COLOR_UNDERTALE_GREEN);
+                } else {
+                    DrawRectangleLinesEx(b.getBounds(), 1.0f, COLOR_UNDERTALE_GREEN);
+                }
             }
         }
     }

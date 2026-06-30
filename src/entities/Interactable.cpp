@@ -23,7 +23,7 @@ void SavePoint::update(float dt) {
 
 void SavePoint::interact(GameContext& context) {
     context.player.hp = context.player.maxHp;
-    context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+    context.audio.playSound("assets/sfx/save_can.ogg", 0.8f);
 }
 
 void SavePoint::render(GameContext& context) {

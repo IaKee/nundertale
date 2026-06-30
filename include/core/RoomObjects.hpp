@@ -80,6 +80,22 @@ inline bool parseRoomCondition(const std::string& text, std::vector<RoomConditio
     return true;
 }
 
+inline int evaluateInventoryCondition(
+    const std::string& key,
+    const std::vector<std::string>& inventory,
+    const std::function<std::string(const std::string&)>& idLookup = nullptr) {
+    if (key.rfind("hasItem.", 0) != 0) return -1;
+    const std::string target = key.substr(8);
+    for (const auto& item : inventory) {
+        if (item == target) return 1;
+        std::string withSpaces = target;
+        for (char& c : withSpaces) if (c == '_') c = ' ';
+        if (item == withSpaces) return 1;
+        if (idLookup != nullptr && idLookup(item) == target) return 1;
+    }
+    return 0;
+}
+
 inline bool evaluateRoomCondition(
     const std::string& text,
     const std::function<int(const std::string&)>& flagLookup,

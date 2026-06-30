@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Is this candy, pup? It smells like a laundromat. uwu"
+      ],
+      "if": "hasItem.tide_pod == 1 && item.tide_pod.shown == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "item.tide_pod.shown",
+      "value": 1,
+      "if": "hasItem.tide_pod == 1 && item.tide_pod.shown == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Do you prefer glitter or MORE glitter?"
+      ]
+    }
+  ]
+}

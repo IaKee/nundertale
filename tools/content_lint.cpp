@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         std::vector<nundertale::LintFinding> findings =
-            nundertale::lintText(contents, blocked);
+            nundertale::lintText(contents, blocked, displayPath(root, path));
         if (checkJson) {
             nundertale::LintFinding jsonFinding;
             if (!nundertale::validateJson(contents, &jsonFinding)) {

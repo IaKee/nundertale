@@ -27,7 +27,7 @@
     },
     {
       "type": "sound",
-      "path": "assets/sfx/type_long.ogg",
+      "path": "assets/sfx/phone_buzz.ogg",
       "volume": 0.8
     },
     {

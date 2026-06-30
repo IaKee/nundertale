@@ -1,0 +1,55 @@
+{
+  "id": "lurkeye",
+  "name": "Lurkeye",
+  "hp": 50,
+  "maxHp": 50,
+  "atk": 6,
+  "def": 4,
+  "exp": 5,
+  "gold": 5,
+  "sprite": "lurkeye",
+  "check": "Has watched the 18+ channel since 2016. Has never typed. Not once.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "dont_pick_on",
+      "label": "Don't Pick On",
+      "text": "* You treat Lurkeye with respect.",
+      "effects": { "spareable": true }
+    },
+    {
+      "id": "pick_on",
+      "label": "Pick On",
+      "text": "* You picked on Lurkeye.",
+      "response": "...",
+      "effects": { "spareable": true, "atkDelta": 2, "atkDeltaOnce": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Lurkeye is staring silently.",
+      "* Lurkeye has not typed anything.",
+      "* Lurkeye watches without blinking."
+    ],
+    "lowHp": ["* Lurkeye is sweating silently."],
+    "spareable": ["* Lurkeye seems unbothered."]
+  },
+  "dialogue": {
+    "default": ["...", "(typing...)", "(stopped typing)"]
+  },
+  "patterns": [
+    {
+      "id": "seen_rings",
+      "kind": "ring",
+      "weight": 1,
+      "params": { "count": 2, "speed": 40, "damage": 2, "furry": 2 }
+    }
+  ],
+  "spareText": "...",
+  "deathText": "* Lurkeye closes the tab and vanishes."
+}

@@ -1,0 +1,35 @@
+{
+  "steps": [
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 288,
+      "y": 140,
+      "speed": 10000
+    },
+    {
+      "type": "showNpc",
+      "npc": "furiell"
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "down"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Every gamer who leaves comes back worse. Angrier. Lonelier. Filmed. ...Prove to me you can survive up there."
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "furiell"
+    },
+    {
+      "type": "hideNpc",
+      "npc": "furiell"
+    }
+  ]
+}

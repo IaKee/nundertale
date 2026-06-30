@@ -602,7 +602,7 @@
             {
               "name": "showIf",
               "type": "string",
-              "value": "ruins.dummy.talked >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0"
+              "value": "ruins.dummy.talked >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.spared == 0 && battle.fursuit_dummy.killed == 0"
             }
           ]
         },
@@ -676,7 +676,7 @@
             {
               "name": "cutscene",
               "type": "string",
-              "value": "r5_dummy_other"
+              "value": "r5_dummy_spare"
             },
             {
               "name": "once",
@@ -686,7 +686,7 @@
             {
               "name": "showIf",
               "type": "string",
-              "value": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && ruins.dummy.talked == 0 && battle.fursuit_dummy.killed == 0"
+              "value": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0"
             }
           ]
         }

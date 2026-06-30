@@ -1,0 +1,8 @@
+{
+  "id": "encounter_furiell",
+  "enemies": ["furiell"],
+  "introText": "* Furiell blocks the way.",
+  "background": "black",
+  "music": "boss_furiell",
+  "canFlee": false
+}

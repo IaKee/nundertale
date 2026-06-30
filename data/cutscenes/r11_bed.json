@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* You nap under the faux-fur blanket."
+      ]
+    },
+    {
+      "type": "fadeOut",
+      "seconds": 0.5
+    },
+    {
+      "type": "healFull"
+    },
+    {
+      "type": "addFur",
+      "value": 5
+    },
+    {
+      "type": "fadeIn",
+      "seconds": 0.5
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* HP fully restored. FUR +5."
+      ]
+    }
+  ]
+}

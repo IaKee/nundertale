@@ -156,7 +156,8 @@ inline std::string trim(std::string value) {
 } // namespace content_lint_detail
 
 inline std::vector<LintFinding> lintText(const std::string& text,
-                                         const std::vector<std::string>& blocked) {
+                                         const std::vector<std::string>& blocked,
+                                         const std::string& filePath = "") {
     using namespace content_lint_detail;
 
     std::vector<PositionedCodePoint> characters;
@@ -204,6 +205,31 @@ inline std::vector<LintFinding> lintText(const std::string& text,
                                        !isWordCharacter(characters[after].value);
             if (leftBoundary && rightBoundary) {
                 addFinding(characters[index], "portuguese-word");
+            }
+        }
+    }
+
+    // NAR-032 / LOR-005: Case-insensitive, whole-word check for "Pepe" with names.json easter egg allow-list
+    static const std::string pepeWord = "pepe";
+    const std::vector<char32_t> pepeNeedle = foldedCodePoints(pepeWord);
+    for (std::size_t index = 0U; index < characters.size(); ++index) {
+        if (!matchesAt(characters, index, pepeNeedle)) {
+            continue;
+        }
+        const bool leftBoundary = index == 0U || !isWordCharacter(characters[index - 1U].value);
+        const std::size_t after = index + pepeNeedle.size();
+        const bool rightBoundary = after == characters.size() ||
+                                   !isWordCharacter(characters[after].value);
+        if (leftBoundary && rightBoundary) {
+            const std::string snippet = lineSnippet(text, characters[index].line);
+            const bool isNamesFile = filePath.empty() || filePath.find("names.json") != std::string::npos;
+            const bool isAllowedEgg = isNamesFile &&
+                                      snippet.find("\"names\"") != std::string::npos &&
+                                      (snippet.find("\"PEPE\"") != std::string::npos ||
+                                       snippet.find("\"pepe\"") != std::string::npos ||
+                                       snippet.find("\"Pepe\"") != std::string::npos);
+            if (!isAllowedEgg) {
+                addFinding(characters[index], "pepe-word");
             }
         }
     }
@@ -615,7 +641,7 @@ inline bool validateJson(const std::string& text, LintFinding* errorOut = nullpt
         const std::string type = text.substr(quote + 1U, end - quote - 1U);
         const bool known = type == "wait" || type == "dialog" || type == "sound" ||
             type == "setFlag" || type == "shake" || type == "flash" ||
-            type == "startBattle" || type == "setFur" || type == "healFull" ||
+            type == "startBattle" || type == "openShop" || type == "setFur" || type == "healFull" ||
             type == "facePlayer" || type == "playerAnim" || type == "giveItem" ||
             type == "addFlag" || type == "addFur" || type == "npcFace" ||
             type == "npcAnim" || type == "hideNpc" || type == "showNpc" ||

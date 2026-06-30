@@ -2,7 +2,9 @@
 
 #include <cctype>
 #include <cstdint>
+#include <array>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace nundertale {
@@ -79,6 +81,49 @@ inline int randomEncounterStepCountdown(std::uint32_t& rngState) {
 
 inline bool encounterBudgetAllows(int encounterCount, int encounterBudget) {
     return encounterBudget > 0 && encounterCount < encounterBudget;
+}
+
+struct EncounterAreaCap {
+    std::string_view area;
+    int kills = 0;
+};
+
+inline constexpr std::array<EncounterAreaCap, 4> TOXIC_ENCOUNTER_CAPS{{
+    { "ruins", 6 },
+    { "snowdinha", 6 },
+    { "wetfall", 5 },
+    { "hotland", 3 },
+}};
+
+inline std::string_view encounterAreaForRoom(std::string_view roomId) {
+    for (const EncounterAreaCap& entry : TOXIC_ENCOUNTER_CAPS) {
+        if (roomId == entry.area ||
+            (roomId.size() > entry.area.size() &&
+             roomId.substr(0, entry.area.size()) == entry.area &&
+             roomId[entry.area.size()] == '_')) {
+            return entry.area;
+        }
+    }
+    return {};
+}
+
+inline int toxicEncounterCap(std::string_view area) {
+    for (const EncounterAreaCap& entry : TOXIC_ENCOUNTER_CAPS) {
+        if (entry.area == area) return entry.kills;
+    }
+    return 0;
+}
+
+// On the active toxic track, the area's kill cap replaces the per-room budget.
+// Unknown areas retain the regular budget until their cap is defined.
+inline bool encounterAllowed(int encounterCount,
+                             int encounterBudget,
+                             int toxicTrack,
+                             int areaKills,
+                             std::string_view area) {
+    const int areaCap = toxicEncounterCap(area);
+    if (toxicTrack == 1 && areaCap > 0) return areaKills < areaCap;
+    return encounterBudgetAllows(encounterCount, encounterBudget);
 }
 
 inline bool advanceEncounterStep(int& stepsRemaining, bool walked) {

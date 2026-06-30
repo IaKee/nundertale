@@ -1,0 +1,8 @@
+{
+  "id": "napstablurk",
+  "enemies": ["napstablurk"],
+  "introText": "* Here comes Napstablurk.",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

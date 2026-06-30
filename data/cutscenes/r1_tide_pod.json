@@ -1,0 +1,21 @@
+{
+  "steps": [
+    {
+      "type": "giveItem",
+      "item": "Tide Pod",
+      "lines": [
+        "* The Tide Pod you slipped on. It fell in with you."
+      ],
+      "fullLines": [
+        "* You're carrying too much."
+      ],
+      "if": "item.tide_pod.taken == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "item.tide_pod.taken",
+      "value": 1,
+      "if": "item.tide_pod.taken == 0 && hasItem.tide_pod == 1"
+    }
+  ]
+}

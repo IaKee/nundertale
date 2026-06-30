@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* \"try zipper, but hole\""
+      ],
+      "if": "ruins.floormsg.r9.read == 0"
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* - xX_BarkSc0p3_Xx. Rated: 312."
+      ],
+      "if": "ruins.floormsg.r9.read >= 1"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floormsg.r9.read",
+      "value": 1,
+      "if": "ruins.floormsg.r9.read == 0"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ namespace nundertale {
 class SceneManager;
 
 struct PlayerData {
-    std::string name = "PEPE";
+    std::string name = "GRUB";
     int hp = 20;
     int maxHp = 20;
     int level = 1;

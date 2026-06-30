@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "NAPSTABLURK",
+      "lines": [
+        "oh... i usually come here because nobody's online... but today i met somebody nice..."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.napstablurk.state",
+      "value": 1
+    }
+  ]
+}
