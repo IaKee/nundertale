@@ -4,23 +4,23 @@ path.insert(1, '.')
 
 from model.GameSprite import GameSprite
 from model.FileManager import FileManager
+from pygame.math import Vector2, clamp
 
 from CONSTANTS import SPRITE_DIR
 
 class PlayerModel():
     def __init__(self):
-        self.position = [0, 0]
-        self.movespeed = (1, 1)
+        self.position = Vector2(0, 0)
+        self.movespeed = 1
         self.file_manager = FileManager()
         self.sprite: GameSprite = GameSprite(self.file_manager.load_image(f'{SPRITE_DIR}/player.png'))
 
-    def mov(self, x, y):
-        if( -1 <= x*y <= 1):
-            self.position[0] += x * self.movespeed[0]
-            self.position[1] += y * self.movespeed[1]
-        else:
-            raise Exception(f'player movement vector should be between (-1, -1) and (1, 1), was ({x}, {y})')
+    def mov(self, mov_vec2):
+           #clamped_mov = [clamp(mov_vec2[0], -1, 1), clamp(mov_vec2[1], -1, 1)]
+           #print(self.position + clamped_mov)
+           print(f'{self.position} -> {mov_vec2}')
+           self.position.move_towards_ip(mov_vec2, self.movespeed)
         
-    def set_pos(self, x, y):
-        self.position = (x, y)
+    def set_pos(self, pos_vec2):
+        self.position = pos_vec2
         

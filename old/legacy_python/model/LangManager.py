@@ -5,11 +5,18 @@ from CONSTANTS import LANG_DIR
 class LangManager:
     def __init__(self, lang_code):
         self.__lang_code = lang_code  
-    
+
+        # TODO: find a way to update replacements wherever needed
+        #self.__replacements = {"PLAYERNAME": self.player_name}
+
     def set_lang(self, lang_code):
         self.__lang_code = lang_code  
     def get_lang(self):
         return self.__lang_code
+
+    def sanitize_string(self, string):
+        pass
+        #new_string = string.replace(f"%PLAYERNAME", self.player_name)
 
     def load_lang_from_json(self):
         """Reads language files from json and stores as local attributes on this class"""
