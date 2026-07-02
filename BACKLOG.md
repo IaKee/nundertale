@@ -1017,10 +1017,11 @@ P1 · M · OVW-003
 - **What:** each room defines an `encounterTable` + `stepsMin/stepsMax`; a step counter (distance walked) fires a weighted encounter. No encounter during the first N steps after a battle or after entering the room.
 - **Done (2026-10-18):** map property `encounters` (`"froggsona:2,shysona:1,modsmal:1"`, ids with weights); while Pepe actually moves, a counter runs down from a random 90–200 walking ticks, then the `!` alert and the encounter transition start that battle. Never during dialog, cutscenes, menus or door fades. Pure logic in `include/core/RandomEncounters.hpp` (seeded xorshift, tested).
 
-#### ENC-004 — Area exhaustion (for the Toxic Gamer route) `[ ]`
+#### ENC-004 — Area exhaustion (for the Toxic Gamer route) `[x]`
 P2 · M · ENC-003, PRG-030
 - **What:** a kill counter per area; when the cap is hit, encounters stop and "* But nobody logged in." shows up.
 - **LORE (D-11):** caps **Ruins 6, Snowdinha 6, Wetfall 5, Hotland 3** (random encounters only), instead of Undertale's 20. Stays P2 (Toxic route), but the `kills.<area>` counters land in M4 because Sans's verdict and the endings read them.
+- **Done (2026-10-27):** area kill exhaustion queries and mechanism (`areaExhausted`, `areaExhaustedNoticeDue`, `areaExhaustedAnnouncedFlag`, `AREA_EXHAUSTED_NOTICE`) in `include/core/RandomEncounters.hpp`; wired to `OverworldScene.cpp` dialog box on exhaustion notice. Random encounters stop once an area cap is reached (Ruins 6, Snowdinha 6, Wetfall 5, Hotland 3). Unit-tested in suite `enc004` (`tests/suites/enc004.hpp`). Not committed yet.
 
 #### ENC-005 — Remove the B debug shortcut `[x]`
 P0 · S · QA-001
@@ -1210,6 +1211,7 @@ P1 · S · SAV-002, FUR-004
 - **What (LORE §8.8):** the formula `* [something about the place] fills you with DETERMINATION.` for all ~14 LORE saves (R1, R3, R13, Snowdinha entrance/town/S6, W1, W6, H3, N3, X2…); can SFX (*tssss*); heals HP (or FLUFF on the Furry route) **without reducing FUR** — with FUR > 0, an extra line `* DETERMINATION can't fix fluff.`; on the Toxic route, `* Determination.`
 - **Save schema (v2):** `fur.value`, `fur.stage_max`, `fur.mirror_refused`, `route.furry`, `fluff.value`, `raid.time_left`, `kills.<area>`, a per-playthrough FURRY OVER counter (SHP-005), with a v1 migration (BUG-27).
 - **Partly done (2026-10-17):** the LORE save line per room (`include/core/SaveText.hpp`, 11 rooms), `* DETERMINATION can't fix fluff.` when FUR > 0, `* Determination.` on the Toxic route; saving heals HP and never touches FUR. Pending: save schema v2 fields beyond FUR, FLUFF heal on the Furry route.
+- **Done (2026-10-27):** `SaveHealResult`, `fluffMax`, and `saveHealResult(state, placeOverride)` in `include/core/SaveText.hpp` with full heal rules (§8.8, §8.6): full HP heal on normal/toxic routes, FLUFF heal to maxHp + 10 on Furry route (`route.furry`), FUR never reduced/touched. Unit-tested in suite `sav007` (`tests/suites/sav007.hpp`). Pending: save schema v2 fields (`SaveService` persistence) and wiring `saveHealResult` into `OverworldScene` save points. Not committed yet.
 
 ---
 
@@ -1594,9 +1596,10 @@ P1 · S · RAD-001, MNU-006
 - **What:** R1 `RAID STARTS IN 30:00. BE THERE OR GET KICKED. bring dew -xX_Moderator_Xx` (the phone buzzes) · 15:00 `15 MIN WHERE ARE U` · 5:00 `5 min. ur kicked if ur late. no cap.` · 0:00 `* Your phone buzzes.` / `* "Raid started without you. Kicked."` / `* ...You feel strangely okay with that.` **Deferred** if the threshold lands in a battle/cutscene (it shows up back in the overworld).
 - **Done (2026-10-17):** `raidPendingMessage` (mask in flag `raid_msgs_shown`) shows the start, 15:00, 5:00 and kicked texts as overworld dialog; crossings during a battle show on return. Uses `selection_sound.wav` until AUD-011 has a buzz SFX.
 
-#### RAD-004 — Queries for the endings `[ ]`
+#### RAD-004 — Queries for the endings `[x]`
 P1 · S · RAD-001
 - **What:** `raid.expired` and `raid.time_left` read by `END-006` (per-ending lines and the extra speedrun line).
+- **Done (2026-10-27):** `raidExpired`, `raidTimeLeftSeconds` (ceil rounding), `raidEndingQuery` with speedrun threshold check (> 10:00 / 600 s per LORE §22.4), and `raidSyncFlags` syncing `raid.expired` and `raid.time_left` into `GameState` in `include/core/RaidClock.hpp`. Unit-tested in suite `rad004` (`tests/suites/rad004.hpp`). Deliberately not wired into `END-006` ending scenes yet. Not committed yet.
 
 #### RAD-005 — The Furry route twist `[ ]`
 P2 · S · RAD-001, C6-002
@@ -2423,10 +2426,11 @@ P2 · XL · C7-001..C7-005, C1-024, C2-024, C3-024
 
 > **Source:** LORE §8.9, §8.11, §22.0, §22.2 and §2.3 (rule 7). Everything here reads the **toxic track** (PRG-032): the first kill starts it, the first spare or yiff ends it, and the change is gradual; only a full Toxic run reaches the Nuke. If the track ends, the corruption fades back over the next rooms and the PK skull expires. **The HUD is never hidden.** Reference: `docs/mockups/2026-10-18/battle_toxic.png` (keep the layout; the blood splatter and the crossed-swords hitmarker are wrong).
 
-#### TOX-001 — Kill counter and HUD stage `[ ]`
+#### TOX-001 — Kill counter and HUD stage `[x]`
 P2 · S · PRG-031
 - **What:** the toxic track's kill count (from PRG-032; `kills.total` stays for the Gamer route's kill variants), the multikill streak (consecutive kills with no save in between) and the corruption stage (0–4, LORE §8.9 table). The single source that the HUD, music, difficulty and game over read.
 - **Acceptance:** tests for the stage boundaries (0, 1, 9, 16, 22) and for the streak resetting on save.
+- **Done (2026-10-27):** `toxicKills`, `toxicStreak`, `toxicCorruptionStage` (0: 0, 1: 1–8, 2: 9–15, 3: 16–21, 4: 22+), `ToxicHudState`, `toxicHudState`, and `toxicOnSave` (streak reset) in `include/core/ToxicTrack.hpp`. Unit-tested in suite `tox001` (`tests/suites/tox001.hpp`). Deliberately not wired into rendering HUD yet (comes with TOX-002..007). Not committed yet.
 
 #### TOX-002 — League of Legends kill announcer `[ ]`
 P2 · M · TOX-001, AUD-014
@@ -2689,6 +2693,7 @@ P1 · M · REPO-003
 
 #### QA-011 — Damage formula tests `[x]`
 P1 · S · FGT-003, QA-010
+- **Infra note (2026-10-27):** test runner now supports parallel unit test suites via `tests/suites/_all.hpp`, discovering `tests/suites/<id>.hpp` plug-ins exposing `suite_<id>()` without modifying `tests/test_runner.cpp`.
 
 #### QA-012 — Data validation in the build `[x]`
 P2 · M · QA-010
@@ -2699,9 +2704,10 @@ P2 · M · QA-010
 P2 · M · REPO-005
 - **What:** a Windows workflow that runs `tools/setup_vendor.ps1`, builds the release, runs the tests and publishes the `.zip` as an artifact.
 
-#### QA-014 — Crash handler `[ ]`
+#### QA-014 — Crash handler `[x]`
 P3 · S · —
 - **What:** catch exceptions/signals, write `crash_reports/<date>.txt` (the idea existed in the Python version) with the scene, the room and the stack.
+- **Done (2026-10-27):** `include/core/CrashHandler.hpp` installs signal/terminate handlers (`installCrashHandler`), captures scene/room context (`setCrashContext`/`getCrashContext`) and Windows backtraces, and writes timestamped crash logs to `crash_reports/crash_YYYY-MM-DD_HH-MM-SS.txt`. Initialized in `src/main.cpp`. Unit-tested in suite `qa014` (`tests/suites/qa014.hpp`). Dynamic scene/room tracking at every scene transition not fully wired yet. Not committed yet.
 
 #### QA-015 — "Feel" checklist `[x]`
 P1 · S · —

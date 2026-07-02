@@ -1,7 +1,9 @@
 #include "core/Game.hpp"
+#include "core/CrashHandler.hpp"
 #include <iostream>
 
 int main(int argc, char** argv) {
+    nundertale::installCrashHandler();
     try {
         nundertale::Game game(argc, argv);
         game.run();

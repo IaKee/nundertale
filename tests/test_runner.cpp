@@ -62,6 +62,8 @@ extern "C" int GetRandomValue(int minValue, int /*maxValue*/) { return minValue;
 #include "../src/combat/Enemy.cpp"
 #include "../src/services/SaveService.cpp"
 
+#include "suites/_all.hpp"
+
 
 // Test damage formula from FGT-003
 static int calculateDamage(int baseAtk, int enemyDef, float dist, float maxDist, int randVal) {
@@ -4508,6 +4510,8 @@ int main() {
                   << std::endl;
     }
 
-    std::cout << "\nAll 73 test suites passed successfully!" << std::endl;
+    const int extraSuites = runExtraSuites();
+
+    std::cout << "\nAll " << (73 + extraSuites) << " test suites passed successfully!" << std::endl;
     return 0;
 }

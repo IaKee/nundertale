@@ -114,6 +114,26 @@ inline int toxicEncounterCap(std::string_view area) {
     return 0;
 }
 
+// ENC-004: an area is exhausted once its kill counter reaches the cap (D-11).
+// Unknown/uncapped areas are never exhausted.
+inline bool areaExhausted(std::string_view area, int kills) {
+    const int areaCap = toxicEncounterCap(area);
+    return areaCap > 0 && kills >= areaCap;
+}
+
+inline constexpr std::string_view AREA_EXHAUSTED_NOTICE = "* But nobody logged in.";
+
+// Flag that remembers the notice was already shown for the area (saved with the flags).
+inline std::string areaExhaustedAnnouncedFlag(std::string_view area) {
+    return "kills." + std::string(area) + ".announced";
+}
+
+// True exactly when the notice must be shown now: the area is exhausted and it was not announced yet.
+inline bool areaExhaustedNoticeDue(std::string_view area, int kills, int announcedFlag) {
+    return areaExhausted(area, kills) && announcedFlag == 0;
+}
+
+// Once the area is exhausted no random encounter starts, on any route.
 // On the active toxic track, the area's kill cap replaces the per-room budget.
 // Unknown areas retain the regular budget until their cap is defined.
 inline bool encounterAllowed(int encounterCount,
@@ -121,6 +141,7 @@ inline bool encounterAllowed(int encounterCount,
                              int toxicTrack,
                              int areaKills,
                              std::string_view area) {
+    if (areaExhausted(area, areaKills)) return false;
     const int areaCap = toxicEncounterCap(area);
     if (toxicTrack == 1 && areaCap > 0) return areaKills < areaCap;
     return encounterBudgetAllows(encounterCount, encounterBudget);

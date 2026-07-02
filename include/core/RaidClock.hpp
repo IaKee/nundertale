@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <vector>
 
@@ -125,6 +126,52 @@ inline int raidStartSecondsFromJson(const std::string& text, int fallback) {
     if (cursor < end && *cursor != ',' && *cursor != '}') return fallback;
 
     return value;
+}
+
+// RAD-004: Ending queries and flag sync
+
+inline constexpr std::string_view RAID_FLAG_EXPIRED = "raid.expired";
+inline constexpr std::string_view RAID_FLAG_TIME_LEFT = "raid.time_left";
+
+// LORE 22.4: Speedrun threshold is > 10:00 remaining (i.e. strictly greater than 600 seconds).
+inline constexpr int RAID_SPEEDRUN_THRESHOLD_SECONDS = 600;
+
+inline bool raidExpired(const RaidClock& clock) {
+    return raidKicked(clock);
+}
+
+inline int raidTimeLeftSeconds(const RaidClock& clock) {
+    if (!clock.started || clock.timeLeft <= 0.0f) {
+        return 0;
+    }
+    return static_cast<int>(std::ceil(clock.timeLeft));
+}
+
+struct RaidEndingQuery {
+    bool expired = false;
+    int timeLeftSeconds = 0;
+    bool speedrun = false;
+};
+
+inline RaidEndingQuery raidEndingQuery(bool expired, int timeLeftSeconds, int startSeconds = 1320) {
+    (void)startSeconds;
+    RaidEndingQuery result;
+    result.expired = expired;
+    result.timeLeftSeconds = timeLeftSeconds;
+    result.speedrun = (!expired && timeLeftSeconds > RAID_SPEEDRUN_THRESHOLD_SECONDS);
+    return result;
+}
+
+inline RaidEndingQuery raidEndingQuery(const RaidClock& clock, int startSeconds = 1320) {
+    return raidEndingQuery(raidExpired(clock), raidTimeLeftSeconds(clock), startSeconds);
+}
+
+template <typename StateLike>
+inline void raidSyncFlags(const RaidClock& clock, StateLike& state) {
+    const int expired = raidExpired(clock) ? 1 : 0;
+    const int leftSec = raidTimeLeftSeconds(clock);
+    state.setFlag(std::string(RAID_FLAG_EXPIRED), expired);
+    state.setFlag(std::string(RAID_FLAG_TIME_LEFT), leftSec);
 }
 
 } // namespace nundertale

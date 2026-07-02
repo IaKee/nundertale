@@ -1623,6 +1623,13 @@ void OverworldScene::update(float dt, GameContext& context) {
     const int areaKills = encounterArea.empty()
         ? 0
         : context.state.getFlag("kills." + std::string(encounterArea), 0);
+    if (!encounterArea.empty() &&
+        areaExhaustedNoticeDue(encounterArea, areaKills,
+                               context.state.getFlag(areaExhaustedAnnouncedFlag(encounterArea), 0))) {
+        context.state.setFlag(areaExhaustedAnnouncedFlag(encounterArea), 1);
+        m_dialogBox.startDialog({ std::string(AREA_EXHAUSTED_NOTICE) });
+        return;
+    }
     if (!m_roomEncounters.empty() &&
         encounterAllowed(context.state.getFlag(encounterCountFlag, 0),
                          m_encounterBudget,
