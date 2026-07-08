@@ -53,7 +53,6 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_roomHeight = 480.0f;
     m_backgroundImage.clear();
     m_backgroundOffset = { 0.0f, 0.0f };
-    m_legacyBarky = false;
     m_saveLinesOverride.clear();
     m_roomEncounters.clear();
     m_encounterBudget = 0;
@@ -67,7 +66,6 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_tiledMap = std::move(loaded);
     m_roomWidth = m_tiledMap.pixelWidth();
     m_roomHeight = m_tiledMap.pixelHeight();
-    m_legacyBarky = tiledBoolProperty(m_tiledMap.properties, "legacyBarky", false);
     m_saveLinesOverride = tiledStringProperty(m_tiledMap.properties, "savePlace");
     m_roomEncounters = parseEncounterSpec(tiledStringProperty(m_tiledMap.properties, "encounters"));
     m_encounterBudget = tiledIntProperty(m_tiledMap.properties, "encounterBudget", 0);
@@ -130,6 +128,13 @@ void OverworldScene::initRoomObjects(GameContext& context) {
     m_bumpTrackers.clear();
     m_hazardCooldown = 0;
     m_lastHazardSafePosition = m_player.getPosition();
+
+    // OVW-010, PRG-020: ruins.barky.state is 0 = none, 1 = spared, 2 = killed. The battle sets it with
+    // the spared/killed flags; fill it in when only those are set (older saves, --flag).
+    if (context.state.getFlag("ruins.barky.state", 0) == 0) {
+        if (context.state.getFlag("ruins.barky.killed", 0) != 0) context.state.setFlag("ruins.barky.state", 2);
+        else if (context.state.getFlag("ruins.barky.spared", 0) != 0) context.state.setFlag("ruins.barky.state", 1);
+    }
 
     for (const TiledLayer& layer : m_tiledMap.layers) {
         if (layer.type != TiledLayerType::Objects || layer.name != "objects") continue;
@@ -215,15 +220,22 @@ void OverworldScene::updateBumpCutscenes(float dt, GameContext& context) {
     }
 }
 
-void OverworldScene::startCutscene(const std::string& id) {
-    if (id.empty()) return;
+static bool loadCutsceneFile(const std::string& id, Cutscene& cutscene) {
+    if (id.empty()) return false;
     std::ifstream file("data/cutscenes/" + id + ".json");
-    if (!file) return;
+    if (!file) return false;
     std::ostringstream json;
     json << file.rdbuf();
+    return parseCutsceneJson(json.str(), cutscene) && !cutscene.steps.empty();
+}
+
+void OverworldScene::startCutscene(const std::string& id) {
     Cutscene cutscene;
-    if (parseCutsceneJson(json.str(), cutscene) && !cutscene.steps.empty()) {
+    if (loadCutsceneFile(id, cutscene)) {
         m_autoFadeIn = false;
+        m_cutsceneStartsBattle = cutsceneStartsBattle(cutscene);
+        m_cutsceneBattleStarted = false;
+        m_pendingTriggerOnce.clear();
         m_cutscene.start(std::move(cutscene));
     }
 }
@@ -335,7 +347,6 @@ void OverworldScene::swapDoorRoom(GameContext& context) {
     context.state.playerPos = { 0.0f, 0.0f };
     loadRoomMap(m_targetRoom);
     initRoomObjects(context);
-    initInteractables(context);
 
     const TiledObject* spawn = findRoomSpawn(m_tiledMap, m_targetSpawn);
     if (spawn == nullptr) spawn = findRoomSpawn(m_tiledMap, "spawn");
@@ -391,7 +402,11 @@ void OverworldScene::updateDoorsAndTriggers(GameContext& context) {
         const std::string cutsceneId = tiledStringProperty(object.properties, "cutscene");
         startCutscene(cutsceneId);
         if (m_cutscene.running()) {
-            if (!once.empty()) context.state.setFlag(once, 1);
+            if (!once.empty()) {
+                // A fight cutscene burns its once-flag only when the battle starts (see update()).
+                if (triggerOnceShouldBurn(m_cutsceneStartsBattle, false)) context.state.setFlag(once, 1);
+                else m_pendingTriggerOnce = once;
+            }
             m_triggerOverlaps = std::move(overlaps);
             return;
         }
@@ -417,305 +432,6 @@ std::string OverworldScene::roomDisplayName(GameContext& context) const {
 std::string OverworldScene::roomMusicKey(const std::string& roomId) const {
     const std::string mapMusic = tiledStringProperty(m_tiledMap.properties, "music");
     return mapMusic.empty() ? "overworld." + roomId : mapMusic;
-}
-
-void OverworldScene::initInteractables(GameContext& context) {
-    m_interactables.clear();
-
-    if (!m_legacyBarky) return;
-    // OVW-020: the placeholder sign and gate boxes only belong on the old test.bmp backdrop.
-    const bool backdrop = !m_backgroundImage.empty();
-
-    // 1. Save Point Star (SAV-001, SAV-002)
-    m_savePoint = std::make_unique<SavePoint>(objectPosition("savepoint", { 320.0f, 260.0f }));
-
-    // 2. Signpost on the wall
-    Rectangle signBounds = objectBounds("sign", { 100, 70, 40, 30 });
-    auto sign = std::make_unique<GenericInteractable>(
-        signBounds,
-        [this](GameContext& ctx) {
-            ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-            m_dialogBox.startDialog({
-                // BUG-19: LORE R8 notice
-                "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
-            }, "SIGN");
-        },
-        [signBounds, backdrop](GameContext& /*ctx*/) {
-            if (!backdrop) return;
-            const int x = static_cast<int>(signBounds.x);
-            const int y = static_cast<int>(signBounds.y);
-            const int width = static_cast<int>(signBounds.width);
-            const int height = static_cast<int>(signBounds.height);
-            DrawRectangle(x + 5, y + 10, width - 10, height - 10, { 140, 90, 40, 255 });
-            DrawRectangleLines(x + 5, y + 10, width - 10, height - 10, BLACK);
-            DrawText("?", x + 15, y + 12, 16, WHITE);
-        }
-    );
-    m_interactables.push_back(std::move(sign));
-
-    // Check barky state (OVW-010, PRG-020): 0 = none, 1 = spared, 2 = killed
-    int barkyState = context.state.getFlag("ruins.barky.state", 0);
-    if (barkyState == 0) {
-        if (context.state.getFlag("ruins.barky.killed", 0) != 0) barkyState = 2;
-        else if (context.state.getFlag("ruins.barky.spared", 0) != 0) barkyState = 1;
-    }
-
-    if (barkyState == 2) {
-        // Barky is dead - leaving a pile of dust (OVW-010, BND-003)
-        Rectangle dustBounds = objectBounds("dust", { 490, 90, 40, 40 });
-        auto dust = std::make_unique<GenericInteractable>(
-            dustBounds,
-            [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-                m_dialogBox.startDialog({
-                    "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
-                }, "");
-            },
-            [dustBounds](GameContext& /*ctx*/) {
-                const int x = static_cast<int>(dustBounds.x);
-                const int y = static_cast<int>(dustBounds.y);
-                DrawEllipse(x + 20, y + 25, 16, 6, { 150, 150, 150, 220 });
-                DrawCircle(x + 16, y + 23, 2, { 180, 180, 180, 255 });
-                DrawCircle(x + 24, y + 24, 2, { 130, 130, 130, 255 });
-            }
-        );
-        m_interactables.push_back(std::move(dust));
-
-        // North Doorway is open (OVW-008, OVW-010)
-        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
-        auto door = std::make_unique<GenericInteractable>(
-            doorBounds,
-            [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-                m_dialogBox.startDialog({
-                    "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
-                }, "");
-            },
-            [doorBounds, backdrop](GameContext& /*ctx*/) {
-                if (!backdrop) return;
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height), GREEN);
-                DrawText("OPEN", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, GREEN);
-            }
-        );
-        m_interactables.push_back(std::move(door));
-    } else if (barkyState == 1) {
-        // Barky is standing peacefully in the room (OVW-010, NAR-002)
-        Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
-        auto npc = std::make_unique<GenericInteractable>(
-            npcBounds,
-            [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
-                std::vector<std::string> lines;
-                const std::string furReaction = furReactionLine(ctx.state.furry.value, "barky");
-                if (!furReaction.empty()) {
-                    lines.push_back(furReaction);
-                }
-                lines.insert(lines.end(), {
-                    "* Awoo! Hey there, fellow cool gamer.",
-                    "* Thanks for not roasting my fursona back there.",
-                    "* The northern gate is unlocked! Safe travels through the Underground!"
-                });
-                m_dialogBox.startDialog(lines, "BARKY");
-            },
-            [npcBounds](GameContext& ctx) {
-                const SpriteSheetDef* barkySheet = spriteSheetCache().load(
-                    "assets/sprites/ow/barky.png",
-                    "assets/sprites/ow/barky.json"
-                );
-                if (barkySheet != nullptr) {
-                    Texture2D barkyTexture = ctx.resources.getTexture("assets/sprites/ow/barky.png");
-                    SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
-                    drawSprite(
-                        barkyTexture,
-                        *barkySheet,
-                        "stand_down",
-                        0.0f,
-                        { npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height }
-                    );
-                } else {
-                    const float x = npcBounds.x;
-                    const float y = npcBounds.y;
-                    DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 150, 140, 255 });
-                    DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 130, 110, 255 });
-                    DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 130, 110, 255 });
-                    DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 80, 70, 255 });
-                }
-            }
-        );
-        m_interactables.push_back(std::move(npc));
-
-        // North Doorway is open
-        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
-        auto door = std::make_unique<GenericInteractable>(
-            doorBounds,
-            [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-                m_dialogBox.startDialog({
-                    "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
-                }, "");
-            },
-            [doorBounds, backdrop](GameContext& /*ctx*/) {
-                if (!backdrop) return;
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
-                                   COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
-            }
-        );
-        m_interactables.push_back(std::move(door));
-    } else {
-        // Barky alive, initial encounter waiting (ENC-001, ENC-002)
-        Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
-        auto npc = std::make_unique<GenericInteractable>(
-            npcBounds,
-            [this](GameContext& ctx) {
-                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
-                m_dialogBox.startDialog({
-                    "* Awoo! What do we have here? A hairless gamer in my domain?!",
-                    "* I am Barky, the Alpha Wolf of Mt. Dew! Prepare yourself!",
-                    "* Step through the north doorway if you dare face my fursona!"
-                }, "BARKY");
-            },
-            [npcBounds](GameContext& ctx) {
-                const SpriteSheetDef* barkySheet = spriteSheetCache().load(
-                    "assets/sprites/ow/barky.png",
-                    "assets/sprites/ow/barky.json"
-                );
-                if (barkySheet != nullptr) {
-                    Texture2D barkyTexture = ctx.resources.getTexture("assets/sprites/ow/barky.png");
-                    SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
-                    drawSprite(
-                        barkyTexture,
-                        *barkySheet,
-                        "stand_down",
-                        0.0f,
-                        { npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height }
-                    );
-                } else {
-                    const float x = npcBounds.x;
-                    const float y = npcBounds.y;
-                    DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 120, 140, 255 });
-                    DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 90, 110, 255 });
-                    DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 90, 110, 255 });
-                    DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 50, 70, 255 });
-                }
-            }
-        );
-        m_interactables.push_back(std::move(npc));
-
-        Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
-        auto door = std::make_unique<GenericInteractable>(
-            doorBounds,
-            [this](GameContext& ctx) {
-                std::ifstream file("data/cutscenes/barky_entrance.json");
-                if (file) {
-                    std::ostringstream json;
-                    json << file.rdbuf();
-                    Cutscene cutscene;
-                    if (parseCutsceneJson(json.str(), cutscene) && !cutscene.steps.empty()) {
-                        m_cutscene.start(std::move(cutscene));
-                        return;
-                    }
-                }
-
-                // Missing or invalid data falls back to the original hardcoded entrance.
-                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.8f);
-                m_dialogBox.startDialog({
-                    "Halt, hairless intruder! *[awkward howling]*",
-                    "You have stepped into the domain of the Shadow Fang Pack!",
-                    "Prepare to face my fursona!"
-                }, "BARKY", [this, &ctx]() {
-                    Vector2 pPos = m_player.getPosition();
-                    ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
-                });
-            },
-            [doorBounds, backdrop](GameContext& /*ctx*/) {
-                if (!backdrop) return;
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
-                                   COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
-            }
-        );
-        m_interactables.push_back(std::move(door));
-    }
-
-    // 5. Snack Bowl with persistent take count tracking (OVW-010, OVW-011, ITM-004)
-    Rectangle bowlBounds = objectBounds("bowl", { 200, 160, 40, 30 });
-    auto snackBowl = std::make_unique<GenericInteractable>(
-        bowlBounds,
-        [this](GameContext& ctx) {
-            ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-            int takenCount = ctx.state.getFlag("ruins.dew.taken", 0);
-
-            if (takenCount >= 4) {
-                m_dialogBox.startDialog({
-                    "* (Look at what you've done.)\n* (The bowl is completely empty.)"
-                }, "");
-                return;
-            }
-
-            if (!ctx.player.canAddItem()) {
-                m_dialogBox.startDialog({
-                    "* (You tried to take a snack...)\n* (You're carrying too much.)"
-                }, "");
-            } else {
-                ctx.player.addItem("Mt. Dew");
-                ctx.audio.playSound("assets/sfx/heal.wav", 0.7f);
-                takenCount++;
-                ctx.state.setFlag("ruins.dew.taken", takenCount);
-                if (takenCount == 1) {
-                    m_dialogBox.startDialog({
-                        "* (You took a can of warm Mountain Dew.)\n* (Your inventory feels slightly heavier.)"
-                    }, "");
-                } else if (takenCount == 2) {
-                    m_dialogBox.startDialog({
-                        "* (You took another Mountain Dew.)\n* (How greedy.)"
-                    }, "");
-                } else if (takenCount == 3) {
-                    m_dialogBox.startDialog({
-                        "* (You took yet another Mountain Dew.)\n* (You feel like scum.)"
-                    }, "");
-                } else {
-                    m_dialogBox.startDialog({
-                        "* (You took the last Mountain Dew.)\n* (You knocked the bowl over. Disgusting.)"
-                    }, "");
-                }
-            }
-        },
-        [bowlBounds](GameContext& ctx) {
-            const SpriteSheetDef* bowlSheet = spriteSheetCache().load(
-                "assets/props/ruins_dorito_bowl.png",
-                "assets/props/ruins_dorito_bowl.json"
-            );
-            if (bowlSheet != nullptr) {
-                const int takenCount = ctx.state.getFlag("ruins.dew.taken", 0);
-                const std::string animation = takenCount >= 4 ? "knocked" : "full";
-                Texture2D bowlTexture = ctx.resources.getTexture("assets/props/ruins_dorito_bowl.png");
-                SetTextureFilter(bowlTexture, TEXTURE_FILTER_POINT);
-                drawSprite(
-                    bowlTexture,
-                    *bowlSheet,
-                    animation,
-                    0.0f,
-                    { bowlBounds.x + bowlBounds.width * 0.5f, bowlBounds.y + bowlBounds.height }
-                );
-            } else {
-                const int x = static_cast<int>(bowlBounds.x);
-                const int y = static_cast<int>(bowlBounds.y);
-                const int width = static_cast<int>(bowlBounds.width);
-                const int height = static_cast<int>(bowlBounds.height);
-                DrawRectangle(x + 5, y + 5, width - 10, height - 10, { 50, 120, 50, 255 });
-                DrawRectangleLines(x + 5, y + 5, width - 10, height - 10, WHITE);
-                DrawText("DEW", x + 8, y + 8, 12, COLOR_UNDERTALE_YELLOW);
-            }
-        }
-    );
-    m_interactables.push_back(std::move(snackBowl));
 }
 
 static float getRaidStartSeconds() {
@@ -762,7 +478,6 @@ void OverworldScene::onEnter(GameContext& context) {
     }
     context.state.playerPos = m_player.getPosition();
     initRoomObjects(context);
-    initInteractables(context);
 }
 
 void OverworldScene::onResume(GameContext& context) {
@@ -773,7 +488,6 @@ void OverworldScene::onResume(GameContext& context) {
     context.audio.playMusic(resumeTrack.path, true, resumeTrack.loopStart, resumeTrack.loopEnd);
     context.audio.setMusicPitch(overworldMusicPitch(toxicTrack(context.state), context.state.currentRoom));
     initRoomObjects(context);
-    initInteractables(context);
 }
 
 void OverworldScene::drawSoul(float x, float y) const {
@@ -964,6 +678,11 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                         : DUCT_TAPE_DEFAULT_TEXT;
                     m_dialogBox.startDialog({ tapeText }, "");
                 }
+            } else if (itemDef != nullptr && itemDef->id == "apurrture_cake") {
+                // C1-014, LORE §20.1: full HP, and it is delicious.
+                context.player.hp = context.player.maxHp;
+                context.audio.playSound("assets/sfx/heal.wav", 0.8f);
+                m_dialogBox.startDialog(splitRoomPages(itemDef->useText), "");
             } else {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
                 context.audio.playSound("assets/sfx/heal.wav", 0.8f);
@@ -1278,13 +997,13 @@ void OverworldScene::update(float dt, GameContext& context) {
                                   std::unordered_set<std::string>& logged,
                                   float& controlsLockedRemaining, float& fadeAlphaValue,
                                   float& fadeStart, float& fadeTarget, float& fadeElapsed,
-                                  bool& fadeActive)
+                                  bool& fadeActive, bool& battleStarted, int& choice)
                 : m_dialogBox(dialogBox), m_player(player), m_context(context),
                   m_roomObjects(roomObjects), m_hidden(hidden), m_animations(animations),
                   m_logged(logged), m_controlsLockedRemaining(controlsLockedRemaining),
                   m_fadeAlpha(fadeAlphaValue), m_fadeStart(fadeStart),
                   m_fadeTarget(fadeTarget), m_fadeElapsed(fadeElapsed),
-                  m_fadeActive(fadeActive) {}
+                  m_fadeActive(fadeActive), m_battleStarted(battleStarted), m_choice(choice) {}
 
             void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
                 m_dialogBox.startDialog(lines, speaker);
@@ -1317,11 +1036,16 @@ void OverworldScene::update(float dt, GameContext& context) {
 
             void startBattle(const std::string& encounter) override {
                 auto battle = std::make_unique<BattleScene>(encounter);
-                if (!battle->isValid()) return;
+                if (!battle->isValid()) {
+                    std::clog << "Cutscene startBattle: encounter '" << encounter
+                              << "' is not valid; battle not started.\n";
+                    return;
+                }
                 const Vector2 playerPos = m_player.getPosition();
                 m_context.scenes.pushScene(
                     std::make_unique<EncounterTransitionScene>(playerPos, std::move(battle)),
                     m_context);
+                m_battleStarted = true;
             }
 
             void openShop(const std::string& shop) override {
@@ -1449,6 +1173,27 @@ void OverworldScene::update(float dt, GameContext& context) {
                 return fadeTo(0.0f, seconds, dt);
             }
 
+            // C1-014: the options are drawn by the dialog box ({choice:A|B} page, Left/Right + Z).
+            void beginChoice(const std::string& speaker, const std::vector<std::string>& pages,
+                             const std::vector<std::string>&) override {
+                m_choice = -1;
+                m_dialogBox.startDialog(pages, speaker);
+                int& choice = m_choice;
+                m_dialogBox.setOnChoice([&choice](int index, const std::string&) { choice = index; });
+            }
+
+            int choiceResult() override {
+                return m_choice;
+            }
+
+            void recordKill(const std::string& enemyId) override {
+                applyCutsceneKill(m_context.state, m_context.session, enemyId);
+            }
+
+            bool loadCutscene(const std::string& id, Cutscene& cutscene) override {
+                return loadCutsceneFile(id, cutscene);
+            }
+
         private:
             bool fadeTo(float target, float seconds, float dt) {
                 if (!m_fadeActive || m_fadeTarget != target) {
@@ -1477,12 +1222,25 @@ void OverworldScene::update(float dt, GameContext& context) {
             float& m_fadeTarget;
             float& m_fadeElapsed;
             bool& m_fadeActive;
+            bool& m_battleStarted;
+            int& m_choice;
         } host(m_dialogBox, m_player, context, m_roomObjects, m_hiddenRoomObjects,
                m_roomObjectAnimations, m_loggedConditions, m_controlsLockedRemaining,
                m_cutsceneFadeAlpha, m_cutsceneFadeStart, m_cutsceneFadeTarget,
-               m_cutsceneFadeElapsed, m_cutsceneFadeActive);
+               m_cutsceneFadeElapsed, m_cutsceneFadeActive, m_cutsceneBattleStarted, m_cutsceneChoice);
 
         m_cutscene.update(dt, host);
+        if (m_cutsceneBattleStarted) {
+            if (!m_pendingTriggerOnce.empty() && triggerOnceShouldBurn(true, true)) {
+                context.state.setFlag(m_pendingTriggerOnce, 1);
+            }
+            m_pendingTriggerOnce.clear();
+            m_cutsceneBattleStarted = false;
+        } else if (!m_cutscene.running() && !m_pendingTriggerOnce.empty()) {
+            std::clog << "Trigger cutscene ended without starting its battle; once-flag '"
+                      << m_pendingTriggerOnce << "' stays unset.\n";
+            m_pendingTriggerOnce.clear();
+        }
         if (!m_cutscene.running() && m_cutsceneFadeAlpha > 0.0f) {
             m_autoFadeIn = true;
             m_cutsceneFadeStart = m_cutsceneFadeAlpha;
@@ -1824,19 +1582,7 @@ void OverworldScene::render(GameContext& context) {
     }
     drawTileLayers(context, false);
 
-    // 2. Draw Pillars / Room Decor
-    if (m_legacyBarky && !m_backgroundImage.empty()) {
-        const Rectangle leftPillar = objectBounds("left_pillar", { 140, 160, 50, 80 });
-        const Rectangle rightPillar = objectBounds("right_pillar", { 450, 160, 50, 80 });
-        DrawRectangleRec(leftPillar, { 70, 50, 90, 255 });
-        DrawRectangleLines(static_cast<int>(leftPillar.x), static_cast<int>(leftPillar.y),
-                           static_cast<int>(leftPillar.width), static_cast<int>(leftPillar.height), BLACK);
-        DrawRectangleRec(rightPillar, { 70, 50, 90, 255 });
-        DrawRectangleLines(static_cast<int>(rightPillar.x), static_cast<int>(rightPillar.y),
-                           static_cast<int>(rightPillar.width), static_cast<int>(rightPillar.height), BLACK);
-    }
-
-    // 3. Render Interactables & SavePoint
+    // 2. Render Interactables & SavePoint
     for (auto& item : m_interactables) {
         item->render(context);
     }

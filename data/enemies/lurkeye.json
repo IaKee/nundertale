@@ -34,13 +34,18 @@
     "default": [
       "* Lurkeye is staring silently.",
       "* Lurkeye has not typed anything.",
-      "* Lurkeye watches without blinking."
+      "* Lurkeye watches without blinking.",
+      "* (It has been in this channel longer than you have been alive. Probably.)"
     ],
-    "lowHp": ["* Lurkeye is sweating silently."],
-    "spareable": ["* Lurkeye seems unbothered."]
+    "lowHp": ["* Lurkeye is sweating silently.", "* Lurkeye almost typed something."],
+    "spareable": ["* Lurkeye seems unbothered.", "* Lurkeye is still watching. It is a friendly kind of watching."]
   },
   "dialogue": {
-    "default": ["...", "(typing...)", "(stopped typing)"]
+    "default": ["...", "(typing...)", "(stopped typing)"],
+    "afterHit": ["(typing...)", "..."],
+    "crit": ["(stopped typing)"],
+    "miss": ["...", "(typing...)"],
+    "item": ["..."]
   },
   "patterns": [
     {

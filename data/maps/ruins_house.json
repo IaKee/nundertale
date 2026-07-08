@@ -741,7 +741,45 @@
             {
               "name": "showIf",
               "type": "string",
-              "value": "ruins.r12.walk == 0 && ruins.furiell.killed == 0"
+              "value": "0 == 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r11_furiell"
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 26,
+          "name": "furiell",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 64,
+          "x": 340,
+          "y": 140,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/furiell.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "stand_down"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.house.talk_home == 0 && ruins.r12.walk == 0 && ruins.furiell.killed == 0"
             },
             {
               "name": "solid",
@@ -751,7 +789,7 @@
             {
               "name": "cutscene",
               "type": "string",
-              "value": "r11_furiell"
+              "value": "r11_talk"
             }
           ]
         }
@@ -1024,7 +1062,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 26,
+  "nextobjectid": 27,
   "orientation": "orthogonal",
   "properties": [
     {

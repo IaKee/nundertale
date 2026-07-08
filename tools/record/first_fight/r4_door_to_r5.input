@@ -1,0 +1,44 @@
+# R4 -> R5 through the north door, run from --room ruins_switches --flag ruins.r4.sw1=1 --flag ruins.r4.sw3=1
+# (gate already open). Up is held the whole time (locked while dialog is open), confirm taps skip the
+# R4 hint and the R5 Furiell intro. 30 ticks = 1 s.
+1-400 up
+10 confirm
+20 confirm
+30 confirm
+40 confirm
+50 confirm
+60 confirm
+70 confirm
+80 confirm
+90 confirm
+100 confirm
+110 confirm
+120 confirm
+130 confirm
+140 confirm
+150 confirm
+160 confirm
+170 confirm
+180 confirm
+190 confirm
+200 confirm
+210 confirm
+220 confirm
+230 confirm
+240 confirm
+250 confirm
+260 confirm
+270 confirm
+280 confirm
+290 confirm
+300 confirm
+310 confirm
+320 confirm
+330 confirm
+340 confirm
+350 confirm
+360 confirm
+370 confirm
+380 confirm
+390 confirm
+400 confirm

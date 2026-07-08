@@ -96,6 +96,26 @@
 | `ruins.r6.guided` | bool | `0` | R6 guide cutscene has played |
 | `ruins.r7.call` | bool | `0` | R7 phone call has played |
 | `ruins.r10.call` | bool | `0` | R10 phone call has played |
+| `ruins.dummy.intro` | bool | `0` | R5 intro trigger once-flag. Burned only when the Fursuit Dummy battle is actually pushed (`triggerOnceShouldBurn`, `include/core/Cutscene.hpp`); an invalid encounter leaves it free |
+| `ruins.r5.walked` | bool | `0` | Furiell finished walking Grub out of R5 after any Dummy outcome; hides her R5 NPC |
+| `ruins.r9.barky_here` | bool | `0` | Barky has dropped into R9 (set by `r9_barky_intro`); shows `npc_barky` |
+| `ruins.r9.barky_intro` | bool | `0` | R9 Barky intro once-flag, burned when the battle starts |
+| `ruins.r9.barky_spared` | bool | `0` | Once-flag for the post-battle `r9_barky_spared` scene |
+| `ruins.r9.barky_killed` | bool | `0` | Once-flag for the post-battle `r9_barky_killed` scene |
+| `ruins.r9.fur_pile` | bool | `0` | The synthetic wolf fur pile is on the R9 floor (Barky killed) |
+| `ruins.booth.seen` | bool | `0` | GLaDOwOS booth intro has played (R9a, first entry only) |
+| `ruins.booth.choice` | int | `0` | Booth choice: `0` not chosen, `1` Sacrifice, `2` Refuse (written by the `choice` cutscene step) |
+| `ruins.booth.panel` | bool | `0` | The R9a control panel was examined |
+| `ruins.booth.refused` | int | `0` | Times Grub refused the booth test (each refusal starts the GLaDOwOS fight) |
+| `battle.gladowos.survived` | bool | `0` | Grub survived the GLaDOwOS fight (no kills, toxic track or EXP/G touched) |
+| `ruins.r12.stop1` | bool | `0` | R12 basement walk, stop 1 once-flag |
+| `ruins.r12.stop2` | bool | `0` | R12 basement walk, stop 2 once-flag |
+| `ruins.r12.stop3` | bool | `0` | R12 basement walk, stop 3 once-flag |
+| `ruins.house.talk_choice` | int | `0` | R11 living-room talk choice: `1` home, `2` games, `3` fur |
+| `ruins.r11.talk_choice` | int | `0` | Mirror of `ruins.house.talk_choice` (both are written; prefer the `house` one) |
+| `ruins.house.talk_home` | bool | `0` | Grub asked to go home in R11; hides Furiell from the living room |
+| `ruins.r11.talk_home` | bool | `0` | Mirror of `ruins.house.talk_home` |
+| `ruins.furiell.in_basement` | bool | `0` | Furiell went down to the basement after the R11 "go home" talk |
 
 ---
 
@@ -151,7 +171,7 @@ Caps per area (`TOXIC_ENCOUNTER_CAPS`): `ruins` 6, `snowdinha` 6, `wetfall` 5, `
 | `hot.nightshift.done` | bool | `0` | Survived the H1a shift |
 | `con.jars.seen` | bool | `0` | Saw the jars |
 | `con.asgrr.state` | int | `0` | `0` none, `1` spared, `2` killed, `3` banned |
-| `ruins.booth.state` | int | `0` | `0` not visited, `1` Barky sacrificed, `2` refused / test survived, `3` powered down (Barky already dead) |
+| `ruins.booth.state` | int | `0` | `0` not entered, `1` entered (Refuse keeps `1`), `2` Barky sacrificed; `3` reserved for "survived GLaDOwOS" (C1-014 as built) |
 
 ---
 
@@ -189,6 +209,7 @@ Caps per area (`TOXIC_ENCOUNTER_CAPS`): `ruins` 6, `snowdinha` 6, `wetfall` 5, `
 | `toxic.ks.nuke.earned` | bool | `0` | Tactical Nuke earned (25 kills) |
 | `toxic.streaks` | bitmask | `0` | LORE §28 bitmask (Care Package earned, Predator earned, Predator used, Nuke fired). **Superseded in code** by the separate `toxic.ks.*` flags above; unused |
 | `toxic.scimitar_dropped` | bool | `0` | The Dragon Scimitar has dropped (LORE §28; no writer yet) |
+| `toxic.fade_rooms` | int | `0` | Rooms entered since the track ended; drives the gradual fade back to casual over 4 rooms (`include/core/ToxicTrack.hpp`, PRG-032) |
 
 ---
 

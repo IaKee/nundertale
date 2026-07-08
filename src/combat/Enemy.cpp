@@ -14,11 +14,59 @@ Enemy::Enemy(const std::string& name, int maxHp, int atk, int def)
     initDefaultActs();
     initDefaultFlavors();
     initDefaultDialogues();
+    rebuildMenuActs();
+}
+
+void Enemy::rebuildMenuActs() {
+    m_menuActs = m_acts;
+    // extras sit right after Check (or first when there is no Check)
+    std::size_t at = 0;
+    for (std::size_t i = 0; i < m_menuActs.size(); ++i) {
+        if (m_menuActs[i].id == "check") at = i + 1;
+    }
+    m_menuActs.insert(m_menuActs.begin() + static_cast<std::ptrdiff_t>(at),
+                      m_peaceExtraActs.begin(), m_peaceExtraActs.end());
+}
+
+void Enemy::setPeacePath(const PeacePathDef& def, const std::vector<ActDef>& extraActs) {
+    m_peacePath = def;
+    m_peaceExtraActs = extraActs;
+    m_peaceState = PeacePathState{};
+    m_hasPeacePath = true;
+    rebuildMenuActs();
+}
+
+PeaceStepResult Enemy::applyPeaceAct(const std::string& actLabel, bool toxicTrack) {
+    if (!m_hasPeacePath) return {};
+    m_peaceToxic = toxicTrack;
+    PeaceStepResult result = peaceApplyAct(m_peacePath, m_peaceState, actLabel, toxicTrack);
+    if (peaceMercyAllowed(toxicTrack)) setSpareable(true);
+    return result;
+}
+
+bool Enemy::peaceActAvailable(const std::string& actLabel) const {
+    if (!m_hasPeacePath) return true;
+    const auto rule = std::find_if(m_peacePath.rules.begin(), m_peacePath.rules.end(),
+                                   [&actLabel](const PeaceActRule& candidate) {
+                                       return candidate.act == actLabel;
+                                   });
+    return rule == m_peacePath.rules.end() || m_peaceState.progress >= rule->requiresProgress;
+}
+
+bool Enemy::peaceMercyAllowed(bool toxicTrack) const {
+    return !m_hasPeacePath || nundertale::peaceMercyAllowed(m_peacePath, m_peaceState, toxicTrack);
+}
+
+int Enemy::peaceStepsLeft(bool toxicTrack) const {
+    if (!m_hasPeacePath) return 0;
+    return std::max(0, peaceGoal(m_peacePath, toxicTrack) - m_peaceState.progress);
 }
 
 void Enemy::takeDamage(int dmg) {
+    if (m_invulnerable) return;
     m_hp -= dmg;
-    if (m_hp < 0) m_hp = 0;
+    const int hpFloor = m_unkillable ? 1 : 0;
+    if (m_hp < hpFloor) m_hp = hpFloor;
 }
 
 void Enemy::modifyAtk(int delta) {
@@ -30,6 +78,7 @@ void Enemy::modifyDef(int delta) {
 }
 
 void Enemy::addMercy(int amount) {
+    if (!m_canBeSpared || m_hasPeacePath) return;  // a peace path decides when MERCY works
     m_mercy = std::min(100, m_mercy + amount);
     if (m_mercy >= m_mercyThreshold) {
         m_spareable = true;
@@ -65,6 +114,12 @@ std::string Enemy::getCheckText() const {
 
 // BFL-002: Turn flavor text based on status & player actions
 std::string Enemy::getFlavorText(const std::string& lastActionFlag) {
+    // 0. ACT-008: the step count stays visible between turns ("... Four to go.")
+    if (m_hasPeacePath && !m_spareable) {
+        const std::string counted = peaceFlavorLine(m_peacePath, m_peaceState, m_peaceToxic);
+        if (!counted.empty()) return counted;
+    }
+
     // 1. Check conditionals first
     if (lastActionFlag == "cringe_check") {
         return "* Barky is still furiously blushing over his exposed zipper.";
@@ -190,7 +245,7 @@ void Enemy::initDefaultActs() {
 
     ActDef laser = act("laser", "Laser",
         "* You shine a red dot on the floor.",
-        "NO-- I'M NOT-- WHERE DID IT GO--");
+        "NO— I'M NOT— WHERE DID IT GO—");
     laser.requiresItem = "Toy Laser Pointer";
     laser.spareable = true;
     laser.skipAttack = true;
@@ -287,6 +342,31 @@ std::vector<std::string> stringArray(const JsonValue& object, const char* key) {
         if (value.kind == JsonValue::Kind::String) result.push_back(value.string);
     }
     return result;
+}
+
+PeacePathDef parsePeacePath(const JsonValue& value) {
+    PeacePathDef def;
+    def.goal = intValue(value, "goal", PEACE_GOAL_MIN);
+    def.toxicExtraSteps = intValue(value, "toxicExtraSteps", 0);
+    def.furrierPath = boolValue(value, "furrierPath", false);
+    def.furPerHug = intValue(value, "furPerHug", 0);
+    def.stepLines = stringArray(value, "stepLines");
+    def.stepFlavor = stringArray(value, "stepFlavor");
+    if (const JsonValue* rules = objectField(value, "rules", JsonValue::Kind::Array)) {
+        for (const JsonValue& raw : rules->array) {
+            if (raw.kind != JsonValue::Kind::Object) continue;
+            PeaceActRule rule;
+            rule.act = stringValue(raw, "act");
+            if (rule.act.empty()) continue;
+            rule.progress = intValue(raw, "progress", 0);
+            rule.line = stringValue(raw, "line");
+            rule.requiresProgress = intValue(raw, "requiresProgress", 0);
+            rule.skipsAttack = boolValue(raw, "skipsAttack", false);
+            rule.maxUses = intValue(raw, "maxUses", 0);
+            def.rules.push_back(std::move(rule));
+        }
+    }
+    return def;
 }
 
 ActDef parseAct(const JsonValue& value) {
@@ -392,17 +472,61 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     enemy->m_spareFlag = stringValue(root, "spareFlag");
     enemy->m_killFlag = stringValue(root, "killFlag");
     enemy->m_mercifulBullets = boolValue(root, "mercifulBullets", false);
+    enemy->m_canBeSpared = boolValue(root, "canSpare", true);
+    enemy->m_invulnerable = boolValue(root, "invulnerable", false);
+    enemy->m_unkillable = boolValue(root, "unkillable", false);
+    enemy->m_countsAsKill = boolValue(root, "countsAsKill", true);
+    enemy->m_surviveTurns = intValue(root, "surviveTurns", 0);
+    enemy->m_survivalEndText = stringValue(root, "survivalEndText");
+    enemy->m_scriptedEndAfterTurns = intValue(root, "scriptedEndAfterTurns", 0);
+    enemy->m_scriptedEndText = stringValue(root, "scriptedEndText");
+    enemy->m_invulnerableHitText = stringValue(root, "invulnerableHitText");
+    enemy->m_suppressFurMirror = boolValue(root, "suppressFurMirror", false);
 
     const std::string check = stringValue(root, "check");
     if (!check.empty()) enemy->m_checkFlavor = check;
 
     if (const JsonValue* acts = objectField(root, "acts", JsonValue::Kind::Array)) {
         enemy->m_acts.clear();
+        enemy->m_actHeal.clear();
         for (const JsonValue& rawAct : acts->array) {
             if (rawAct.kind != JsonValue::Kind::Object) continue;
             ActDef act = parseAct(rawAct);
-            if (!act.id.empty()) enemy->m_acts.push_back(std::move(act));
+            if (act.id.empty()) continue;
+            if (const JsonValue* effects = objectField(rawAct, "effects", JsonValue::Kind::Object)) {
+                const int heal = intValue(*effects, "heal", 0);
+                if (heal > 0) enemy->m_actHeal[act.id] = heal;
+            }
+            enemy->m_acts.push_back(std::move(act));
         }
+        enemy->rebuildMenuActs();
+    }
+
+    if (const JsonValue* phases = objectField(root, "survivalPhases", JsonValue::Kind::Array)) {
+        enemy->m_survivalPhases.clear();
+        for (const JsonValue& rawPhase : phases->array) {
+            if (rawPhase.kind != JsonValue::Kind::Object) continue;
+            GladosPhaseDef phase;
+            phase.id = stringValue(rawPhase, "id");
+            phase.startTurn = intValue(rawPhase, "startTurn", 1);
+            phase.endTurn = intValue(rawPhase, "endTurn", phase.startTurn);
+            phase.patterns = stringArray(rawPhase, "patterns");
+            if (phase.startTurn > 0 && phase.endTurn >= phase.startTurn && !phase.patterns.empty()) {
+                enemy->m_survivalPhases.push_back(std::move(phase));
+            }
+        }
+    }
+
+    if (const JsonValue* peace = objectField(root, "peacePath", JsonValue::Kind::Object)) {
+        std::vector<ActDef> extraActs;
+        if (const JsonValue* extra = objectField(*peace, "extraActs", JsonValue::Kind::Array)) {
+            for (const JsonValue& rawAct : extra->array) {
+                if (rawAct.kind != JsonValue::Kind::Object) continue;
+                ActDef act = parseAct(rawAct);
+                if (!act.id.empty()) extraActs.push_back(std::move(act));
+            }
+        }
+        enemy->setPeacePath(parsePeacePath(*peace), extraActs);
     }
 
     if (const JsonValue* patterns = objectField(root, "patterns", JsonValue::Kind::Array)) {
@@ -413,6 +537,10 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
             EnemyPatternDef pattern = parsePattern(rawPattern);
             if (pattern.id.empty()) continue;
             enemy->m_patternFur[pattern.id] = pattern.furry;
+            enemy->m_patternSpeech[pattern.id] = stringValue(rawPattern, "speech");
+            if (const JsonValue* params = objectField(rawPattern, "params", JsonValue::Kind::Object)) {
+                enemy->m_patternSprite[pattern.id] = stringValue(*params, "sprite");
+            }
             enemy->m_patterns.push_back(std::move(pattern));
         }
     }

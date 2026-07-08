@@ -26,21 +26,31 @@
       "label": "Cringe Check",
       "text": "* You stare directly at the zipper on Barky's back.",
       "repeatText": "* You stare again. Barky is out of blush.",
+      "useTexts": [
+        "* You stare directly at the zipper on Barky's back.",
+        "* You stare again. Barky is out of blush."
+      ],
       "effects": {
         "mercy": 50,
         "setFlag": "battle.barky.blushed"
       },
       "response": "H-hey! It's an artisanal design feature, b-baka!",
-      "repeatResponse": "...I KNOW, okay? I KNOW."
+      "repeatResponse": "...I KNOW, okay? I KNOW.",
+      "useResponses": [
+        "H-hey! It's an artisanal design feature, b-baka!",
+        "...I KNOW, okay? I KNOW."
+      ]
     },
     {
       "id": "offer_dew",
       "label": "Offer Dew",
       "text": "* You crack open an ice-cold can.",
+      "repeatText": "* You crack open another can. It fizzes like a lobby timer.",
       "effects": {
         "spareable": true
       },
-      "response": "Citrus Blast 2012?! ...wait, how do I know that flavor?"
+      "response": "Citrus Blast 2012?! ...wait, how do I know that flavor?",
+      "repeatResponse": "...2012. The basement. Somebody yelled 'alpha' and I looked up. ...I was twelve."
     },
     {
       "id": "debate_lore",
@@ -60,7 +70,7 @@
         "spareable": true,
         "skipAttack": true
       },
-      "response": "NO-- I'M NOT-- WHERE DID IT GO--"
+      "response": "NO— I'M NOT— WHERE DID IT GO—"
     },
     {
       "id": "accept_hug",
@@ -76,30 +86,100 @@
   "spareWhen": {
     "mercy": 100
   },
+  "peacePath": {
+    "goal": 5,
+    "toxicExtraSteps": 2,
+    "furrierPath": true,
+    "furPerHug": 15,
+    "rules": [
+      { "act": "Comment on Tail", "progress": 1, "maxUses": 4 },
+      { "act": "Cringe Check", "progress": 1 },
+      { "act": "Offer Dew", "progress": 1 },
+      { "act": "Debate Lore", "progress": 0, "skipsAttack": true },
+      { "act": "Laser", "progress": 1, "skipsAttack": true },
+      { "act": "Accept Hug", "progress": 1 }
+    ],
+    "stepLines": [
+      "It's... a design choice.",
+      "Stop LOOKING at it.",
+      "It's load-bearing, okay?!",
+      "...fine. It falls off sometimes. Happy?"
+    ],
+    "stepFlavor": [
+      "* Barky tugs his tail straight. It slides crooked again.",
+      "* Barky is trying very hard not to look at his own tail.",
+      "* Barky's smirk has left the building.",
+      "* Barky is one awkward comment from giving up."
+    ],
+    "extraActs": [
+      {
+        "id": "comment_tail",
+        "label": "Comment on Tail",
+        "text": "* You point at the safety pin holding his tail on.",
+        "useTexts": [
+          "* You point at the safety pin holding his tail on.",
+          "* You ask if the tail is supposed to droop like that.",
+          "* You mention the tail has been crooked since the lobby.",
+          "* You offer him a spare safety pin. For the tail."
+        ],
+        "effects": {},
+        "response": "It's... a design choice.",
+        "useResponses": [
+          "It's... a design choice.",
+          "Stop LOOKING at it.",
+          "It's load-bearing, okay?!",
+          "...fine. It falls off sometimes. Happy?"
+        ]
+      }
+    ]
+  },
   "flavor": {
     "default": [
       "* Barky growls while adjusting his plastic wolf tail.",
       "* The scent of cheap synthetic fur fills the air.",
-      "* Barky is practicing his menacing anime smirk."
+      "* Barky is practicing his menacing anime smirk.",
+      "* Barky checks his phone. Ranked match in 4 minutes.",
+      "* The safety pin on Barky's tail glints menacingly."
     ],
     "lowHp": [
       "* Barky's ears are drooping. He looks tired.",
-      "* Barky is panting and re-evaluating his life choices."
+      "* Barky is panting and re-evaluating his life choices.",
+      "* Barky's tail is hanging by the safety pin."
     ],
     "spareable": [
       "* Barky is wagging his tail happily. He doesn't want to fight.",
-      "* Barky seems open to joining your Discord server."
+      "* Barky seems open to joining your Discord server.",
+      "* Barky is humming the lobby music. He doesn't want to fight."
+    ],
+    "blushed": [
+      "* Barky is still furiously blushing over his exposed zipper.",
+      "* Barky keeps tugging his fur over the zipper. It doesn't reach.",
+      "* Barky is out of blush, but not out of embarrassment."
     ]
   },
   "dialogue": {
     "default": [
       "Awoooo! Fear the shadow fang pack!",
       "You dare challenge an alpha gamer?",
-      "Rawr x3 means 'delete your save file' in wolf!"
+      "Rawr x3 means 'delete your save file' in wolf!",
+      "Fear the Shadow Fang Pa— one more match, mom— ...what?",
+      "I was top of the lobby in 2012. Top. Of. The. Lobby."
     ],
     "afterHit": [
       "Ouch! Watch the fursuit seams, man!",
       "Hey! That cost 800 dollars on Etsy!"
+    ],
+    "crit": [
+      "OW! ...that's a headshot. I know a headshot.",
+      "GG... no re— I mean, AWOOO!"
+    ],
+    "miss": [
+      "Lag! That was lag! Check your ping!",
+      "Too slow, hairless! Skill issue!"
+    ],
+    "item": [
+      "Is that a Mountain Dew?! ...focus. FOCUS.",
+      "Don't think snacks will sway the alpha! ...what flavor?"
     ]
   },
   "patterns": [

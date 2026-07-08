@@ -874,6 +874,90 @@
         {
           "height": 40,
           "id": 14,
+          "name": "trigger_r12_stop1",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 240,
+          "y": 1060,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r12_stop1"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r12.stop1"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 15,
+          "name": "trigger_r12_stop2",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 240,
+          "y": 780,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r12_stop2"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r12.stop2"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 16,
+          "name": "trigger_r12_stop3",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 160,
+          "x": 240,
+          "y": 500,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r12_stop3"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r12.stop3"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 17,
           "name": "trigger_r12_boss",
           "rotation": 0,
           "type": "trigger",
@@ -1531,7 +1615,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 15,
+  "nextobjectid": 18,
   "orientation": "orthogonal",
   "properties": [
     {

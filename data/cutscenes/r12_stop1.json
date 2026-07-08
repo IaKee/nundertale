@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 288,
+      "y": 960,
+      "speed": 10000
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "down"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "You really shouldn't be down here, hun. It's cold, and the convention floor is endless. Go back to your room, pup. We have snacks."
+      ]
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 288,
+      "y": 680,
+      "speed": 90
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r12.stop1",
+      "value": 1
+    }
+  ]
+}

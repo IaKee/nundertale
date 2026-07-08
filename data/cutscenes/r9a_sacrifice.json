@@ -1,0 +1,72 @@
+{
+  "steps": [
+    {
+      "type": "moveNpc",
+      "npc": "npc_barky_booth",
+      "x": 500,
+      "y": 150,
+      "speed": 90
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/vaporize.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "flash",
+      "r": 255,
+      "g": 30,
+      "b": 30,
+      "seconds": 0.25
+    },
+    {
+      "type": "shake",
+      "intensity": 3,
+      "seconds": 0.3
+    },
+    {
+      "type": "hideNpc",
+      "npc": "npc_barky_booth"
+    },
+    {
+      "type": "recordKill",
+      "encounter": "barky"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.booth.state",
+      "value": 2
+    },
+    {
+      "type": "wait",
+      "seconds": 0.6
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* Barky walks into the incinerator on his own.",
+        "* A small puff of dust. One red spark."
+      ]
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* You put down your faithful companion faster than any test subject on record."
+      ]
+    },
+    {
+      "type": "giveItem",
+      "item": "Apurrture Cake",
+      "lines": [
+        "* The cake was not a lie.",
+        "* That's the worst part.",
+        "* (You got the Apurrture Cake.)"
+      ],
+      "fullLines": [
+        "* The cake was not a lie.",
+        "* That's the worst part.",
+        "* (You're carrying too much. The cake stays warm on the grate.)"
+      ]
+    }
+  ]
+}

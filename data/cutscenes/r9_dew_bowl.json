@@ -1,0 +1,55 @@
+{
+  "steps": [
+    {
+      "type": "giveItem",
+      "item": "Mountain Dew (Warm)",
+      "lines": [
+        "* (You took a can of warm Mountain Dew.)\n* (Your inventory feels slightly heavier.)"
+      ],
+      "fullLines": [
+        "* (You tried to take a snack...)\n* (You're carrying too much.)"
+      ],
+      "if": "ruins.dew.taken == 1"
+    },
+    {
+      "type": "giveItem",
+      "item": "Mountain Dew (Warm)",
+      "lines": [
+        "* (You took another Mountain Dew.)\n* (How greedy.)"
+      ],
+      "fullLines": [
+        "* (You tried to take a snack...)\n* (You're carrying too much.)"
+      ],
+      "if": "ruins.dew.taken == 2"
+    },
+    {
+      "type": "giveItem",
+      "item": "Mountain Dew (Warm)",
+      "lines": [
+        "* (You took yet another Mountain Dew.)\n* (You feel like scum.)"
+      ],
+      "fullLines": [
+        "* (You tried to take a snack...)\n* (You're carrying too much.)"
+      ],
+      "if": "ruins.dew.taken == 3"
+    },
+    {
+      "type": "giveItem",
+      "item": "Mountain Dew (Warm)",
+      "lines": [
+        "* (You took the last Mountain Dew.)\n* (You knocked the bowl over. Disgusting.)"
+      ],
+      "fullLines": [
+        "* (You tried to take a snack...)\n* (You're carrying too much.)"
+      ],
+      "if": "ruins.dew.taken == 4"
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* (Look at what you've done.)\n* (The bowl is completely empty.)"
+      ],
+      "if": "ruins.dew.taken >= 5"
+    }
+  ]
+}

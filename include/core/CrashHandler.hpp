@@ -18,7 +18,7 @@
 #ifdef _WIN32
 // Declared directly instead of including windows.h, whose GDI/user symbols conflict with
 // raylib's Rectangle, CloseWindow and ShowCursor declarations.
-extern "C" __declspec(dllimport) unsigned short __stdcall CaptureStackBackTrace(
+extern "C" __declspec(dllimport) unsigned short __stdcall RtlCaptureStackBackTrace(
     unsigned long framesToSkip, unsigned long framesToCapture, void** backTrace,
     unsigned long* backTraceHash);
 #endif
@@ -69,7 +69,7 @@ inline std::vector<std::string> captureStack()
 {
 #ifdef _WIN32
     std::array<void*, 62> frames{};
-    const unsigned short count = CaptureStackBackTrace(
+    const unsigned short count = RtlCaptureStackBackTrace(
         0, static_cast<unsigned long>(frames.size()), frames.data(), nullptr);
     std::vector<std::string> result;
     result.reserve(count);

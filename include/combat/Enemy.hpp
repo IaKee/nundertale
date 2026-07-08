@@ -8,7 +8,10 @@
 #include <cctype>
 #include <functional>
 #include <raylib.h>
+#include "ActGate.hpp"
 #include "EnemyPatterns.hpp"
+#include "GladosPatterns.hpp"
+#include "core/PeacePath.hpp"
 
 namespace nundertale {
 
@@ -82,70 +85,6 @@ inline int howlFurFromJson(const std::string& json, int fallback) {
     return jsonIntForKey(json, "howlFur", value) ? value : fallback;
 }
 
-struct ActDef {
-    std::string id;
-    std::string label;
-    std::string text;
-    std::string response;
-    bool spareable = false;
-    bool skipAttack = false;
-    bool stopsBeat = false; // BSK: no more enemy attack turns this battle + music ducked
-    bool flees = false;
-    int mercy = 0;
-    std::string requiresItem;
-    int requiresFurMin = 0;
-    std::string requiresFlag;
-    int minUses = 1;
-    int atkDelta = 0;
-    bool atkDeltaOnce = false;
-    int defDelta = 0;
-    int freezeTurns = 0;
-    std::string repeatText;     // shown from the 2nd use on (e.g. Cringe Check), "" = reuse text
-    std::string repeatResponse; // enemy line from the 2nd use on, "" = reuse response
-    std::vector<std::string> useTexts;     // per-use text (use N -> [N-1], last one repeats); wins over text/repeatText
-    std::vector<std::string> useResponses; // per-use enemy line, same rule
-    int fur = 0;                // FUR added when the effect applies (ACT-005 Accept Hug)
-    bool spareNow = false;      // spares on the spot, without MERCY (ACT-005)
-    std::string setFlag;
-    bool healNextAttack = false;
-};
-
-// Text and enemy line for the Nth use of an ACT (1-based).
-inline const std::string& actTextForUse(const ActDef& act, int useCount) {
-    if (!act.useTexts.empty()) {
-        return act.useTexts[static_cast<std::size_t>(std::clamp(useCount, 1, static_cast<int>(act.useTexts.size())) - 1)];
-    }
-    return (useCount >= 2 && !act.repeatText.empty()) ? act.repeatText : act.text;
-}
-inline const std::string& actResponseForUse(const ActDef& act, int useCount) {
-    if (!act.useResponses.empty()) {
-        return act.useResponses[static_cast<std::size_t>(std::clamp(useCount, 1, static_cast<int>(act.useResponses.size())) - 1)];
-    }
-    return (useCount >= 2 && !act.repeatResponse.empty()) ? act.repeatResponse : act.response;
-}
-
-inline bool actAvailable(const ActDef& act,
-                         const std::vector<std::string>& inventory,
-                         int fur,
-                         const std::function<bool(const std::string&)>& hasFlag) {
-    if (!act.requiresItem.empty() &&
-        std::find(inventory.begin(), inventory.end(), act.requiresItem) == inventory.end()) {
-        return false;
-    }
-    if (fur < act.requiresFurMin) {
-        return false;
-    }
-    return act.requiresFlag.empty() || hasFlag(act.requiresFlag);
-}
-
-inline bool actEffectApplies(int useCount, int minUses) {
-    return minUses <= 1 || useCount >= minUses;
-}
-
-inline int clampStat(int value, int delta) {
-    return std::max(0, value + delta);
-}
-
 class Enemy {
 public:
     Enemy(const std::string& name, int maxHp, int atk, int def);
@@ -174,7 +113,11 @@ public:
     int getMercy() const { return m_mercy; }
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
-    void setSpareable(bool s) { m_spareable = s; }
+    bool canBeSpared() const { return m_canBeSpared; }
+    bool isInvulnerable() const { return m_invulnerable; }
+    bool isUnkillable() const { return m_unkillable; }
+    bool countsAsKill() const { return m_countsAsKill; }
+    void setSpareable(bool s) { m_spareable = s && m_canBeSpared; }
     static bool mercyLockedAt(int hp, int maxHp, int lockPct) {
         if (maxHp <= 0 || lockPct <= 0) return false;
         return static_cast<long long>(hp) * 100 > static_cast<long long>(maxHp) * lockPct;
@@ -193,10 +136,45 @@ public:
     }
     int getHowlFur(int fallback) const { return m_howlFur >= 0 ? m_howlFur : fallback; }
     const std::vector<EnemyPatternDef>& getPatterns() const { return m_patterns; }
+    int getSurviveTurns() const { return m_surviveTurns; }
+    const std::string& getSurvivalEndText() const { return m_survivalEndText; }
+    const std::vector<GladosPhaseDef>& getSurvivalPhases() const { return m_survivalPhases; }
+    int getScriptedEndAfterTurns() const { return m_scriptedEndAfterTurns; }
+    const std::string& getScriptedEndText() const { return m_scriptedEndText; }
+    const std::string& getInvulnerableHitText() const { return m_invulnerableHitText; }
+    bool suppressesFurMirror() const { return m_suppressFurMirror; }
+    const std::string& getPatternSpeech(const std::string& patternId) const {
+        static const std::string empty;
+        const auto it = m_patternSpeech.find(patternId);
+        return it != m_patternSpeech.end() ? it->second : empty;
+    }
+    const std::string& getPatternSprite(const std::string& patternId) const {
+        static const std::string empty;
+        const auto it = m_patternSprite.find(patternId);
+        return it != m_patternSprite.end() ? it->second : empty;
+    }
+    int getActHeal(const std::string& actId) const {
+        const auto it = m_actHeal.find(actId);
+        return it != m_actHeal.end() ? it->second : 0;
+    }
 
     const std::vector<ActDef>& getActs() const { return m_acts; }
-    void setActs(const std::vector<ActDef>& acts) { m_acts = acts; }
-    void addAct(const ActDef& act) { m_acts.push_back(act); }
+    void setActs(const std::vector<ActDef>& acts) { m_acts = acts; rebuildMenuActs(); }
+    void addAct(const ActDef& act) { m_acts.push_back(act); rebuildMenuActs(); }
+    // ACT menu order: getActs() plus the peace path's extra ACTs (Barky's Comment on Tail) after Check.
+    const std::vector<ActDef>& getMenuActs() const { return m_menuActs; }
+
+    // ACT-008: data-driven peace path (enemy JSON "peacePath"); no block = old mercy/spareable behaviour.
+    bool hasPeacePath() const { return m_hasPeacePath; }
+    const PeacePathDef& getPeacePath() const { return m_peacePath; }
+    const PeacePathState& getPeaceState() const { return m_peaceState; }
+    void setPeacePath(const PeacePathDef& def, const std::vector<ActDef>& extraActs = {});
+    // Applies the ACT (by its menu label) to the path; the enemy turns spareable on the step that reaches the goal.
+    PeaceStepResult applyPeaceAct(const std::string& actLabel, bool toxicTrack);
+    // Peace-path ACTs with requiresProgress stay hidden until the required number of steps is complete.
+    bool peaceActAvailable(const std::string& actLabel) const;
+    bool peaceMercyAllowed(bool toxicTrack) const;
+    int peaceStepsLeft(bool toxicTrack) const;
 
     std::vector<std::string> getActOptions() const;
     void setActOptions(const std::vector<std::string>& opts);
@@ -225,6 +203,7 @@ public:
     static std::unique_ptr<Enemy> loadFromJson(const std::string& filepath);
 
 private:
+    void rebuildMenuActs();
     void initDefaultActs();
     void initDefaultFlavors();
     void initDefaultDialogues();
@@ -243,9 +222,29 @@ private:
     int m_mercyLockedAbovePct = 0;
     std::string m_checkFlavor;
     bool m_spareable = false;
+    bool m_canBeSpared = true;
+    bool m_invulnerable = false;
+    bool m_unkillable = false;
+    bool m_countsAsKill = true;
+    int m_surviveTurns = 0;
+    std::string m_survivalEndText;
+    std::vector<GladosPhaseDef> m_survivalPhases;
+    int m_scriptedEndAfterTurns = 0;
+    std::string m_scriptedEndText;
+    std::string m_invulnerableHitText;
+    bool m_suppressFurMirror = false;
 
     std::vector<ActDef> m_acts;
+    std::vector<ActDef> m_peaceExtraActs;
+    std::vector<ActDef> m_menuActs;
+    PeacePathDef m_peacePath;
+    PeacePathState m_peaceState;
+    bool m_hasPeacePath = false;
+    bool m_peaceToxic = false;
     std::unordered_map<std::string, int> m_patternFur;
+    std::unordered_map<std::string, std::string> m_patternSpeech;
+    std::unordered_map<std::string, std::string> m_patternSprite;
+    std::unordered_map<std::string, int> m_actHeal;
     int m_howlFur = -1;
     std::vector<EnemyPatternDef> m_patterns;
     std::string m_spareText = "You can tell no one about the zipper. Pack secret.";

@@ -35,17 +35,22 @@
     "default": [
       "* Grasstoid gently photosynthesizes.",
       "* Grasstoid invites you to touch grass.",
-      "* Smells like fresh dew and outdoor air."
+      "* Smells like fresh dew and outdoor air.",
+      "* (You haven't been outside in a while. Neither has the grass, technically.)"
     ],
-    "lowHp": ["* Grasstoid is wilting."],
-    "spareable": ["* Grasstoid has been touched. Peace has been achieved."]
+    "lowHp": ["* Grasstoid is wilting.", "* Grasstoid is turning a little brown."],
+    "spareable": ["* Grasstoid has been touched. Peace has been achieved.", "* Grasstoid is glowing. It is just sunlight, probably."]
   },
   "dialogue": {
     "default": [
       "Touch me.",
       "Please. Nobody ever does.",
       "Outside is NICE."
-    ]
+    ],
+    "afterHit": ["Please... touch me instead.", "Outside is NICE..."],
+    "crit": ["Nobody ever... does..."],
+    "miss": ["Touch me.", "Outside is NICE."],
+    "item": ["Is that... outside food?"]
   },
   "patterns": [
     {

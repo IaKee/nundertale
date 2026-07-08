@@ -72,6 +72,10 @@ private:
     int m_heldTicks = 0;
 };
 
+#ifdef NUNDERTALE_DEBUG
+struct GameTrace; // --trace event log (defined in Game.cpp)
+#endif
+
 class Game {
 public:
     Game(int argc, char** argv);
@@ -105,6 +109,10 @@ private:
     std::string m_debugInputPath;
     double m_debugRecordSeconds = 30.0;
     int m_debugRecordTickLimit = 900;
+    std::string m_debugTracePath;
+    // --trace + --input without --record: fixed 30 Hz steps run uncapped, no frame dump.
+    bool m_debugFast = false;
+    std::unique_ptr<GameTrace> m_debugTrace;
 #endif
 };
 

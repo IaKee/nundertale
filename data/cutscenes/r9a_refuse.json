@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "GLaDOwOS",
+      "lines": [
+        "Disappointing.",
+        "Initiating... the other test."
+      ]
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/alert.ogg",
+      "volume": 0.7
+    },
+    {
+      "type": "shake",
+      "intensity": 3,
+      "seconds": 0.4
+    },
+    {
+      "type": "addFlag",
+      "key": "ruins.booth.refused",
+      "value": 1
+    },
+    {
+      "type": "startBattle",
+      "encounter": "gladowos"
+    }
+  ]
+}

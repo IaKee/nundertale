@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* One of the wall panels hangs by a single screw.",
+        "* Behind it, in thick marker:",
+        "* THE HUG IS A LIE"
+      ],
+      "if": "ruins.booth.panel == 0"
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* The loose panel. Behind it, in thick marker:",
+        "* THE HUG IS A LIE"
+      ],
+      "if": "ruins.booth.panel >= 1"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.booth.panel",
+      "value": 1
+    }
+  ]
+}

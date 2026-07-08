@@ -1,0 +1,70 @@
+{
+  "id": "floofy",
+  "name": "Floofy",
+  "hp": 1,
+  "maxHp": 1,
+  "atk": 0,
+  "def": 999,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "floofy",
+  "check": "A zesty flower fox with a rose and zero shame. Wants to make you a furry.",
+  "invulnerable": true,
+  "canSpare": false,
+  "suppressFurMirror": true,
+  "scriptedEndAfterTurns": 2,
+  "scriptedEndText": "* The petals close in. A burst of glitter cuts through them.",
+  "invulnerableHitText": "* Floofy has no shame to hurt.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Floofy offers another friendship petal and a wink.",
+      "* The air smells aggressively floral.",
+      "* Floofy strikes a pose with his rose. It is a recruiting pose."
+    ],
+    "lowHp": [],
+    "spareable": []
+  },
+  "dialogue": {
+    "default": [
+      "Catch them, cutie~",
+      "OwO what's this? A new friend?",
+      "In this world, it's YIFF or be YIFFED."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "friendship_petals",
+      "kind": "rain",
+      "weight": 1,
+      "speech": "Catch them, cutie~",
+      "params": {
+        "count": 6,
+        "speed": 65,
+        "damage": 1,
+        "fur": 20,
+        "sprite": "assets/bullets/petal.png"
+      }
+    },
+    {
+      "id": "pounce_ring",
+      "kind": "ring",
+      "weight": 1,
+      "speech": "*pounces*",
+      "params": {
+        "count": 1,
+        "speed": 42,
+        "damage": 1,
+        "fur": 20,
+        "sprite": "assets/bullets/petal.png"
+      }
+    }
+  ]
+}

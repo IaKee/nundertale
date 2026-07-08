@@ -1,0 +1,8 @@
+{
+  "id": "encounter_floofy",
+  "enemies": ["floofy"],
+  "introText": "* Floofy shares some friendship petals.",
+  "background": "black",
+  "music": "battle.default",
+  "canFlee": false
+}

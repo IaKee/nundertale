@@ -1,0 +1,32 @@
+{
+  "steps": [
+    {
+      "type": "npcFace",
+      "npc": "npc_barky_spared",
+      "key": "down"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pipipipopopo_backwards.ogg",
+      "volume": 0.6
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "Dude. Your paws are SO much better than mine."
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "Awoo! Hey there, fellow cool gamer.",
+        "Thanks for not roasting my fursona back there.",
+        "So... wanna join the Shadow Fang Pack? We have jackets. Well. One jacket.",
+        "The northern gate is unlocked! Safe travels through the Underground!"
+      ]
+    }
+  ]
+}

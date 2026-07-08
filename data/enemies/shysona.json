@@ -41,11 +41,15 @@
       "* Shysona apologizes to the battle box.",
       "* Shysona quietly deletes a draft commission."
     ],
-    "lowHp": ["* Shysona looks ready to vanish."],
-    "spareable": ["* Shysona seems a little less afraid."]
+    "lowHp": ["* Shysona looks ready to vanish.", "* Shysona is apologizing in a whisper."],
+    "spareable": ["* Shysona seems a little less afraid.", "* Shysona peeks out from behind its wings."]
   },
   "dialogue": {
-    "default": ["Sorry...", "Sorry for the art...", "You weren't supposed to see that..."]
+    "default": ["Sorry...", "Sorry for the art...", "You weren't supposed to see that..."],
+    "afterHit": ["Sorry... for getting hit...", "Sorry..."],
+    "crit": ["S-sorry!!"],
+    "miss": ["Sorry... for being hard to hit..."],
+    "item": ["Oh... for me? Sorry..."]
   },
   "patterns": [
     {

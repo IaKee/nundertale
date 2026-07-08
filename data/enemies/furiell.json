@@ -9,7 +9,7 @@
   "gold": 0,
   "sprite": "furiell",
   "voice": "furiell",
-  "check": "Knows what's best for you. Has forty blankets to prove it.",
+  "check": "Knows what's best for you. Has forty blankets and zero boundaries.",
   "acts": [
     {
       "id": "check",
@@ -18,10 +18,33 @@
       "effects": {}
     },
     {
-      "id": "talk",
-      "label": "Talk",
-      "text": "* You talk about video games. She nods. She is not listening.",
+      "id": "let_go",
+      "label": "Let Go of Her Paw",
+      "text": "* You ask Furiell to let go of your hand.",
+      "effects": {},
+      "response": "*grabs your hand again* nuh-uh~"
+    },
+    {
+      "id": "talk_games",
+      "label": "Talk About Games",
+      "text": "* You talk about Fortnite. She nods. She is staring at your ears.",
       "effects": {}
+    },
+    {
+      "id": "promise_visit",
+      "label": "Promise to Visit",
+      "text": "* You promise to visit Furiell after you leave.",
+      "effects": {},
+      "response": "...you pwomise? Pinky pwomise?"
+    },
+    {
+      "id": "insult",
+      "label": "Insult",
+      "text": "* Furiell is enjoying this.",
+      "effects": {
+        "skipAttack": true
+      },
+      "response": "...say that again, pup. Slower."
     },
     {
       "id": "accept_hug",
@@ -35,6 +58,45 @@
       "response": "...You'll stay a little longer, then?"
     }
   ],
+  "peacePath": {
+    "goal": 5,
+    "toxicExtraSteps": 3,
+    "furrierPath": true,
+    "furPerHug": 15,
+    "rules": [
+      {
+        "act": "Let Go of Her Paw",
+        "progress": 1,
+        "line": "*grabs your hand again* nuh-uh~"
+      },
+      {
+        "act": "Talk About Games",
+        "progress": 1
+      },
+      {
+        "act": "Promise to Visit",
+        "progress": 1,
+        "requiresProgress": 2,
+        "line": "...you pwomise? Pinky pwomise?"
+      },
+      {
+        "act": "Insult",
+        "progress": 0,
+        "skipsAttack": true,
+        "line": "...say that again, pup. Slower."
+      },
+      {
+        "act": "Accept Hug",
+        "progress": 1
+      }
+    ],
+    "stepFlavor": [
+      "* Furiell tightens her grip.",
+      "* Furiell's paw loosens a little.",
+      "* Furiell is considering your promise.",
+      "* Furiell's paw is barely holding on."
+    ]
+  },
   "spareLines": [
     "...",
     "...",
@@ -54,10 +116,10 @@
   "spareText": "If you truly wish to leave... I won't stop you. But please. Leave a review.",
   "spareFlag": "ruins.furiell.spared",
   "killFlag": "ruins.furiell.killed",
-  "deathText": "* Only a small pile of plush stuffing remains.",
+  "deathText": "* Only a small pile of plush dust remains.",
   "deathLines": [
-    "You... really think I'm that cringe...?",
-    "...so you really are... just a gamer..."
+    "...hehe... harder... no, wait—",
+    "...that one... actually hurt, pup..."
   ],
   "mercifulBullets": true,
   "flavor": {
@@ -67,7 +129,7 @@
       "* Smells like lavender and fursuit."
     ],
     "lowHp": ["* Furiell is breathing hard. She is still smiling."],
-    "spareable": ["* Furiell is waiting for you to leave."]
+    "spareable": ["* Furiell finally lets go of your hand."]
   },
   "dialogue": {
     "default": ["...", "Go upstairs.", "I have blankets."]

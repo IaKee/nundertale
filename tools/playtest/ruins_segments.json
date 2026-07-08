@@ -1,0 +1,81 @@
+{
+  "defaults": { "seconds": 30 },
+  "segments": [
+    {
+      "name": "r4_to_r5_dummy_fight_starts",
+      "description": "R4 (gate open) -> R5: the Furiell intro plays and the Fursuit Dummy fight starts",
+      "room": "ruins_switches",
+      "spawn": "spawn",
+      "flags": { "ruins.r4.sw1": 1, "ruins.r4.sw3": 1 },
+      "input": "r4_to_r5_dummy.input",
+      "seconds": 25,
+      "expect": [
+        { "event": "cutscene_start", "id": "r4_hint" },
+        { "event": "room", "id": "ruins_dummy", "spawn": "from_switches" },
+        { "event": "cutscene_start", "id": "r5_dummy" },
+        { "event": "cutscene_end", "id": "r5_dummy" },
+        { "event": "battle_start", "encounter": "fursuit_dummy" }
+      ],
+      "forbid": [{ "event": "game_over" }]
+    },
+    {
+      "name": "r5_dummy_spare",
+      "description": "R5: intro, then the dummy fight played with ACT > Shake x3 and MERCY > Spare",
+      "room": "ruins_dummy",
+      "spawn": "from_switches",
+      "input": "r5_dummy_spare.input",
+      "seconds": 60,
+      "expect": [
+        { "event": "cutscene_start", "id": "r5_dummy" },
+        { "event": "battle_start", "encounter": "fursuit_dummy" },
+        { "event": "flag", "name": "ruins.dummy.shook", "value": 1 },
+        { "event": "battle_end", "encounter": "fursuit_dummy", "outcome": "spared" },
+        { "event": "cutscene_start", "id": "r5_dummy_spare" }
+      ],
+      "forbid": [{ "event": "game_over" }]
+    },
+    {
+      "name": "r8_to_r9_barky_fight_starts",
+      "description": "R8 -> R9 through the north door: stepping into the arena plays r9_barky_intro (howl, Barky drops) and the Barky fight starts",
+      "note": "C1-009: the fight now starts from the intro trigger, and R9's from_notices spawn moved to (300,340) so entering no longer bounces back through to_notices.",
+      "room": "ruins_notices",
+      "spawn": "spawn",
+      "input": "r8_to_r9_barky.input",
+      "seconds": 30,
+      "expect": [
+        { "event": "room", "id": "ruins_barky", "spawn": "from_notices" },
+        { "event": "cutscene_start", "id": "r9_barky_intro" },
+        { "event": "battle_start", "encounter": "barky" }
+      ],
+      "forbid": [{ "event": "game_over" }]
+    },
+    {
+      "name": "r9_barky_doorway_fight_starts",
+      "description": "R9 from its own spawn: r9_barky_intro plays (the spawn is inside the intro trigger) and the Barky fight starts",
+      "room": "ruins_barky",
+      "spawn": "spawn",
+      "input": "r9_barky_doorway.input",
+      "seconds": 20,
+      "expect": [
+        { "event": "cutscene_start", "id": "r9_barky_intro" },
+        { "event": "battle_start", "encounter": "barky" }
+      ],
+      "forbid": [{ "event": "game_over" }]
+    },
+    {
+      "name": "r12_basement_to_furiell_fight_starts",
+      "description": "R12 basement from the stairs: Furiell's walk-ahead, then r12_boss and the Furiell fight",
+      "room": "ruins_basement",
+      "spawn": "from_house",
+      "input": "r12_basement_to_furiell.input",
+      "seconds": 50,
+      "expect": [
+        { "event": "cutscene_start", "id": "r12_entry" },
+        { "event": "cutscene_end", "id": "r12_entry" },
+        { "event": "cutscene_start", "id": "r12_boss" },
+        { "event": "battle_start", "encounter": "furiell" }
+      ],
+      "forbid": [{ "event": "game_over" }]
+    }
+  ]
+}

@@ -1997,15 +1997,15 @@ int main() {
         const auto& options = furiellOptions();
         assert(options.size() == 5);
         assert(options[0].first == "Say Hello");
-        assert(options[0].second == "Hello? This is Furiell. ...Did you drink water today? Actual water?");
+        assert(options[0].second == "Hewwo? This is Furiell. ...Did you drink water today? Actual water? uwu");
         assert(options[1].first == "Puzzle Help");
-        assert(options[1].second == "Look for the glitter, my child. The glitter is always right.");
+        assert(options[1].second == "Make it pink, hun! Pink is always right. uwu");
         assert(options[2].first == "About Yourself");
         assert(options[2].second == "I used to run a convention. Now I run a household of one. Soon two!");
         assert(options[3].first == "Call Her \"Mod\"");
         assert(options[3].second == "...Did you just call me \"Mod\"? Oh my. Would you like to be pinned? To the fridge?");
         assert(options[4].first == "Send a Meme");
-        assert(options[4].second == "Is this... a frog? Is this you? I'm printing it.");
+        assert(options[4].second == "Is this... a goblin? Is this you? I'm printing it.");
 
         // 6. Furiell voicemail (LORE §21.1 verbatim)
         assert(furiellVoicemail() == "Hello, you have reached Furiell. I cannot come to the phone. I am probably baking. Please leave a message after the tone. ...Did you drink water today?");
@@ -2659,7 +2659,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house", "ruins_house_hallway", "ruins_house_pepe", "ruins_basement", "ruins_exit"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_booth", "ruins_bakesale", "ruins_cables", "ruins_house", "ruins_house_hallway", "ruins_house_pepe", "ruins_basement", "ruins_exit"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {

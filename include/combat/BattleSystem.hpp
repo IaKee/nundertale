@@ -13,6 +13,7 @@
 #include "AttackTarget.hpp"
 #include "BarkyPatterns.hpp"
 #include "FurHud.hpp"
+#include "FloofyScript.hpp"
 #include "BeatMap.hpp"
 #include "core/Constants.hpp"
 
@@ -119,6 +120,8 @@ private:
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
     void spawnGenericBulletWave(const EnemyPatternDef& pattern);
+    const EnemyPatternDef* selectedPattern() const;
+    bool finishSurvivalIfComplete(GameContext& context);
     bool applySoulDamage(GameContext& context, int rawDamage, int fur);
 
     void drawBackgroundGrid() const;
@@ -127,6 +130,8 @@ private:
     void drawHUD(GameContext& context, Font font) const;
     void drawButtons(GameContext& context, Font font) const;
     void spawnDust(Vector2 center, int count, Color col);
+    void spawnPlushDust(Vector2 center, int count, bool exGamer);
+    static bool readExGamer(const std::string& enemyId);
     void updateDust(float dt);
     void drawDust() const;
     void drawAttackTarget() const;
@@ -199,8 +204,10 @@ private:
         float alpha;
         float size;
         Color color;
+        float fade = 1.4f;
     };
     std::vector<DustParticle> m_dustParticles;
+    bool m_exGamer = false;
 
     // BFL-002 & BFL-003: Turn action tracking & contextual dialogue triggers
     enum class PlayerTurnAction {

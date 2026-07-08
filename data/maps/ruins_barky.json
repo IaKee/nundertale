@@ -308,59 +308,281 @@
           "id": 8,
           "name": "sign",
           "rotation": 0,
-          "type": "interactable",
+          "type": "sign",
           "visible": true,
           "width": 40,
           "x": 100,
-          "y": 70
-        },
-        {
-          "height": 40,
-          "id": 9,
-          "name": "dust",
-          "rotation": 0,
-          "type": "interactable",
-          "visible": true,
-          "width": 40,
-          "x": 490,
-          "y": 90
+          "y": 70,
+          "properties": [
+            {
+              "name": "speaker",
+              "type": "string",
+              "value": "SIGN"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
+            }
+          ]
         },
         {
           "height": 30,
-          "id": 10,
+          "id": 9,
           "name": "door",
           "rotation": 0,
-          "type": "interactable",
+          "type": "examine",
           "visible": true,
           "width": 80,
           "x": 280,
-          "y": 50
+          "y": 50,
+          "properties": [
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.barky.state >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* (The northern gate is sealed.)\n* (Something with a very loud voice is guarding it.)"
+            }
+          ]
+        },
+        {
+          "height": 100,
+          "id": 10,
+          "name": "trigger_barky_intro",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 560,
+          "x": 40,
+          "y": 300,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r9_barky_intro"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r9.barky_intro"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 0"
+            }
+          ]
+        },
+        {
+          "height": 320,
+          "id": 11,
+          "name": "trigger_barky_spared",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 560,
+          "x": 40,
+          "y": 80,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r9_barky_spared"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r9.barky_spared"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 1"
+            }
+          ]
+        },
+        {
+          "height": 320,
+          "id": 12,
+          "name": "trigger_barky_killed",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 560,
+          "x": 40,
+          "y": 80,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r9_barky_killed"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r9.barky_killed"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 2"
+            }
+          ]
         },
         {
           "height": 50,
-          "id": 11,
+          "id": 13,
           "name": "npc_barky",
           "rotation": 0,
-          "type": "interactable",
+          "type": "npc",
           "visible": true,
           "width": 40,
           "x": 490,
-          "y": 80
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/barky.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "stand_down"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 0 && ruins.r9.barky_here >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "barky_entrance"
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 14,
+          "name": "npc_barky_spared",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 40,
+          "x": 490,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/barky.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "stand_down"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r9_barky_spared"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 15,
+          "name": "fur_pile",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 490,
+          "y": 90,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_wrapper_pile.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "pile"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 2"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
+            }
+          ]
         },
         {
           "height": 30,
-          "id": 12,
+          "id": 16,
           "name": "bowl",
           "rotation": 0,
-          "type": "interactable",
+          "type": "prop",
           "visible": true,
           "width": 40,
           "x": 200,
-          "y": 160
+          "y": 160,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_dorito_bowl.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "full"
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "knocked"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.dew.taken >= 4"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r9_dew_bowl"
+            },
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.dew.taken"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
         },
         {
           "height": 0,
-          "id": 13,
+          "id": 17,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -372,14 +594,14 @@
         },
         {
           "height": 0,
-          "id": 14,
+          "id": 18,
           "name": "from_notices",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
           "width": 0,
           "x": 300,
-          "y": 370,
+          "y": 340,
           "point": true,
           "properties": [
             {
@@ -391,7 +613,7 @@
         },
         {
           "height": 30,
-          "id": 15,
+          "id": 19,
           "name": "to_notices",
           "rotation": 0,
           "type": "door",
@@ -414,7 +636,7 @@
         },
         {
           "height": 80,
-          "id": 16,
+          "id": 20,
           "name": "ruins_lamp",
           "rotation": 0,
           "type": "prop",
@@ -447,7 +669,7 @@
         },
         {
           "height": 40,
-          "id": 17,
+          "id": 21,
           "name": "floor_message",
           "rotation": 0,
           "type": "prop",
@@ -475,7 +697,7 @@
         },
         {
           "height": 20,
-          "id": 18,
+          "id": 22,
           "name": "to_bakesale",
           "rotation": 0,
           "type": "door",
@@ -503,7 +725,7 @@
         },
         {
           "height": 0,
-          "id": 19,
+          "id": 23,
           "name": "from_bakesale",
           "rotation": 0,
           "type": "spawn",
@@ -517,6 +739,104 @@
               "name": "facing",
               "type": "string",
               "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 24,
+          "name": "booth_arrow",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 40,
+          "y": 190,
+          "properties": [
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A cardboard arrow is taped to the wall: \"APURRTURE FAN BOOTH ->\"||* Barky's handwriting. He drew a paw print as the dot."
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 25,
+          "name": "to_booth",
+          "rotation": 0,
+          "type": "door",
+          "visible": true,
+          "width": 40,
+          "x": 40,
+          "y": 240,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_booth"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_barky"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state == 1 && ruins.booth.state == 0"
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 26,
+          "name": "to_booth_again",
+          "rotation": 0,
+          "type": "door",
+          "visible": true,
+          "width": 40,
+          "x": 40,
+          "y": 240,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_booth"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_barky"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.booth.state >= 1"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 27,
+          "name": "from_booth",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 130,
+          "y": 300,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "right"
             }
           ]
         }
@@ -741,14 +1061,9 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 28,
   "orientation": "orthogonal",
   "properties": [
-    {
-      "name": "legacyBarky",
-      "type": "bool",
-      "value": true
-    },
     {
       "name": "displayName",
       "type": "string",

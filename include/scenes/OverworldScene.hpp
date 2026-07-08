@@ -53,7 +53,6 @@ public:
 private:
     void initObstacles();
     void loadRoomMap(const std::string& roomId);
-    void initInteractables(GameContext& context);
     void initRoomObjects(GameContext& context);
     void refreshDynamicObstacles(GameContext& context);
     void updateBumpCutscenes(float dt, GameContext& context);
@@ -91,7 +90,6 @@ private:
     float m_roomHeight = 480.0f;
     std::string m_backgroundImage;
     Vector2 m_backgroundOffset = { 0.0f, 0.0f };
-    bool m_legacyBarky = false;
     std::string m_saveLinesOverride;
     float m_roomAnimationTime = 0.0f;
     std::unordered_set<std::string> m_loggedConditions;
@@ -159,6 +157,11 @@ private:
     std::uint32_t m_fluffRng = 0x5F100Fu;
 
     CutsceneRunner m_cutscene;
+    // Once-flag of the trigger whose fight cutscene is running; burned when the battle really starts.
+    std::string m_pendingTriggerOnce;
+    bool m_cutsceneStartsBattle = false;
+    bool m_cutsceneBattleStarted = false;
+    int m_cutsceneChoice = -1;      // C1-014: 0-based pick of the running "choice" step, -1 = pending
 };
 
 } // namespace nundertale

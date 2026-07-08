@@ -20,15 +20,21 @@
       ]
     },
     {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
+    },
+    {
       "type": "moveNpc",
       "npc": "furiell",
       "x": 288,
-      "y": 800,
-      "speed": 160
+      "y": 960,
+      "speed": 80
     },
     {
-      "type": "hideNpc",
-      "npc": "furiell"
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
     },
     {
       "type": "setFlag",

@@ -29,6 +29,9 @@
   "battle.boss_furiell": {
     "path": "assets/music/main_menu_loop.ogg"
   },
+  "battle.heartache_fluffier": {
+    "path": "assets/music/main_menu_loop.ogg"
+  },
   "battle.bass_shake": {
     "path": "assets/music/bass_shake.ogg",
     "loopStart": 1.846,

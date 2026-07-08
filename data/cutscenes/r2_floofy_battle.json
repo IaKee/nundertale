@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Howdy~! I'm FLOOFY! Floofy the Floof! *pounces on you* OwO what's this? A new friend?",
+        "Down here, we share these little... \"friendship petals\"! Catch them, cutie~",
+        "Pick a species, sweetie! I'll wait. I have all the time in the world (and a rose)."
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "floofy"
+    }
+  ]
+}

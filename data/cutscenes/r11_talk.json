@@ -1,0 +1,64 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Is this candy, pup? It smells like a laundromat. uwu"
+      ],
+      "if": "hasItem.tide_pod == 1 && item.tide_pod.shown == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "item.tide_pod.shown",
+      "value": 1,
+      "if": "hasItem.tide_pod == 1 && item.tide_pod.shown == 0"
+    },
+    {
+      "type": "choice",
+      "speaker": "FURIELL",
+      "lines": [
+        "What's on your mind, pup? Speak freely~ uwu"
+      ],
+      "options": [
+        "When can I go home?",
+        "Talk about games",
+        "Ask about the fur"
+      ],
+      "key": "ruins.house.talk_choice"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r11.talk_choice",
+      "value": 1,
+      "if": "ruins.house.talk_choice == 1"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r11.talk_choice",
+      "value": 2,
+      "if": "ruins.house.talk_choice == 2"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r11.talk_choice",
+      "value": 3,
+      "if": "ruins.house.talk_choice == 3"
+    },
+    {
+      "type": "cutscene",
+      "key": "r11_talk_home",
+      "if": "ruins.house.talk_choice == 1"
+    },
+    {
+      "type": "cutscene",
+      "key": "r11_talk_games",
+      "if": "ruins.house.talk_choice == 2"
+    },
+    {
+      "type": "cutscene",
+      "key": "r11_talk_fur",
+      "if": "ruins.house.talk_choice == 3"
+    }
+  ]
+}

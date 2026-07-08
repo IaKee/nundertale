@@ -35,11 +35,15 @@
       "* Modsmal checks the pinned rules.",
       "* Modsmal considers a temporary ban."
     ],
-    "lowHp": ["* Modsmal is losing moderation cohesion."],
-    "spareable": ["* Modsmal lowers the ban hammer."]
+    "lowHp": ["* Modsmal is losing moderation cohesion.", "* Modsmal is barely holding the rules together."],
+    "spareable": ["* Modsmal lowers the ban hammer.", "* Modsmal marks your case as resolved."]
   },
   "dialogue": {
-    "default": ["*squorch* (Read the pins.)", "*squelch* (Tag your art.)"]
+    "default": ["*squorch* (Read the pins.)", "*squelch* (Tag your art.)"],
+    "afterHit": ["*squelch* (That's a warning.)"],
+    "crit": ["*SQUORCH* (Rule 1!)"],
+    "miss": ["*squorch* (Off-topic.)"],
+    "item": ["*squelch* (No self-promo.)"]
   },
   "patterns": [
     {

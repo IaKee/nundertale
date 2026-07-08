@@ -5,58 +5,11 @@
 
 namespace nundertale {
 
-DialogBox::DialogBox() = default;
-
-void DialogBox::startDialog(const std::vector<std::string>& pages, const std::string& speaker, std::function<void()> onComplete, const std::string& voiceSfx) {
-    m_pages.clear();
-    m_pageOptions.clear();
-    for (const auto& rawPage : pages) {
-        auto parsed = parseChoiceToken(rawPage);
-        m_pages.push_back(parsed.text);
-        m_pageOptions.push_back(parsed.options);
-    }
-    m_speaker = speaker;
-    m_onComplete = onComplete;
-    m_onChoice = nullptr;
-    m_lastChoice = -1;
-    m_selectedChoice = 0;
-    m_currentPage = 0;
-    m_visibleChars = 0;
-    m_charTimer = 0.0f;
-    m_isActive = true;
-    m_isPageComplete = false;
-
-    // TXT-006: Voice per character
-    if (!voiceSfx.empty()) {
-        m_voiceSfx = voiceSfx;
-    } else if (speaker.find("Sans") != std::string::npos) {
-        m_voiceSfx = "assets/sfx/sans_type.wav";
-    } else if (speaker.find("Furiell") != std::string::npos || speaker.find("FURIELL") != std::string::npos) {
-        m_voiceSfx = "assets/sfx/voice_furiell.ogg";
-    } else if (speaker.find("Floofy") != std::string::npos || speaker.find("FLOOFY") != std::string::npos) {
-        m_voiceSfx = "assets/sfx/voice_floofy.ogg";
-    } else if (speaker.find("Discord") != std::string::npos || speaker.find("Raid") != std::string::npos) {
-        m_voiceSfx = "assets/sfx/voice_default.ogg";
-    } else {
-        m_voiceSfx = "assets/sfx/voice_default.ogg";
-    }
-}
-
-void DialogBox::setOnChoice(std::function<void(int index, const std::string& option)> cb) {
-    m_onChoice = cb;
-}
-
-void DialogBox::close() {
-    m_isActive = false;
-    if (m_onComplete) {
-        auto cb = m_onComplete;
-        m_onComplete = nullptr;
-        cb();
-    }
-}
-
 void DialogBox::update(float dt, GameContext& context) {
     if (!m_isActive || m_pages.empty()) return;
+
+    m_fur = context.state.furry.value;
+    applyFurToPages();
 
     // TXT-005: Dialog box position flips to top if player is in lower half of screen
     if (context.state.playerPos.y > 240.0f) {

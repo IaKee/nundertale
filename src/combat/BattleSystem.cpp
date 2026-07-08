@@ -4,6 +4,9 @@
 #include "core/FurReactions.hpp"
 #include "core/ToxicTrack.hpp"
 #include "combat/FuriellMechanics.hpp"
+#include "combat/DustEffect.hpp"
+#include "core/TiledMap.hpp"
+#include <fstream>
 #include "ui/SpriteDraw.hpp"
 #include <cmath>
 #include <algorithm>
@@ -20,6 +23,7 @@ BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy, std::string introText, 
     : m_enemy(std::move(enemy)) {
     if (m_enemy) {
         m_isBarky = m_enemy->getId() == "barky";
+        m_exGamer = readExGamer(m_enemy->getId());
         // Barky's pre-existing battle allowed Flee despite its encounter data saying false.
         m_canFlee = canFlee || m_isBarky;
         m_narratorText = introText.empty()
@@ -177,21 +181,24 @@ void BattleSystem::update(float dt, GameContext& context) {
                         const int gold = m_isBarky ? 15 : m_enemy->getGold();
                         context.player.exp += exp;
                         context.player.gold += gold;
-                        if (m_isBarky) {
-                            context.state.setFlag("ruins.barky.killed", 1);
-                            context.state.setFlag("ruins.barky.state", 2);
-                        } else {
-                            context.state.incFlag("battle." + m_enemy->getId() + ".killed");
-                            context.state.incFlag("kills.ruins");
+                        if (m_enemy->countsAsKill()) {
+                            if (m_isBarky) {
+                                context.state.setFlag("ruins.barky.killed", 1);
+                                context.state.setFlag("ruins.barky.state", 2);
+                            } else {
+                                context.state.incFlag("battle." + m_enemy->getId() + ".killed");
+                                context.state.incFlag("kills.ruins");
+                            }
+                            if (!m_enemy->getKillFlag().empty()) context.state.setFlag(m_enemy->getKillFlag(), 1);
+                            context.state.killsTotal += 1;
+                            toxicTrackOnKill(context.state, m_enemy->getId());
+                            sessionOnKill(context.session);
+                            context.state.killsByArea["ruins"] += 1;
                         }
-                        if (!m_enemy->getKillFlag().empty()) context.state.setFlag(m_enemy->getKillFlag(), 1);
-                        context.state.killsTotal += 1;
-                        toxicTrackOnKill(context.state, m_enemy->getId());
-                        sessionOnKill(context.session);
-                        context.state.killsByArea["ruins"] += 1;
                         m_narratorText = "* YOU WON!\n* You earned " + std::to_string(exp) +
                             " EXP and " + std::to_string(gold) + " gold.";
-                        spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
+                        if (m_enemy->isDead()) spawnPlushDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 20, false);
+                        else spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
 
                         // Check level up (PRG-001, BUG-16)
                         static const int expThresholds[] = {
@@ -334,16 +341,23 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 int damage = std::max(1, static_cast<int>(std::round(static_cast<float>(baseAtk - enemyDef + GetRandomValue(1, 3)) * accuracyMult)));
 
                 m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
-                m_enemy->takeDamage(damage);
+                const bool blocked = m_enemy->isInvulnerable() || m_enemy->isUnkillable();
+                if (!blocked) m_enemy->takeDamage(damage);
 
                 m_lastMiss = false;
-                m_lastDamage = damage;
+                m_lastDamage = blocked ? 0 : damage;
                 m_damageDisplayTimer = 1.5f;
-                m_enemyShakeTimer = 0.4f;
+                m_enemyShakeTimer = blocked ? 0.0f : 0.4f;
                 m_slashAnimTimer = 0.25f;
 
                 // FGT-008: Hitmarker on critical hit, slice sound on normal hit
-                if (dist <= ATTACK_CRIT_RADIUS) {
+                if (blocked) {
+                    m_lastPlayerAction = PlayerTurnAction::FightHit;
+                    context.audio.playSound("assets/sfx/slash.ogg", 0.8f);
+                    m_narratorText = m_enemy->getInvulnerableHitText().empty()
+                        ? "* Your attack had no effect."
+                        : m_enemy->getInvulnerableHitText();
+                } else if (dist <= ATTACK_CRIT_RADIUS) {
                     m_lastPlayerAction = PlayerTurnAction::FightCrit;
                     context.audio.playSound("assets/sfx/hitmarker.ogg", 0.9f);
                     context.audio.playSound("assets/sfx/enemy_hit.ogg", 0.8f);
@@ -366,7 +380,8 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                         lastWords += (lastWords.empty() ? "" : "\n") + line;
                     }
                     if (!lastWords.empty()) m_enemySpeechBubble = lastWords;
-                    spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
+                    // C1-012 / BND-003: plush stuffing + glitter, plus a red spark for ex-gamers
+                    spawnPlushDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, m_exGamer);
                     context.audio.playSound("assets/sfx/vaporize.ogg", 0.9f);
                 }
 
@@ -392,9 +407,10 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
 
 std::vector<int> BattleSystem::getAvailableActIndices(const GameContext& context) const {
     std::vector<int> indices;
-    const auto& acts = m_enemy->getActs();
+    const auto& acts = m_enemy->getMenuActs();
     for (size_t i = 0; i < acts.size(); ++i) {
-        if (actAvailable(acts[i], context.player.inventory, context.state.furry.value,
+        if (m_enemy->peaceActAvailable(acts[i].label) &&
+            actAvailable(acts[i], context.player.inventory, context.state.furry.value,
                          [&context](const std::string& flag) { return context.state.hasFlag(flag); })) {
             indices.push_back(static_cast<int>(i));
         }
@@ -403,7 +419,7 @@ std::vector<int> BattleSystem::getAvailableActIndices(const GameContext& context
 }
 
 void BattleSystem::handleActInput(GameContext& context) {
-    const auto& acts = m_enemy->getActs();
+    const auto& acts = m_enemy->getMenuActs();
     const std::vector<int> availableActs = getAvailableActIndices(context);
     if (availableActs.empty()) {
         m_state = BattleState::MenuSelect;
@@ -456,10 +472,26 @@ void BattleSystem::handleActInput(GameContext& context) {
             m_narratorText = actTextForUse(act, useCount);
             m_enemySpeechBubble = actResponseForUse(act, useCount);
             bool wasSpareable = m_enemy->isSpareable();
-            if (applies && act.fur != 0) {
+            // ACT-008: peace-path rules own progress, skip effects and furrier-path FUR. Legacy ACT
+            // spareNow/FUR fields remain inert for these enemies, so old content cannot bypass the goal.
+            const bool peaceEnemy = m_enemy->hasPeacePath();
+            PeaceStepResult peaceStep;
+            if (peaceEnemy && applies) {
+                const bool toxic = toxicTrack(context.state) == 1;
+                peaceStep = m_enemy->applyPeaceAct(act.label, toxic);
+                if (peaceStep.known && m_enemySpeechBubble.empty()) m_enemySpeechBubble = peaceStep.line;
+                if (peaceStep.known && peaceStep.skipsAttack && !act.skipAttack) ++m_frozenTurns;
+                if (peaceStep.goalReached) {
+                    spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 8, COLOR_UNDERTALE_YELLOW);
+                }
+            }
+
+            const int furAmount = peaceEnemy ? peaceStep.furGained : act.fur;
+            if (applies && furAmount != 0) {
                 // ACT-005: Accept Hug adds FUR (FUR-002/FUR-005 feedback)
                 const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
-                const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax, act.fur, isToxic);
+                const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax,
+                                                           furAmount, isToxic);
                 if (furChange.stageUp) {
                     const Color fluffPink{ 255, 170, 220, 255 };
                     spawnDust(m_soulPosition, 18, fluffPink);
@@ -474,7 +506,7 @@ void BattleSystem::handleActInput(GameContext& context) {
                     m_narratorText += "\n* Your vitriol burns the fluff right off.";
                 }
             }
-            if (applies && act.spareNow) {
+            if (applies && act.spareNow && !peaceEnemy && m_enemy->canBeSpared()) {
                 // ACT-005: spares on the spot; the dialog then ends the battle as a spare
                 m_isSpared = true;
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
@@ -485,8 +517,8 @@ void BattleSystem::handleActInput(GameContext& context) {
                 m_enemySpeechBubble.clear();
             }
             if (applies) {
-                m_enemy->addMercy(act.mercy);
-                if (act.spareable) {
+                m_enemy->addMercy(act.mercy);  // no-op with a peace path
+                if (act.spareable && !peaceEnemy) {
                     m_enemy->setSpareable(true);
                 }
                 m_enemy->modifyAtk(act.atkDelta);
@@ -497,6 +529,10 @@ void BattleSystem::handleActInput(GameContext& context) {
                 m_frozenTurns += std::max(0, act.freezeTurns) + (act.skipAttack ? 1 : 0);
                 if (act.healNextAttack) {
                     m_healNextAttack = true;
+                }
+                const int actHeal = m_enemy->getActHeal(act.id);
+                if (actHeal > 0) {
+                    context.player.hp = std::min(context.player.maxHp, context.player.hp + actHeal);
                 }
                 if (!act.setFlag.empty()) context.state.setFlag(act.setFlag, 1);
                 if (act.stopsBeat && !m_beatStopped) {
@@ -651,7 +687,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
         context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
         if (m_subOptionIndex == 0) { // Spare
             const std::vector<std::string>& spareLines = m_enemy->getSpareLines();
-            if (!m_enemy->isSpareable() && !spareLines.empty()) {
+            if (!m_enemy->hasPeacePath() && !m_enemy->isSpareable() && !spareLines.empty()) {
                 // C1-022: each Spare shows her next line; after the last one she can be spared
                 const RepeatedSpareOutcome outcome = advanceRepeatedSpare(
                     m_enemy->getSpareLinesShown(), spareLines.size(), false);
@@ -717,6 +753,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
         if (m_soulSpeedBuffTurns > 0) {
             m_soulSpeedBuffTurns--;
         }
+        if (finishSurvivalIfComplete(context)) return;
         m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
         m_enemySpeechBubble = "";
         m_lastPlayerAction = PlayerTurnAction::None;
@@ -750,8 +787,20 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
             m_state = BattleState::MenuSelect;
             return;
         }
-        const std::uint32_t randomValue = static_cast<std::uint32_t>(GetRandomValue(0, 1000000));
-        m_genericPatternIndex = pickWeightedPatternIndex(patterns, randomValue);
+        if (m_enemy->getSurviveTurns() > 0 && !m_enemy->getSurvivalPhases().empty()) {
+            const std::string patternId = gladosPatternForTurn(m_enemy->getSurvivalPhases(), m_turnCount);
+            const auto it = std::find_if(patterns.begin(), patterns.end(), [&patternId](const EnemyPatternDef& pattern) {
+                return pattern.id == patternId;
+            });
+            m_genericPatternIndex = it == patterns.end()
+                ? 0
+                : static_cast<std::size_t>(std::distance(patterns.begin(), it));
+        } else if (m_enemy->getScriptedEndAfterTurns() > 0) {
+            m_genericPatternIndex = scriptedPatternIndex(m_turnCount, patterns.size());
+        } else {
+            const std::uint32_t randomValue = static_cast<std::uint32_t>(GetRandomValue(0, 1000000));
+            m_genericPatternIndex = pickWeightedPatternIndex(patterns, randomValue);
+        }
         if (m_genericPatternIndex >= patterns.size()) m_genericPatternIndex = 0;
         m_enemyTurnDuration = 5.0f;
         if (beatPatternSelected()) startBeatTurn(context);
@@ -779,10 +828,35 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     } else {
         m_enemySpeechBubble = m_enemy->getDialogueForTrigger(trigger, m_lastActResponse);
     }
+    if (!m_isBarky) {
+        const auto& patterns = m_enemy->getPatterns();
+        if (m_genericPatternIndex < patterns.size()) {
+            const std::string& patternSpeech = m_enemy->getPatternSpeech(patterns[m_genericPatternIndex].id);
+            if (!patternSpeech.empty()) m_enemySpeechBubble = patternSpeech;
+        }
+    }
 
     // Reset action state for the turn
     m_lastPlayerAction = PlayerTurnAction::None;
     m_lastActResponse = "";
+}
+
+const EnemyPatternDef* BattleSystem::selectedPattern() const {
+    if (!m_enemy || m_isBarky) return nullptr;
+    const auto& patterns = m_enemy->getPatterns();
+    return m_genericPatternIndex < patterns.size() ? &patterns[m_genericPatternIndex] : nullptr;
+}
+
+bool BattleSystem::finishSurvivalIfComplete(GameContext& context) {
+    if (!m_enemy || !gladosSurvivalComplete(m_turnCount, m_enemy->getSurviveTurns())) return false;
+    m_narratorText = m_enemy->getSurvivalEndText().empty()
+        ? "* Survival test complete."
+        : m_enemy->getSurvivalEndText();
+    m_enemySpeechBubble.clear();
+    context.state.incFlag("battle." + m_enemy->getId() + ".survived");
+    m_state = BattleState::Victory;
+    m_residual.clear();
+    return true;
 }
 
 bool BattleSystem::beatPatternSelected() const {
@@ -890,7 +964,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         m_furStageUpPending = true;
         context.audio.playSound("assets/sfx/pomf.ogg", 0.75f);
     }
-    if (furChange.reachedMirror) {
+    if (furChange.reachedMirror && !m_enemy->suppressesFurMirror()) {
         context.state.setFlag("fur_mirror_pending", 1);
     }
     if (furChange.capped && !context.state.hasFlag("fur_toxic_cap_msg.ruins")) {
@@ -930,6 +1004,20 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
         }
         if (m_soulSpeedBuffTurns > 0) {
             m_soulSpeedBuffTurns--;
+        }
+
+        if (finishSurvivalIfComplete(context)) {
+            return;
+        }
+
+        if (scriptedBattleEndsAfterTurn(m_turnCount, m_enemy->getScriptedEndAfterTurns())) {
+            m_narratorText = m_enemy->getScriptedEndText().empty()
+                ? "* The scripted attack ended."
+                : m_enemy->getScriptedEndText();
+            m_enemySpeechBubble.clear();
+            m_state = BattleState::Victory;
+            m_residual.clear();
+            return;
         }
 
         if (m_furStageUpPending) {
@@ -993,6 +1081,8 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     // Update & check bullet collisions (BHL-003: 8x8 soul hitbox)
     Rectangle soulHitbox = { m_soulPosition.x - 4, m_soulPosition.y - 4, 8, 8 };
 
+    const EnemyPatternDef* activePattern = selectedPattern();
+    const bool portalTurn = activePattern != nullptr && activePattern->id == "portal_bullets";
     for (size_t i = 0; i < m_bullets.size(); ) {
         if (m_bullets[i].homes) {
             const float dx = m_soulPosition.x - m_bullets[i].position.x;
@@ -1018,6 +1108,14 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
                 m_bullets[i].position, m_soulPosition, m_bullets[i].velocity);
         }
         m_bullets[i].update(dt, &m_arenaRect);
+        if (portalTurn) {
+            const GladosPortalTransit transit = gladosPortalTransit(
+                m_bullets[i].position.x,
+                m_bullets[i].velocity.x,
+                m_arenaRect.x,
+                m_arenaRect.x + m_arenaRect.width);
+            if (transit.teleported) m_bullets[i].position.x = transit.x;
+        }
 
         if ((m_bullets[i].strike && !m_bullets[i].active) ||
             m_bullets[i].isOutOfBounds(m_arenaRect, 40.0f)) {
@@ -1055,14 +1153,19 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     }
 
     // BHL-016: persistent zones tick independently of bullet invulnerability.
+    const bool residualZone = activePattern != nullptr && activePattern->id == "musk_neurotoxin";
     for (size_t i = 0; i < m_zones.size(); ) {
         bool soulInside = CheckCollisionRecs(soulHitbox, m_zones[i].area);
         int damage = m_zones[i].update(dt, soulInside);
         int fur = static_cast<int>(std::lround(m_zones[i].furPerTick));
         bool expired = m_zones[i].expired();
 
-        if (damage > 0 && applySoulDamage(context, damage, fur)) {
-            return;
+        if (damage > 0) {
+            if (residualZone) {
+                m_residual.add(static_cast<float>(damage));
+            } else if (applySoulDamage(context, damage, fur)) {
+                return;
+            }
         }
 
         if (expired) {
@@ -1157,6 +1260,8 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
         bullet.damage = std::max(1, pattern.damage);
         bullet.fur = std::max(0, pattern.furry);
         bullet.attackColor = pattern.color;
+        bullet.spritePath = m_enemy->getPatternSprite(pattern.id);
+        if (!bullet.spritePath.empty()) bullet.color = WHITE;
         if (m_healNextAttack && pattern.heal > 0) {
             bullet.attackColor = AttackColor::Green;
             bullet.heal = pattern.heal;
@@ -1176,7 +1281,77 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
         }
     };
 
-    if (pattern.kind == EnemyPatternKind::Rain) {
+    if (pattern.id == "turret_sweep") {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(55.0f, pattern.speed);
+        const float startX = fromLeft ? m_arenaRect.x - 8.0f : m_arenaRect.x + m_arenaRect.width + 8.0f;
+        const float baseY = m_arenaRect.y + 28.0f +
+            static_cast<float>((m_patternSpawnCount * 19) % 72);
+        for (int lane = -1; lane <= 1; ++lane) {
+            Bullet bullet;
+            bullet.position = { startX, baseY + static_cast<float>(lane * 14) };
+            bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+            bullet.radius = 4.0f;
+            bullet.color = Color{ 230, 230, 230, 255 };
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
+    } else if (pattern.id == "musk_neurotoxin") {
+        const float maxHeight = std::max(20.0f, m_arenaRect.height - 32.0f);
+        const float cloudHeight = std::min(maxHeight, 18.0f + static_cast<float>(m_patternSpawnCount) * 14.0f);
+        DamageZone cloud;
+        cloud.area = {
+            m_arenaRect.x + 5.0f,
+            m_arenaRect.y + m_arenaRect.height - cloudHeight - 5.0f,
+            m_arenaRect.width - 10.0f,
+            cloudHeight
+        };
+        cloud.lifetime = 0.9f;
+        cloud.damagePerTick = std::max(1, pattern.damage);
+        cloud.tickInterval = 0.75f;
+        cloud.furPerTick = 0.0f;
+        cloud.color = Color{ 80, 210, 95, 80 };
+        m_zones.push_back(cloud);
+    } else if (pattern.id == "cube_drop") {
+        const int column = (m_patternSpawnCount * 2 + 1) % 5;
+        Bullet bullet;
+        bullet.position = {
+            m_arenaRect.x + 22.0f + static_cast<float>(column) * (m_arenaRect.width - 44.0f) / 4.0f,
+            m_arenaRect.y - 12.0f
+        };
+        bullet.velocity = { 0.0f, std::max(45.0f, pattern.speed) };
+        bullet.type = BulletType::SodaCan;
+        bullet.radius = 7.0f;
+        bullet.color = Color{ 225, 225, 225, 255 };
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.id == "portal_bullets") {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(50.0f, pattern.speed);
+        const float lane = m_arenaRect.y + 24.0f +
+            static_cast<float>((m_patternSpawnCount * 23) % 90);
+        Bullet bullet;
+        bullet.position = {
+            fromLeft ? m_arenaRect.x + 12.0f : m_arenaRect.x + m_arenaRect.width - 12.0f,
+            lane
+        };
+        bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+        bullet.radius = 5.0f;
+        bullet.color = fromLeft ? ATTACK_COLOR_ORANGE : ATTACK_COLOR_BLUE;
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.id == "incinerator_floor") {
+        const float y = m_arenaRect.y + m_arenaRect.height - 11.0f;
+        for (float x = m_arenaRect.x + 10.0f; x < m_arenaRect.x + m_arenaRect.width - 5.0f; x += 13.0f) {
+            Bullet bullet;
+            bullet.position = { x, y };
+            bullet.velocity = { 0.0f, 0.0f };
+            bullet.radius = 6.0f;
+            bullet.color = ATTACK_COLOR_ORANGE;
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
+    } else if (pattern.kind == EnemyPatternKind::Rain) {
         Bullet bullet;
         bullet.position = {
             m_arenaRect.x + static_cast<float>(GetRandomValue(18, static_cast<int>(m_arenaRect.width) - 18)),
@@ -1498,12 +1673,42 @@ void BattleSystem::spawnDust(Vector2 center, int count, Color col) {
     }
 }
 
+bool BattleSystem::readExGamer(const std::string& enemyId) {
+    // Explicit "exGamer" bool in the enemy JSON wins; otherwise fall back to the LORE list.
+    std::ifstream file("data/enemies/" + enemyId + ".json");
+    if (file) {
+        std::ostringstream ss;
+        ss << file.rdbuf();
+        tiled_detail::JsonValue root;
+        if (tiled_detail::JsonParser(ss.str()).parse(root) && root.kind == tiled_detail::JsonValue::Kind::Object) {
+            const tiled_detail::JsonValue* value = root.field("exGamer");
+            if (value != nullptr && value->kind == tiled_detail::JsonValue::Kind::Boolean) return value->boolean;
+        }
+    }
+    return isExGamerEnemyId(enemyId);
+}
+
+void BattleSystem::spawnPlushDust(Vector2 center, int count, bool exGamer) {
+    const auto seeds = generateDustEffect(static_cast<std::uint32_t>(GetRandomValue(1, 0x7FFFFFFF)), count, exGamer,
+                                          center.x, center.y);
+    for (const DustSeed& d : seeds) {
+        DustParticle p;
+        p.pos = { d.x, d.y };
+        p.vel = { d.vx, d.vy };
+        p.alpha = 1.0f;
+        p.size = d.size;
+        p.color = Color{ d.color.r, d.color.g, d.color.b, 255 };
+        p.fade = 1.4f * d.life;
+        m_dustParticles.push_back(p);
+    }
+}
+
 void BattleSystem::updateDust(float dt) {
     for (size_t i = 0; i < m_dustParticles.size(); ) {
         m_dustParticles[i].pos.x += m_dustParticles[i].vel.x * dt;
         m_dustParticles[i].pos.y += m_dustParticles[i].vel.y * dt;
         m_dustParticles[i].vel.x *= (1.0f - 1.5f * dt);
-        m_dustParticles[i].alpha -= 1.4f * dt;
+        m_dustParticles[i].alpha -= m_dustParticles[i].fade * dt;
         if (m_dustParticles[i].alpha <= 0.0f) {
             m_dustParticles.erase(m_dustParticles.begin() + i);
         } else {
@@ -1678,17 +1883,25 @@ void BattleSystem::drawBullet(GameContext& context, const Bullet& b) const {
         }
         drewSprite = true;
     } else if (!b.spritePath.empty()) {
-        // BSK (C7): fluff tuft PNG, drawn a bit larger than its forgiving hitbox
-        Texture2D tuftTex = context.resources.getTexture(b.spritePath);
-        if (tuftTex.id > 0) {
-            SetTextureFilter(tuftTex, TEXTURE_FILTER_POINT);
-            constexpr float tuftScale = 1.5f;
-            const float w = static_cast<float>(tuftTex.width) * tuftScale;
-            const float h = static_cast<float>(tuftTex.height) * tuftScale;
-            DrawTexturePro(tuftTex,
-                           { 0.0f, 0.0f, static_cast<float>(tuftTex.width), static_cast<float>(tuftTex.height) },
-                           { b.position.x - w * 0.5f, b.position.y - h * 0.5f, w, h },
-                           { 0.0f, 0.0f }, 0.0f, renderColor);
+        Texture2D bulletTex = context.resources.getTexture(b.spritePath);
+        if (bulletTex.id > 0) {
+            SetTextureFilter(bulletTex, TEXTURE_FILTER_POINT);
+            const std::size_t extension = b.spritePath.find_last_of('.');
+            const std::string sheetPath = extension == std::string::npos
+                ? b.spritePath + ".json"
+                : b.spritePath.substr(0, extension) + ".json";
+            const SpriteSheetDef* bulletSheet = spriteSheetCache().load(b.spritePath, sheetPath);
+            if (bulletSheet != nullptr && bulletSheet->anims.find("spin") != bulletSheet->anims.end()) {
+                drawSprite(bulletTex, *bulletSheet, "spin", b.age, b.position, 2.0f, renderColor);
+            } else {
+                constexpr float bulletScale = 1.5f;
+                const float w = static_cast<float>(bulletTex.width) * bulletScale;
+                const float h = static_cast<float>(bulletTex.height) * bulletScale;
+                DrawTexturePro(bulletTex,
+                               { 0.0f, 0.0f, static_cast<float>(bulletTex.width), static_cast<float>(bulletTex.height) },
+                               { b.position.x - w * 0.5f, b.position.y - h * 0.5f, w, h },
+                               { 0.0f, 0.0f }, 0.0f, renderColor);
+            }
             drewSprite = true;
         }
     } else if (b.type == BulletType::UwU && !b.text.empty()) {
@@ -2035,6 +2248,18 @@ void BattleSystem::render(GameContext& context) {
         int innerH = std::max(1, (int)m_arenaRect.height - 10);
 
         BeginScissorMode(innerX, innerY, innerW, innerH);
+            const EnemyPatternDef* renderPattern = selectedPattern();
+            if (renderPattern != nullptr && renderPattern->id == "portal_bullets") {
+                DrawRectangleLinesEx(
+                    { m_arenaRect.x + 5.0f, m_arenaRect.y + 30.0f, 7.0f, m_arenaRect.height - 60.0f },
+                    3.0f,
+                    ATTACK_COLOR_ORANGE);
+                DrawRectangleLinesEx(
+                    { m_arenaRect.x + m_arenaRect.width - 12.0f, m_arenaRect.y + 30.0f,
+                      7.0f, m_arenaRect.height - 60.0f },
+                    3.0f,
+                    ATTACK_COLOR_BLUE);
+            }
             for (const auto& zone : m_zones) {
                 DrawRectangleRec(zone.area, zone.color);
             }
@@ -2075,7 +2300,7 @@ void BattleSystem::render(GameContext& context) {
         drawAttackTarget(context);
     } else if (m_state == BattleState::ActSelect) {
         // ACT menu 2-column layout (BUI-008, ACT-001)
-        const auto& acts = m_enemy->getActs();
+        const auto& acts = m_enemy->getMenuActs();
         const std::vector<int> availableActs = getAvailableActIndices(context);
         for (size_t i = 0; i < availableActs.size(); ++i) {
             int col = (int)(i % 2);

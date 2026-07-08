@@ -12,6 +12,29 @@
       "type": "setFlag",
       "key": "ruins.dummy.result",
       "value": 1
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Come along, pup! Follow me to the next room, uwu~"
+      ]
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 320,
+      "y": 40,
+      "speed": 140
+    },
+    {
+      "type": "hideNpc",
+      "npc": "furiell"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r5.walked",
+      "value": 1
     }
   ]
 }

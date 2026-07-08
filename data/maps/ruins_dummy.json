@@ -521,6 +521,11 @@
               "value": "A warm embrace is always the best choice, my child."
             },
             {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r5.walked >= 1"
+            },
+            {
               "name": "solid",
               "type": "bool",
               "value": true

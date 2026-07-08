@@ -1,0 +1,8 @@
+{
+  "id": "encounter_gladowos",
+  "enemies": ["gladowos"],
+  "introText": "* GLaDOwOS initiates the other test.",
+  "background": "black",
+  "music": "battle.default",
+  "canFlee": false
+}

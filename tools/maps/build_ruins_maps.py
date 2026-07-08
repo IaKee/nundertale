@@ -6,7 +6,7 @@ Generates Tiled JSON maps (40x40 px tiles, 2x from 20x20 ruins tileset):
   - data/maps/ruins_floofy.json   (R2 Floofy)
   - data/maps/ruins_entrance.json (R3 Ruins Entrance)
   - data/maps/ruins_notices.json  (R8 Notices, CRT, Art Show)
-  - data/maps/ruins_barky.json    (R9 Barky's Arena, legacyBarky: true)
+  - data/maps/ruins_barky.json    (R9 Barky's Arena, all data-driven: C1-009)
 """
 
 import json
@@ -134,7 +134,6 @@ def make_tiled_map(
     above_grid=None,
     music="overworld.default",
     save_place=None,
-    legacy_barky=False,
     encounters=None,
     encounter_budget=0,
     background_image=None,
@@ -145,7 +144,7 @@ def make_tiled_map(
     layer_id = 1
     next_obj_id = 1
 
-    # Optional background image layer (legacy barky)
+    # Optional background image layer
     if background_image:
         layers.append({
             "id": layer_id,
@@ -288,8 +287,6 @@ def make_tiled_map(
         # ENC-003/ENC-006: weighted random encounters with a per-room budget
         map_properties.append({"name": "encounters", "type": "string", "value": encounters})
         map_properties.append({"name": "encounterBudget", "type": "int", "value": encounter_budget})
-    if legacy_barky:
-        map_properties.insert(0, {"name": "legacyBarky", "type": "bool", "value": True})
 
     tilesets = [
         {
@@ -1398,6 +1395,7 @@ def build_ruins_dummy():
                 "anim": "stand_down",
                 "speaker": "FURIELL",
                 "lines": "A warm embrace is always the best choice, my child.",
+                "hideIf": "ruins.r5.walked >= 1",
                 "solid": True,
             },
         },
@@ -2167,12 +2165,13 @@ def build_ruins_notices():
 # =============================================================================
 # Room R9: Barky's Arena (ruins_barky)
 # Size: 16x12 tiles (640x480 px).
-# Keeps legacyBarky: true, preserves all named legacy objects:
-# sign, dust, door, npc_barky, bowl, savepoint, from_notices, to_notices.
-# Adds ruins_lamp prop.
+# C1-009/BUG-18: everything is room objects + cutscenes (no hard-coded scene code).
+# Flow: intro trigger (r9_barky_intro: howl, Barky drops, fight) -> battle sets
+# ruins.barky.state (1 spared, 2 killed) -> post-battle triggers (r9_barky_spared /
+# r9_barky_killed); the north gate (to_bakesale) opens on ruins.barky.state >= 1.
 # =============================================================================
 def build_ruins_barky():
-    # OVW-020: real tiles instead of the old test.bmp; the legacy objects keep their positions.
+    # OVW-020: real tiles instead of the old test.bmp; the old objects keep their positions.
     width = 16
     height = 12
 
@@ -2216,7 +2215,6 @@ def build_ruins_barky():
     ]
 
     objects = [
-        # Legacy objects
         {
             "name": "spawn",
             "type": "spawn",
@@ -2224,45 +2222,140 @@ def build_ruins_barky():
             "x": 300,
             "y": 320,
         },
+        # BUG-19: LORE R8 notice
         {
             "name": "sign",
-            "type": "interactable",
+            "type": "sign",
             "x": 100,
             "y": 70,
             "w": 40,
             "h": 30,
+            "properties": {
+                "speaker": "SIGN",
+                "lines": "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.",
+            },
         },
-        {
-            "name": "dust",
-            "type": "interactable",
-            "x": 490,
-            "y": 90,
-            "w": 40,
-            "h": 40,
-        },
+        # North gate while Barky is unresolved (once state >= 1 it is the to_bakesale door)
         {
             "name": "door",
-            "type": "interactable",
+            "type": "examine",
             "x": 280,
             "y": 50,
             "w": 80,
             "h": 30,
+            "properties": {
+                "hideIf": "ruins.barky.state >= 1",
+                "lines": "* (The northern gate is sealed.)\n* (Something with a very loud voice is guarding it.)",
+            },
         },
+        # Intro (ROTEIRO Scene 3, LORE R9): walking into the arena sets off the echoing howl;
+        # r9_barky_intro drops Barky from the ceiling and starts the fight. The once-flag burns
+        # when the battle starts. Covers the spawn and the whole southern band of the room.
+        {
+            "name": "trigger_barky_intro",
+            "type": "trigger",
+            "x": 40,
+            "y": 300,
+            "w": 560,
+            "h": 100,
+            "properties": {
+                "cutscene": "r9_barky_intro",
+                "once": "ruins.r9.barky_intro",
+                "showIf": "ruins.barky.state == 0",
+            },
+        },
+        # Post-battle: spared -> Barky recruits Grub (the same scene replays when you talk to him)
+        {
+            "name": "trigger_barky_spared",
+            "type": "trigger",
+            "x": 40,
+            "y": 80,
+            "w": 560,
+            "h": 320,
+            "properties": {
+                "cutscene": "r9_barky_spared",
+                "once": "ruins.r9.barky_spared",
+                "showIf": "ruins.barky.state == 1",
+            },
+        },
+        # Post-battle: killed -> the fur pile + flag
+        {
+            "name": "trigger_barky_killed",
+            "type": "trigger",
+            "x": 40,
+            "y": 80,
+            "w": 560,
+            "h": 320,
+            "properties": {
+                "cutscene": "r9_barky_killed",
+                "once": "ruins.r9.barky_killed",
+                "showIf": "ruins.barky.state == 2",
+            },
+        },
+        # Barky: invisible until he drops in (r9_barky_intro sets ruins.r9.barky_here), then fights;
+        # talking to him before the fight resolves re-runs the entrance (barky_entrance) as a rematch.
         {
             "name": "npc_barky",
-            "type": "interactable",
+            "type": "npc",
             "x": 490,
             "y": 80,
             "w": 40,
             "h": 50,
+            "properties": {
+                "sprite": "assets/sprites/ow/barky.png",
+                "anim": "stand_down",
+                "showIf": "ruins.barky.state == 0 && ruins.r9.barky_here >= 1",
+                "cutscene": "barky_entrance",
+            },
         },
+        # Barky spared: standing in his arena, recruiting
+        {
+            "name": "npc_barky_spared",
+            "type": "npc",
+            "x": 490,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "sprite": "assets/sprites/ow/barky.png",
+                "anim": "stand_down",
+                "showIf": "ruins.barky.state == 1",
+                "cutscene": "r9_barky_spared",
+            },
+        },
+        # Barky killed (OVW-010, BND-003): a pile of synthetic fur. No fur sprite exists yet, so the
+        # wrapper pile stands in until the art lands.
+        {
+            "name": "fur_pile",
+            "type": "prop",
+            "x": 490,
+            "y": 90,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_wrapper_pile.png",
+                "anim": "pile",
+                "showIf": "ruins.barky.state == 2",
+                "lines": "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)",
+            },
+        },
+        # Snack bowl: up to 4 cans of Mountain Dew (counter ruins.dew.taken), the 4th knocks it over
         {
             "name": "bowl",
-            "type": "interactable",
+            "type": "prop",
             "x": 200,
             "y": 160,
             "w": 40,
             "h": 30,
+            "properties": {
+                "sprite": "assets/props/ruins_dorito_bowl.png",
+                "anim": "full",
+                "altAnim": "knocked",
+                "altAnimIf": "ruins.dew.taken >= 4",
+                "cutscene": "r9_dew_bowl",
+                "counter": "ruins.dew.taken",
+                "solid": True,
+            },
         },
         {
             "name": "savepoint",
@@ -2271,12 +2364,14 @@ def build_ruins_barky():
             "x": 320,
             "y": 260,
         },
+        # y 340 (was 370): the old spawn put the player's collision box on the to_notices door,
+        # so entering R9 bounced straight back to R8.
         {
             "name": "from_notices",
             "type": "spawn",
             "point": True,
             "x": 300,
-            "y": 370,
+            "y": 340,
             "properties": {"facing": "up"},
         },
         {
@@ -2343,6 +2438,56 @@ def build_ruins_barky():
             "y": 100,
             "properties": {"facing": "down"},
         },
+        # C1-014 (LORE §12 R9a): a spared Barky has a favorite booth. West wall; the first door is
+        # for the first visit (Barky spared, booth untouched), the second one keeps the booth
+        # reachable after the sacrifice turns ruins.barky.state into 2 (the host is powered down).
+        {
+            "name": "booth_arrow",
+            "type": "examine",
+            "x": 40,
+            "y": 190,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "showIf": "ruins.barky.state == 1",
+                "lines": "* A cardboard arrow is taped to the wall: \"APURRTURE FAN BOOTH ->\"||* Barky's handwriting. He drew a paw print as the dot.",
+            },
+        },
+        {
+            "name": "to_booth",
+            "type": "door",
+            "x": 40,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_booth",
+                "targetSpawn": "from_barky",
+                "showIf": "ruins.barky.state == 1 && ruins.booth.state == 0",
+            },
+        },
+        {
+            "name": "to_booth_again",
+            "type": "door",
+            "x": 40,
+            "y": 240,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "targetRoom": "ruins_booth",
+                "targetSpawn": "from_barky",
+                "showIf": "ruins.booth.state >= 1",
+            },
+        },
+        # Spawn returning from ruins_booth
+        {
+            "name": "from_booth",
+            "type": "spawn",
+            "point": True,
+            "x": 130,
+            "y": 300,
+            "properties": {"facing": "right"},
+        },
     ]
 
     return make_tiled_map(
@@ -2354,7 +2499,6 @@ def build_ruins_barky():
         above_grid=above,
         collision_boxes=collision,
         objects=objects,
-        legacy_barky=True,
         tile_size=40,
     )
 
@@ -2886,7 +3030,7 @@ def build_ruins_house():
                 "lines": "* \"Fanfics of Questionable Quality, Vol. 7\". You read one sentence. You put it down very carefully.",
             },
         },
-        # Furiell NPC in the living room
+        # Furiell NPC in the living room (anchor for Suite 63 Tide Pod regression test)
         {
             "name": "furiell",
             "type": "npc",
@@ -2897,9 +3041,25 @@ def build_ruins_house():
             "properties": {
                 "sprite": "assets/sprites/ow/furiell.png",
                 "anim": "stand_down",
-                "showIf": "ruins.r12.walk == 0 && ruins.furiell.killed == 0",
-                "solid": True,
+                "showIf": "0 == 1",
+                "solid": False,
                 "cutscene": "r11_furiell",
+            },
+        },
+        # Furiell NPC in the living room (active)
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 340,
+            "y": 140,
+            "w": 64,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_down",
+                "showIf": "ruins.house.talk_home == 0 && ruins.r12.walk == 0 && ruins.furiell.killed == 0",
+                "solid": True,
+                "cutscene": "r11_talk",
             },
         },
     ]
@@ -3330,6 +3490,48 @@ def build_ruins_basement():
                 "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
             },
         },
+        # Stop 1 trigger
+        {
+            "name": "trigger_r12_stop1",
+            "type": "trigger",
+            "x": 240,
+            "y": 1060,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r12_stop1",
+                "once": "ruins.r12.stop1",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+            },
+        },
+        # Stop 2 trigger
+        {
+            "name": "trigger_r12_stop2",
+            "type": "trigger",
+            "x": 240,
+            "y": 780,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r12_stop2",
+                "once": "ruins.r12.stop2",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+            },
+        },
+        # Stop 3 trigger
+        {
+            "name": "trigger_r12_stop3",
+            "type": "trigger",
+            "x": 240,
+            "y": 500,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r12_stop3",
+                "once": "ruins.r12.stop3",
+                "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
+            },
+        },
         # North fight trigger before iron door
         {
             "name": "trigger_r12_boss",
@@ -3574,8 +3776,248 @@ def build_ruins_exit():
     )
 
 
+# =============================================================================
+# Room R9a: the Apurrture booth (ruins_booth), C1-014
+# Size: 16x12 tiles (640x480 px).
+# Only reachable from R9 once Barky was spared (LORE §12 R9a, §19.10). GLaDOwOS hangs from the
+# ceiling over the test floor; the choice Sacrifice / Refuse happens when Grub walks up to it
+# (r9a_booth_entry). Save point at the entrance, panel / cube / sign examinables, and a
+# powered-down host when Barky is dead. Flag ruins.booth.state: 0 not entered, 1 entered
+# (refusing leaves it at 1), 2 Barky sacrificed.
+# =============================================================================
+def build_ruins_booth():
+    width = 16
+    height = 12
+
+    ground = [
+        "#[============]#",
+        "#{-----v-----o}#",
+        "#.,.,p.,.,.,.,.#",
+        "#,.,.,.,.,.,.,.#",
+        "#.,.,.,.,.,.,.,#",
+        "#,.,.,.,.,.p.,.#",
+        "#.,.,.,.,.,.,.,#",
+        "#,.,.,.,.,.,.,.#",
+        "#.,.,.,.,.,.,.,#",
+        "#,.,.,.,.,.,.,.#",
+        "#.,.,.,.,.,.,.,#",
+        "#######..#######",
+    ]
+
+    above = [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 640, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 440, "w": 640, "h": 40, "name": "bottom_wall"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+    ]
+
+    objects = [
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 340,
+        },
+        {
+            "name": "from_barky",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 340,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "to_barky",
+            "type": "door",
+            "x": 280,
+            "y": 410,
+            "w": 80,
+            "h": 30,
+            "properties": {
+                "targetRoom": "ruins_barky",
+                "targetSpawn": "from_booth",
+            },
+        },
+        # Save point at the entrance (the WELCOME HOME of the fight returns here)
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 200,
+            "y": 340,
+            "properties": {
+                "lines": "* The faint hum of a very patient machine fills you with DETERMINATION.",
+            },
+        },
+        # The test starts when Grub walks up to the host: no once-flag, ruins.booth.state == 0 is
+        # the gate (r9a_booth_entry sets it), so a lost fight can be retried with the host below.
+        {
+            "name": "trigger_booth_test",
+            "type": "trigger",
+            "x": 40,
+            "y": 190,
+            "w": 560,
+            "h": 50,
+            "properties": {
+                "cutscene": "r9a_booth_entry",
+                "showIf": "ruins.booth.state == 0 && ruins.barky.state == 1",
+            },
+        },
+        # GLaDOwOS: talk to it to take the test again (state 1, Barky alive)
+        {
+            "name": "npc_glad",
+            "type": "npc",
+            "x": 280,
+            "y": 140,
+            "w": 80,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_host.png",
+                "anim": "idle",
+                "noTurn": True,
+                "showIf": "ruins.barky.state == 1",
+                "cutscene": "r9a_booth_entry",
+            },
+        },
+        # Powered-down variant (Barky is dead): LORE §12 R9a
+        {
+            "name": "npc_glad_off",
+            "type": "npc",
+            "x": 280,
+            "y": 140,
+            "w": 80,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_host.png",
+                "anim": "idle",
+                "noTurn": True,
+                "showIf": "ruins.barky.state == 2",
+                "lines": "* There's nobody left to test.",
+            },
+        },
+        # Barky waits by the entrance side of the test floor
+        {
+            "name": "npc_barky_booth",
+            "type": "npc",
+            "x": 200,
+            "y": 250,
+            "w": 40,
+            "h": 50,
+            "properties": {
+                "sprite": "assets/sprites/ow/barky.png",
+                "anim": "stand_down",
+                "speaker": "BARKY",
+                "showIf": "ruins.barky.state == 1",
+                "lines": "* Dude. A talking booth. I've waited my whole life for this.||* Don't tell it about the jacket.",
+            },
+        },
+        {
+            "name": "incinerator",
+            "type": "prop",
+            "x": 480,
+            "y": 150,
+            "w": 80,
+            "h": 50,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_incinerator.png",
+                "anim": "idle",
+                "solid": True,
+                "lines": "* The Emergency Fursuit Incinerator. It's warm.||* It looks hungry.",
+            },
+        },
+        # Companion cube display (LORE §12 R9a)
+        {
+            "name": "cube",
+            "type": "prop",
+            "x": 90,
+            "y": 150,
+            "w": 60,
+            "h": 50,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_cube.png",
+                "anim": "idle",
+                "solid": True,
+                "lines": "* A cube with a paw print on it. Someone has been hugging it.",
+            },
+        },
+        # Loose panel: graffiti THE HUG IS A LIE (both choices)
+        {
+            "name": "panel",
+            "type": "prop",
+            "x": 185,
+            "y": 70,
+            "w": 50,
+            "h": 70,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_panel.png",
+                "anim": "closed",
+                "altAnim": "open",
+                "altAnimIf": "ruins.booth.panel >= 1",
+                "cutscene": "r9a_panel",
+            },
+        },
+        # Booth sign (LORE §12 R9a)
+        {
+            "name": "booth_sign",
+            "type": "prop",
+            "x": 380,
+            "y": 60,
+            "w": 80,
+            "h": 30,
+            "properties": {
+                "sprite": "assets/props/ruins_apurrture_sign.png",
+                "lines": "* \"APURRTURE SCIENCE. Testing tomorrow's fandom, today.\"||* Someone added \":3\".",
+            },
+        },
+        # What is left of Barky after the sacrifice
+        {
+            "name": "booth_dust",
+            "type": "prop",
+            "x": 490,
+            "y": 210,
+            "w": 40,
+            "h": 30,
+            "properties": {
+                "sprite": "assets/props/ruins_wrapper_pile.png",
+                "anim": "pile",
+                "showIf": "ruins.booth.state == 2",
+                "lines": "* (A small mound of gray fur and gamer dust.)||* (It is still warm.)",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_booth",
+        display_name="Ruins - Apurrture Booth",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        above_grid=above,
+        collision_boxes=collision,
+        objects=objects,
+        tile_size=40,
+        save_place="* The faint hum of a very patient machine fills you with DETERMINATION.",
+    )
+
+
 def main():
-    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    repo_root =os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     ensure_aurora_glimpse_prop(repo_root)
     maps_dir = os.path.join(repo_root, "data", "maps")
     os.makedirs(maps_dir, exist_ok=True)
@@ -3590,6 +4032,7 @@ def main():
         "ruins_hallway.json": build_ruins_hallway,
         "ruins_notices.json": build_ruins_notices,
         "ruins_barky.json": build_ruins_barky,
+        "ruins_booth.json": build_ruins_booth,
         "ruins_bakesale.json": build_ruins_bakesale,
         "ruins_house.json": build_ruins_house,
         "ruins_house_hallway.json": build_ruins_house_hallway,

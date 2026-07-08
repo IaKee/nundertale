@@ -39,13 +39,18 @@
     "default": [
       "* Froggsona hops closer.",
       "* Froggsona practices a tiny :3.",
+      "* (It keeps staring at your ears.)",
       "* (It looks like you. A little. Don't think about it.)"
     ],
-    "lowHp": ["* Froggsona's :3 is trembling."],
-    "spareable": ["* Froggsona seems flattered."]
+    "lowHp": ["* Froggsona's :3 is trembling.", "* (It is still staring at your ears.)"],
+    "spareable": ["* Froggsona seems flattered.", "* Froggsona is blushing. It is hard to tell, it's a frog."]
   },
   "dialogue": {
-    "default": ["ribbit :3", "*ribbits suggestively*"]
+    "default": ["ribbit :3", "*ribbits suggestively*"],
+    "afterHit": ["ribbit... :3", "ow :3"],
+    "crit": ["*ribbits in alarm* :3"],
+    "miss": ["ribbit :3", "you missed :3"],
+    "item": ["is that for me? :3"]
   },
   "patterns": [
     {

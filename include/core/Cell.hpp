@@ -26,11 +26,11 @@ inline std::vector<std::string> cellEntries(const std::function<bool(const std::
 
 inline const std::vector<std::pair<std::string, std::string>>& furiellOptions() {
     static const std::vector<std::pair<std::string, std::string>> options = {
-        { "Say Hello", "Hello? This is Furiell. ...Did you drink water today? Actual water?" },
-        { "Puzzle Help", "Look for the glitter, my child. The glitter is always right." },
+        { "Say Hello", "Hewwo? This is Furiell. ...Did you drink water today? Actual water? uwu" },
+        { "Puzzle Help", "Make it pink, hun! Pink is always right. uwu" },
         { "About Yourself", "I used to run a convention. Now I run a household of one. Soon two!" },
         { "Call Her \"Mod\"", "...Did you just call me \"Mod\"? Oh my. Would you like to be pinned? To the fridge?" },
-        { "Send a Meme", "Is this... a frog? Is this you? I'm printing it." }
+        { "Send a Meme", "Is this... a goblin? Is this you? I'm printing it." }
     };
     return options;
 }

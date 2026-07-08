@@ -18,8 +18,8 @@
       "type": "dialog",
       "speaker": "FLOOFY",
       "lines": [
-        "She hugged you and you LET her? ...You smell like lavender now.",
-        "No shame. ...Okay, a LITTLE shame."
+        "She hugged you and you LET her? ...Ooh, you smell like lavender now. Very on-brand for a fox, darling.",
+        "No shame! ...Okay, a LITTLE jealousy. Ready to go full furry yet?"
       ],
       "if": "ruins.furiell.hugged >= 1"
     },
@@ -27,7 +27,8 @@
       "type": "dialog",
       "speaker": "FLOOFY",
       "lines": [
-        "You spared her? Wow. No shame. ...I respect that."
+        "You spared her? Wow. No shame. ...I respect that.",
+        "Come on, sweetie, say it with me: YIFF or be YIFFED. Pick a species, I'll braid the flowers~"
       ],
       "if": "ruins.furiell.hugged == 0 && ruins.furiell.spared >= 1"
     },
@@ -35,8 +36,8 @@
       "type": "dialog",
       "speaker": "FLOOFY",
       "lines": [
-        "So you CAN press the button.",
-        "...Golly. Up there, they're gonna LOVE you."
+        "So you CAN press the button. *gasp* Sassy!",
+        "...Golly. Up there, they're gonna LOVE you. Imagine you with a flower crown, though~ OwO"
       ],
       "if": "ruins.furiell.killed >= 1"
     },

@@ -1,3 +1,9 @@
 # Copy this file to content_lint_blocklist.txt to enable private blocked terms.
 # Add one case-insensitive word, phrase, or substring per line.
 # Blank lines and lines beginning with # are ignored.
+#
+# Examples of terms guarded by LOR-005 / v3.1 naming:
+# Pepe
+# my child
+# FURRY OVER
+# raid

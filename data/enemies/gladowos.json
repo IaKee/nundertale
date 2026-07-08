@@ -1,0 +1,120 @@
+{
+  "id": "gladowos",
+  "name": "GLaDOwOS",
+  "hp": 9999,
+  "maxHp": 9999,
+  "atk": 9,
+  "def": 99,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "gladowos",
+  "check": "A con booth animatronic. Has been running tests since 2014. Alone.",
+  "surviveTurns": 10,
+  "unkillable": true,
+  "countsAsKill": false,
+  "canSpare": false,
+  "suppressFurMirror": true,
+  "survivalEndText": "* Test complete. You get no cake.",
+  "invulnerableHitText": "* Your attack bounces off. It's mostly plastic.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "ask_about_cake",
+      "label": "Ask About the Cake",
+      "text": "* You ask when the cake will be ready.",
+      "response": "The cake is being prepared. For other test subjects.",
+      "effects": { "skipAttack": true }
+    },
+    {
+      "id": "compliment_booth",
+      "label": "Compliment the Booth",
+      "text": "* You compliment the booth's impeccable cable management.",
+      "response": "Flattery has been noted. In your file. Under \"suck-up\".",
+      "effects": { "atkDelta": -1 }
+    },
+    {
+      "id": "hug_barky",
+      "label": "Hug Barky",
+      "text": "* You hug Barky for emotional support. You recover 5 HP.",
+      "response": "I'm not the carry right now. I'm emotional support.",
+      "effects": { "heal": 5 }
+    }
+  ],
+  "survivalPhases": [
+    {
+      "id": "calibration",
+      "startTurn": 1,
+      "endTurn": 3,
+      "patterns": ["turret_sweep", "cube_drop"]
+    },
+    {
+      "id": "exposure",
+      "startTurn": 4,
+      "endTurn": 7,
+      "patterns": ["musk_neurotoxin", "portal_bullets", "cube_drop"]
+    },
+    {
+      "id": "incineration",
+      "startTurn": 8,
+      "endTurn": 10,
+      "patterns": ["turret_sweep", "portal_bullets", "incinerator_floor"]
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* GLaDOwOS recalculates the test's acceptable casualty rate.",
+      "* Barky tries not to look at the incinerator.",
+      "* The yellow optic follows you without blinking."
+    ],
+    "lowHp": [],
+    "spareable": []
+  },
+  "dialogue": {
+    "default": [
+      "Please continue not dying. It improves the sample size.",
+      "Your survival remains statistically inconvenient."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "turret_sweep",
+      "kind": "wall",
+      "weight": 1,
+      "speech": "are u still there? :3",
+      "params": { "count": 5, "speed": 72, "damage": 1, "fur": 0 }
+    },
+    {
+      "id": "musk_neurotoxin",
+      "kind": "rain",
+      "weight": 1,
+      "speech": "Neurotoxin purity: debatable. Musk concentration: regrettable.",
+      "params": { "count": 4, "speed": 24, "damage": 1, "fur": 0 }
+    },
+    {
+      "id": "cube_drop",
+      "kind": "rain",
+      "weight": 1,
+      "speech": "The cube cannot feel pain. Barky has filed a disagreement.",
+      "params": { "count": 5, "speed": 58, "damage": 1, "fur": 0 }
+    },
+    {
+      "id": "portal_bullets",
+      "kind": "wall",
+      "weight": 1,
+      "speech": "Momentum is conserved. Your dignity is not.",
+      "params": { "count": 6, "speed": 68, "damage": 1, "fur": 0 }
+    },
+    {
+      "id": "incinerator_floor",
+      "kind": "wall",
+      "weight": 1,
+      "speech": "The floor is now motivational.",
+      "params": { "count": 1, "speed": 0, "damage": 1, "fur": 0, "color": "orange" }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "type": "setFlag",
+      "key": "ruins.booth.state",
+      "value": 1,
+      "if": "ruins.booth.state == 0"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/encounter_beep.ogg",
+      "volume": 0.5
+    },
+    {
+      "type": "dialog",
+      "speaker": "GLaDOwOS",
+      "lines": [
+        "Welcome to the Apurrture Science Enrichment Center fan booth. :3",
+        "Con '14. Please keep your paws off the display.",
+        "Nobody has finished a test here since opening day. Nobody has started one, either."
+      ],
+      "if": "ruins.booth.seen == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "Bro, it talks. I come here every weekend. It never says anything back."
+      ],
+      "if": "ruins.booth.seen == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.booth.seen",
+      "value": 1
+    },
+    {
+      "type": "dialog",
+      "speaker": "GLaDOwOS",
+      "lines": [
+        "Final test.",
+        "The Enrichment Center requires you to place your companion into the Emergency Fursuit Incinerator."
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "...if it's for science, bro."
+      ]
+    },
+    {
+      "type": "choice",
+      "lines": [
+        "* Put Barky into the incinerator?"
+      ],
+      "options": [
+        "Sacrifice",
+        "Refuse"
+      ],
+      "key": "ruins.booth.choice"
+    },
+    {
+      "type": "cutscene",
+      "key": "r9a_sacrifice",
+      "if": "ruins.booth.choice == 1"
+    },
+    {
+      "type": "cutscene",
+      "key": "r9a_refuse",
+      "if": "ruins.booth.choice == 2"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "steps": [
+    {
+      "type": "facePlayer",
+      "key": "up"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pipipipopopo_backwards.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "wait",
+      "seconds": 0.7
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pipipipopopo_backwards.ogg",
+      "volume": 0.4
+    },
+    {
+      "type": "shake",
+      "intensity": 2,
+      "seconds": 0.4
+    },
+    {
+      "type": "wait",
+      "seconds": 0.8
+    },
+    {
+      "type": "moveNpc",
+      "npc": "npc_barky",
+      "x": 490,
+      "y": -70,
+      "speed": 100000
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r9.barky_here",
+      "value": 1
+    },
+    {
+      "type": "moveNpc",
+      "npc": "npc_barky",
+      "x": 490,
+      "y": 80,
+      "speed": 420
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pomf.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "shake",
+      "intensity": 5,
+      "seconds": 0.3
+    },
+    {
+      "type": "npcAnim",
+      "npc": "npc_barky",
+      "key": "drop",
+      "seconds": 0.6
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "dialog",
+      "speaker": "BARKY",
+      "lines": [
+        "Halt, hairless intruder! *[awkward howling]*",
+        "You have stepped into the domain of the Shadow Fang Pack!",
+        "Prepare to face my fursona!"
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "barky"
+    }
+  ]
+}

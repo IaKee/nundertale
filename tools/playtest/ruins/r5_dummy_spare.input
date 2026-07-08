@@ -1,0 +1,64 @@
+# R5: walk into the dummy intro trigger, skip the Furiell intro, then play the fight to a SPARE.
+# Run from --room ruins_dummy --spawn from_switches, in the lockstep run that --trace + --input gives (seed 0).
+# In that run the BattleScene appears at tick 335 and the fight goes (trace `battle_state` events, ticks counted
+# from the battle start, B = 335):
+#   B+0     MenuSelect   right, confirm -> ActSelect; down, confirm -> Shake to the Bass (DialogMessage B+79)
+#   B+110   confirm      skips the ACT text; EnemyTurn B+111..B+435 (bass waves, 1 damage each, no dodging needed)
+#   B+435   MenuSelect   again; the turn after the third shake leaves the dummy spareable
+#   B+1194  MenuSelect   right, right, confirm -> MercySelect; confirm -> Spare; confirm x2 closes the fight
+# If the dummy fight's timing changes (turn length, intro text), re-measure with the trace and shift these ticks.
+# 30 ticks = 1 s.
+1-40 up
+10 confirm
+20 confirm
+30 confirm
+40 confirm
+50 confirm
+60 confirm
+70 confirm
+80 confirm
+90 confirm
+100 confirm
+110 confirm
+120 confirm
+130 confirm
+140 confirm
+150 confirm
+160 confirm
+170 confirm
+180 confirm
+190 confirm
+200 confirm
+210 confirm
+220 confirm
+230 confirm
+240 confirm
+250 confirm
+260 confirm
+270 confirm
+280 confirm
+290 confirm
+300 confirm
+# Shake to the Bass #1 (B+60...)
+395 right
+401 confirm
+407 down
+413 confirm
+445 confirm
+# Shake to the Bass #2 (menu is back at B+435)
+780 confirm
+786 down
+792 confirm
+824 confirm
+# Shake to the Bass #3 (menu is back at B+814)
+1160 confirm
+1166 down
+1172 confirm
+1204 confirm
+# MERCY > Spare (menu is back at B+1194)
+1540 right
+1546 right
+1552 confirm
+1558 confirm
+1608 confirm
+1618 confirm

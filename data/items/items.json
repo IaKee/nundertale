@@ -113,6 +113,25 @@
     "textTodo": true
   },
   {
+    "id": "apurrture_cake",
+    "name": "Apurrture Cake",
+    "shortName": "Cake",
+    "type": "consumable",
+    "heal": 99,
+    "at": 0,
+    "df": 0,
+    "furry": 0,
+    "speedBuff": 1.0,
+    "noDrop": true,
+    "info": "* A slice of cake from the Apurrture booth.\n* It was real.",
+    "useText": "* The cake was real. It's delicious.\n* You hate that it's delicious.",
+    "dropText": "* You can't. You hate that you can't.",
+    "buyPrice": 0,
+    "sellPrice": 0,
+    "priceTodo": true,
+    "notes": "LORE §20.1: full HP (heal 99 = the LV 20 cap; the overworld menu heals to max). Only from the R9a sacrifice."
+  },
+  {
     "id": "commission_cider",
     "name": "Commissioned Cider",
     "shortName": "CommCider",

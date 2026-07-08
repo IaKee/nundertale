@@ -1,0 +1,51 @@
+{
+  "steps": [
+    {
+      "type": "sound",
+      "path": "assets/sfx/glitter_spray.ogg",
+      "volume": 0.85
+    },
+    {
+      "type": "flash",
+      "r": 255,
+      "g": 190,
+      "b": 235,
+      "seconds": 0.4
+    },
+    {
+      "type": "shake",
+      "intensity": 4.0,
+      "seconds": 0.35
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Back off, you shameless weed!",
+        "There, there. My glitter is hypoallergenic, pup. It'll wash the fluff right off."
+      ]
+    },
+    {
+      "type": "healFull"
+    },
+    {
+      "type": "setFur",
+      "value": 0
+    },
+    {
+      "type": "setFlag",
+      "key": "fur_mirror_pending",
+      "value": 0
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.furiell.r2_arrived",
+      "value": 1
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floofy.met",
+      "value": 1
+    }
+  ]
+}

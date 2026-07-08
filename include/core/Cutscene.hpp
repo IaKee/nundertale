@@ -8,6 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "core/SessionMeta.hpp"
+#include "core/ToxicTrack.hpp"
+
 namespace nundertale {
 
 enum class CutsceneStepType {
@@ -35,6 +38,9 @@ enum class CutsceneStepType {
     LockControls,
     FadeOut,
     FadeIn,
+    Choice,
+    RecordKill,
+    PlayCutscene,
     Unsupported,
     Unknown
 };
@@ -58,6 +64,7 @@ struct CutsceneStep {
     std::string condition;
     std::string item;
     std::vector<std::string> fullLines;
+    std::vector<std::string> options;
     std::string npc;
     float x = 0.0f;
     float y = 0.0f;
@@ -68,6 +75,70 @@ struct CutsceneStep {
 struct Cutscene {
     std::vector<CutsceneStep> steps;
 };
+
+// True when the cutscene hands the player over to a fight (a startBattle step).
+inline bool cutsceneStartsBattle(const Cutscene& cutscene) {
+    return std::any_of(cutscene.steps.begin(), cutscene.steps.end(), [](const CutsceneStep& step) {
+        return step.type == CutsceneStepType::StartBattle;
+    });
+}
+
+// A trigger's "once" flag is what keeps its cutscene from playing again. A cutscene that ends in a
+// fight must not burn it until the fight really started: if the battle cannot be built, the flag
+// stays free so the player meets the fight on the next visit instead of losing it for good.
+inline bool triggerOnceShouldBurn(bool cutsceneHasBattle, bool battleStarted) {
+    return !cutsceneHasBattle || battleStarted;
+}
+
+// C1-014: a "choice" step shows `lines` as the prompt and 2-3 options in the dialog box. The picked
+// option is stored in the flag `key` as its 1-based number (0 stays "not chosen yet"); later steps
+// branch on it with "if": "<key> == 1". Option text cannot hold the dialog box's '|' and '}' tokens.
+inline constexpr std::size_t CUTSCENE_CHOICE_MIN_OPTIONS = 2;
+inline constexpr std::size_t CUTSCENE_CHOICE_MAX_OPTIONS = 3;
+
+inline bool cutsceneChoiceValid(const CutsceneStep& step) {
+    if (step.options.size() < CUTSCENE_CHOICE_MIN_OPTIONS ||
+        step.options.size() > CUTSCENE_CHOICE_MAX_OPTIONS) {
+        return false;
+    }
+    for (const std::string& option : step.options) {
+        if (option.empty() || option.find_first_of("|}") != std::string::npos) return false;
+    }
+    return true;
+}
+
+// The dialog pages of a choice step: the prompt pages, the last one carrying the option token.
+inline std::vector<std::string> cutsceneChoicePages(const CutsceneStep& step) {
+    std::vector<std::string> pages = step.lines;
+    if (pages.empty()) pages.emplace_back();
+    std::string token = "{choice:";
+    for (std::size_t i = 0; i < step.options.size(); ++i) {
+        if (i > 0) token += "|";
+        token += step.options[i];
+    }
+    token += "}";
+    pages.back() += token;
+    return pages;
+}
+
+// C1-014: a kill that happens outside a battle (the Apurrture sacrifice) sets what a battle kill
+// sets (BattleSystem.cpp): the enemy's killed flags, kills.ruins, the totals and the toxic track
+// (which also loses the Clean Run: killsTotal > 0 / kills.total). Returns true when it started or
+// fed the toxic track.
+inline bool applyCutsceneKill(GameState& state, SessionMeta& session, const std::string& enemyId) {
+    if (enemyId.empty()) return false;
+    if (enemyId == "barky") {
+        state.setFlag("ruins.barky.killed", 1);
+        state.setFlag("ruins.barky.state", 2);
+    }
+    state.incFlag("battle." + enemyId + ".killed");
+    state.incFlag("kills.ruins");
+    state.killsTotal += 1;
+    state.killsByArea["ruins"] += 1;
+    state.setFlag("kills.total", state.killsTotal);
+    sessionOnKill(session);
+    return toxicTrackOnKill(state, enemyId);
+}
 
 inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "wait") return CutsceneStepType::Wait;
@@ -94,6 +165,9 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "lockControls") return CutsceneStepType::LockControls;
     if (type == "fadeOut") return CutsceneStepType::FadeOut;
     if (type == "fadeIn") return CutsceneStepType::FadeIn;
+    if (type == "choice") return CutsceneStepType::Choice;
+    if (type == "recordKill") return CutsceneStepType::RecordKill;
+    if (type == "cutscene") return CutsceneStepType::PlayCutscene;
     if (type == "cameraPan") {
         return CutsceneStepType::Unsupported;
     }
@@ -196,6 +270,7 @@ private:
         if (key == "if") return parseString(step.condition);
         if (key == "item") return parseString(step.item);
         if (key == "fullLines") return parseStringArray(step.fullLines);
+        if (key == "options") return parseStringArray(step.options);
         if (key == "npc") return parseString(step.npc);
 
         if (key == "seconds") {
@@ -390,6 +465,15 @@ public:
     virtual void lockControls(float) {}
     virtual bool fadeOut(float, float) { return true; }
     virtual bool fadeIn(float, float) { return true; }
+    // C1-014 "choice": beginChoice opens the prompt with its options, choiceResult returns the
+    // 0-based pick or -1 while the player is still choosing (a host without UI picks the first).
+    virtual void beginChoice(const std::string&, const std::vector<std::string>&,
+                             const std::vector<std::string>&) {}
+    virtual int choiceResult() { return 0; }
+    // C1-014 "recordKill": the enemy id (step.encounter) dies outside a battle.
+    virtual void recordKill(const std::string&) {}
+    // C1-014 "cutscene": hands over to another cutscene (data/cutscenes/<key>.json).
+    virtual bool loadCutscene(const std::string&, Cutscene&) { return false; }
 };
 
 class CutsceneRunner {
@@ -567,6 +651,42 @@ public:
                     if (!host.fadeIn(step.seconds, remainingDt)) return;
                     finishStep();
                     break;
+                case CutsceneStepType::Choice: {
+                    if (!cutsceneChoiceValid(step)) {
+                        std::clog << "Cutscene choice step needs 2-3 plain options; skipping.\n";
+                        finishStep();
+                        break;
+                    }
+                    if (!m_stepStarted) {
+                        m_stepStarted = true;
+                        host.beginChoice(step.speaker, cutsceneChoicePages(step), step.options);
+                    }
+                    const int picked = host.choiceResult();
+                    if (picked < 0) return;
+                    const int count = static_cast<int>(step.options.size());
+                    if (!step.key.empty()) host.setFlag(step.key, std::clamp(picked, 0, count - 1) + 1);
+                    finishStep();
+                    break;
+                }
+                case CutsceneStepType::RecordKill:
+                    host.recordKill(step.encounter);
+                    finishStep();
+                    break;
+                case CutsceneStepType::PlayCutscene: {
+                    Cutscene next;
+                    if (!host.loadCutscene(step.key, next) || next.steps.empty()) {
+                        std::clog << "Cutscene '" << step.key << "' could not be loaded; skipping.\n";
+                        finishStep();
+                        break;
+                    }
+                    // `step` points into the cutscene being replaced: do not touch it after this.
+                    m_cutscene = std::move(next);
+                    m_index = 0;
+                    m_elapsed = 0.0f;
+                    m_stepStarted = false;
+                    m_conditionChecked = false;
+                    break;
+                }
                 case CutsceneStepType::Unsupported:
                     std::clog << "Cutscene step '" << step.typeName
                               << "' not supported yet; skipping.\n";

@@ -28,18 +28,25 @@
     "default": [
       "* Reply Guy prepares another correction.",
       "* Reply Guy is fact-checking your existence.",
-      "* Reply Guy is citing uncited sources."
+      "* Reply Guy is citing uncited sources.",
+      "* (He will not budge while anyone else is watching.)"
     ],
-    "lowHp": ["* Reply Guy's arguments are falling apart."],
-    "spareable": ["* Reply Guy concedes the point."]
+    "lowHp": ["* Reply Guy's arguments are falling apart.", "* Reply Guy is typing a very long reply."],
+    "spareable": ["* Reply Guy concedes the point.", "* Reply Guy is calm. Nobody is watching. He can just be chill."]
   },
   "dialogue": {
     "default": [
       "Well, actually, that's a coyote.",
       "Source?",
       "...yeah, it's a wolf, man."
-    ]
+    ],
+    "afterHit": ["Well, actually, that's assault.", "Source?"],
+    "crit": ["Okay, that one was fair."],
+    "miss": ["Well, actually, you missed.", "Source?"],
+    "item": ["Well, actually, that's not even a real snack."]
   },
+  "aloneOnly": ["talk"],
+  "aloneNote": "LORE 18.1: Talk only calms Reply Guy when he is alone; with company he corrects you and won't budge. Engine has no company condition yet (BFL-004/ACT-004); he fights alone until then.",
   "patterns": [
     {
       "id": "well_actually",

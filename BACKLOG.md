@@ -286,7 +286,7 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 
 | ID | File | Divergence | Fix (item) |
 | :--- | :--- | :--- | :--- |
-| **BUG-18** | `src/scenes/OverworldScene.cpp:164` | Hardcoded, non-canon encounter text `* Barky the Alpha Furry attacks!` (Barky is "the Alpha Wolf"; his entrance is ROTEIRO Scene 3 / LORE R9). | Move to data and use the LORE scene (`C1-009`, `TXT-010`). **[~] Partly fixed (2026-10-17):** Barky's ROTEIRO/LORE §19.1 entrance lines (speaker BARKY) replace the old text; still hardcoded until C1-009/TXT-010. |
+| **BUG-18** | `src/scenes/OverworldScene.cpp:164` | Hardcoded, non-canon encounter text `* Barky the Alpha Furry attacks!` (Barky is "the Alpha Wolf"; his entrance is ROTEIRO Scene 3 / LORE R9). | Move to data and use the LORE scene (`C1-009`, `TXT-010`). **[~] Partly fixed (2026-10-17):** Barky's ROTEIRO/LORE §19.1 entrance lines (speaker BARKY) replace the old text; still hardcoded until C1-009/TXT-010. **[x] Fixed (2026-10-28):** the arena and entrance moved to data (C1-009). |
 | **BUG-19** | `src/scenes/OverworldScene.cpp:43` and `data/dialogue/en/ruins.json` (`ruins.sign.notice`) | Two different versions of the Ruins Administration notice, neither matching the canon (LORE R8: `Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.`). | One key only, with the LORE text (`C1-008`). **[~] Partly fixed (2026-10-17):** The overworld sign uses the LORE R8 notice verbatim; `data/dialogue/en/ruins.json` still to align (TXT-010). |
 | **BUG-20** | `src/scenes/GameOverScene.cpp:163-170` | `GAME OVER` logo and a shattering soul. LORE §23.1 calls for **FURRY OVER**: the soul grows ears and a tail, inflates and pops into pink pom-poms; Asgrr's voice. | `BND-010` (rework). **[x] Fixed (2026-10-17):** BND-010 FURRY OVER sequence. |
 | **BUG-21** | `src/combat/BattleSystem.cpp:531` | The narrator writes `* GAME OVER! You lost all HP and became a furry!` inside the box — Undertale has no such line; the sequence is the game over screen. | Remove; go straight to the sequence (`BND-010`). **[x] Fixed (2026-10-17):** The narrator line is gone; defeat goes straight to the game over scene. |
@@ -353,10 +353,11 @@ P1 · M · —
 P2 · S · —
 - **What:** move `assets/Untitled-1.psd`, `assets/lore.psd` and `assets/img/deletethis/` to `art_src/` (with Git LFS) or delete them. `assets/` should only hold what the game loads.
 
-#### REPO-005 — `vendor/` setup script `[ ]`
+#### REPO-005 — `vendor/` setup script `[x]`
 P1 · M · REPO-001
 - **What:** `tools/setup_vendor.ps1`, which downloads w64devkit and raylib 6.2 (win64 mingw-w64) with checksums and extracts them into `vendor/`. Document it in the README.
 - **Acceptance:** fresh clone + `tools/setup_vendor.ps1` + `build.bat` = the game runs.
+- **Done (2026-10-28):** `tools/setup_vendor.ps1` downloads the exact tagged w64devkit/raylib release assets, checks the published SHA-256 before extracting, writes install stamps so reruns are idempotent, and refuses unmarked or mismatched folders. Usage in `docs/setup.md`. Not yet run against a real empty `vendor/`.
 
 #### REPO-006 — Zero warnings `[x]`
 P2 · S · REPO-003
@@ -560,9 +561,10 @@ P0 · M · D-03, REPO-007
 - **What:** zero game strings in the C++. Keys in `data/dialogue/en/*.json` (`"ruins.sign.notice": "..."`). Reuse and clean up `assets/lang/en.json` (inherited from Python).
 - **LORE:** one file per area (`ruins`, `snowdinha`, `wetfall`, `hotland`, `concenter`, `raid`) + `system`, `cell`, `gameover`, `endings`, `meta`, `enemies/<id>`. Source text comes from the LORE (fixes BUG-18, BUG-19, BUG-21, BUG-22, BUG-28). English is the only language (D-03).
 
-#### TXT-011 — Pepe's thoughts `[ ]`
+#### TXT-011 — Pepe's thoughts `[~]`
 P1 · S · TXT-001
 - **What:** the `* (...)` format of Pepe's thoughts (LORE §10.1): narrator voice, no portrait; at FUR ≥ 80 they end with a "squeak" (FUR-008). Tag them in data as `speaker: "pepe_thought"` for the lint.
+- **Partly done (2026-10-28):** register of every Grub thought in the Ruins by room, cutscene and enemy (NAR-029). Missing beats: digitigrade, fandom discount, route-choice Mirror and the Sans-room body pillow.
 
 ---
 
@@ -661,10 +663,11 @@ P0 · M · BFL-001, ACT-001
 P0 · M · BFL-001
 - **What:** the enemy bubble depends on what the player did that turn (a response to a specific ACT, to damage, to the item used) with a random fallback. E.g. ROTEIRO Scene 3: "H-hey! Stop looking at the zipper!..." after "Cringe Check."
 
-#### BFL-004 — Multi-enemy encounters `[ ]`
+#### BFL-004 — Multi-enemy encounters `[~]`
 P0 · L · BFL-001
 - **What:** `Encounter { enemies[1..3], introText, background, music, canFlee, routeOverrides }`. The attacks of every living/unspared enemy add up in the same turn (each with its own pattern); victory comes when all are dead, spared or fled.
 - **LORE:** company-dependent conditions — **Reply Guy** only chills out **alone**; **Jerry** with `Ditch` makes the others spareable; Dogsona & Dogsonissa are a pair (ACT-004).
+- **Partly done (2026-10-28):** pure model `include/combat/EncounterModel.hpp`: 1-3 enemies, intro, background, music, flee, optional `routeOverrides`; old single-enemy encounter files parse unchanged. Not wired into `BattleScene`/`BattleSystem` yet.
 
 #### BFL-005 — Encounter and enemy data in JSON `[x]`
 P0 · M · REPO-007, BFL-004
@@ -734,6 +737,7 @@ P0 · M · BFL-005
 P0 · S · ACT-001, NAR-002
 - **Done:** `Check`, `Cringe Check`, `Offer Dew`, `Debate Lore` in `barky.json`.
 - **Missing (LORE §19.1, BUG-30):** the 2nd Cringe Check response, `Laser` (requires the Toy Laser Pointer, ACT-006) and `Accept Hug` (ACT-005); Check and responses matching the LORE text. Full detail in `C1-021`.
+- **LORE text rework done (2026-10-28):** Barky check, ACT texts and lines follow LORE v3.1 (data only). Laser ACT gated by the Toy Laser Pointer (`requiresItem`/`requiresFlag`, `include/combat/ActGate.hpp`).
 
 #### ACT-003 — ACTs that change the enemy attack `[ ]`
 P1 · M · ACT-001, BHL-004
@@ -752,6 +756,7 @@ P0 · M · ACT-001, FUR-002
 P1 · M · BFL-006, ACT-001
 - **What (LORE §8.12):** mini-bosses and bosses get a data-driven **peace path**: a goal, a step counter (4–8), which ACTs count and how much, lines per step, and an optional "furrier" path (Accept Hug: FUR per hug). MERCY only works at the goal. Regular enemies keep 1–3 ACTs. On the toxic track the step count goes up (TOX-009). First users: Barky (C1-021) and Furiell (C1-022).
 - **Partly done (2026-10-27):** `include/core/PeacePath.hpp`: pure model (`PeacePathDef`, `PeacePathState`, `peaceApplyAct`, `peaceGoalMet`, `peaceMercyAllowed`). The goal is clamped to 4–8 steps, each ACT carries a step weight and a line, `Accept Hug` carries a FUR amount, MERCY is allowed only at the goal, and on the toxic track `toxicExtraSteps` raises the goal (TOX-009). Covered by `tests/suites/act008.hpp`. Pending: the per-enemy peace-path data for Barky and Furiell, wiring into `BattleSystem` (ACT menu, MERCY gating) and the FUR change from hugs.
+- **Wired (2026-10-28):** enemies can declare a `peacePath` block in their JSON and `BattleSystem` evaluates it. Barky: 5 steps (7 on the toxic track), `comment_tail` extra ACT. Furiell: 5 steps (8 toxic), ACTs hidden until `requiresProgress`, MERCY locked until the goal. Other enemies unchanged.
 
 #### ACT-006 — Conditional ACTs `[x]`
 P1 · S · ACT-001
@@ -1248,11 +1253,12 @@ P1 · M · PRG-020, D-07
 - **Done:** kill, spare and flee counters and a `RouteType` with Wholesome/Normie/Toxic.
 - **Rework:** see PRG-031.
 
-#### PRG-032 — The toxic track `[ ]`
+#### PRG-032 — The toxic track `[~]`
 P1 · M · PRG-030
 - **What (LORE §22.0, §8.9):** every run starts **casual**. The first monster killed starts the toxic track; the first monster spared or yiffed ends it **for good** (the Fursuit Dummy and GLaDOwOS don't count). While it runs, the HUD, pacing, music and difficulty change **gradually**; if it ends, they fade back to casual over the next rooms (the PK skull expires, the MERCY label goes back to `Yiff`). The route is only confirmed Toxic near the end (PRG-031). Saved state: `toxic.track` (0 never started · 1 running · 2 ended) and its kill count.
 - **Acceptance:** kill, kill, spare → casual from then on, corruption fading; kill everything → Toxic at the end; tests for both.
 - **Partly done (2026-10-19):** `toxic.track` and `toxic.kills` are persisted flags; BattleSystem updates them at the existing kill/spare outcomes, with Dummy/GLaDOwOS excluded, and PRG-032 has headless transition plus save/load tests. Pending: gradual HUD/music/pacing fade and final route confirmation.
+- **Logic done (2026-10-28):** `toxic.fade_rooms`, `toxicTrackOnRoomEntry`, `toxicFadeValue`: after the track ends the effects fade back to casual over 4 rooms in equal steps. Not yet called from room entry (the TOX wiring task did not land).
 
 #### PRG-031 — LORE routes `[ ]`
 P1 · M · PRG-030, D-07, D-11
@@ -1486,6 +1492,7 @@ P1 · L · ART-101, FUR-005, D-15
 P2 · M · FUR-005, NAR-027
 - **What (LORE §8.4):** `* Nice ears, newcomer!` (≥ 20, generic NPCs) · Barky `Dude. Your paws are SO much better than mine.` (≥ 40) · the shops' "fandom discount" (≥ 60, SHP-008) · Senpai Sans `heh. you're one bad day away from a con badge.` (≥ 80) · a "squeak" at the end of Pepe's thoughts (≥ 80) · the mirror in Furiell's house `* It's... still you. With ears.` (≥ 20) · Dogsona & Dogsonissa spare you outright (≥ 40). Conditions on `fur.value` in the conditional dialogue system (CORE-010).
 - **Partly done (2026-10-17):** `furReactionLine(fur, who)` (`include/core/FurReactions.hpp`); Barky says `Dude. Your paws are SO much better than mine.` once per battle at FUR ≥ 40 and as the spared NPC's first line. Pending: generic NPCs, Senpai Sans, shop discount, Pepe's squeak, the mirror, Dogsona & Dogsonissa.
+- **Partly done (2026-10-28):** generic NPC FUR reactions and the Grub `(squeak)` suffix on thoughts at FUR >= 80 (`include/core/FurReactions.hpp`, existing API kept).
 
 #### FUR-009 — Armor multiplier and FUR on equip `[x]`
 P1 · S · ITM-001, FUR-002
@@ -1739,9 +1746,10 @@ P0 · S · —
 - **What:** `docs/content_rules.md` (or a new section of `writing_style.md`) turning LORE §2.2's fixed rules into a review checklist: nothing visually explicit (ceiling: mosaic and closed objects); **no children**, references to children or childlike looks, and no fandom vocabulary tied to minors; no real animals; no real people (including photo-meme faces, YouTubers, streamers) and no real events/sites/conventions; the "dragon excuse" only as the narrator cutting someone off — the character never appears or is described; Pepe is the "classic Pepe," no political iconography.
 - **Acceptance:** the checklist is linked from `README.md` and cited in the acceptance of every C*/ART item.
 
-#### LOR-002 — Audit existing text `[ ]`
+#### LOR-002 — Audit existing text `[~]`
 P0 · M · LOR-001
 - **What:** review against LORE §2.2 all text already written: `src/**` (hardcoded strings), `data/dialogue/**`, `assets/lang/en.json`, `ROTEIRO.md`, `notes.txt`, the name table in `NameSelectScene.cpp`. Already known: "Midwest FurFest 2014" (a real convention → FurNation Con '14), the intro's "yiffing the GAMERS" (BUG-29), the `GABEN` proposed in the old FRT-008 (a real person).
+- **Audit done (2026-10-28):** report on every Ruins text against the LORE content rules (Floofy/Furiell v3.1, "my child", pre-kill Minecraft, Guild/RAID to Squad, FURRY OVER, Pepe leftovers). Fixes proposed, not applied; two "my child" lines remain in `tools/maps/build_ruins_maps.py` (R2, R5).
 
 #### LOR-003 — Audit existing art `[ ]`
 P0 · S · LOR-001
@@ -1756,6 +1764,7 @@ P2 · M · TXT-010, QA-012
 - **What:** `tools/content_lint` scans `data/dialogue/**` against a list of blocked terms (kept out of the public repo if needed) and fails the validation build when it finds one.
 - **Language (D-03):** the same lint flags text that isn't English — accented characters (`ã`, `ç`, `é`…) and a short list of common Portuguese words — and player-visible strings hardcoded in C++.
 - **Partly done (2026-10-17):** `lint.bat` builds `tools/content_lint.exe` and scans `data/**/*.json` and `assets/lang/*.json` for accented letters (U+00C0–U+024F), a short Portuguese word list and an optional private `tools/content_lint_blocklist.txt` (gitignored; format in the `.example.txt`). Exit 1 on findings. The first run found only `Piñata` (fixed to `Pinata`). Pending: player-visible strings hardcoded in C++ (most text is still in code, TXT-010) and wiring it into a validation build (QA-012).
+- **Extended (2026-10-28):** `tools/content_lint.cpp` also flags `my child`, `FURRY OVER` and `raid`; errors in cleaned trees (cutscenes, enemies, encounters, dialogue, player-facing item fields), warnings in `data/maps` and dev notes.
 
 #### LOR-006 — Real brand register `[x]`
 P3 · S · D-14
@@ -1790,12 +1799,14 @@ P0 · M · —
 P0 · M · D-06
 - **In LORE §19.1:** intro, Check, 6 ACTs with responses, patterns, spare, death.
 - **Still to write:** the encounter text (`* Barky blocked your path!` or a scene equivalent), flavor text (`default`, `lowHp`, `spareable`, `blushed`), 10–15 speech bubbles (including the gamer flashbacks `Fear the Shadow Fang Pa— one more match, mom— ...what?`), a response to each item used, spared-NPC lines in R9/R10 (recruiting Pepe into the "Shadow Fang Pack").
+- **Done in data (2026-10-28):** Barky LORE text rework and the R9 scenes (`r9_barky_intro` drop, `r9_barky_spared`, `r9_barky_killed` fur pile, `r9_dew_bowl`).
 
 #### NAR-003 — Furiell's scenes (Ruins) `[~]`
 P0 · L · D-06
 - **LORE v3.1:** Furiell was rewritten (NAR-035); the 13 spare lines are gone (C1-022).
 - **In LORE §10.2, §12, §19.2:** key lines, the R3 introduction, the Dummy, the R6 hand-holding, the R7 hallway, the R11 house, the R12 basement, the 13 spare lines, death, the final hug.
 - **Still to write:** the living-room conversation (the equivalent of Toriel's "when can I go home?", with choices), the basement-walk lines (3–4 stops, like Toriel's), the sleeping scene and the Glitter Pop-Tart on the floor, the reactions to each Dummy result, and FUR-based variants (she gets "cozier" the fluffier Pepe gets).
+- **Partly done (2026-10-28):** R12 basement walk with 3 stops (`r12_stop1..3`) and the R11 living-room talk with a 3-way choice (home / games / fur, `r11_talk*`). Not playtested.
 
 #### NAR-004 — CELL: calls and per-room replies `[~]`
 P1 · M · NAR-003
@@ -1806,10 +1817,11 @@ P1 · M · NAR-003
 P1 · L · C1..C5
 - **What:** complete the examinable tables in LORE §12–16 so that **every room** has ≥ 1 funny object (LOR-008), with 2nd/3rd-look variants where it makes sense (rule of three), and every save point text that's still missing.
 
-#### NAR-006 — Bestiary: complete text `[ ]`
+#### NAR-006 — Bestiary: complete text `[~]`
 P0 · L · C1-020, C2-020, C3-020, C4-020, C6-020
 - **In LORE §18:** stats, Check, ACTs, patterns, bubbles.
 - **Missing, per enemy:** encounter text (alone and "and co."), flavor text (`default`, `lowHp`, `spareable`), result text for ACTs that don't have it yet, spare/death lines, the response to FIGHT/MISS.
+- **Ruins part done (2026-10-28):** Froggsona, Shysona, Modsmal, Lurkeye, Reply Guy and Grasstoid have the LORE check/thought lines plus lowHp, spareable, afterHit, crit, miss and item variants.
 
 #### NAR-007 — Floofy's script `[~]`
 P1 · M · —
@@ -1905,9 +1917,10 @@ P2 · S · FRT-008
 - **What:** merge the ROTEIRO §6 table with LORE §30.2 (`FURIEL`/`FURIELL`, `BARKY`, `FLOOFY`, `AZZY` darkens and allows, `FROG`/`PEPE` frog soul, `YIFF` refused, `OWO`, `CHARA`) into `data/names.json`; `TORIEL` → `Furiell has already trademarked this name.` stays.
 - **Partly done (2026-10-17):** `data/names.json` exists with the ROTEIRO §6 + LORE §30.2 entries already in code (FRT-008). Check `OWO`, `CHARA` and `TORIEL` against the LORE in a writing pass.
 
-#### NAR-029 — Pepe's thoughts and the secret `[ ]`
+#### NAR-029 — Pepe's thoughts and the secret `[~]`
 P1 · S · —
 - **What:** a register of every `* (...)` line from Pepe (he **doesn't speak**), including the 5 subtle hints about his secret (digitigrade legs, "Good stitching.", the curtain 3×, the fandom discount, the Mirror) and the body pillow in Sans's room. Criterion: no hint is explicit; the game never says he likes it.
+- **Register done (2026-10-28):** see TXT-011.
 
 #### NAR-030 — LORE gaps to resolve `[ ]`
 P1 · S · —
@@ -1941,13 +1954,15 @@ P0 · M · D-16
 P0 · M · D-12, RAD-003
 - **What (LORE §1, §8.7, §17, §21.3, §22):** Grub went out because the Mountain Dew ran out and is running home for his squad's **Fortnite** match. Rewrite every guild/raid line: the clock messages (RAD-003), the CELL contact (`Squad`), the endings (`He plays with the squad`, the Clean Run's `bro is running a FURRY skin??` / `I'm the carry`, the Toxic `25 eliminations, Victory Royale` / `party leader`), xX_Moderator_Xx as party leader, Asgrr's `Talk`, and the Furry act renamed **The Drop** (the Battle Bus over Mt. Dew, the Barrier's fog closing in like the storm; track "Battle Bus"). Intro card 8 shows Grub with the Dew bag (ART-182). Code names (`raid.*`, `RAD`) stay.
 
-#### NAR-034 — Floofy, the zesty recruiter `[ ]`
+#### NAR-034 — Floofy, the zesty recruiter `[x]`
 P0 · M · NAR-007, C1-002
 - **What (LORE §6.5, §10.10):** Floofy becomes a flamboyant, zesty, flower-themed furry (a pastel fox with a flower crown and a rose) whose every line pushes Grub to become a furry (`*pounces on you* OwO what's this?`). He lost his shame to Alphys's DETERMINATION experiment (so he still remembers saves); motto `In this world, it's YIFF or be YIFFED.`; wants the souls to become the Supreme Fursona. New tutorial (pink friendship petals, `*pounces*`), attacks (petals, pollen, rose vines, pounces), Alphys's H2 log, the Mascot's look (`bouquet_mouth`). Art: overworld sprite, portraits, battle sprite (ART-102, ART-002, ART-111). He's openly gay; jokes target his shamelessness and recruiting, never his orientation.
+- **Done (2026-10-28):** Floofy's R2/R13 lines rewritten (Howdy~, OwO, friendship petals, "YIFF or be YIFFED", fox makeover pitch); R13 variants kept with their conditions.
 
-#### NAR-035 — Furiell, the first dose of cringe `[ ]`
+#### NAR-035 — Furiell, the first dose of cringe `[x]`
 P0 · M · NAR-003
 - **What (LORE §10.2):** she grabs Grub's hand and doesn't let go, tries to hug him, talks in uwu (`hewwo`, `fwiend`, `>w<`), calls him **pup** or **hun** (never "my child"), and has a degradation kink: insults make her happier, and shame doesn't work on her (`* Furiell is enjoying this.`). Rewrite her lines across R3–R12, the CELL options, the forced calls, the Furry route welcome and the GAMER OVER voice. Her flirting stays verbal and one-sided (LOR-009).
+- **Done (2026-10-28):** Furiell's Ruins overworld lines use pup/hun, uwu and >w<, and she enjoys being insulted; CELL replies match the LORE. Two "my child" lines are left in map data (see LOR-002).
 
 ---
 
@@ -1979,6 +1994,7 @@ P0 · L · BHL-004, BFL-001, ART-102
 - **What:** the first "battle": Floofy introduces the "free hug pellets" (little hearts that deal damage and **+20 FUR** each); the **FUR bar shows up for the first time, trembling** (FUR-003); he surrounds Pepe with a ring of pellets: `HUG.`; Furiell shows up and drives him off with a **glitter spray** (SFX), heals Pepe and zeroes FUR ("my glitter is hypoallergenic"). Teaches soul movement. `ruins.floofy.met = 1`. The Mirror does **not** fire here.
 - **Art:** Floofy idle, talking, sinister (zipper open showing only darkness and two white eyes) and sinking into the ground.
 - **Cutscene version (2026-10-18):** `ruins_floofy`: Floofy's LORE lines, a pink flash, FUR set to 20, Furiell arrives with a glitter flash and drives him off, FUR back to 0 and HP full, `ruins.floofy.met = 1`; Furiell then waits by the north exit. Pending: the real pellet battle (BHL-004, BFL-001) and the trembling first FUR bar.
+- **Battle built (2026-10-28):** `floofy` encounter with invulnerable/scripted end, friendship petals and `FloofyScript.hpp`; cutscenes `r2_floofy_battle` and `r2_floofy_rescue`. **Not wired into the R2 map yet:** in `build_ruins_floofy` point `trigger_floofy` at `r2_floofy_battle` (`once: ruins.floofy.battle.seen`, `hideIf: ruins.floofy.met >= 1`) and add the rescue trigger after it. Until then R2 still plays the cutscene-only version.
 
 #### C1-003 — R3: Ruins Entrance `[~]`
 P0 · M · OVW-003, ART-120
@@ -1999,6 +2015,7 @@ P0 · M · BFL-001, ACT-005, NAR-003, AUD-014
 - **Partly done (2026-10-18):** `ruins_dummy` sits between R3 and R8: Furiell introduces practice with the LORE hug line and starts the `fursuit_dummy` battle; Talk/Accept Hug set `ruins.dummy.talked`/`ruins.dummy.hugged`; afterwards one of four reactions plays (hug → beaming, talk → happy, kill → `Ah... the dummy is for hugging!`, flee → `...that is also a choice.`) and sets `ruins.dummy.result` (1/2/3/5; 4 = plain spare isn't reachable, the dummy only spares through Accept Hug). Pending: an overworld dummy sprite (it uses the white battle sprite) and Furiell walking the player to the next room.
 - **The Bass Shake done (2026-10-18, synergy):** `assets/music/bass_shake.ogg` (the meme loop, 130 BPM, 3.692 s; the menu loops the calm bar), `IAudioService::musicTime/seekMusic`, `include/combat/BeatMap.hpp` + `data/beatmaps/bass_shake.json` (pure scheduler, suite BSK-T2), `EnemyPatternKind::Beat`. The enemy turn plays the loop ×3 (8.77 s): a close-up per accelerated part with a burst of 10 fluff tufts on the notes and a new expression (smug, wink, pout, smirk), the wide shot dancing on the eighths. New key-pose sprites from the clip (wide 48×64 dance, high-angle chibi close-up, tuft bullets), LORE ACTs (`Shake to the Bass` ×3, `Turn It Down` = `stopsBeat`), Check, Furiell's v3.1 reactions and `r5_dummy_spare` (result 4 now reachable). Playtested 2026-10-19 with the new debug record mode (`--record <dir> --input <script> --seconds n`, `tools/record/render_demo.py`, script `tools/record/r5_bass_shake.input`): the full fight runs through; demo in `assets/_gen/demo/`. Pending: a human playtest for difficulty and `latencyMs`; uses 2 and 3 of Shake share the same text (the engine only tells use 1 from ≥2).
 - **Timing synchronized (2026-10-20):** the 130 BPM grid now uses `double` and the exact `L = 8×60/130`, rejects stale post-seek menu samples including exact `L/2`, consumes `(prev, now]` across validated wraps, samples shot/pose/frame directly from audio during render, and keeps `latencyMs` event-only. Deterministic coverage passes for 30/60 Hz, coarse/irregular partitions, non-zero offset, jitter/stall safety and 10,000 loops without accumulated drift; debug build and all 72 validation suites pass.
+- **More done (2026-10-28):** per-use ACT texts past the 2nd use (`actUseIndex`, Shake x3, Cheer); Furiell now walks Grub to R6 after every Dummy outcome (`ruins.r5.walked`). **Skipped-fight fix:** a trigger whose cutscene ends in `startBattle` burns its `once` flag only when the battle really starts; regression suite `ru01`. Open: dying in the Dummy fight with no save keeps `ruins.dummy.intro=1`, so the fight is lost (needs `GameOverScene`).
 
 #### C1-006 — R6: Cable Maze `[~]`
 P1 · M · CORE-011, OVW-012
@@ -2019,6 +2036,7 @@ P0 · M · OVW-011, ENC-003, LOR-007
 P0 · M · NAR-002, CORE-011, C1-021
 - **What:** ROTEIRO Scene 3: an echoing howl, Barky drops from the ceiling into a crouch, his introduction line, the fight (C1-021). **Examinable:** lamp `* Barky's natural enemy. Or his moon. He hasn't decided.` Afterward: spared → an NPC recruiting Pepe into the Shadow Fang Pack; killed → a pile of synthetic fur + a flag. A test version exists in `OverworldScene` today (BUG-18): move it to data.
 - **Partly done (2026-10-18):** the old test room is now `ruins_barky`, tiled (purple walls, pillars, north gate) and reached from R8; the lamp can be examined. Barky's behaviors are still the hard-coded ones (map property `legacyBarky`).
+- **Arena in data (2026-10-28):** Barky's arena moved out of `OverworldScene` into the map builder and cutscenes (fixes BUG-18). Barky appears only after his intro drop.
 
 #### C1-010 — R10: Bowl, Commission Bake Sale and Napstablurk `[~]`
 P1 · L · OVW-011, SHP-002, C1-023
@@ -2041,6 +2059,7 @@ P0 · L · NAR-003, ART-120, OVW-011
 P0 · XL · NAR-003, C1-022
 - **What:** the basement hallway with her lines (`Go upstairs. Your room has a beanbag. And a fursuit head. No pressure.`) and the fight (C1-022). Break this item down before starting (XL).
 - **Partly done (2026-10-18, round 10):** `ruins_basement` (a 3-screen dark corridor) through the living room stairs: entry cutscene `r12_entry` (once, `ruins.r12.walk`, Furiell walks ahead with her line), boss trigger `r12_boss` near the iron door (pre-fight line → `startBattle furiell`, only while she is unresolved), iron door to R13. Pending: a real playtest of the full fight from the corridor, her walking pace/music.
+- **Death effect (2026-10-28):** plush dust (glitter + stuffing, one red spark for ex-gamers, `include/combat/DustEffect.hpp`, optional `exGamer` enemy field) and Furiell's music cue. Basement stops in NAR-003.
 
 #### C1-013 — R13: Exit `[~]`
 P0 · M · NAR-008
@@ -2048,14 +2067,16 @@ P0 · M · NAR-008
 - **Save:** `* The cold air and the faint smell of ozone fill you with DETERMINATION.`
 - **Partly done (2026-10-18, round 10):** `ruins_exit` north of the basement: save point with that line, Floofy's one-time cutscene `r13_floofy` with three variants (hugged / spared / killed, NAR-008), the iron door with an aurora-over-snow glimpse (`assets/props/ruins_aurora_glimpse.png`) and an end-of-demo examine. Pending: the real transition into Snowdinha (C2-001) and Senpai Sans in the distance.
 
-#### C1-014 — R9a: the Apurrture booth `[ ]`
+#### C1-014 — R9a: the Apurrture booth `[~]`
 P1 · L · C1-009, C1-025, CORE-011
 - **What (LORE §12 R9a, §19.10):** only if Barky was spared, he leads Grub into the booth. GLaDOwOS's test text, then the choice `Sacrifice` / `Refuse`. **Sacrifice:** Barky's kill (dust + red spark, `FIRST BLOOD` if it's the first, the Clean Run is lost), the narrator line, `* The cake was not a lie.` / `* That's the worst part.` and the `Apurrture Cake`. **Refuse:** the fight (C1-025). A save point at the entrance; examinables (`THE HUG IS A LIE` behind a loose panel, the cube display, the sign); a powered-down variant if Barky is dead; flag `ruins.booth.state`.
+- **Built (2026-10-28):** `ruins_booth` room, new cutscene `choice` step (`options`, `key`, 1..N), `r9a_booth_entry`, `r9a_panel`, `r9a_sacrifice`, `r9a_refuse` leading to the GLaDOwOS fight; powered-down variant if Barky is dead. Not playtested.
 
 #### C1-020 — Ruins bestiary `[~]`
 P0 · L · NAR-006, ART-110, BHL-004
 - **What:** data (`data/enemies/*.json`), sprites and patterns for every common enemy (LORE §18.1). Replaces the old proposal (Frogposter/Soytoid dropped).
 - **Partly done (2026-10-18):** Fursuit Dummy, Froggsona, Shysona and Modsmal have data (`data/enemies/`, LORE §18.1 stats, Check, ACTs, bubbles, FUR) and encounters (`data/encounters/`); battles load by encounter id (`BattleScene(id)`), use the battle sprites, and set `battle.<id>.spared` / `battle.<id>.killed` (kills also count in `kills.ruins`). New ACT effect `flees`. Pending: Lurkeye, Reply Guy (needs BFL-004), Grasstoid, Napstablurk, and the thought/Check variants.
+- **Text done (2026-10-28):** see NAR-006.
 
 | Enemy (parody) | HP/AT/DF · EXP/G · FUR | ACTs → spare | Patterns | Note |
 | :--- | :--- | :--- | :--- | :--- |
@@ -2074,6 +2095,7 @@ P0 · M · ACT-002, BHL-014, ART-111
 - **LORE v3.1:** spareable after **5 steps** (ACT-008): `Comment on Tail` ×4 with escalating embarrassment, Cringe Check, Offer Dew, Laser and Accept Hug count +1 each (Cringe Check is no longer +50). `Yiff` ends with a fade to black and FUR +15 (MRC-006).
 - **Done:** the base fight with Check, Cringe Check, Offer Dew, Debate Lore, `uwu_rain` and `dew_bounce` (data in `barky.json`).
 - **Missing (LORE rework):** Check `* BARKY - ATK 4 DEF 2` / `* Alpha Wolf of the Ruins. The zipper says otherwise.`; Cringe Check +50 mercy with a 2nd response (`...I KNOW, okay? I KNOW.`) and the zipper SFX; Offer Dew with the gamer flashback (`Citrus Blast 2012?! ...wait, how do I know that flavor?`); **Laser** (requires the Toy Laser Pointer: spareable + skips an attack); **Accept Hug** (spare + FUR +15); the `howl_wave` pattern after Cringe Check; spare `You can tell no one about the zipper. Pack secret.`; death `* Only a pile of synthetic wolf fur remains.` + a **red spark** flying off (BND-003); the FURRY OVER variant `...welcome to the pack? no? ok.`; grid + fluorescent tube background; "Alpha Wolf (Not a Phase)" music.
+- **More done (2026-10-28):** LORE text rework, Laser ACT gated by the Toy Laser Pointer, 5-step peace path (ACT-008).
 
 #### C1-022 — Furiell's fight (LORE §19.2) `[~]` (LORE v3.1 rework)
 P0 · XL · BHL-004, BHL-020, ART-111, ACT-008
@@ -2083,6 +2105,7 @@ P0 · XL · BHL-004, BHL-020, ART-111, ACT-008
 - **Patterns:** `fluff_balls` (+6), `glitter_hands` (+6), `hug_ring` (+10). **1:1 rule:** with Pepe at HP ≤ 4 the bullets swerve around him (BHL-020).
 - **Death:** `You... really think I'm that cringe...?` → `...so you really are... just a gamer...` → plush dust. Plain black background; "Heartache (but Fluffier)" music.
 - **Done (2026-10-18, round 10):** `data/enemies/furiell.json` + `encounters/furiell.json` (black background): Check/Talk/Accept Hug (FUR +30, ends at once, `ruins.furiell.hugged`), the 13 spare lines in order via the new `spareLines` field (spareable after the 13th), spare outro + `Leave a review` line, death lines in the bubble, flags `ruins.furiell.spared|killed` (new `spareFlag`/`killFlag` fields), patterns `fluff_balls` (bounce), `glitter_hands` (swarm) and `hug_ring` (new `ring` kind), merciful bullets (BHL-020). Test suite 56. Pending: her music (placeholder track), plush-dust visual, a hand-played balance pass.
+- **v3.1 fight built (2026-10-28):** five-step peace path (Let Go of Her Paw, Talk About Games, Promise to Visit, Insult, Accept Hug), MERCY locked until the goal; plush-dust death (C1-012). Not playtested.
 
 #### C1-023 — Napstablurk `[x]`
 P2 · M · NAR-017, ART-111
@@ -2094,20 +2117,23 @@ P1 · S · ENC-003, C1-020
 - **What:** `data/encounters/ruins_*.json`: R8 (budget 1: Froggsona · Shysona · Modsmal), R10 (budget 1: Lurkeye · Reply Guy · Grasstoid), with "X and co." combos and weights. Toxic route: encounters until the cap of 6 (C7-002).
 - **R8 done (2026-10-18):** `ruins_notices` meets Froggsona (weight 2), Shysona or Modsmal, budget 1. Pending: R10 (needs Lurkeye, Reply Guy, Grasstoid), "X and co." combos (BFL-004).
 - **R10 done (2026-10-19):** `ruins_bakesale` meets Lurkeye, Reply Guy or Grasstoid (budget 1); on the toxic track the budget is ignored up to the Ruins cap of 6 (ENC-006). Pending: "X and co." combos (BFL-004).
+- **Prep (2026-10-28):** multi-enemy encounter model, see BFL-004.
 
-#### C1-025 — GLaDOwOS's fight (LORE §19.10) `[ ]`
+#### C1-025 — GLaDOwOS's fight (LORE §19.10) `[~]`
 P1 · XL · BHL-004, BHL-016, BHL-017, ART-111
 - **What:** a survival fight: 10 turns in 3 phases; it can't be killed and **doesn't count as a kill**. Patterns `turret_sweep`, `musk_neurotoxin` (residual damage), `portal_bullets` (new generic pattern: bullets entering one wall portal leave from the other), `cube_drop`, `incinerator_floor`. ACTs `Ask About the Cake`, `Compliment the Booth`, `Hug Barky`. End: `* Test complete. You get no cake.` Music "Still Testing". Break it down before starting (XL).
 - **Acceptance:** beatable at LV 1 with 20 HP by a careful player; the hardest fight of the Ruins in playtest (QA-020).
+- **Built (2026-10-28):** `gladowos` survival fight: unkillable, `surviveTurns`, phases, patterns `turret_sweep`, `musk_neurotoxin`, `cube_drop`, `portal_bullets`, `incinerator_floor` (`GladosPatterns.hpp`); ACTs Ask About the Cake, Compliment the Booth, Hug Barky; sets `battle.gladowos.survived`. Reuses `battle.default` music. Not playtested.
 
 #### C1-026 — The Tide Pod `[x]`
 P1 · S · ITM-008, C1-001, C1-011
 - **What:** the R1 examinable and pickup (`* The Tide Pod you slipped on. It fell in with you.`); a key item that can't be eaten or thrown away (`* You consider it.` / `* The narrator stops you.`); Furiell's R11 line while it's carried (`Is this candy, my child? It smells like a laundromat.`, `item.tide_pod.shown`).
 - **Status (2026-10-19, K7):** Done. Key item in `items.json` with `noDrop`, data-driven use/drop hooks in overworld menu, `r1_tide_pod` pickup in `ruins_fall`, and `r11_furiell` reaction in `ruins_house` behind `hasItem.tide_pod == 1 && item.tide_pod.shown == 0`. Test suite 63.
 
-#### C1-030 — The Ruins playable start to finish `[ ]`
+#### C1-030 — The Ruins playable start to finish `[~]`
 P0 · XL · C1-001..C1-024
 - **Acceptance:** from a new game to R13 without debug tools, in ~8.5 min at average pace; save/load at every save point; the in-area variations work (spare everything, Accept Hug on Furiell, kill everything with "nobody logged in," the Mirror triggered and refused); FUR, the raid clock and flags persist in the save.
+- **Tooling (2026-10-28):** `--trace <file>` event log (debug builds), scripted walkthrough under `tools/playtest/` and first-fight repro inputs in `tools/record/first_fight/`; suite `ru41` loads every Ruins map and round-trips save/load at each save point. A full R1 to R13 scripted run is not done yet (the R3 to R5 input is a draft).
 
 ---
 
@@ -2440,36 +2466,41 @@ P2 · S · PRG-031
 - **Acceptance:** tests for the stage boundaries (0, 1, 9, 16, 22) and for the streak resetting on save.
 - **Done (2026-10-27):** `toxicKills`, `toxicStreak`, `toxicCorruptionStage` (0: 0, 1: 1–8, 2: 9–15, 3: 16–21, 4: 22+), `ToxicHudState`, `toxicHudState`, and `toxicOnSave` (streak reset) in `include/core/ToxicTrack.hpp`. Unit-tested in suite `tox001` (`tests/suites/tox001.hpp`). Deliberately not wired into rendering HUD yet (comes with TOX-002..007). Not committed yet.
 
-#### TOX-002 — League of Legends kill announcer `[ ]`
+#### TOX-002 — League of Legends kill announcer `[~]`
 P2 · M · TOX-001, AUD-014
 - **What:** a red-and-gold banner over the battle area plus the voice line: `FIRST BLOOD` on the very first kill; `DOUBLE`/`TRIPLE`/`QUADRA`/`PENTA KILL` for the streak; `ACE` with `* But nobody logged in.` when an area is emptied. Never two banners at once.
+- **Logic done (2026-10-28):** `include/combat/KillAnnouncer.hpp` (First Blood to Penta, Ace, one banner at a time). Not wired.
 
-#### TOX-003 — OSRS hitsplats, XP drops and level-up line `[ ]`
+#### TOX-003 — OSRS hitsplats, XP drops and level-up line `[~]`
 P2 · M · FGT-005, TOX-001
 - **What:** from the first kill, the damage number becomes a red OSRS hitsplat (white number, RuneScape-style font), `MISS` becomes a blue `0` splat, crits use the max-hit splat. XP drops (`+N` with an icon, floating up the right edge) on every EXP gain. From the 9th kill, level-up shows `* Congratulations, you just advanced a Vitriol level.` with the OSRS jingle.
+- **Logic done (2026-10-28):** `include/combat/Hitsplat.hpp` (damage/miss/max hit splats, XP drops from the first toxic kill). Not wired.
 
 #### TOX-004 — PK skull `[ ]`
 P2 · S · TOX-001
 - **What:** after the first kill, a white OSRS skull floats over Grub in the overworld and sits next to his name in the battle HUD. **Visual only**: no item loss or any other rule.
 
-#### TOX-005 — CoD hitmarker on every hit `[ ]`
+#### TOX-005 — CoD hitmarker on every hit `[~]`
 P2 · S · FGT-008, TOX-001
 - **What:** from the first kill, every hit shows a small white X made of four short ticks and plays the hitmarker sound (FGT-008 covered crits only).
+- **Logic done (2026-10-28):** `include/combat/Hitmarker.hpp` (X ticks, fade). Not wired.
 
-#### TOX-006 — Counter-Strike 1.6 killfeed `[ ]`
+#### TOX-006 — Counter-Strike 1.6 killfeed `[~]`
 P2 · M · TOX-001
 - **What:** a 1:1 CS 1.6 kill notice: top-right, no background box, small text, newest line at the bottom, up to 4 lines, each fading after ~5 s; attacker in red, the equipped weapon as a small yellow-orange icon, a headshot icon on crits, victim in blue. **Ex-gamers show their old gamertag** (`xX_BarkSc0p3_Xx`, `BrbJerry`…). Shown in battle and over the overworld right after a kill.
 - **Acceptance:** layout and timing checked against a CS 1.6 recording.
+- **Logic done (2026-10-28):** `include/combat/Killfeed.hpp` with the ex-gamer gamertag table. Not wired.
 
 #### TOX-007 — MW2 killstreaks `[~]`
 P2 · L · TOX-001, BFL-001, ITM-008
 - **What:** **Care Package** at 4 kills (a crate drops in the next room with a random food from the LORE §20.1 pool) · **Predator Missile** at 5 (a battle option, once per battle: heavy damage to one target, capped so it never one-shots; kept until used) · **Tactical Nuke** at 25 (TOX-010). A `KILLS n` counter and a killstreak icon column at the right end of the HUD line (the nuke shows locked with `25`). MW2-style voice lines (AUD-014).
 - **Partly done (2026-10-27):** `include/core/Killstreaks.hpp`: cumulative thresholds (Care Package 4, Predator Missile 5, Tactical Nuke 25), `killstreaksOnKill` awards each once through the `toxic.ks.*` flags, `carePackageFood`, `usePredator` (once, kept until used), `predatorDamage` (75% of max HP, never lethal) and `killstreakColumn` for the HUD icons (nuke locked until 25). Covered by `tests/suites/tox007.hpp`. Pending: the HUD `KILLS n` counter and icon column, the crate drop in the next room, the Predator battle option, the nuke itself (TOX-010) and the voice lines (AUD-014).
 
-#### TOX-008 — The corruption ladder `[ ]`
+#### TOX-008 — The corruption ladder `[~]`
 P2 · M · TOX-001, BUI-002, BUI-006
 - **What:** the LORE §8.9 escalation: the grid flickers red (1–8 kills); dark red with scanlines and a gray MERCY (9–15); more glitch, a cracked MERCY and a glowing FIGHT (16–21); full corruption (22–25). Furries still die into stuffing and glitter, never blood. The game over corruption is BND-012; the music is AUD-013.
 - **Acceptance:** at every stage the text box and the HUD line stay readable.
+- **Logic done (2026-10-28):** `corruptionLook()` in `include/combat/Corruption.hpp` maps kills to the 4 visual stages (uses `toxicCorruptionStage`). Not wired.
 
 #### TOX-009 — Kill-scaled difficulty `[ ]`
 P2 · L · BHL-004, BFL-006, TOX-001
