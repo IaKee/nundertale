@@ -120,9 +120,13 @@ void ShopScene::update(float /*dt*/, GameContext& context) {
             m_selectedIndex = 0;
             return;
         }
+        const ShopPriceContext priceContext{
+            context.state.furry.value,
+            context.state.hasFlag("route.furry")
+        };
         const ShopPurchaseResult result = tryShopPurchase(
             m_data.items[static_cast<std::size_t>(m_selectedIndex)], context.player.gold,
-            context.player.inventory, PlayerData::MAX_INVENTORY_SIZE);
+            context.player.inventory, PlayerData::MAX_INVENTORY_SIZE, priceContext);
         if (result == ShopPurchaseResult::Success) {
             beginMessage(m_data.buyText, View::Buy);
         } else if (result == ShopPurchaseResult::NotEnoughGold) {
@@ -233,9 +237,14 @@ void ShopScene::render(GameContext& context) {
         }
         drawSoul(460.0f, 272.0f + static_cast<float>(m_selectedIndex) * 36.0f);
     } else if (m_view == View::Buy) {
+        const ShopPriceContext priceContext{
+            context.state.furry.value,
+            context.state.hasFlag("route.furry")
+        };
         for (std::size_t i = 0; i < m_data.items.size(); ++i) {
             const float y = 270.0f + static_cast<float>(i) * 36.0f;
-            const std::string label = std::to_string(m_data.items[i].price) + "G - " + m_data.items[i].item;
+            const int finalPrice = shopFinalPrice(m_data.items[i].price, priceContext);
+            const std::string label = std::to_string(finalPrice) + "G - " + m_data.items[i].item;
             context.resources.drawText(menuFont, label, { 60.0f, y }, 20.0f, WHITE, 1.0f);
         }
         const float exitY = 270.0f + static_cast<float>(m_data.items.size()) * 36.0f;

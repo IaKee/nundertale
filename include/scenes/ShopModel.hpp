@@ -39,6 +39,47 @@ enum class ShopPurchaseResult {
     InventoryFull
 };
 
+struct ShopPriceContext {
+    int fur = 0;
+    bool furryRoute = false;
+};
+
+inline constexpr int FUR_FANDOM_DISCOUNT_THRESHOLD = 60;
+inline constexpr int FUR_FANDOM_DISCOUNT_PERCENT = 10;
+inline constexpr int FURRY_WELCOME_DISCOUNT_PERCENT = 10;
+
+// SHP-008: Calculates the final shop price after applying conditional modifiers.
+// Modifiers multiply:
+// - FUR >= 60 gives the -10% fandom discount (FUR_FANDOM_DISCOUNT_PERCENT).
+// - Furry route (`route.furry`) gives the -10% welcome discount (FURRY_WELCOME_DISCOUNT_PERCENT).
+// Modifiers stack multiplicatively (e.g. 0.90 * 0.90 = 0.81).
+// Rounding rule: the discounted price rounds down (floor via integer math).
+// Non-zero base prices never round below 1G; 0G base price stays 0G.
+inline int shopFinalPrice(int basePrice, const ShopPriceContext& context) {
+    if (basePrice <= 0) {
+        return 0;
+    }
+
+    int multNum = 100;
+    int multDen = 100;
+
+    if (context.fur >= FUR_FANDOM_DISCOUNT_THRESHOLD) {
+        multNum *= (100 - FUR_FANDOM_DISCOUNT_PERCENT);
+        multDen *= 100;
+    }
+    if (context.furryRoute) {
+        multNum *= (100 - FURRY_WELCOME_DISCOUNT_PERCENT);
+        multDen *= 100;
+    }
+
+    const auto scaled = (static_cast<long long>(basePrice) * multNum) / multDen;
+    int finalPrice = static_cast<int>(scaled);
+    if (finalPrice < 1) {
+        finalPrice = 1;
+    }
+    return finalPrice;
+}
+
 inline int wrapShopIndex(int index, int delta, int count) {
     if (count <= 0) return 0;
     const int wrapped = (index + delta) % count;
@@ -47,12 +88,31 @@ inline int wrapShopIndex(int index, int delta, int count) {
 
 inline ShopPurchaseResult tryShopPurchase(const ShopItem& item, int& gold,
                                           std::vector<std::string>& inventory,
-                                          std::size_t inventoryCapacity) {
-    if (gold < item.price) return ShopPurchaseResult::NotEnoughGold;
+                                          std::size_t inventoryCapacity,
+                                          const ShopPriceContext& priceContext) {
+    const int finalPrice = shopFinalPrice(item.price, priceContext);
+    if (gold < finalPrice) return ShopPurchaseResult::NotEnoughGold;
     if (inventory.size() >= inventoryCapacity) return ShopPurchaseResult::InventoryFull;
-    gold -= item.price;
+    gold -= finalPrice;
     inventory.push_back(item.item);
     return ShopPurchaseResult::Success;
+}
+
+inline ShopPurchaseResult tryShopPurchase(const ShopItem& item, int& gold,
+                                          std::vector<std::string>& inventory,
+                                          std::size_t inventoryCapacity,
+                                          int chargedPrice) {
+    if (gold < chargedPrice) return ShopPurchaseResult::NotEnoughGold;
+    if (inventory.size() >= inventoryCapacity) return ShopPurchaseResult::InventoryFull;
+    gold -= chargedPrice;
+    inventory.push_back(item.item);
+    return ShopPurchaseResult::Success;
+}
+
+inline ShopPurchaseResult tryShopPurchase(const ShopItem& item, int& gold,
+                                          std::vector<std::string>& inventory,
+                                          std::size_t inventoryCapacity) {
+    return tryShopPurchase(item, gold, inventory, inventoryCapacity, ShopPriceContext{});
 }
 
 namespace shop_detail {

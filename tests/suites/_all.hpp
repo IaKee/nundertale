@@ -61,6 +61,232 @@
 #define NU_HAS_SUITE_ACT008 1
 #endif
 
+// Round 6 (Ruins) suites: one per synergy task, tests/suites/ruNN.hpp exposing suite_ruNN().
+#if __has_include("ru01.hpp")
+#include "ru01.hpp"
+#define NU_HAS_SUITE_RU01 1
+#endif
+
+#if __has_include("ru02.hpp")
+#include "ru02.hpp"
+#define NU_HAS_SUITE_RU02 1
+#endif
+
+#if __has_include("ru03.hpp")
+#include "ru03.hpp"
+#define NU_HAS_SUITE_RU03 1
+#endif
+
+#if __has_include("ru04.hpp")
+#include "ru04.hpp"
+#define NU_HAS_SUITE_RU04 1
+#endif
+
+#if __has_include("ru05.hpp")
+#include "ru05.hpp"
+#define NU_HAS_SUITE_RU05 1
+#endif
+
+#if __has_include("ru06.hpp")
+#include "ru06.hpp"
+#define NU_HAS_SUITE_RU06 1
+#endif
+
+#if __has_include("ru07.hpp")
+#include "ru07.hpp"
+#define NU_HAS_SUITE_RU07 1
+#endif
+
+#if __has_include("ru08.hpp")
+#include "ru08.hpp"
+#define NU_HAS_SUITE_RU08 1
+#endif
+
+#if __has_include("ru09.hpp")
+#include "ru09.hpp"
+#define NU_HAS_SUITE_RU09 1
+#endif
+
+#if __has_include("ru10.hpp")
+#include "ru10.hpp"
+#define NU_HAS_SUITE_RU10 1
+#endif
+
+#if __has_include("ru11.hpp")
+#include "ru11.hpp"
+#define NU_HAS_SUITE_RU11 1
+#endif
+
+#if __has_include("ru12.hpp")
+#include "ru12.hpp"
+#define NU_HAS_SUITE_RU12 1
+#endif
+
+#if __has_include("ru13.hpp")
+#include "ru13.hpp"
+#define NU_HAS_SUITE_RU13 1
+#endif
+
+#if __has_include("ru14.hpp")
+#include "ru14.hpp"
+#define NU_HAS_SUITE_RU14 1
+#endif
+
+#if __has_include("ru15.hpp")
+#include "ru15.hpp"
+#define NU_HAS_SUITE_RU15 1
+#endif
+
+#if __has_include("ru16.hpp")
+#include "ru16.hpp"
+#define NU_HAS_SUITE_RU16 1
+#endif
+
+#if __has_include("ru17.hpp")
+#include "ru17.hpp"
+#define NU_HAS_SUITE_RU17 1
+#endif
+
+#if __has_include("ru18.hpp")
+#include "ru18.hpp"
+#define NU_HAS_SUITE_RU18 1
+#endif
+
+#if __has_include("ru19.hpp")
+#include "ru19.hpp"
+#define NU_HAS_SUITE_RU19 1
+#endif
+
+#if __has_include("ru20.hpp")
+#include "ru20.hpp"
+#define NU_HAS_SUITE_RU20 1
+#endif
+
+#if __has_include("ru21.hpp")
+#include "ru21.hpp"
+#define NU_HAS_SUITE_RU21 1
+#endif
+
+#if __has_include("ru22.hpp")
+#include "ru22.hpp"
+#define NU_HAS_SUITE_RU22 1
+#endif
+
+#if __has_include("ru23.hpp")
+#include "ru23.hpp"
+#define NU_HAS_SUITE_RU23 1
+#endif
+
+#if __has_include("ru24.hpp")
+#include "ru24.hpp"
+#define NU_HAS_SUITE_RU24 1
+#endif
+
+#if __has_include("ru25.hpp")
+#include "ru25.hpp"
+#define NU_HAS_SUITE_RU25 1
+#endif
+
+#if __has_include("ru26.hpp")
+#include "ru26.hpp"
+#define NU_HAS_SUITE_RU26 1
+#endif
+
+#if __has_include("ru27.hpp")
+#include "ru27.hpp"
+#define NU_HAS_SUITE_RU27 1
+#endif
+
+#if __has_include("ru28.hpp")
+#include "ru28.hpp"
+#define NU_HAS_SUITE_RU28 1
+#endif
+
+#if __has_include("ru29.hpp")
+#include "ru29.hpp"
+#define NU_HAS_SUITE_RU29 1
+#endif
+
+#if __has_include("ru30.hpp")
+#include "ru30.hpp"
+#define NU_HAS_SUITE_RU30 1
+#endif
+
+#if __has_include("ru31.hpp")
+#include "ru31.hpp"
+#define NU_HAS_SUITE_RU31 1
+#endif
+
+#if __has_include("ru32.hpp")
+#include "ru32.hpp"
+#define NU_HAS_SUITE_RU32 1
+#endif
+
+#if __has_include("ru33.hpp")
+#include "ru33.hpp"
+#define NU_HAS_SUITE_RU33 1
+#endif
+
+#if __has_include("ru34.hpp")
+#include "ru34.hpp"
+#define NU_HAS_SUITE_RU34 1
+#endif
+
+#if __has_include("ru35.hpp")
+#include "ru35.hpp"
+#define NU_HAS_SUITE_RU35 1
+#endif
+
+#if __has_include("ru36.hpp")
+#include "ru36.hpp"
+#define NU_HAS_SUITE_RU36 1
+#endif
+
+#if __has_include("ru37.hpp")
+#include "ru37.hpp"
+#define NU_HAS_SUITE_RU37 1
+#endif
+
+#if __has_include("ru38.hpp")
+#include "ru38.hpp"
+#define NU_HAS_SUITE_RU38 1
+#endif
+
+#if __has_include("ru39.hpp")
+#include "ru39.hpp"
+#define NU_HAS_SUITE_RU39 1
+#endif
+
+#if __has_include("ru40.hpp")
+#include "ru40.hpp"
+#define NU_HAS_SUITE_RU40 1
+#endif
+
+#if __has_include("ru41.hpp")
+#include "ru41.hpp"
+#define NU_HAS_SUITE_RU41 1
+#endif
+
+#if __has_include("ru42.hpp")
+#include "ru42.hpp"
+#define NU_HAS_SUITE_RU42 1
+#endif
+
+#if __has_include("ru43.hpp")
+#include "ru43.hpp"
+#define NU_HAS_SUITE_RU43 1
+#endif
+
+#if __has_include("ru44.hpp")
+#include "ru44.hpp"
+#define NU_HAS_SUITE_RU44 1
+#endif
+
+#if __has_include("ru45.hpp")
+#include "ru45.hpp"
+#define NU_HAS_SUITE_RU45 1
+#endif
+
 // Runs every suite whose header exists; returns how many ran.
 inline int runExtraSuites()
 {
@@ -83,6 +309,198 @@ inline int runExtraSuites()
 #endif
 #ifdef NU_HAS_SUITE_QA014
     suite_qa014();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_END001
+    suite_end001();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_TOX007
+    suite_tox007();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_ACT008
+    suite_act008();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU01
+    suite_ru01();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU02
+    suite_ru02();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU03
+    suite_ru03();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU04
+    suite_ru04();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU05
+    suite_ru05();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU06
+    suite_ru06();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU07
+    suite_ru07();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU08
+    suite_ru08();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU09
+    suite_ru09();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU10
+    suite_ru10();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU11
+    suite_ru11();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU12
+    suite_ru12();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU13
+    suite_ru13();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU14
+    suite_ru14();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU15
+    suite_ru15();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU16
+    suite_ru16();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU17
+    suite_ru17();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU18
+    suite_ru18();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU19
+    suite_ru19();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU20
+    suite_ru20();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU21
+    suite_ru21();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU22
+    suite_ru22();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU23
+    suite_ru23();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU24
+    suite_ru24();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU25
+    suite_ru25();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU26
+    suite_ru26();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU27
+    suite_ru27();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU28
+    suite_ru28();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU29
+    suite_ru29();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU30
+    suite_ru30();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU31
+    suite_ru31();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU32
+    suite_ru32();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU33
+    suite_ru33();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU34
+    suite_ru34();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU35
+    suite_ru35();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU36
+    suite_ru36();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU37
+    suite_ru37();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU38
+    suite_ru38();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU39
+    suite_ru39();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU40
+    suite_ru40();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU41
+    suite_ru41();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU42
+    suite_ru42();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU43
+    suite_ru43();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU44
+    suite_ru44();
+    ++ran;
+#endif
+#ifdef NU_HAS_SUITE_RU45
+    suite_ru45();
     ++ran;
 #endif
     return ran;

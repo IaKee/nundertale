@@ -64,3 +64,6 @@ assets/_gen/
 
 # Local backups made before regenerating assets
 assets/**/_pre_*_backup/
+
+# Scratch output from agents (screenshots, recordings)
+tmp/

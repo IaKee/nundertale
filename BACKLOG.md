@@ -748,9 +748,10 @@ P0 · M · ACT-001, FUR-002
 - **What:** an ACT present on every furry the LORE marks (Fursuit Dummy, Froggsona, Shysona, Doge, Barky, Furiell…): **spares on the spot** and adds FUR (+10 to +15; +30 on Furiell, which ends the fight). Squeak SFX; per-enemy text. It's the love-bombing mechanic (LORE §8.4) — it never appears on gamers.
 - **Partly done (2026-10-17):** `ActDef::fur` + `spareNow`; Barky's `Accept Hug` spares on the spot with FUR +15 (stage-up feedback included) and shows his LORE line. Pending: the other LORE furries, the squeak SFX, Furiell's +30 ending.
 
-#### ACT-008 — Peaceful ends take 4–8 ACTs `[ ]`
+#### ACT-008 — Peaceful ends take 4–8 ACTs `[~]`
 P1 · M · BFL-006, ACT-001
 - **What (LORE §8.12):** mini-bosses and bosses get a data-driven **peace path**: a goal, a step counter (4–8), which ACTs count and how much, lines per step, and an optional "furrier" path (Accept Hug: FUR per hug). MERCY only works at the goal. Regular enemies keep 1–3 ACTs. On the toxic track the step count goes up (TOX-009). First users: Barky (C1-021) and Furiell (C1-022).
+- **Partly done (2026-10-27):** `include/core/PeacePath.hpp`: pure model (`PeacePathDef`, `PeacePathState`, `peaceApplyAct`, `peaceGoalMet`, `peaceMercyAllowed`). The goal is clamped to 4–8 steps, each ACT carries a step weight and a line, `Accept Hug` carries a FUR amount, MERCY is allowed only at the goal, and on the toxic track `toxicExtraSteps` raises the goal (TOX-009). Covered by `tests/suites/act008.hpp`. Pending: the per-enemy peace-path data for Barky and Furiell, wiring into `BattleSystem` (ACT menu, MERCY gating) and the FUR change from hugs.
 
 #### ACT-006 — Conditional ACTs `[x]`
 P1 · S · ACT-001
@@ -1236,10 +1237,11 @@ P0 · S · CORE-010
 - **Done:** `data/flags.md` with the `<domain>.<entity>.<property>` taxonomy.
 - **Rework:** see PRG-021.
 
-#### PRG-021 — Migrate `flags.md` to the LORE taxonomy `[ ]`
+#### PRG-021 — Migrate `flags.md` to the LORE taxonomy `[~]`
 P0 · S · PRG-020, D-11
 - **What (LORE §28, BUG-26):** add the new flags (`ruins.floofy.met`, `ruins.dummy.result`, `ruins.cell.given`, `ruins.laser.taken`, `ruins.curtain.looks`, `ruins.bowl.broken`, `ruins.napstablurk.state`, `ruins.fursuit_head.taken`, `ruins.furiell.hugged`, `snow.*`, `wet.*`, `hot.*`, `con.*`, `fur.*`, `route.furry`, `fluff.value`, `raid.*`, `ending.type`, `kills.snow/wet/hot`, `meta.last_ending`, `meta.ever_furry`); retire `route.wholesome`/`route.normie`; `kills.ruins` cap 20 → 6; redefine `meta.ever_transformed` as the number of FURRY OVERs. Update `OVW-010` and the reactive NPCs that read the old flags.
 - **Acceptance:** `data/flags.md` = LORE §28 + the flags already used by the code; no flag read in C++ is undocumented.
+- **Partly done (2026-10-27):** `data/flags.md` now has LORE §28 plus every flag the C++ and the data files use, grouped by domain (`ruins.*` data flags, `kills.<area>`, `fur.*`/`route.furry`, `snow.*`/`wet.*`/`hot.*`/`con.*`, `raid.*`, `ending.*`, `toxic.*` including `toxic.ks.*`, `enc.<roomId>.count`, `meta.*`, `item.*`). `route.wholesome`/`route.normie` are marked retired, `kills.ruins` has the cap of 6, and `meta.ever_transformed` counts WELCOME HOMEs. A scan of `src/` and `include/` for `getFlag/setFlag/incFlag/hasFlag("literal"` reports 0 undocumented. Pending, all code: retire or rename in C++ (the code still uses `kills.snowdinha/wetfall/hotland` where LORE says `kills.snow/wet/hot`, the legacy names `fur_hud_seen`, `fur_mirror_pending`, `fur_toxic_cap_*`, `raid_msgs_shown`, `ruins.dew.taken`, and `toxic.ks.*` instead of the `toxic.streaks` bitmask); `meta.last_ending` and `meta.ever_furry` have no writer yet; update `OVW-010` and the reactive NPCs.
 
 #### PRG-030 — Route tracking `[~]` (LORE rework)
 P1 · M · PRG-020, D-07
@@ -1642,9 +1644,10 @@ P2 · S · SHP-001
 P1 · S · SHP-003, QA-020
 - **What:** check in playtest that a no-kill Gamer run collects ~150–200G (enemy G from LORE §18), that it buys 1 weapon **or** 1 armor at Bunny Merch, and that the Uwu-mie Armor is out of reach without repeated FURRY OVERs.
 
-#### SHP-008 — Price modifiers `[ ]`
+#### SHP-008 — Price modifiers `[x]`
 P2 · S · SHP-001, FUR-002
 - **What:** final price = base × conditional modifiers (FUR ≥ 60 → −10%; Furry route → optional welcome discount).
+- **Done (2026-10-27):** `shopFinalPrice` (`include/scenes/ShopModel.hpp`) applies FUR ≥ 60 → −10% and the `route.furry` welcome discount of −10%; the modifiers multiply and round down, and a non-zero base price never drops below 1G. `ShopScene` shows the final price in the Buy list and charges it (`tryShopPurchase` takes a `ShopPriceContext`). Covered by `tests/suites/shp008.hpp`.
 
 ---
 
@@ -1652,9 +1655,10 @@ P2 · S · SHP-001, FUR-002
 
 > Source: LORE §22. Routing via `PRG-031`.
 
-#### END-001 — Ending router `[ ]`
+#### END-001 — Ending router `[~]`
 P1 · M · PRG-031
 - **What:** on reaching N5 (or the end of X3 on the Furry route), decide `ending.type` (1 Gamer · 2 Gamer Clean Run · 3 Toxic · 4 Furry) and run the matching sequence. Write `meta.last_ending` (MET-005).
+- **Partly done (2026-10-27):** `include/core/Endings.hpp`: `EndingType`, `decideEnding` (Furry via `route.furry` → Toxic while `toxic.track == 1` with kills → Clean Run at zero kills → Gamer), `recordEnding` / `recordedEnding` for the `ending.type` flag. Covered by `tests/suites/end001.hpp`. Pending: trigger it at N5 / the end of X3, run the matching sequence, and write `meta.last_ending` in `SaveService` (MET-005). The router does not re-check the per-area caps and boss kills of the Toxic route (PRG-031).
 
 #### END-002 — Gamer ending `[ ]`
 P1 · L · C5-021, C5-022, CORE-011
@@ -1672,9 +1676,10 @@ P1 · M · END-002
 P1 · M · END-002, ART-160
 - **What:** the basement bedroom, monitor glow, bottles; he plays the raid or got kicked (RAD-004); his mom knocks: `dinner`; he opens the gallery, scrolls to a photo from the Underground and closes it fast: `* (...Whatever.)`
 
-#### END-006 — Raid clock lines per ending `[ ]`
+#### END-006 — Raid clock lines per ending `[~]`
 P1 · S · RAD-004
 - **What (LORE §22.4):** Gamer (plays silently / kicked `* (Whatever.)`) · Clean Run (brings Barky / kicked, and Barky starts the two-member "Shadow Fang Pack" guild) · Toxic (top DPS) · Furry (the raid came to him) · **speedrun** (D-12 threshold, any ending): `* Your guild asks how you got back so fast.` `* (Skill issue.)`.
+- **Partly done (2026-10-27):** `squadClockEndingLines` (`include/core/Endings.hpp`) returns the squad clock lines per ending, kicked or not, and appends the speedrun lines once and only when the player was not kicked (speedrun = more than 10:00 left on the `RaidClock`). Covered by `tests/suites/end001.hpp`. Pending: show the lines in the post-ending scene (END-002..END-008) and the D-12 speedrun threshold review.
 
 #### END-007 — Toxic ending `[ ]`
 P2 · M · C7-005
@@ -1704,13 +1709,15 @@ P2 · M · SAV-005
 - **What:** session flags `session.reloaded_after_furry_over` and `session.reloaded_after_kill` (a kill happened since the last save and the player loaded). The basis for Floofy's lines.
 - **Done (2026-10-17):** `SessionMeta` on the context (never saved): kills since the last save, and on every load `reloadedAfterKill` / `reloadedAfterFurryOver` (FURRY OVER continue = true, title Continue = false). Dialogue reads `context.session` (Floofy's MET-002 lines, when Floofy exists).
 
-#### MET-002 — Reload lines `[ ]`
+#### MET-002 — Reload lines `[~]`
 P2 · S · MET-001, NAR-012
 - **What:** Floofy (if in the Ruins) after reloading post-FURRY OVER: `Did you just reload? I saw that. No shame, though. I'd do it too.` · kill and reload: `You killed them and loaded your save. Deleting the evidence? Gamer behavior.`
+- **Partly done (2026-10-27):** `reloadLines` (`include/core/MetaLines.hpp`) returns Floofy's reload line from the session meta (post-FURRY OVER reload or kill-and-reload; the WELCOME HOME line takes precedence). Covered by `tests/suites/met003.hpp`. Pending: call it from the Ruins scene when Floofy is present.
 
-#### MET-003 — Reset lines by last ending `[ ]`
+#### MET-003 — Reset lines by last ending `[~]`
 P2 · S · SAV-005
 - **What:** any ending → Senpai Sans in S1 `heh. you look like you've seen this episode before.` · after Toxic → Floofy in R2 `You again? You know what you did. I have screenshots. I have NO shame about showing them.` · after Furry → Furiell in R3 `...Have we met? You smell familiar.` · `meta.resets ≥ 3` → Sans at Grillby's `you ever feel stuck in a loop? like a gacha banner that never ends?`
+- **Partly done (2026-10-27):** `resetLines(speaker, lastEnding, resets)` (`include/core/MetaLines.hpp`) returns the line for Senpai Sans, Floofy, Furiell and Sans at Grillby's by last ending (`ending.type` values) and `meta.resets`. Covered by `tests/suites/met003.hpp`. Pending: persist `meta.last_ending` (MET-005) and hook the lines into S1, R2, R3 and Grillby's.
 
 #### MET-004 — Same name as the previous game `[x]`
 P3 · S · FRT-007
@@ -1750,10 +1757,11 @@ P2 · M · TXT-010, QA-012
 - **Language (D-03):** the same lint flags text that isn't English — accented characters (`ã`, `ç`, `é`…) and a short list of common Portuguese words — and player-visible strings hardcoded in C++.
 - **Partly done (2026-10-17):** `lint.bat` builds `tools/content_lint.exe` and scans `data/**/*.json` and `assets/lang/*.json` for accented letters (U+00C0–U+024F), a short Portuguese word list and an optional private `tools/content_lint_blocklist.txt` (gitignored; format in the `.example.txt`). Exit 1 on findings. The first run found only `Piñata` (fixed to `Pinata`). Pending: player-visible strings hardcoded in C++ (most text is still in code, TXT-010) and wiring it into a validation build (QA-012).
 
-#### LOR-006 — Real brand register `[ ]`
+#### LOR-006 — Real brand register `[x]`
 P3 · S · D-14
 - **LORE v3:** D-14 is closed (brands stay in the public build), so the "release alternative" column is dropped; the register now also lists brands drawn into art (ART-181) and other games referenced (D-18).
 - **What:** `docs/brands.md` with every real brand used (Mountain Dew, Doritos, Discord, Minecraft…), where it shows up and the release alternative.
+- **Done (2026-10-27):** `docs/brands.md` registers the real brands and other games referenced in text, art, sound and planned content, with where each shows up and the LORE/backlog references. Per D-14 it is a tracking register, so the release-alternative column is dropped.
 
 #### LOR-007 — "Closed object" rules `[ ]`
 P1 · S · OVW-011
@@ -2453,9 +2461,10 @@ P2 · M · TOX-001
 - **What:** a 1:1 CS 1.6 kill notice: top-right, no background box, small text, newest line at the bottom, up to 4 lines, each fading after ~5 s; attacker in red, the equipped weapon as a small yellow-orange icon, a headshot icon on crits, victim in blue. **Ex-gamers show their old gamertag** (`xX_BarkSc0p3_Xx`, `BrbJerry`…). Shown in battle and over the overworld right after a kill.
 - **Acceptance:** layout and timing checked against a CS 1.6 recording.
 
-#### TOX-007 — MW2 killstreaks `[ ]`
+#### TOX-007 — MW2 killstreaks `[~]`
 P2 · L · TOX-001, BFL-001, ITM-008
 - **What:** **Care Package** at 4 kills (a crate drops in the next room with a random food from the LORE §20.1 pool) · **Predator Missile** at 5 (a battle option, once per battle: heavy damage to one target, capped so it never one-shots; kept until used) · **Tactical Nuke** at 25 (TOX-010). A `KILLS n` counter and a killstreak icon column at the right end of the HUD line (the nuke shows locked with `25`). MW2-style voice lines (AUD-014).
+- **Partly done (2026-10-27):** `include/core/Killstreaks.hpp`: cumulative thresholds (Care Package 4, Predator Missile 5, Tactical Nuke 25), `killstreaksOnKill` awards each once through the `toxic.ks.*` flags, `carePackageFood`, `usePredator` (once, kept until used), `predatorDamage` (75% of max HP, never lethal) and `killstreakColumn` for the HUD icons (nuke locked until 25). Covered by `tests/suites/tox007.hpp`. Pending: the HUD `KILLS n` counter and icon column, the crate drop in the next room, the Predator battle option, the nuke itself (TOX-010) and the voice lines (AUD-014).
 
 #### TOX-008 — The corruption ladder `[ ]`
 P2 · M · TOX-001, BUI-002, BUI-006
