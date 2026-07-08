@@ -1,10 +1,35 @@
 {
   "steps": [
     {
-      "type": "playerAnim",
-      "path": "assets/sprites/ow/pepe_wakeup.png",
-      "key": "lying",
-      "seconds": 1.2
+      "type": "wait",
+      "seconds": 0.8
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/phone_buzz.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "shake",
+      "intensity": 3.0,
+      "seconds": 0.35
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r1.squad_msg",
+      "value": 1
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* Your phone buzzes.",
+        "* \"SQUAD QUEUES IN 30:00. get on or we queue without u. and bring the dew -xX_Moderator_Xx\""
+      ]
     },
     {
       "type": "playerAnim",
@@ -24,20 +49,6 @@
       "lines": [
         "* (Ugh... where's my wireless mouse? And why does it smell like body spray and wet dog?)"
       ]
-    },
-    {
-      "type": "sound",
-      "path": "assets/sfx/phone_buzz.ogg",
-      "volume": 0.8
-    },
-    {
-      "type": "shake",
-      "intensity": 3.0,
-      "seconds": 0.35
-    },
-    {
-      "type": "wait",
-      "seconds": 0.2
     }
   ]
 }

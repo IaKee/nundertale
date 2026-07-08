@@ -117,6 +117,17 @@ static std::string spriteJsonPath(const std::string& imagePath) {
     return path.generic_string();
 }
 
+// BUG-40: the spawn's pose (e.g. Grub lying on the plush pile in R1) is set with the position, before the
+// first update and draw, so no standing frame is ever drawn ahead of a cutscene.
+static void applySpawnPose(Player& player, const TiledObject* spawn, const GameContext& context) {
+    if (spawn == nullptr) return;
+    const SpawnPose pose = spawnPoseOf(*spawn);
+    const int untilValue = pose.untilFlag.empty() ? 0 : context.state.getFlag(pose.untilFlag, 0);
+    if (spawnPoseApplies(pose, untilValue)) {
+        player.setOverrideAnimation(pose.sheet, pose.anim, 0.0f);
+    }
+}
+
 void OverworldScene::initRoomObjects(GameContext& context) {
     m_roomObjects.clear();
     m_savePoint.reset();
@@ -356,6 +367,7 @@ void OverworldScene::swapDoorRoom(GameContext& context) {
             ? tiledStringProperty(spawn->properties, "facing", "down")
             : m_targetFacing;
         m_player.setDirection(roomDirection(facing));
+        applySpawnPose(m_player, spawn, context);
     }
     m_lastHazardSafePosition = m_player.getPosition();
     context.state.playerPos = m_player.getPosition();
@@ -452,8 +464,12 @@ void OverworldScene::onEnter(GameContext& context) {
     const float raidStartSeconds = getRaidStartSeconds();
 
     loadRoomMap(context.state.currentRoom);
-    raidStart(context.state.raid, raidStartSeconds);
-    if (s_prevRaidTimeLeft < 0.0f) {
+    // RAD-003: in R1 the clock starts at the squad message of r1_wake (see update()), not on entering.
+    if (raidShouldStartOnEnter(context.state.raid, context.state.currentRoom,
+                               context.state.getFlag(std::string(RAID_FLAG_SQUAD_MSG), 0))) {
+        raidStart(context.state.raid, raidStartSeconds);
+    }
+    if (s_prevRaidTimeLeft < 0.0f && context.state.raid.started) {
         s_prevRaidTimeLeft = context.state.raid.timeLeft;
     }
     context.raidPaused = false;
@@ -465,6 +481,7 @@ void OverworldScene::onEnter(GameContext& context) {
     if (!context.launchSpawn.empty() && spawn != nullptr) {
         m_player.setPosition({ spawn->x, spawn->y });
         m_player.setDirection(roomDirection(tiledStringProperty(spawn->properties, "facing", "down")));
+        applySpawnPose(m_player, spawn, context);
         context.launchSpawn.clear();
     } else if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
         m_player.setPosition(context.state.playerPos);
@@ -472,6 +489,7 @@ void OverworldScene::onEnter(GameContext& context) {
         if (spawn != nullptr) {
             m_player.setPosition({ spawn->x, spawn->y });
             m_player.setDirection(roomDirection(tiledStringProperty(spawn->properties, "facing", "down")));
+            applySpawnPose(m_player, spawn, context);
         } else {
             m_player.setPosition({ 300.0f, 320.0f });
         }
@@ -967,6 +985,16 @@ void OverworldScene::update(float dt, GameContext& context) {
     m_roomAnimationTime += dt;
     m_player.updateOverrideAnimation(dt);
     refreshDynamicObstacles(context);
+
+    // RAD-003 / BUG-40: r1_wake sets the squad message flag at the buzz; that is when the clock starts.
+    {
+        int shownMask = context.state.getFlag("raid_msgs_shown", 0);
+        if (raidStartFromSquadMessage(context.state.raid, context.state.getFlag(std::string(RAID_FLAG_SQUAD_MSG), 0),
+                                      getRaidStartSeconds(), shownMask)) {
+            context.state.setFlag("raid_msgs_shown", shownMask);
+            s_prevRaidTimeLeft = context.state.raid.timeLeft;
+        }
+    }
 
     // Ambient fluff particles (FUR-010)
     int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);

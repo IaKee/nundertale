@@ -1,0 +1,20 @@
+# BUG-40 / RAD-003: new game in R1. Grub lies from frame 0, the buzz + squad message come while lying,
+# then the get-up and the thought line. Confirm taps advance the two dialogs; no movement keys.
+# Run: nundertale_modern.exe --room ruins_fall --flag raid_msgs_shown=0 --record tmp/r1_wake --input tools/record/r1_wake/r1_wake.input --seconds 16
+# (--flag raid_msgs_shown=0 undoes the debug launch's 0xF so the squad queue behaves like a new game.) 30 ticks = 1 s.
+60 confirm
+80 confirm
+100 confirm
+120 confirm
+140 confirm
+160 confirm
+180 confirm
+200 confirm
+220 confirm
+240 confirm
+260 confirm
+280 confirm
+300 confirm
+320 confirm
+340 confirm
+360 confirm

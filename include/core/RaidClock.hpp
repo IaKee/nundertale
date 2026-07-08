@@ -24,6 +24,27 @@ inline void raidStart(RaidClock& clock, float startSeconds) {
     clock.timeLeft = (startSeconds > 0.0f) ? startSeconds : 0.0f;
 }
 
+// RAD-003 / BUG-40: in R1 the clock starts at the squad message of the wake-up cutscene (r1_wake sets this
+// flag at the buzz), not when the room loads. Message 0 is the one shown by that cutscene, so it is marked
+// as shown here and the threshold queue never repeats it.
+inline constexpr std::string_view RAID_FLAG_SQUAD_MSG = "ruins.r1.squad_msg";
+inline constexpr std::string_view RAID_FIRST_ROOM = "ruins_fall";
+
+// True when the overworld should start the clock on entering `roomId` (old saves and --room launches into
+// later rooms keep the previous behaviour). In the first room only the squad message flag starts it.
+inline bool raidShouldStartOnEnter(const RaidClock& clock, std::string_view roomId, int squadMsgFlag) {
+    if (clock.started) return false;
+    return squadMsgFlag != 0 || roomId != RAID_FIRST_ROOM;
+}
+
+// Starts the clock from the squad message flag. Returns true on the frame it starts.
+inline bool raidStartFromSquadMessage(RaidClock& clock, int squadMsgFlag, float startSeconds, int& shownMask) {
+    if (clock.started || squadMsgFlag == 0) return false;
+    raidStart(clock, startSeconds);
+    shownMask |= (1 << 0);
+    return true;
+}
+
 inline void raidTick(RaidClock& clock, float dt, bool paused) {
     if (!clock.started || paused || dt <= 0.0f) return;
     clock.timeLeft -= dt;

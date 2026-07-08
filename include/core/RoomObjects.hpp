@@ -255,6 +255,28 @@ inline std::string tiledStringProperty(const std::vector<TiledProperty>& propert
     return value == nullptr ? fallback : *value;
 }
 
+// BUG-40: a spawn can put the player in a pose from the first frame. Properties: `pose` = animation key in
+// the sheet (e.g. "lying"), `poseSheet` = the sheet image, `poseUntil` = a flag that, once set, means the
+// pose was already played and must not come back. It is applied on the spawn, before the first update/draw.
+struct SpawnPose {
+    std::string anim;
+    std::string sheet;
+    std::string untilFlag;
+};
+
+inline SpawnPose spawnPoseOf(const TiledObject& spawn) {
+    SpawnPose pose;
+    pose.anim = tiledStringProperty(spawn.properties, "pose");
+    pose.sheet = tiledStringProperty(spawn.properties, "poseSheet");
+    pose.untilFlag = tiledStringProperty(spawn.properties, "poseUntil");
+    return pose;
+}
+
+inline bool spawnPoseApplies(const SpawnPose& pose, int untilFlagValue) {
+    if (pose.anim.empty() || pose.sheet.empty()) return false;
+    return pose.untilFlag.empty() || untilFlagValue == 0;
+}
+
 inline bool tiledBoolProperty(const std::vector<TiledProperty>& properties,
                               const std::string& name,
                               bool fallback = false) {

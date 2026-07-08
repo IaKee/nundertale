@@ -296,6 +296,21 @@
               "name": "facing",
               "type": "string",
               "value": "up"
+            },
+            {
+              "name": "pose",
+              "type": "string",
+              "value": "lying"
+            },
+            {
+              "name": "poseSheet",
+              "type": "string",
+              "value": "assets/sprites/ow/pepe_wakeup.png"
+            },
+            {
+              "name": "poseUntil",
+              "type": "string",
+              "value": "ruins.r1.woke"
             }
           ]
         },

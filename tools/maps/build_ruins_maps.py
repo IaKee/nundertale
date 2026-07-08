@@ -379,7 +379,13 @@ def build_ruins_fall():
             "point": True,
             "x": 300,
             "y": 240,
-            "properties": {"facing": "up"},
+            # BUG-40: Grub is lying from the first frame (pose = anim key in the sheet), until r1_wake plays.
+            "properties": {
+                "facing": "up",
+                "pose": "lying",
+                "poseSheet": "assets/sprites/ow/pepe_wakeup.png",
+                "poseUntil": "ruins.r1.woke",
+            },
         },
         # Spawn when coming back from Floofy
         {
