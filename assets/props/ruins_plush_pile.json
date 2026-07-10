@@ -1,0 +1,49 @@
+{
+  "image": "ruins_plush_pile.png",
+  "cell": [
+    40,
+    20
+  ],
+  "origin": [
+    20,
+    19
+  ],
+  "anims": {
+    "floofy": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    },
+    "pile": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    },
+    "knocked_out": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    },
+    "dent": {
+      "row": 1,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    },
+    "empty": {
+      "row": 1,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    },
+    "bed": {
+      "row": 1,
+      "frames": 1,
+      "fps": 1.0,
+      "loop": false
+    }
+  }
+}
