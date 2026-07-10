@@ -35,6 +35,38 @@
       "frames": 3,
       "fps": 8,
       "loop": false
+    },
+    "knocked_out": {
+      "row": 5,
+      "frames": 2,
+      "fps": 1
+    },
+    "vanity_back": {
+      "row": 6,
+      "frames": 2,
+      "fps": 2
+    },
+    "turn": {
+      "row": 7,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "soaked": {
+      "row": 8,
+      "frames": 2,
+      "fps": 3
+    },
+    "dive": {
+      "row": 9,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "sinister_grin": {
+      "row": 10,
+      "frames": 2,
+      "fps": 3
     }
   }
 }
