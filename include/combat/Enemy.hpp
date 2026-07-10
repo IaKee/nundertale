@@ -10,6 +10,7 @@
 #include <raylib.h>
 #include "ActGate.hpp"
 #include "EnemyPatterns.hpp"
+#include "FloofyScript.hpp"
 #include "GladosPatterns.hpp"
 #include "core/PeacePath.hpp"
 
@@ -139,9 +140,15 @@ public:
     int getSurviveTurns() const { return m_surviveTurns; }
     const std::string& getSurvivalEndText() const { return m_survivalEndText; }
     const std::vector<GladosPhaseDef>& getSurvivalPhases() const { return m_survivalPhases; }
-    int getScriptedEndAfterTurns() const { return m_scriptedEndAfterTurns; }
+    const ScriptedBattleEnd& getScriptedEnd() const { return m_scriptedEnd; }
+    int getScriptedEndAfterTurns() const { return m_scriptedEnd.afterEnemyTurns; }
+    const std::string& getTurnOffsetFlag() const { return m_turnOffsetFlag; }
     const std::string& getScriptedEndText() const { return m_scriptedEndText; }
     const std::string& getInvulnerableHitText() const { return m_invulnerableHitText; }
+    const std::vector<std::string>& getInvulnerableTexts() const { return m_invulnerableTexts; }
+    const std::string& getInvulnerableBubble() const { return m_invulnerableBubble; }
+    const std::string& getFleeBlockedText() const { return m_fleeBlockedText; }
+    int getFurCap() const { return m_furCap; }
     bool suppressesFurMirror() const { return m_suppressFurMirror; }
     const std::string& getPatternSpeech(const std::string& patternId) const {
         static const std::string empty;
@@ -229,9 +236,14 @@ private:
     int m_surviveTurns = 0;
     std::string m_survivalEndText;
     std::vector<GladosPhaseDef> m_survivalPhases;
-    int m_scriptedEndAfterTurns = 0;
+    ScriptedBattleEnd m_scriptedEnd;
+    std::string m_turnOffsetFlag;
     std::string m_scriptedEndText;
     std::string m_invulnerableHitText;
+    std::vector<std::string> m_invulnerableTexts;
+    std::string m_invulnerableBubble;
+    std::string m_fleeBlockedText;
+    int m_furCap = -1;
     bool m_suppressFurMirror = false;
 
     std::vector<ActDef> m_acts;

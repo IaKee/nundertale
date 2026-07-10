@@ -86,7 +86,9 @@ class BattleSystem {
 public:
     explicit BattleSystem(std::unique_ptr<Enemy> enemy,
                           std::string introText = {},
-                          bool canFlee = false);
+                          bool canFlee = false,
+                          std::string fleeBlockedText = {},
+                          int furCap = -1);
 
     void update(float dt, GameContext& context);
     void render(GameContext& context);
@@ -122,6 +124,8 @@ private:
     void spawnGenericBulletWave(const EnemyPatternDef& pattern);
     const EnemyPatternDef* selectedPattern() const;
     bool finishSurvivalIfComplete(GameContext& context);
+    bool finishScriptedBattleIfComplete(GameContext& context, bool atTurnStart);
+    int effectiveScriptedEndTurn(const GameContext& context) const;
     bool applySoulDamage(GameContext& context, int rawDamage, int fur);
 
     void drawBackgroundGrid() const;
@@ -146,6 +150,8 @@ private:
     bool m_enemyFledPending = false;
     bool m_isBarky = true;
     bool m_canFlee = false;
+    std::string m_fleeBlockedText;
+    int m_furCap = -1;
     int m_turnCount = 0;
 
     // Heart inside dodge box
@@ -181,6 +187,7 @@ private:
     // Messages
     std::string m_narratorText;
     std::string m_enemySpeechBubble;
+    bool m_invulnerableDialogBubble = false;
     bool m_dialogReturnsToMenu = false;
     bool m_furStageUpPending = false;
 

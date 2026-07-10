@@ -69,9 +69,16 @@ BattleScene::BattleScene(std::string encounterId)
     bool canFlee = false;
     if (const auto* value = root.field("canFlee"); value != nullptr &&
         value->kind == tiled_detail::JsonValue::Kind::Boolean) canFlee = value->boolean;
+    std::string fleeBlockedText;
+    if (const auto* value = root.field("fleeBlockedText"); value != nullptr &&
+        value->kind == tiled_detail::JsonValue::Kind::String) fleeBlockedText = value->string;
+    int furCap = -1;
+    if (const auto* value = root.field("furCap"); value != nullptr &&
+        value->kind == tiled_detail::JsonValue::Kind::Number) furCap = static_cast<int>(value->number);
 
     auto enemy = Enemy::loadFromJson("data/enemies/" + enemyId + ".json");
-    m_battleSystem = std::make_unique<BattleSystem>(std::move(enemy), introText, canFlee);
+    m_battleSystem = std::make_unique<BattleSystem>(
+        std::move(enemy), introText, canFlee, std::move(fleeBlockedText), furCap);
     if (!m_backgroundId.empty()) m_battleSystem->setBackground(backgroundFromId(m_backgroundId));
     m_valid = true;
 }

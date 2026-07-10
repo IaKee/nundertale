@@ -478,9 +478,19 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     enemy->m_countsAsKill = boolValue(root, "countsAsKill", true);
     enemy->m_surviveTurns = intValue(root, "surviveTurns", 0);
     enemy->m_survivalEndText = stringValue(root, "survivalEndText");
-    enemy->m_scriptedEndAfterTurns = intValue(root, "scriptedEndAfterTurns", 0);
+    enemy->m_scriptedEnd.afterEnemyTurns = intValue(root, "scriptedEndAfterTurns", 0);
+    if (const JsonValue* scriptedEnd = objectField(root, "scriptedEnd", JsonValue::Kind::Object)) {
+        enemy->m_scriptedEnd.afterEnemyTurns = intValue(*scriptedEnd, "afterEnemyTurns", 0);
+        enemy->m_scriptedEnd.interruptOnTurnStart = boolValue(*scriptedEnd, "interruptOnTurnStart", false);
+        enemy->m_scriptedEnd.endCutscene = stringValue(*scriptedEnd, "endCutscene");
+    }
+    enemy->m_turnOffsetFlag = stringValue(root, "turnOffsetFlag");
     enemy->m_scriptedEndText = stringValue(root, "scriptedEndText");
     enemy->m_invulnerableHitText = stringValue(root, "invulnerableHitText");
+    enemy->m_invulnerableTexts = stringArray(root, "invulnerableTexts");
+    enemy->m_invulnerableBubble = stringValue(root, "invulnerableBubble");
+    enemy->m_fleeBlockedText = stringValue(root, "fleeBlockedText");
+    enemy->m_furCap = intValue(root, "furCap", -1);
     enemy->m_suppressFurMirror = boolValue(root, "suppressFurMirror", false);
 
     const std::string check = stringValue(root, "check");

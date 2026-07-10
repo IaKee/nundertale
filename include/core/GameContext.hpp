@@ -56,6 +56,7 @@ struct GameState {
     FurryState furry;
     RaidClock raid;
     std::unordered_map<std::string, int> flags;
+    std::string pendingCutscene;
     std::string currentRoom = "ruins_fall";
     Vector2 playerPos = { 0.0f, 0.0f };
     int playerFacing = 0; // 0: Down, 1: Up, 2: Left, 3: Right

@@ -17,15 +17,38 @@ namespace nundertale {
 
 namespace {
 int g_lastYiffNarration = -1;
+
+FurChange applyBattleFur(GameContext& context,
+                         int requestedDelta,
+                         bool toxicRoute,
+                         int furCap,
+                         float multiplier = 1.0f) {
+    const int delta = battleFurDelta(context.state.furry.value,
+                                     requestedDelta,
+                                     furCap,
+                                     multiplier);
+    return applyFurCapped(context.state.furry.value,
+                          context.state.furry.stageMax,
+                          delta,
+                          toxicRoute);
+}
 }
 
-BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy, std::string introText, bool canFlee)
+BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy,
+                           std::string introText,
+                           bool canFlee,
+                           std::string fleeBlockedText,
+                           int furCap)
     : m_enemy(std::move(enemy)) {
     if (m_enemy) {
         m_isBarky = m_enemy->getId() == "barky";
         m_exGamer = readExGamer(m_enemy->getId());
         // Barky's pre-existing battle allowed Flee despite its encounter data saying false.
         m_canFlee = canFlee || m_isBarky;
+        m_fleeBlockedText = fleeBlockedText.empty()
+            ? m_enemy->getFleeBlockedText()
+            : std::move(fleeBlockedText);
+        m_furCap = furCap >= 0 ? furCap : m_enemy->getFurCap();
         m_narratorText = introText.empty()
             ? "* " + m_enemy->getName() + " blocked your path!"
             : std::move(introText);
@@ -354,9 +377,14 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 if (blocked) {
                     m_lastPlayerAction = PlayerTurnAction::FightHit;
                     context.audio.playSound("assets/sfx/slash.ogg", 0.8f);
-                    m_narratorText = m_enemy->getInvulnerableHitText().empty()
-                        ? "* Your attack had no effect."
-                        : m_enemy->getInvulnerableHitText();
+                    const std::string invulnerableText = joinBattleText(m_enemy->getInvulnerableTexts());
+                    m_narratorText = !invulnerableText.empty()
+                        ? invulnerableText
+                        : (m_enemy->getInvulnerableHitText().empty()
+                            ? "* Your attack had no effect."
+                            : m_enemy->getInvulnerableHitText());
+                    m_enemySpeechBubble = m_enemy->getInvulnerableBubble();
+                    m_invulnerableDialogBubble = !m_enemySpeechBubble.empty();
                 } else if (dist <= ATTACK_CRIT_RADIUS) {
                     m_lastPlayerAction = PlayerTurnAction::FightCrit;
                     context.audio.playSound("assets/sfx/hitmarker.ogg", 0.9f);
@@ -490,8 +518,7 @@ void BattleSystem::handleActInput(GameContext& context) {
             if (applies && furAmount != 0) {
                 // ACT-005: Accept Hug adds FUR (FUR-002/FUR-005 feedback)
                 const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
-                const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax,
-                                                           furAmount, isToxic);
+                const FurChange furChange = applyBattleFur(context, furAmount, isToxic, m_furCap);
                 if (furChange.stageUp) {
                     const Color fluffPink{ 255, 170, 220, 255 };
                     spawnDust(m_soulPosition, 18, fluffPink);
@@ -629,7 +656,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
                 const std::string flag = "fur_on_equip." + itemDef->id;
                 if (!context.state.hasFlag(flag)) {
                     const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
-                    const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax, itemDef->furry, isToxic);
+                    const FurChange furChange = applyBattleFur(context, itemDef->furry, isToxic, m_furCap);
                     context.state.setFlag(flag, 1);
                     gainedFurStage = furChange.stageUp;
                     if (furChange.reachedMirror) {
@@ -678,14 +705,17 @@ void BattleSystem::handleItemInput(GameContext& context) {
 }
 
 void BattleSystem::handleMercyInput(GameContext& context) {
-    if (m_canFlee && (context.input.isUpPressed() || context.input.isDownPressed())) {
-        m_subOptionIndex = 1 - m_subOptionIndex;
+    const std::vector<MercyOption> options = battleMercyOptions(
+        m_enemy->canBeSpared(), m_canFlee, !m_fleeBlockedText.empty());
+    if (options.size() > 1U && (context.input.isUpPressed() || context.input.isDownPressed())) {
+        m_subOptionIndex = (m_subOptionIndex + 1) % static_cast<int>(options.size());
         context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
     }
 
-    if (context.input.isConfirmPressed()) {
+    if (context.input.isConfirmPressed() && !options.empty()) {
         context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
-        if (m_subOptionIndex == 0) { // Spare
+        const MercyOption option = options[static_cast<std::size_t>(m_subOptionIndex)];
+        if (option == MercyOption::Spare) {
             const std::vector<std::string>& spareLines = m_enemy->getSpareLines();
             if (!m_enemy->hasPeacePath() && !m_enemy->isSpareable() && !spareLines.empty()) {
                 // C1-022: each Spare shows her next line; after the last one she can be spared
@@ -720,6 +750,10 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
             }
             m_state = BattleState::DialogMessage;
+        } else if (!m_fleeBlockedText.empty()) {
+            m_narratorText = m_fleeBlockedText;
+            m_enemySpeechBubble.clear();
+            m_state = BattleState::DialogMessage;
         } else if (m_canFlee) { // Flee (MRC-002)
             float fleeChance = 0.5f + 0.1f * static_cast<float>(m_turnCount);
             bool success = (GetRandomValue(1, 100) <= static_cast<int>(fleeChance * 100.0f));
@@ -745,6 +779,8 @@ void BattleSystem::handleMercyInput(GameContext& context) {
 void BattleSystem::startEnemyTurn(GameContext& context) {
     m_turnCount++;
 
+    if (finishScriptedBattleIfComplete(context, true)) return;
+
     if (m_frozenTurns > 0 || m_beatStopped) {
         if (m_frozenTurns > 0) m_frozenTurns--;
         m_bullets.clear();
@@ -754,6 +790,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
             m_soulSpeedBuffTurns--;
         }
         if (finishSurvivalIfComplete(context)) return;
+        if (finishScriptedBattleIfComplete(context, false)) return;
         m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
         m_enemySpeechBubble = "";
         m_lastPlayerAction = PlayerTurnAction::None;
@@ -780,6 +817,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     } else {
         const auto& patterns = m_enemy->getPatterns();
         if (patterns.empty()) {
+            if (finishScriptedBattleIfComplete(context, false)) return;
             m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
             m_enemySpeechBubble.clear();
             m_lastPlayerAction = PlayerTurnAction::None;
@@ -837,6 +875,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     }
 
     // Reset action state for the turn
+    m_invulnerableDialogBubble = false;
     m_lastPlayerAction = PlayerTurnAction::None;
     m_lastActResponse = "";
 }
@@ -856,6 +895,40 @@ bool BattleSystem::finishSurvivalIfComplete(GameContext& context) {
     context.state.incFlag("battle." + m_enemy->getId() + ".survived");
     m_state = BattleState::Victory;
     m_residual.clear();
+    return true;
+}
+
+int BattleSystem::effectiveScriptedEndTurn(const GameContext& context) const {
+    if (!m_enemy) return 0;
+    const ScriptedBattleEnd& scriptedEnd = m_enemy->getScriptedEnd();
+    const int turnOffset = m_enemy->getTurnOffsetFlag().empty()
+        ? 0
+        : context.state.getFlag(m_enemy->getTurnOffsetFlag(), 0);
+    return nundertale::effectiveScriptedEndTurn(scriptedEnd.afterEnemyTurns, turnOffset);
+}
+
+bool BattleSystem::finishScriptedBattleIfComplete(GameContext& context, bool atTurnStart) {
+    if (!m_enemy) return false;
+    const ScriptedBattleEnd& scriptedEnd = m_enemy->getScriptedEnd();
+    const int endTurn = effectiveScriptedEndTurn(context);
+    const bool complete = atTurnStart
+        ? scriptedBattleEndsOnTurnStart(m_turnCount, endTurn, scriptedEnd.interruptOnTurnStart)
+        : scriptedBattleEndsAfterTurn(m_turnCount, endTurn, scriptedEnd.interruptOnTurnStart);
+    if (!complete) return false;
+
+    m_narratorText = m_enemy->getScriptedEndText().empty()
+        ? "* The scripted attack ended."
+        : m_enemy->getScriptedEndText();
+    m_enemySpeechBubble.clear();
+    m_invulnerableDialogBubble = false;
+    m_residual.clear();
+    if (!scriptedEnd.endCutscene.empty()) {
+        context.state.pendingCutscene = scriptedEnd.endCutscene;
+        m_state = BattleState::Fled;
+    } else {
+        // Legacy round-6 data ended on the battle victory screen.
+        m_state = BattleState::Victory;
+    }
     return true;
 }
 
@@ -947,12 +1020,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
         armorMult = armorDef->furMult;
     }
     const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
-    const FurChange furChange = applyFurCapped(
-        context.state.furry.value,
-        context.state.furry.stageMax,
-        fur,
-        isToxic,
-        armorMult);
+    const FurChange furChange = applyBattleFur(context, fur, isToxic, m_furCap, armorMult);
     context.audio.playSound("assets/sfx/hurt.ogg", 0.6f);
     context.shake(6.0f, 0.25f);
     context.flash({ 255, 0, 0, 255 }, 0.15f);
@@ -1010,13 +1078,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
             return;
         }
 
-        if (scriptedBattleEndsAfterTurn(m_turnCount, m_enemy->getScriptedEndAfterTurns())) {
-            m_narratorText = m_enemy->getScriptedEndText().empty()
-                ? "* The scripted attack ended."
-                : m_enemy->getScriptedEndText();
-            m_enemySpeechBubble.clear();
-            m_state = BattleState::Victory;
-            m_residual.clear();
+        if (finishScriptedBattleIfComplete(context, false)) {
             return;
         }
 
@@ -2208,7 +2270,8 @@ void BattleSystem::render(GameContext& context) {
     // The bubble also shows on the spare dialog (Barky's spare / Accept Hug lines, LORE §19.1)
     const bool showBubble = m_state == BattleState::EnemyTurn ||
         (m_state == BattleState::DialogMessage &&
-         (m_isSpared || (m_enemy->isDead() && !m_enemy->getDeathLines().empty())));
+         (m_invulnerableDialogBubble || m_isSpared ||
+          (m_enemy->isDead() && !m_enemy->getDeathLines().empty())));
     if (showBubble && !m_enemySpeechBubble.empty()) {
         float textW = context.resources.measureTextWidth(fontSmall, m_enemySpeechBubble, 16, 1.0f);
         float bubbleW = std::clamp(textW + 24.0f, 100.0f, 240.0f);
@@ -2340,19 +2403,20 @@ void BattleSystem::render(GameContext& context) {
             }
         }
     } else if (m_state == BattleState::MercySelect) {
-        // Mercy menu (BUI-009: Spare in yellow if spareable!)
-        Color spareColor = m_enemy->isSpareable() ? UI_YELLOW : WHITE;
-
-        float spareY = m_arenaRect.y + 25;
-        float fleeY = m_arenaRect.y + 55;
-
-        if (m_subOptionIndex == 0) drawSoul(m_arenaRect.x + 35, spareY + 10, SOUL_RED);
-        if (m_canFlee && m_subOptionIndex == 1) drawSoul(m_arenaRect.x + 35, fleeY + 10, SOUL_RED);
-
-        const std::string spareOption = "* " + std::string(mercyLabel(context.state));
-        context.resources.drawText(font8Bit, spareOption, { m_arenaRect.x + 55, spareY }, 20, spareColor, 1.0f);
-        if (m_canFlee) {
-            context.resources.drawText(font8Bit, "* Flee", { m_arenaRect.x + 55, fleeY }, 20, WHITE, 1.0f);
+        const std::vector<MercyOption> options = battleMercyOptions(
+            m_enemy->canBeSpared(), m_canFlee, !m_fleeBlockedText.empty());
+        for (std::size_t i = 0; i < options.size(); ++i) {
+            const float optionY = m_arenaRect.y + 25.0f + static_cast<float>(i) * 30.0f;
+            if (m_subOptionIndex == static_cast<int>(i)) {
+                drawSoul(m_arenaRect.x + 35.0f, optionY + 10.0f, SOUL_RED);
+            }
+            const bool spare = options[i] == MercyOption::Spare;
+            const std::string label = spare
+                ? std::string(mercyLabel(context.state))
+                : std::string("Flee");
+            const Color color = spare && m_enemy->isSpareable() ? UI_YELLOW : WHITE;
+            context.resources.drawText(font8Bit, "* " + label,
+                                       { m_arenaRect.x + 55.0f, optionY }, 20, color, 1.0f);
         }
     } else {
         // Narrator message with word wrapping and hanging indent (BUG-09, TXT-002)
