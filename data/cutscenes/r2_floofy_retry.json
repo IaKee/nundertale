@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "sinister_grin"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Back already, darling? I KNEW you'd miss me~",
+        "Same SOUL. Same smell. Let's go again."
+      ]
+    }
+  ]
+}

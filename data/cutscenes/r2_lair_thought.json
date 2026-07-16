@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "NARRATOR",
+      "lines": [
+        "* (Fairy lights. A velvet rope. A rack of fursuit heads, staring at you.)"
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r2.thought",
+      "value": 1
+    }
+  ]
+}

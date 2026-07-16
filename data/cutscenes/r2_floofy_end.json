@@ -1,0 +1,123 @@
+{
+  "steps": [
+    {
+      "type": "showNpc",
+      "npc": "floofy"
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "dive",
+      "seconds": 0.45
+    },
+    {
+      "type": "hideNpc",
+      "npc": "floofy"
+    },
+    {
+      "type": "wait",
+      "seconds": 0.8
+    },
+    {
+      "type": "showNpc",
+      "npc": "furiell"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/spray.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Bad flower! BAD! *spritz* *spritz* Shoo!"
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.45
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Oh, you poor pup... did that nasty weed get you all fluffy? >w<"
+      ]
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/spray.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "dialog",
+      "speaker": "NARRATOR",
+      "lines": [
+        "* Furiell spritzes you."
+      ]
+    },
+    {
+      "type": "healFull"
+    },
+    {
+      "type": "setFur",
+      "value": 0
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "It's just water and a little lavender, hun. It washes the fluff right off~"
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.4
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "*grabs your hand* Hewwo~! I'm Furiell! I take care of the Ruins.",
+        "You must be new. You smell new. uwu",
+        "...You're not even green. The murals lied~"
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.35
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Come, come! I'll show you around.",
+        "...I'm not letting go, by the way."
+      ]
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 320,
+      "y": 100,
+      "speed": 75
+    },
+    {
+      "type": "movePlayer",
+      "x": 320,
+      "y": 100,
+      "speed": 75
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floofy.met",
+      "value": 1
+    }
+  ]
+}
