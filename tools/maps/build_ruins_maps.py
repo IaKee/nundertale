@@ -123,6 +123,79 @@ def parse_grid(lines, char_map, width, height):
     return data
 
 
+WALL_CAP_CHARS = "[=]"
+WALL_FRONT_CHARS = "{-}khvo"
+
+
+def cut_doorways(ground_grid, above_grid):
+    """Shared doorway helper (BUG-41): cut every 2-wide gap into the wall.
+
+    Rooms mark an exit with a 2-wide void gap in the wall plus an 'L','R' pair in the above
+    grid. The old arch overlay (tiles 53/54) was drawn one row off the wall, so it stood on the
+    floor. This turns each pair into an open doorway: tile 51 (lintel) on the wall's cap row and
+    tile 52 (dark opening, sill on the floor line) on the wall's bottom row, and gives the wall
+    ends beside the gap their jamb tiles. The overlay chars are dropped from the above grid.
+    Also checks that closed doors ('u'/'j') and open ones ('n'/'N') are top-over-bottom.
+    Returns (ground_grid, above_grid) as new lists of strings."""
+    ground = [list(row) for row in ground_grid]
+    above = [list(row) for row in above_grid] if above_grid else None
+
+    if above:
+        for ar, arow in enumerate(above):
+            for ac in range(len(arow) - 1):
+                if arow[ac] != 'L' or arow[ac + 1] != 'R':
+                    continue
+                # the gap in the ground is the truth; the overlay may be a column off (ruins_floofy)
+                for shift in (0, 1, -1):
+                    cols = (ac + shift, ac + shift + 1)
+                    left, right = cols[0] - 1, cols[1] + 1
+                    # rows where the gap cuts through wall (neighbours on both sides are wall)
+                    rows = [
+                        r for r in range(len(ground))
+                        if ground[r][left] in WALL_CAP_CHARS + WALL_FRONT_CHARS
+                        and ground[r][right] in WALL_CAP_CHARS + WALL_FRONT_CHARS
+                        and all(ground[r][c] in ' #' for c in cols)
+                    ]
+                    # the sill is the wall's bottom gap row; the row above it is the cap row
+                    # (open gap, or already solid cap that then simply becomes the lintel tile)
+                    if rows and rows[-1] - 1 >= 0 and all(
+                        ground[rows[-1] - 1][c] in WALL_CAP_CHARS + ' #' for c in cols
+                    ) and (len(rows) == 1 or rows[0] == rows[-1] - 1):
+                        break
+                else:
+                    raise ValueError(
+                        f"doorway near col {ac}: expected a 2-row wall gap (cap + front)")
+                sill = rows[-1]
+                top = sill - 1
+                for c in cols:
+                    ground[top][c] = 'n'
+                    ground[sill][c] = 'N'
+                for c in (ac, ac + 1):
+                    arow[c] = '.'
+                # jamb tiles on the wall ends beside the gap (plain bricks only)
+                for r, plain, jamb_l, jamb_r in (
+                    (top, '=', ']', '['),
+                    (sill, '-', '}', '{'),
+                ):
+                    if ground[r][left] == plain:
+                        ground[r][left] = jamb_l
+                    if ground[r][right] == plain:
+                        ground[r][right] = jamb_r
+
+    for r in range(len(ground)):
+        for c, ch in enumerate(ground[r]):
+            for upper, lower in (('u', 'j'), ('n', 'N')):
+                if ch == upper and (r + 1 >= len(ground) or ground[r + 1][c] != lower):
+                    raise ValueError(f"door tile '{upper}' at row {r}, col {c} needs '{lower}' right below it")
+                if ch == lower and (r == 0 or ground[r - 1][c] != upper):
+                    raise ValueError(f"door tile '{lower}' at row {r}, col {c} needs '{upper}' right above it")
+
+    return (
+        [''.join(row) for row in ground],
+        [''.join(row) for row in above] if above else above_grid,
+    )
+
+
 def make_tiled_map(
     room_id,
     display_name,
@@ -140,6 +213,7 @@ def make_tiled_map(
     tile_size=40,
 ):
     """Build a complete Tiled JSON map dict."""
+    ground_grid, above_grid = cut_doorways(ground_grid, above_grid)
     layers = []
     layer_id = 1
     next_obj_id = 1
@@ -2817,7 +2891,7 @@ def build_ruins_house():
     height = 12
 
     ground = [
-        "#[=]u[============]#",
+        "#[==]u[===========]#",
         "#{--}j{--QWE-----o}#",
         "#.,;..;,..ASD...;,;#",
         "#;.,..;,..,;,..;.,.#",
@@ -3363,9 +3437,9 @@ def build_ruins_basement():
     height = 38
 
     ground = [
-        "#####[====]#####",
-        "#####{-u--}#####",
-        "#####{-j--}#####",
+        "#####[]nn[]#####",
+        "#####{}NN{}#####",
+        "#####{....}#####",
         "#####{....}#####",
         "#####{.;..}#####",
         "#####{...,}#####",

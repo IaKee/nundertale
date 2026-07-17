@@ -1,0 +1,4 @@
+# BUG-41 check: walk the player up through a doorway. Run from the repo root with the debug build:
+#   game_dbg.exe --room ruins_fall --spawn from_floofy --input tools/art/doorways/walk_through.input --record tmp/walk --seconds 3
+# Up is held for the whole walk; 30 ticks = 1 s.
+1-90 up
