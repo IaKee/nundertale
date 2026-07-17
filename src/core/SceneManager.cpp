@@ -20,6 +20,42 @@ void SceneManager::changeScene(std::unique_ptr<IScene> newScene, std::unique_ptr
     m_transition = transition ? std::move(transition) : cut();
     m_transitionTimer = 0.0f;
     m_phase = TransitionPhase::CoveringOut;
+    m_replaceAllPending = false;
+}
+
+void SceneManager::replaceAllScenes(std::unique_ptr<IScene> newScene, float fadeDuration) {
+    if (fadeDuration <= 0.0f) {
+        replaceAllScenes(std::move(newScene), cut());
+    } else {
+        replaceAllScenes(std::move(newScene), fadeBlack(fadeDuration));
+    }
+}
+
+void SceneManager::replaceAllScenes(std::unique_ptr<IScene> newScene,
+                                    std::unique_ptr<ITransition> transition) {
+    m_pendingScene = std::move(newScene);
+    m_transition = transition ? std::move(transition) : cut();
+    m_transitionTimer = 0.0f;
+    m_phase = TransitionPhase::CoveringOut;
+    m_replaceAllPending = true;
+}
+
+void SceneManager::activatePendingScene(GameContext& context) {
+    if (m_replaceAllPending) {
+        while (!m_scenes.empty()) {
+            m_scenes.back()->onExit(context);
+            m_scenes.pop_back();
+        }
+    } else if (!m_scenes.empty()) {
+        m_scenes.back()->onExit(context);
+        m_scenes.pop_back();
+    }
+    m_replaceAllPending = false;
+
+    if (m_pendingScene) {
+        m_scenes.push_back(std::move(m_pendingScene));
+        m_scenes.back()->onEnter(context);
+    }
 }
 
 void SceneManager::pushScene(std::unique_ptr<IScene> scene, GameContext& context) {
@@ -43,14 +79,7 @@ void SceneManager::popScene(GameContext& context) {
 void SceneManager::update(float dt, GameContext& context) {
     if (m_phase == TransitionPhase::CoveringOut) {
         if (!m_transition || m_transition->duration() <= 0.0f) {
-            if (!m_scenes.empty()) {
-                m_scenes.back()->onExit(context);
-                m_scenes.pop_back();
-            }
-            if (m_pendingScene) {
-                m_scenes.push_back(std::move(m_pendingScene));
-                m_scenes.back()->onEnter(context);
-            }
+            activatePendingScene(context);
             if (!m_transition || m_transition->durationIn() <= 0.0f) {
                 m_phase = TransitionPhase::None;
                 m_transition.reset();
@@ -65,14 +94,7 @@ void SceneManager::update(float dt, GameContext& context) {
         float dur = m_transition->duration();
         if (m_transitionTimer >= dur) {
             m_transitionTimer = 0.0f;
-            if (!m_scenes.empty()) {
-                m_scenes.back()->onExit(context);
-                m_scenes.pop_back();
-            }
-            if (m_pendingScene) {
-                m_scenes.push_back(std::move(m_pendingScene));
-                m_scenes.back()->onEnter(context);
-            }
+            activatePendingScene(context);
             if (!m_transition || m_transition->durationIn() <= 0.0f) {
                 m_phase = TransitionPhase::None;
                 m_transition.reset();

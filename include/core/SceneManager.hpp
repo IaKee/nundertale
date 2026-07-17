@@ -27,6 +27,12 @@ public:
     // Pluggable transition (CORE-003)
     void changeScene(std::unique_ptr<IScene> newScene, std::unique_ptr<ITransition> transition);
 
+    // Replace the complete stack after a terminal flow such as WELCOME HOME.
+    // Unlike changeScene(), this also removes paused scenes below the active one.
+    void replaceAllScenes(std::unique_ptr<IScene> newScene, float fadeDuration = 0.4f);
+    void replaceAllScenes(std::unique_ptr<IScene> newScene,
+                          std::unique_ptr<ITransition> transition);
+
     // Push scene to stack with lifecycle management (BUG-01, CORE-002)
     void pushScene(std::unique_ptr<IScene> scene, GameContext& context);
 
@@ -45,6 +51,9 @@ private:
 
     TransitionPhase m_phase = TransitionPhase::None;
     float m_transitionTimer = 0.0f;
+    bool m_replaceAllPending = false;
+
+    void activatePendingScene(GameContext& context);
 };
 
 } // namespace nundertale

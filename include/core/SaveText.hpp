@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -96,6 +97,55 @@ inline SaveHealResult saveHealResult(const GameState& state, const std::string& 
         result.lines.push_back("* DETERMINATION can't fix fluff.");
     }
     return result;
+}
+
+// BUG-43 / LORE §23.1: pure WELCOME HOME retry helpers. A retry is built from a
+// fresh GameState so flags acquired after the save cannot leak through SaveService's
+// field-by-field loader. With no save, the selected identity survives but all story,
+// combat, room, HP and FUR state returns to a clean R1 game.
+inline bool isFloofyFight(const std::string& encounterOrEnemyId) {
+    return encounterOrEnemyId == "floofy" || encounterOrEnemyId == "floofy_bass";
+}
+
+inline std::string floofyWelcomeHomeLine(const std::string& playerName) {
+    return "Floofy? ...Oh dear. Stay determined, " + playerName +
+           ". And stay away from his petals.";
+}
+
+inline GameState cleanWelcomeHomeRestart(const GameState& defeated) {
+    GameState clean;
+    clean.player.name = defeated.player.name;
+    clean.player.isChad = defeated.player.isChad;
+    clean.player.isSkyrim = defeated.player.isSkyrim;
+    clean.player.isWaifuFan = defeated.player.isWaifuFan;
+    return clean;
+}
+
+inline void applyWelcomeHomeRetryState(GameState& state,
+                                       const std::vector<std::string>& reArmFlags,
+                                       int floofyDeathsAfter = -1) {
+    for (const std::string& flag : reArmFlags) {
+        if (!flag.empty()) state.flags.erase(flag);
+    }
+    if (floofyDeathsAfter >= 0) {
+        state.setFlag("ruins.floofy.deaths", floofyDeathsAfter);
+    }
+}
+
+inline GameState buildWelcomeHomeRetryState(const GameState& defeated,
+                                            const GameState* saved,
+                                            const std::vector<std::string>& reArmFlags,
+                                            bool countFloofyDeath) {
+    GameState retry = saved != nullptr ? *saved : cleanWelcomeHomeRestart(defeated);
+    int deathsAfter = -1;
+    if (countFloofyDeath) {
+        const int savedDeaths = saved != nullptr
+            ? saved->getFlag("ruins.floofy.deaths", 0)
+            : 0;
+        deathsAfter = std::max(defeated.getFlag("ruins.floofy.deaths", 0), savedDeaths) + 1;
+    }
+    applyWelcomeHomeRetryState(retry, reArmFlags, deathsAfter);
+    return retry;
 }
 
 } // namespace nundertale

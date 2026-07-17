@@ -3,12 +3,99 @@
 #include "scenes/FurryOver.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
+#include "core/SaveText.hpp"
 #include "core/SceneManager.hpp"
+#include "core/TiledMap.hpp"
 #include "services/MusicTracks.hpp"
 #include <cmath>
 #include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <sstream>
+#include <utility>
 
 namespace nundertale {
+
+namespace {
+
+struct BattleRetryInfo {
+    std::string enemyId;
+    std::vector<std::string> reArmFlags;
+    bool scriptedEnd = false;
+};
+
+bool safeDataId(const std::string& id) {
+    if (id.empty()) return false;
+    return std::all_of(id.begin(), id.end(), [](char ch) {
+        const unsigned char uch = static_cast<unsigned char>(ch);
+        return std::isalnum(uch) != 0 || ch == '_';
+    });
+}
+
+bool loadJsonObject(const std::string& path, tiled_detail::JsonValue& root) {
+    std::ifstream file(path);
+    if (!file) return false;
+    std::ostringstream text;
+    text << file.rdbuf();
+    return tiled_detail::JsonParser(text.str()).parse(root) &&
+           root.kind == tiled_detail::JsonValue::Kind::Object;
+}
+
+void appendReArmFlags(const tiled_detail::JsonValue* value,
+                      std::vector<std::string>& flags) {
+    if (value == nullptr || value->kind != tiled_detail::JsonValue::Kind::Array) return;
+    for (const tiled_detail::JsonValue& entry : value->array) {
+        if (entry.kind != tiled_detail::JsonValue::Kind::String || entry.string.empty()) continue;
+        if (std::find(flags.begin(), flags.end(), entry.string) == flags.end()) {
+            flags.push_back(entry.string);
+        }
+    }
+}
+
+void inspectRetryFields(const tiled_detail::JsonValue& root, BattleRetryInfo& info) {
+    appendReArmFlags(root.field("reArm"), info.reArmFlags);
+
+    if (const auto* legacy = root.field("scriptedEndAfterTurns");
+        legacy != nullptr && legacy->kind == tiled_detail::JsonValue::Kind::Number &&
+        legacy->number > 0.0) {
+        info.scriptedEnd = true;
+    }
+
+    if (const auto* scripted = root.field("scriptedEnd"); scripted != nullptr) {
+        if (scripted->kind == tiled_detail::JsonValue::Kind::Object) {
+            info.scriptedEnd = true;
+            appendReArmFlags(scripted->field("reArm"), info.reArmFlags);
+        } else if (scripted->kind == tiled_detail::JsonValue::Kind::Boolean && scripted->boolean) {
+            info.scriptedEnd = true;
+        }
+    }
+}
+
+BattleRetryInfo battleRetryInfo(const std::string& encounterId) {
+    BattleRetryInfo info;
+    if (!safeDataId(encounterId)) return info;
+
+    tiled_detail::JsonValue encounter;
+    if (!loadJsonObject("data/encounters/" + encounterId + ".json", encounter)) return info;
+    inspectRetryFields(encounter, info);
+
+    const auto* enemies = encounter.field("enemies");
+    if (enemies == nullptr || enemies->kind != tiled_detail::JsonValue::Kind::Array ||
+        enemies->array.empty() ||
+        enemies->array.front().kind != tiled_detail::JsonValue::Kind::String) {
+        return info;
+    }
+    info.enemyId = enemies->array.front().string;
+    if (!safeDataId(info.enemyId)) return info;
+
+    tiled_detail::JsonValue enemy;
+    if (loadJsonObject("data/enemies/" + info.enemyId + ".json", enemy)) {
+        inspectRetryFields(enemy, info);
+    }
+    return info;
+}
+
+} // namespace
 
 GameOverScene::GameOverScene(Vector2 deathSoulPos, std::string enemyId)
     : m_soulPos(deathSoulPos), m_enemyId(std::move(enemyId)) {}
@@ -29,6 +116,29 @@ void GameOverScene::onEnter(GameContext& context) {
     bool toxicRoute = (context.state.getRoute() == GameState::RouteType::ToxicGamer);
     int pick = GetRandomValue(0, 5);
     m_lines = furryOverLines(context.player.name, m_enemyId, timesTransformed, toxicRoute, pick);
+
+    const BattleRetryInfo retryInfo = battleRetryInfo(m_enemyId);
+    m_reArmFlags = retryInfo.reArmFlags;
+    const bool floofyFight = isFloofyFight(m_enemyId) || isFloofyFight(retryInfo.enemyId);
+    const bool countFloofyDeath = floofyFight &&
+        (retryInfo.scriptedEnd || !m_reArmFlags.empty());
+
+    if (!toxicRoute && floofyFight) {
+        m_lines = { floofyWelcomeHomeLine(context.player.name) };
+    }
+
+    GameState saved;
+    const bool loadedSave = context.save.hasSaveGame() && context.save.loadGame(saved);
+    const GameState prepared = buildWelcomeHomeRetryState(
+        context.state, loadedSave ? &saved : nullptr, m_reArmFlags, countFloofyDeath);
+    m_floofyDeathsAfter = countFloofyDeath
+        ? prepared.getFlag("ruins.floofy.deaths", 0)
+        : -1;
+    if (loadedSave && (countFloofyDeath || !m_reArmFlags.empty())) {
+        // Persist the meta-like death count in the checkpoint that WELCOME HOME reloads.
+        // Applying the same target value again on Continue is intentionally idempotent.
+        context.save.saveGame(prepared);
+    }
 
     m_currentLineIdx = 0;
     m_displayedChars = 0;
@@ -158,15 +268,23 @@ void GameOverScene::update(float dt, GameContext& context) {
             if (context.input.isConfirmPressed()) {
                 context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
 
-                // Reload from save if available, otherwise restore HP
-                if (context.save.hasSaveGame()) {
-                    context.save.loadGame(context.state);
-                } else {
-                    context.player.hp = context.player.maxHp;
+                // Load into a fresh object. SaveService parses field-by-field, so loading
+                // directly over the defeated state would retain flags burned after the save.
+                GameState restored;
+                const bool loadedSave = context.save.hasSaveGame() &&
+                                        context.save.loadGame(restored);
+                if (!loadedSave) {
+                    restored = cleanWelcomeHomeRestart(context.state);
                 }
+                applyWelcomeHomeRetryState(restored, m_reArmFlags, m_floofyDeathsAfter);
+                if (loadedSave && (m_floofyDeathsAfter >= 0 || !m_reArmFlags.empty())) {
+                    context.save.saveGame(restored);
+                }
+                context.state = std::move(restored);
+                context.launchSpawn.clear();
                 sessionOnLoad(context.session, true);
 
-                context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
+                context.scenes.replaceAllScenes(std::make_unique<OverworldScene>(), 0.5f);
             }
             break;
     }
@@ -308,17 +426,16 @@ void GameOverScene::render(GameContext& context) {
                        c);
         }
     } else {
-        // "FURRY OVER" title (BND-010)
+        // "WELCOME HOME" title (LORE §23.1)
         Color titleColor = { 255, 255, 255, static_cast<unsigned char>(std::clamp(m_titleAlpha * 255.0f, 0.0f, 255.0f)) };
-        // ART-E07: drawn fluffy title at 2x (420x180), same fade
-        if (FileExists("assets/ui/furry_over.png")) {
-            Texture2D furryOverTex = context.resources.getTexture("assets/ui/furry_over.png");
-            SetTextureFilter(furryOverTex, TEXTURE_FILTER_POINT);
-            const float overX = std::round((static_cast<float>(VIRTUAL_WIDTH) - static_cast<float>(furryOverTex.width) * 2.0f) * 0.5f);
-            DrawTextureEx(furryOverTex, { overX, 70.0f }, 0.0f, 2.0f, titleColor);
+        if (FileExists("assets/ui/welcome_home.png")) {
+            Texture2D welcomeTex = context.resources.getTexture("assets/ui/welcome_home.png");
+            SetTextureFilter(welcomeTex, TEXTURE_FILTER_POINT);
+            const float overX = std::round((static_cast<float>(VIRTUAL_WIDTH) - static_cast<float>(welcomeTex.width) * 2.0f) * 0.5f);
+            DrawTextureEx(welcomeTex, { overX, 70.0f }, 0.0f, 2.0f, titleColor);
         } else {
-            context.resources.drawCenteredText(fontTitle, "FURRY", 120.0f, 52, titleColor, 4.0f);
-            context.resources.drawCenteredText(fontTitle, "OVER", 190.0f, 52, titleColor, 4.0f);
+            context.resources.drawCenteredText(fontTitle, "WELCOME", 120.0f, 52, titleColor, 4.0f);
+            context.resources.drawCenteredText(fontTitle, "HOME", 190.0f, 52, titleColor, 4.0f);
         }
 
         // Render typewriter text lines

@@ -56,6 +56,8 @@ private:
     float m_charTimer = 0.0f;
     size_t m_displayedChars = 0;
     float m_linePauseTimer = 0.0f;
+    std::vector<std::string> m_reArmFlags;
+    int m_floofyDeathsAfter = -1;
 
     void drawSoul(float x, float y) const;
     void drawSproutingSoul(float x, float y, float progress) const;
