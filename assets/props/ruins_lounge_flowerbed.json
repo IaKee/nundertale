@@ -1,0 +1,25 @@
+{
+  "image": "ruins_lounge_flowerbed.png",
+  "cell": [
+    56,
+    28
+  ],
+  "origin": [
+    28,
+    27
+  ],
+  "anims": {
+    "still": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1,
+      "loop": false
+    },
+    "shaking": {
+      "row": 0,
+      "frames": 3,
+      "fps": 12,
+      "loop": true
+    }
+  }
+}
