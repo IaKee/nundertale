@@ -17,7 +17,15 @@ enum class EnemyPatternKind {
     Bounce,
     Ring,
     Beat,
-    TextWall
+    TextWall,
+    FriendshipPetals,
+    ThornVines,
+    PetalStorm,
+    PollenCloud,
+    BouquetBurst,
+    PounceRing,
+    TutorialPetals,
+    ForcedPetal
 };
 
 inline EnemyPatternKind enemyPatternKindFromString(const std::string& kind) {
@@ -29,6 +37,14 @@ inline EnemyPatternKind enemyPatternKindFromString(const std::string& kind) {
     if (kind == "ring") return EnemyPatternKind::Ring;
     if (kind == "beat") return EnemyPatternKind::Beat;
     if (kind == "text_wall") return EnemyPatternKind::TextWall;
+    if (kind == "friendship_petals") return EnemyPatternKind::FriendshipPetals;
+    if (kind == "thorn_vines") return EnemyPatternKind::ThornVines;
+    if (kind == "petal_storm") return EnemyPatternKind::PetalStorm;
+    if (kind == "pollen_cloud") return EnemyPatternKind::PollenCloud;
+    if (kind == "bouquet_burst") return EnemyPatternKind::BouquetBurst;
+    if (kind == "pounce_ring") return EnemyPatternKind::PounceRing;
+    if (kind == "tutorial_petals") return EnemyPatternKind::TutorialPetals;
+    if (kind == "forced_petal") return EnemyPatternKind::ForcedPetal;
     return EnemyPatternKind::None;
 }
 
@@ -47,6 +63,9 @@ struct EnemyPatternDef {
     bool strike = false;
     float strikeAfter = 0.0f;
     std::string beatmap;
+    float intensity = 1.0f;
+    std::uint32_t seed = 0;
+    std::string sprite;
 };
 
 inline std::size_t pickWeightedPatternIndex(const std::vector<EnemyPatternDef>& patterns,

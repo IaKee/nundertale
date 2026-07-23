@@ -407,6 +407,9 @@ EnemyPatternDef parsePattern(const JsonValue& value) {
     EnemyPatternDef pattern;
     pattern.id = stringValue(value, "id");
     pattern.kind = enemyPatternKindFromString(stringValue(value, "kind"));
+    if (pattern.kind == EnemyPatternKind::None && !pattern.id.empty()) {
+        pattern.kind = enemyPatternKindFromString(pattern.id);
+    }
     pattern.weight = intValue(value, "weight", 1);
     const JsonValue* params = objectField(value, "params", JsonValue::Kind::Object);
     if (params != nullptr) {
@@ -430,6 +433,13 @@ EnemyPatternDef parsePattern(const JsonValue& value) {
         pattern.strike = boolValue(*params, "strike", false);
         pattern.strikeAfter = floatValue(*params, "strikeAfter", 0.0f);
         pattern.beatmap = stringValue(*params, "beatmap");
+        pattern.intensity = floatValue(*params, "intensity", 1.0f);
+        pattern.seed = static_cast<std::uint32_t>(intValue(*params, "seed", 0));
+        pattern.sprite = stringValue(*params, "sprite");
+    }
+    FloofyPatternId floofyId = FloofyPatternId::FriendshipPetals;
+    if (pattern.sprite.empty() && floofyPatternIdFromString(pattern.id, floofyId)) {
+        pattern.sprite = floofyPatternSprite(floofyId);
     }
     return pattern;
 }
@@ -550,6 +560,9 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
             enemy->m_patternSpeech[pattern.id] = stringValue(rawPattern, "speech");
             if (const JsonValue* params = objectField(rawPattern, "params", JsonValue::Kind::Object)) {
                 enemy->m_patternSprite[pattern.id] = stringValue(*params, "sprite");
+            }
+            if (enemy->m_patternSprite[pattern.id].empty() && !pattern.sprite.empty()) {
+                enemy->m_patternSprite[pattern.id] = pattern.sprite;
             }
             enemy->m_patterns.push_back(std::move(pattern));
         }

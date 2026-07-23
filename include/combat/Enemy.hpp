@@ -10,6 +10,7 @@
 #include <raylib.h>
 #include "ActGate.hpp"
 #include "EnemyPatterns.hpp"
+#include "FloofyPatterns.hpp"
 #include "FloofyScript.hpp"
 #include "GladosPatterns.hpp"
 #include "core/PeacePath.hpp"
@@ -159,6 +160,9 @@ public:
         static const std::string empty;
         const auto it = m_patternSprite.find(patternId);
         return it != m_patternSprite.end() ? it->second : empty;
+    }
+    static bool isFloofyPattern(const std::string& patternId) {
+        return isFloofyPatternName(patternId);
     }
     int getActHeal(const std::string& actId) const {
         const auto it = m_actHeal.find(actId);
