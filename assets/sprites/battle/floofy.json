@@ -23,6 +23,29 @@
       "row": 2,
       "frames": 2,
       "fps": 3
+    },
+    "soaked": {
+      "row": 3,
+      "frames": 2,
+      "fps": 3
+    },
+    "attack_petals": {
+      "row": 4,
+      "frames": 2,
+      "fps": 5,
+      "loop": false
+    },
+    "attack_vines": {
+      "row": 5,
+      "frames": 2,
+      "fps": 5,
+      "loop": false
+    },
+    "attack_pounce": {
+      "row": 6,
+      "frames": 2,
+      "fps": 7,
+      "loop": false
     }
   }
 }
