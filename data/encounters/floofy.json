@@ -4,5 +4,90 @@
   "introText": "* Floofy shares some friendship petals.",
   "background": "black",
   "music": "battle.default",
-  "canFlee": false
+  "canFlee": false,
+  "intro": {
+    "music": "floofy_lounge",
+    "skipFlag": "ruins.floofy.deaths",
+    "beats": [
+      { "type": "say", "beat": 8, "lines": [
+        "See that heart? That's your SOUL. The very culmination of your being!",
+        "It starts off weak. Pasty. Unloved. Very... basement."
+      ] },
+      { "type": "say", "beat": 9, "lines": [
+        "You want to make it stronger, right? Down here, we share our little... \"friendship petals\"~",
+        "Everyone has one. Some people have, like, nine."
+      ] },
+      { "type": "choice", "beat": 9, "flag": "ruins.floofy.choice2", "options": [
+        { "label": "...Okay.", "value": 1, "annoy": 0, "reply": [
+          { "type": "say", "lines": [ "That's the spirit!" ] }
+        ] },
+        { "label": "Those are NOT petals.", "value": 2, "annoy": 1, "reply": [
+          { "type": "say", "lines": [ "...", "You KNOW what these are?" ] },
+          { "type": "narrate", "lines": [
+            "* (You don't know what these are.)",
+            "* (...You know exactly what these are.)"
+          ] },
+          { "type": "say", "lines": [ "Oh, you're FUN." ] }
+        ] }
+      ] },
+      { "type": "show_petals", "beat": 10 },
+      { "type": "narrate", "beat": 10, "lines": [
+        "* The petals are vibrating.",
+        "* (Why are they vibrating.)"
+      ] },
+      { "type": "say", "beat": 11, "lines": [
+        "Here, we're all about good vibes~",
+        "...and soon you'll be FILLED with them."
+      ] },
+      { "type": "say", "beat": 12, "lines": [ "Move around! Catch as many as you can!" ] },
+      { "type": "petals", "beat": 13,
+        "pattern": "tutorial_petals", "forcedPattern": "forced_petal",
+        "count": 5, "speed": 48, "retrySpeedScale": 0.6, "fastSpeedScale": 2.4,
+        "annoySecondDodge": 1, "damagePct": 25, "fur": 20, "furCap": 99,
+        "onDodgeOnce": [
+          { "type": "say", "beat": 12, "lines": [
+            "Hey, buddy. You missed them.",
+            "Let's try again, okay?"
+          ] }
+        ],
+        "onDodgeTwice": [
+          { "type": "flash", "id": "sinister", "seconds": 0.12 },
+          { "type": "say", "beat": 12, "lines": [
+            "Is this a JOKE, darling? Are you ALLERGIC?",
+            "RUN. INTO. THE. PETALS!!!"
+          ] }
+        ]
+      },
+      { "type": "stop_music", "beat": 14 },
+      { "type": "say", "beat": 14, "lines": [ "You idiot." ] },
+      { "type": "pause", "seconds": 1.6 },
+      { "type": "say", "beat": 15, "lines": [
+        "You really thought I'd share my petals for FREE?",
+        "In this world, it's YIFF or be YIFFED."
+      ] },
+      { "type": "say", "beat": 16, "lines": [
+        "Why would ANYONE pass up a chance like this?",
+        "A gamer. Fresh. Unfluffed."
+      ] },
+      { "type": "say", "beat": 17, "lines": [
+        "You fell on me. You crushed my babies.",
+        "And now? You're going to STAY."
+      ] },
+      { "type": "pick_fight", "beat": 18,
+        "petals": [
+          { "type": "say", "lines": [ "Now hold still, darling~ you'd make a FABULOUS fox. Let's get you fluffy!" ] }
+        ],
+        "bass": [
+          { "type": "say", "lines": [
+            "...",
+            "You think you're FUNNY?",
+            "I've been nice. I've been SO nice.",
+            "Now hold still, darling~ ...no. Actually? Don't.",
+            "DANCE."
+          ] },
+          { "type": "sound", "id": "record_scratch" }
+        ]
+      }
+    ]
+  }
 }

@@ -28,4 +28,21 @@ inline int furHudJitter(float t) {
     return kJitterCycle[static_cast<size_t>(step % 3)];
 }
 
+// FUR-003 for scenes that draw their own HUD (the battle intro): a clock that starts the tremble when the
+// bar first appears. update() returns true on the exact call where the 1.5 s tremble ends, which is when
+// the caller stores `fur_hud_seen` so the battle proper does not tremble it a second time.
+struct FurHudTrembleClock {
+    float t = -1.0f;
+
+    void start() { t = 0.0f; }
+    bool running() const { return furHudShouldTremble(t); }
+    int jitter() const { return furHudJitter(t); }
+
+    bool update(float dt) {
+        if (!running()) return false;
+        t += dt;
+        return !furHudShouldTremble(t);
+    }
+};
+
 } // namespace nundertale

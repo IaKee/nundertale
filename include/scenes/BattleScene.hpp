@@ -1,9 +1,12 @@
 #pragma once
 
 #include "core/IScene.hpp"
+#include "combat/BattleIntroScript.hpp"
 #include "combat/BattleSystem.hpp"
+#include "combat/FurHud.hpp"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace nundertale {
 
@@ -17,14 +20,63 @@ public:
     void render(GameContext& context) override;
     void onExit(GameContext& context) override;
     bool isValid() const { return m_valid; }
+    bool isIntroActive() const { return m_introActive; }
 
 private:
+    // Loads data/encounters/<id>.json into a BattleSystem; false leaves the current battle untouched.
+    bool loadEncounter(const std::string& encounterId, bool readIntro);
+    // C1-002: the fight variant lives in two encounters ("floofy", "floofy_bass"); the battle swaps in place.
+    void swapEncounter(const std::string& encounterId);
+    void playEncounterMusic(GameContext& context);
+
+    // C1-002: the scripted in-box intro that runs before the first menu turn (BattleIntroScript).
+    struct IntroPetal {
+        Vector2 pos{ 0.0f, 0.0f };
+        Vector2 vel{ 0.0f, 0.0f };
+        float age = 0.0f;
+        bool homing = false;
+    };
+    void beginIntro(GameContext& context);
+    void updateIntro(float dt, GameContext& context);
+    void renderIntro(GameContext& context);
+    void endIntro(GameContext& context);
+    void updateIntroText(float dt, GameContext& context);
+    void updateIntroPetals(float dt, GameContext& context);
+    void startIntroRound();
+    void hitIntroSoul(GameContext& context);
+    void playIntroEffects(GameContext& context);
+    void drawIntroBubble(GameContext& context, const std::string& text, std::size_t shownChars, int enemyX);
+    void drawIntroBoxText(GameContext& context, const std::string& text, std::size_t shownChars);
+    void drawIntroHud(GameContext& context);
+
     std::unique_ptr<BattleSystem> m_battleSystem;
     std::string m_encounterId;
     std::string m_musicId;
     std::string m_backgroundId;
+    std::string m_enemySprite;
     bool m_valid = false;
     bool m_victoryMusicStopped = false; // AUD-004
+
+    IntroScriptDef m_introDef;
+    std::unique_ptr<BattleIntroScript> m_intro;
+    bool m_introActive = false;
+    bool m_introChecked = false;
+    float m_introTime = 0.0f;
+    IntroPhase m_introLastPhase = IntroPhase::Pause;  // a page starts typing when the phase changes to Text
+    float m_introTyped = 0.0f;           // characters revealed so far
+    int m_introChoice = 0;
+    Rectangle m_introBox{ (float)BATTLE_BOX_X, (float)BATTLE_BOX_Y, (float)BATTLE_BOX_W, (float)BATTLE_BOX_H };
+    Vector2 m_introSoul{ 320.0f, 320.0f };
+    bool m_introPetalsShown = false;     // the petals buzzing around Floofy (beat 10)
+    bool m_introWilted = false;          // after the hit: petals wilt black, smile too wide
+    float m_introFlash = 0.0f;           // the sinister face flashes
+    bool m_introRoundActive = false;
+    float m_introRoundTime = 0.0f;
+    int m_introSpawned = 0;
+    IntroPetalRound m_introRound;
+    std::vector<IntroPetal> m_introPetals;
+    float m_introInvuln = 0.0f;
+    FurHudTrembleClock m_introFurTremble;
 };
 
 } // namespace nundertale
