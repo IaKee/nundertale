@@ -10,14 +10,14 @@
 
 namespace nundertale {
 
-enum class NameEffect { None, Gold, Skyrim, Waifu, Darken, FrogSoul, CrimsonShake, RestartGame };
+enum class NameEffect { None, Gold, Skyrim, Waifu, Darken, HeadsetSoul, CrimsonShake, RestartGame };
 
 inline NameEffect nameEffectFromString(const std::string& str) {
     if (str == "gold") return NameEffect::Gold;
     if (str == "skyrim") return NameEffect::Skyrim;
     if (str == "waifu") return NameEffect::Waifu;
     if (str == "darken") return NameEffect::Darken;
-    if (str == "frog_soul") return NameEffect::FrogSoul;
+    if (str == "headset_soul") return NameEffect::HeadsetSoul;
     if (str == "crimson_shake") return NameEffect::CrimsonShake;
     if (str == "restart_game") return NameEffect::RestartGame;
     return NameEffect::None;
@@ -29,7 +29,7 @@ inline const char* nameEffectToString(NameEffect effect) {
         case NameEffect::Skyrim: return "skyrim";
         case NameEffect::Waifu: return "waifu";
         case NameEffect::Darken: return "darken";
-        case NameEffect::FrogSoul: return "frog_soul";
+        case NameEffect::HeadsetSoul: return "headset_soul";
         case NameEffect::CrimsonShake: return "crimson_shake";
         case NameEffect::RestartGame: return "restart_game";
         default: return "none";
@@ -315,11 +315,11 @@ inline bool lookupBuiltinReaction(const std::string& rawName, NameReaction& out)
         return true;
     }
     if (name == "GRUB") {
-        out = NameReaction{ "[THE PROTAGONIST]", "Feels good man. Ready to climb down Mt. Dew.", true, NameEffect::FrogSoul };
+        out = NameReaction{ "[THE PROTAGONIST]", "* Back to the basement.", true, NameEffect::HeadsetSoul };
         return true;
     }
-    if (name == "GOBLIN" || name == "FROG") {
-        out = NameReaction{ "[RIBBIT]", "Feels froggy man.", true, NameEffect::FrogSoul };
+    if (name == "GOBLIN") {
+        out = NameReaction{ "", "* Goblin mode is a lifestyle. Not a species.", true, NameEffect::None };
         return true;
     }
     if (name == "PEPE") {
@@ -400,7 +400,7 @@ inline bool lookupBuiltinReaction(const std::string& rawName, NameReaction& out)
 
 inline const std::vector<std::string>& builtinTableNames() {
     static const std::vector<std::string> names = {
-        "CHAD", "GRUB", "GOBLIN", "FROG", "PEPE", "SKYRIM", "SANS", "FRISK",
+        "CHAD", "GRUB", "GOBLIN", "PEPE", "SKYRIM", "SANS", "FRISK",
         "CHARA", "FLOWEY", "TORIEL", "ASGORE", "RUIVA", "LOIRA",
         "OTOME", "GOTICA", "MORENA", "YANDER", "FURIEL", "FURIELL",
         "BARKY", "FLOOFY", "AZZY", "YIFF", "OWO", "GAMER",

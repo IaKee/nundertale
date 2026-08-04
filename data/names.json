@@ -9,16 +9,16 @@
   {
     "names": ["GRUB"],
     "tag": "[THE PROTAGONIST]",
-    "message": "Feels good man. Ready to climb down Mt. Dew.",
+    "message": "* Back to the basement.",
     "allowed": true,
-    "effect": "frog_soul"
+    "effect": "headset_soul"
   },
   {
-    "names": ["GOBLIN", "FROG"],
-    "tag": "[RIBBIT]",
-    "message": "Feels froggy man.",
+    "names": ["GOBLIN"],
+    "tag": "",
+    "message": "* Goblin mode is a lifestyle. Not a species.",
     "allowed": true,
-    "effect": "frog_soul"
+    "effect": "none"
   },
   {
     "names": ["PEPE"],

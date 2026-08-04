@@ -134,7 +134,8 @@ bool isPlayerVisibleClean(const std::string& rawPath, const std::string& snippet
                              p.find("data/enemies/") != std::string::npos ||
                              p.find("data/encounters/") != std::string::npos ||
                              p.find("data/dialogue/") != std::string::npos ||
-                             p.find("data/items/") != std::string::npos);
+                             p.find("data/items/") != std::string::npos ||
+                             p == "data/names.json");
     if (!inCleanDir) {
         return false;
     }
@@ -285,7 +286,9 @@ int main(int argc, char* argv[]) {
     static const std::vector<TargetTerm> v3Targets = {
         {"my-child-phrase", {"my", "child"}},
         {"furry-over-phrase", {"furry", "over"}},
-        {"raid-word", {"raid"}}
+        {"raid-word", {"raid"}},
+        {"feels-good-man-phrase", {"feels", "good", "man"}},
+        {"feels-froggy-phrase", {"feels", "froggy"}}
     };
 
     std::size_t errorCount = 0U;
@@ -323,7 +326,9 @@ int main(int argc, char* argv[]) {
             if (finding.rule == "pepe-word" ||
                 finding.rule == "my-child-phrase" ||
                 finding.rule == "furry-over-phrase" ||
-                finding.rule == "raid-word") {
+                finding.rule == "raid-word" ||
+                finding.rule == "feels-good-man-phrase" ||
+                finding.rule == "feels-froggy-phrase") {
                 if (!isPlayerVisibleClean(normPath, finding.snippet, finding.rule)) {
                     isWarn = true;
                 }

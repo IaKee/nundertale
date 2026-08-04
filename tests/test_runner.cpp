@@ -936,21 +936,24 @@ int main() {
         assert(rChadUpper.effect == NameEffect::Gold);
         assert(rChadUpper.allowed);
 
-        // GRUB & GOBLIN: FrogSoul, PEPE: "* Not that frog."
+        // GRUB: headset soul; GOBLIN: line only; PEPE: "* Not that frog."
         auto rGrub = reactionFor("Grub");
-        assert(rGrub.effect == NameEffect::FrogSoul);
+        assert(rGrub.effect == NameEffect::HeadsetSoul);
         assert(rGrub.allowed);
         assert(rGrub.tag == "[THE PROTAGONIST]");
+        assert(rGrub.message == "* Back to the basement.");
 
         auto rGoblin = reactionFor("goblin");
-        assert(rGoblin.effect == NameEffect::FrogSoul);
+        assert(rGoblin.effect == NameEffect::None);
         assert(rGoblin.allowed);
-        assert(rGoblin.tag == "[RIBBIT]");
+        assert(rGoblin.tag.empty());
+        assert(rGoblin.message == "* Goblin mode is a lifestyle. Not a species.");
 
         auto rFrog = reactionFor("frog");
-        assert(rFrog.effect == NameEffect::FrogSoul);
+        assert(rFrog.effect == NameEffect::None);
         assert(rFrog.allowed);
-        assert(rFrog.tag == "[RIBBIT]");
+        assert(rFrog.tag.empty());
+        assert(rFrog.message.empty());
 
         auto rPepe = reactionFor("Pepe");
         assert(rPepe.message == "* Not that frog.");
@@ -4091,11 +4094,13 @@ int main() {
         // 3. GRUB & GOBLIN easter eggs
         auto rGrub = nundertale::reactionFor("GRUB");
         assert(rGrub.tag == "[THE PROTAGONIST]");
-        assert(rGrub.effect == nundertale::NameEffect::FrogSoul);
+        assert(rGrub.message == "* Back to the basement.");
+        assert(rGrub.effect == nundertale::NameEffect::HeadsetSoul);
 
         auto rGoblin = nundertale::reactionFor("GOBLIN");
-        assert(rGoblin.tag == "[RIBBIT]");
-        assert(rGoblin.effect == nundertale::NameEffect::FrogSoul);
+        assert(rGoblin.tag.empty());
+        assert(rGoblin.message == "* Goblin mode is a lifestyle. Not a species.");
+        assert(rGoblin.effect == nundertale::NameEffect::None);
 
         // 4. Content lint flags a "Pepe" line but not the allowed egg
         auto findingsBad = nundertale::lintText("* Pepe entered the room.", {});

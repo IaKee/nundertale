@@ -304,8 +304,8 @@ void NameSelectScene::render(GameContext& context) {
             nameColor = COLOR_UNDERTALE_YELLOW;
         } else if (m_reaction.effect == NameEffect::Waifu) {
             nameColor = Color{ 255, 105, 180, 255 };
-        } else if (m_reaction.effect == NameEffect::FrogSoul) {
-            nameColor = COLOR_UNDERTALE_GREEN;
+        } else if (m_reaction.effect == NameEffect::HeadsetSoul) {
+            nameColor = COLOR_UNDERTALE_RED;
         } else if (m_reaction.effect == NameEffect::CrimsonShake) {
             nameColor = COLOR_UNDERTALE_RED;
         }
