@@ -1,0 +1,56 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* A fox fursuiter covered in flowers. You landed on him.",
+        "* He's out cold. He's smiling anyway."
+      ],
+      "if": "ruins.floofy.pokes == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* (He broke your fall.)",
+        "* (You broke his flower crown.)"
+      ],
+      "if": "ruins.floofy.pokes == 1"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/petal_buzz.ogg",
+      "volume": 0.45,
+      "if": "ruins.floofy.pokes == 2"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/phone_buzz.ogg",
+      "volume": 0.25,
+      "if": "ruins.floofy.pokes == 2"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* Something in his paw is buzzing faintly.",
+        "* (You decide it's a phone.)"
+      ],
+      "if": "ruins.floofy.pokes == 2"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* You poke him again. He giggles in his sleep."
+      ],
+      "if": "ruins.floofy.pokes >= 3"
+    },
+    {
+      "type": "addFlag",
+      "key": "ruins.floofy.pokes",
+      "value": 1
+    }
+  ]
+}

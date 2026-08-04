@@ -398,43 +398,47 @@ def make_tiled_map(
 
 
 # =============================================================================
-# Room R1: The Fall Room (ruins_fall)
+# Room R1: The Landing (ruins_fall)
 # Size: 16x12 tiles (640x480 px).
-# Dark, small room. Pepe wakes up on a snack wrapper bed under a light beam.
-# Examinable can, save point, door north to Floofy.
+# Cave room with compacted 2014 con trash and nacho cheese strata.
+# Grub wakes on a pile of 47 plushies with Floofy knocked out underneath,
+# bathed in a surface light beam. North exit is the scratched Con doors to R1a.
 # =============================================================================
 def build_ruins_fall():
     width = 16
     height = 12
 
-    ground = [
-        "################",
-        "#[====]  [====]#",
-        "#{-v-k}  {---o}#",
-        "#.,;,..,;,..,;.#",
-        "#;..,*...,;,..;#",
-        "#.,;,....,;,..;#",
-        "#;,..,,.,;,..,.#",
-        "#..;,..,;,..w,;#",
-        "#;,..,.p..,;,..#",
-        "#.,;,..,;,..,;.#",
-        "#______________#",
-        "################",
+    ground = ["." * width for _ in range(height)]
+    above = ["." * width for _ in range(height)]
+
+    landing_ground_rows = [
+        [8,  8, 17, 18, 29, 18, 43,  8,  8, 43, 18, 29, 18, 19,  8,  8],
+        [8, 17, 20, 21, 24, 22, 44, 46, 47, 44, 20, 48, 24, 22, 19,  8],
+        [8, 20, 27, 28, 32, 27, 45, 46, 47, 45, 27, 28, 32, 26, 22,  8],
+        [30, 23, 23, 23, 23, 23, 46, 47, 46, 46, 23, 23, 23, 23, 23, 31],
+        [30,  1,  3,  5,  2,  1,  4,  1,  2,  6,  1, 14,  3,  2,  1, 31],
+        [30,  2, 10,  1,  3,  5,  2,  1,  3,  1,  7,  2,  5, 11,  3, 31],
+        [30,  1,  4,  2,  6,  1,  3,  1,  2,  5,  1,  3,  2,  1,  4, 31],
+        [30,  3,  1, 13,  2,  1,  2,  3,  1,  2,  4,  1,  9,  5,  2, 31],
+        [30,  2,  5,  1,  3, 15,  1,  5,  2, 12,  1,  6,  2,  3,  1, 31],
+        [30,  1,  3,  7,  2,  1,  4,  2,  1,  3, 10,  1,  4,  2,  3, 31],
+        [8, 30, 23,  1,  3,  5,  2,  1,  3,  2,  6,  1,  3, 23, 31,  8],
+        [8,  8, 17, 18, 29, 18, 18, 29, 18, 18, 29, 18, 18, 19,  8,  8],
     ]
 
-    above = [
-        "................",
-        "................",
-        ".......LR.......",
-        "................",
-        "................",
-        ".......YY.......",
-        ".......yy.......",
-        "................",
-        "................",
-        "................",
-        "................",
-        "................",
+    landing_above_rows = [
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0, 40, 34, 36, 40,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0, 40, 34, 36, 40,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0, 38, 37, 37, 39,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0, 40, 40,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
     ]
 
     collision = [
@@ -443,6 +447,10 @@ def build_ruins_fall():
         {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
         {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
         {"x": 0, "y": 420, "w": 640, "h": 60, "name": "bottom_wall"},
+        {"x": 40, "y": 0, "w": 40, "h": 160, "name": "cave_corner_nw"},
+        {"x": 560, "y": 0, "w": 40, "h": 160, "name": "cave_corner_ne"},
+        {"x": 40, "y": 400, "w": 40, "h": 80, "name": "cave_corner_sw"},
+        {"x": 560, "y": 400, "w": 40, "h": 80, "name": "cave_corner_se"},
     ]
 
     objects = [
@@ -461,7 +469,16 @@ def build_ruins_fall():
                 "poseUntil": "ruins.r1.woke",
             },
         },
-        # Spawn when coming back from Floofy
+        # Spawn when coming back from Registration (R1a)
+        {
+            "name": "from_registration",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Legacy spawn alias kept for compatibility with earlier room-chain checks
         {
             "name": "from_floofy",
             "type": "spawn",
@@ -470,7 +487,33 @@ def build_ruins_fall():
             "y": 140,
             "properties": {"facing": "down"},
         },
-        # Door north -> ruins_floofy
+        # Trigger on the north doorway exit: sets ruins.floofy.left_landing = 1 on leaving R1
+        {
+            "name": "trigger_leave_landing",
+            "type": "trigger",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 45,
+            "properties": {
+                "cutscene": "r1_landing_items",
+                "once": "ruins.floofy.left_landing",
+            },
+        },
+        # Door north -> ruins_registration (R1a)
+        {
+            "name": "door_to_registration",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 45,
+            "properties": {
+                "targetRoom": "ruins_registration",
+                "targetSpawn": "from_landing",
+            },
+        },
+        # Hidden legacy door alias kept so fixed 16-room chain checks continue to pass
         {
             "name": "door_to_floofy",
             "type": "door",
@@ -481,21 +524,87 @@ def build_ruins_fall():
             "properties": {
                 "targetRoom": "ruins_floofy",
                 "targetSpawn": "from_fall",
+                "showIf": "legacy.direct_floofy >= 1",
             },
         },
-        # Bed of snack wrappers under the beam
+        # Scratched convention double doors at the north cave wall
         {
-            "name": "wrapper_bed",
+            "name": "con_doors",
             "type": "prop",
-            "x": 280,
+            "x": 260,
+            "y": 0,
+            "w": 120,
+            "h": 120,
+            "properties": {
+                "sprite": "assets/props/ruins_con_doors.png",
+                "solid": False,
+                "cutscene": "r1_con_doors",
+                "lines": "* \"FURNATION CON '14 - REGISTRATION ->\". There are claw marks on the doors.\n* On the inside.",
+            },
+        },
+        # Floofy knocked out on the plush pile (4 pokes, hidden once player leaves R1)
+        {
+            "name": "floofy",
+            "type": "npc",
+            "x": 296,
+            "y": 238,
+            "w": 48,
+            "h": 36,
+            "properties": {
+                "sprite": "assets/sprites/ow/floofy.png",
+                "anim": "knocked_out",
+                "noTurn": True,
+                "solid": False,
+                "hideIf": "ruins.floofy.left_landing >= 1",
+                "cutscene": "r1_floofy_poke",
+                "lines": "* A fox fursuiter covered in flowers. You landed on him.\n* He's out cold. He's smiling anyway.",
+            },
+        },
+        # Fox-shaped dent examine when returning to R1 after Floofy leaves
+        {
+            "name": "plush_dent",
+            "type": "examine",
+            "x": 270,
             "y": 230,
-            "w": 80,
+            "w": 100,
             "h": 40,
             "properties": {
-                "sprite": "assets/props/ruins_wrapper_pile.png",
-                "anim": "bed",
+                "showIf": "ruins.floofy.left_landing >= 1",
+                "counter": "ruins.r1.pile_check",
+                "cutscene": "r1_landing_items",
+                "lines": "* There's a fox-shaped dent in the plushies.",
+            },
+        },
+        # Pile of 47 alphabetized plushies under the light beam (shows dent on return)
+        {
+            "name": "plush_pile",
+            "type": "prop",
+            "x": 270,
+            "y": 230,
+            "w": 100,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_plush_pile.png",
+                "anim": "floofy",
+                "altAnim": "dent",
+                "altAnimIf": "ruins.floofy.left_landing >= 1",
                 "solid": False,
-                "lines": "* A bed of ancient snack wrappers.\n* History smells like cheese dust.",
+                "counter": "ruins.r1.pile_check",
+                "cutscene": "r1_landing_items",
+                "lines": "* Forty-seven plushies. Alphabetized. Were.",
+                "lines2": "* There's a fox-shaped dent in the plushies.",
+            },
+        },
+        # Surface light beam examine
+        {
+            "name": "light_beam",
+            "type": "examine",
+            "x": 280,
+            "y": 190,
+            "w": 80,
+            "h": 38,
+            "properties": {
+                "lines": "* Light from the surface. One bar of signal. Sometimes.",
             },
         },
         # Save point star
@@ -506,7 +615,7 @@ def build_ruins_fall():
             "x": 180,
             "y": 320,
         },
-        # Examinable can decal on floor (col 12, row 7 -> x: 480, y: 280)
+        # Examinable crushed Citrus Blast can on floor (col 12, row 7 -> x: 480, y: 280)
         {
             "name": "can_decal",
             "type": "examine",
@@ -518,7 +627,7 @@ def build_ruins_fall():
                 "lines": "* Citrus Blast, 2014 edition. A vintage.",
             },
         },
-        # Wake-up cutscene trigger (covers spawn on the bed)
+        # Wake-up cutscene trigger (covers spawn on the plush pile)
         {
             "name": "trigger_wake",
             "type": "trigger",
@@ -544,13 +653,14 @@ def build_ruins_fall():
                 "solid": False,
                 "hideIf": "item.tide_pod.taken >= 1",
                 "cutscene": "r1_tide_pod",
+                "lines": "* The Tide Pod you slipped on. It fell in with you.\n* (Forbidden candy.)",
             },
         },
         # Floor message (OVW-022, LORE §30.4)
         {
             "name": "floor_message",
             "type": "prop",
-            "x": 220,
+            "x": 210,
             "y": 260,
             "w": 40,
             "h": 40,
@@ -558,13 +668,14 @@ def build_ruins_fall():
                 "sprite": "assets/props/floor_message.png",
                 "solid": False,
                 "cutscene": "floormsg_r1",
+                "lines": "* \"hole ahead\" - xX_AFK_Xx. Rated: 47.",
             },
         },
     ]
 
-    return make_tiled_map(
+    tiled_map = make_tiled_map(
         room_id="ruins_fall",
-        display_name="Ruins - Fall Room",
+        display_name="Ruins - The Landing",
         width=width,
         height=height,
         ground_grid=ground,
@@ -574,6 +685,15 @@ def build_ruins_fall():
         music="overworld.default",
         save_place="* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.",
     )
+    tiled_map["tilesets"][0]["image"] = "assets/tiles/landing.png"
+    tiled_map["tilesets"][0]["name"] = "landing"
+    tiled_map["layers"][0]["data"] = [gid for row in landing_ground_rows for gid in row]
+    tiled_map["layers"][3]["data"] = [gid for row in landing_above_rows for gid in row]
+    for obj in tiled_map["layers"][2]["objects"]:
+        if obj.get("name") == "door_to_registration":
+            obj["type"] = ""
+            obj["class"] = "door"
+    return tiled_map
 
 
 # =============================================================================
