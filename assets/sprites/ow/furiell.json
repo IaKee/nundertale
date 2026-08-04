@@ -1,16 +1,86 @@
 {
   "image": "furiell.png",
-  "cell": [32, 44],
-  "origin": [16, 43],
+  "cell": [
+    32,
+    44
+  ],
+  "origin": [
+    16,
+    43
+  ],
   "anims": {
-    "stand_down": { "row": 0, "frames": 1 },
-    "walk_down": { "row": 0, "frames": 4, "fps": 6 },
-    "stand_up": { "row": 1, "frames": 1 },
-    "walk_up": { "row": 1, "frames": 4, "fps": 6 },
-    "stand_left": { "row": 2, "frames": 1 },
-    "walk_left": { "row": 2, "frames": 2, "fps": 4 },
-    "stand_right": { "row": 3, "frames": 1 },
-    "walk_right": { "row": 3, "frames": 2, "fps": 4 },
-    "talk_down": { "row": 4, "frames": 2, "fps": 4 }
+    "stand_down": {
+      "row": 0,
+      "frames": 1
+    },
+    "walk_down": {
+      "row": 0,
+      "frames": 4,
+      "fps": 6
+    },
+    "stand_up": {
+      "row": 1,
+      "frames": 1
+    },
+    "walk_up": {
+      "row": 1,
+      "frames": 4,
+      "fps": 6
+    },
+    "stand_left": {
+      "row": 2,
+      "frames": 1
+    },
+    "walk_left": {
+      "row": 2,
+      "frames": 2,
+      "fps": 4
+    },
+    "stand_right": {
+      "row": 3,
+      "frames": 1
+    },
+    "walk_right": {
+      "row": 3,
+      "frames": 2,
+      "fps": 4
+    },
+    "talk_down": {
+      "row": 4,
+      "frames": 2,
+      "fps": 4
+    },
+    "spritz_left": {
+      "row": 5,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "spritz_right": {
+      "row": 6,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "hold_walk_down": {
+      "row": 7,
+      "frames": 4,
+      "fps": 6
+    },
+    "hold_walk_up": {
+      "row": 8,
+      "frames": 4,
+      "fps": 6
+    },
+    "hold_walk_left": {
+      "row": 9,
+      "frames": 2,
+      "fps": 4
+    },
+    "hold_walk_right": {
+      "row": 10,
+      "frames": 2,
+      "fps": 4
+    }
   }
 }
