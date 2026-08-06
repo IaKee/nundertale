@@ -36,5 +36,35 @@
     "path": "assets/music/bass_shake.ogg",
     "loopStart": 1.846,
     "loopEnd": 3.692
+  },
+  "ruins_quiet": {
+    "path": "assets/music/ruins_quiet.ogg"
+  },
+  "ruins_panel_leak": {
+    "path": "assets/music/floofy_lounge_muffled.ogg"
+  },
+  "floofy_lounge": {
+    "path": "assets/music/floofy_lounge.ogg"
+  },
+  "floofy_lounge_muffled": {
+    "path": "assets/music/floofy_lounge_muffled.ogg"
+  },
+  "floofy_fight": {
+    "path": "assets/music/floofy_fight.ogg"
+  },
+  "overworld.ruins_registration": {
+    "path": "assets/music/ruins_quiet.ogg"
+  },
+  "overworld.ruins_panelhall": {
+    "path": "assets/music/floofy_lounge_muffled.ogg"
+  },
+  "overworld.ruins_floofy": {
+    "path": "assets/music/floofy_lounge.ogg"
+  },
+  "battle.floofy": {
+    "path": "assets/music/floofy_fight.ogg"
+  },
+  "battle.floofy_fight": {
+    "path": "assets/music/floofy_fight.ogg"
   }
 }
