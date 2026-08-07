@@ -18,16 +18,16 @@ void LoreScene::onEnter(GameContext& context) {
 
     // FRT-002 / LORE §9: the 10 canonical intro cards (gamer propaganda, biased narrator)
     m_cards = {
-        { "assets/img/lore1.bmp", { "Long ago, two races ruled", "over the internet:", "GAMERS and FURRIES." }, "assets/img/lore/card01.png" },
+        { "assets/img/lore1.bmp", { "Long ago, two races ruled", "over the internet:", LORE_CARD_1_LAST_LINE }, "assets/img/lore/card01.png" },
         { "assets/img/lore2.bmp", { "One day, the FURRIES tried", "to turn every GAMER", "into a FURRY." }, "assets/img/lore/card02.png" },
         { "assets/img/lore3.bmp", { "The GAMERS fought back with", "copypastas, raids, and a", "total lack of shame." }, "assets/img/lore/card03.png" },
         { "assets/img/lore4.bmp", { "After a decisive ratio,", "the GAMERS were victorious." }, "assets/img/lore/card04.png" },
         { "assets/img/lore4.bmp", { "Seven GAMERS sealed the", "degenerates underground", "with a magic BARRIER." }, "assets/img/lore/card05.png" },
-        { "assets/img/lore5.bmp", { "Many years later...", "", "MT. DEW, 202X" }, "assets/img/lore/card06.png" },
+        { "assets/img/lore5.bmp", { LORE_CARD_6_LINE_1, LORE_CARD_6_LINE_2 }, "assets/img/lore/card06.png" },
         { "assets/img/lore6.bmp", { "Legend says that those who", "keep on yiffin'", "may never game again..." }, "assets/img/lore/card07.png" },
-        // Card 8: Pepe looking at the Rift
+        // Card 8: Grub hurrying across MTn. DEW with his shopping bag and phone
         { "assets/img/lore7.bmp", {}, "assets/img/lore/card08.png" },
-        // Card 9: a foot slipping on a Dorito next to a tail
+        // Card 9: Grub's flip-flop slipping on a Tide Pod next to a tail
         { "assets/img/lore8.bmp", {}, "assets/img/lore/card09.png" },
         // Card 10: the fall (followed by the lore10 animation and the cut to the title)
         { "assets/img/lore9.bmp", {}, "assets/img/lore/card10.png" }
@@ -146,24 +146,27 @@ void LoreScene::update(float dt, GameContext& context) {
     // Card has text
     if (!m_cardTextDone) {
         m_charTimer += dt;
-        if (m_charTimer >= 0.04f) {
-            m_charTimer = 0.0f;
-            if (m_currentLine < card.lines.size()) {
-                const std::string& line = card.lines[m_currentLine];
-                if (m_charIndex < line.size()) {
-                    char c = line[m_charIndex];
-                    m_charIndex++;
-                    if (c != ' ' && c != '\t') {
-                        context.audio.playSound("assets/sfx/voice_default.ogg", 0.35f);
-                    }
-                } else {
-                    m_currentLine++;
-                    m_charIndex = 0;
-                }
-            } else {
-                m_cardTextDone = true;
-                m_cardTimer = 0.0f;
+        while (m_currentLine < card.lines.size()) {
+            const std::string& line = card.lines[m_currentLine];
+            if (m_charIndex >= line.size()) {
+                m_currentLine++;
+                m_charIndex = 0;
+                continue;
             }
+
+            const char character = line[m_charIndex];
+            const float delay = loreCharacterDelay(character);
+            if (m_charTimer < delay) {
+                break;
+            }
+
+            m_charTimer -= delay;
+            m_charIndex++;
+            context.audio.playSound("assets/sfx/voice_default.ogg", 0.35f);
+        }
+        if (m_currentLine >= card.lines.size()) {
+            m_cardTextDone = true;
+            m_cardTimer = 0.0f;
         }
 
         // Advance line instantly on confirm

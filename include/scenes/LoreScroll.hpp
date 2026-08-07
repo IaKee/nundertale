@@ -5,6 +5,22 @@
 
 namespace nundertale {
 
+inline constexpr const char* LORE_CARD_1_LAST_LINE = "FURRIES and GAMERS.";
+inline constexpr const char* LORE_CARD_6_LINE_1 =
+    "<<................MTn. DEW................>>";
+inline constexpr const char* LORE_CARD_6_LINE_2 =
+    "<<...................202X....................>>";
+
+inline constexpr float LORE_CHARACTER_DELAY = 0.04f;
+inline constexpr float LORE_DOT_SPEED_MULTIPLIER = 100.0f;
+
+/** Return the typewriter delay for one character. */
+inline constexpr float loreCharacterDelay(char character) {
+    return character == '.'
+        ? LORE_CHARACTER_DELAY / LORE_DOT_SPEED_MULTIPLIER
+        : LORE_CHARACTER_DELAY;
+}
+
 /**
  * Pure function calculating the vertical source rect Y offset (in native pixels)
  * for scrolling a tall intro card inside a fixed-height window from bottom to top.
