@@ -4,9 +4,14 @@
       "type": "dialog",
       "speaker": "FURIELL",
       "lines": [
-        "*grabs your hand* Hewwo~! I'm Furiell! You must be new. You smell new. uwu",
-        "The surface is full of meanies with cameras. Down here, nobody will laugh at you. >w<",
-        "You can always accept a hug, hun. It's the fastest way to make fwiends~"
+        "Welcome to your new home, pup! uwu ...Do you like bwankets? I have forty."
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "NARRATOR",
+      "lines": [
+        "* (You brought your own.)"
       ]
     }
   ]
