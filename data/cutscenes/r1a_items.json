@@ -1,0 +1,39 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* Unclaimed badges, 2014. Nobody came back for them."],
+      "if": "ruins.r1a.badges >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* CON RULES: 1. No yiffing in the hallways. 2. Please. 3. We mean it."],
+      "if": "ruins.r1a.rules >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* Out of order since 2014. The \"temporarily\" sign is laminated."],
+      "if": "ruins.r1a.escalator >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)"],
+      "if": "ruins.r1a.lostfound >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* A pink petal. It's warm."],
+      "if": "ruins.r1a.petal >= 1"
+    },
+    {"type": "setFlag", "key": "ruins.r1a.badges", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1a.rules", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1a.escalator", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1a.lostfound", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1a.petal", "value": 0}
+  ]
+}

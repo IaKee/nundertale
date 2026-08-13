@@ -390,7 +390,7 @@
         {
           "height": 0,
           "id": 7,
-          "name": "from_fall",
+          "name": "from_panelhall",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -447,9 +447,9 @@
         {
           "height": 40,
           "id": 10,
-          "name": "door_to_fall",
+          "name": "door_to_panelhall",
           "rotation": 0,
-          "type": "door",
+          "type": "",
           "visible": true,
           "width": 80,
           "x": 280,
@@ -458,14 +458,15 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_fall"
+              "value": "ruins_panelhall"
             },
             {
               "name": "targetSpawn",
               "type": "string",
-              "value": "from_floofy"
+              "value": "from_lounge"
             }
-          ]
+          ],
+          "class": "door"
         },
         {
           "height": 40,

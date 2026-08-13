@@ -462,7 +462,7 @@
             {
               "name": "targetSpawn",
               "type": "string",
-              "value": "from_fall"
+              "value": "from_panelhall"
             },
             {
               "name": "showIf",

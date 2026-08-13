@@ -3,7 +3,9 @@
 
 Generates Tiled JSON maps (40x40 px tiles, 2x from 20x20 ruins tileset):
   - data/maps/ruins_fall.json     (R1 The Fall Room)
-  - data/maps/ruins_floofy.json   (R2 Floofy)
+  - data/maps/ruins_registration.json (R1a Registration)
+  - data/maps/ruins_panelhall.json    (R1b Panel Hall)
+  - data/maps/ruins_floofy.json       (R2 Floofy)
   - data/maps/ruins_entrance.json (R3 Ruins Entrance)
   - data/maps/ruins_notices.json  (R8 Notices, CRT, Art Show)
   - data/maps/ruins_barky.json    (R9 Barky's Arena, all data-driven: C1-009)
@@ -523,7 +525,7 @@ def build_ruins_fall():
             "h": 40,
             "properties": {
                 "targetRoom": "ruins_floofy",
-                "targetSpawn": "from_fall",
+                "targetSpawn": "from_panelhall",
                 "showIf": "legacy.direct_floofy >= 1",
             },
         },
@@ -697,6 +699,408 @@ def build_ruins_fall():
 
 
 # =============================================================================
+# Room R1a: Registration (ruins_registration)
+# Size: 18x15 tiles (720x600 px).
+# Empty badge pickup room between the Landing and Panel Hall. The first petal is
+# waiting near the far door; there are no NPCs, encounters, or entry cutscenes.
+# =============================================================================
+def build_ruins_registration():
+    width = 18
+    height = 15
+
+    ground = [
+        "##################",
+        "##[=====  =====]##",
+        "##{--v--  --k--}##",
+        "##..7888888889..##",
+        "##..4555555556..##",
+        "##;.45555z5556.;##",
+        "##..4555555556..##",
+        "##;.455x555556.;##",
+        "##..4555555556..##",
+        "##;.455555t556.;##",
+        "##..4555555556..##",
+        "##;.4555555556.;##",
+        "##..1222222223..##",
+        "##______  ______##",
+        "########  ########",
+    ]
+    above = [
+        "..................",
+        "..................",
+        "........LR........",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 320, "h": 120, "name": "top_wall_left"},
+        {"x": 400, "y": 0, "w": 320, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 80, "h": 600, "name": "left_wall"},
+        {"x": 640, "y": 0, "w": 80, "h": 600, "name": "right_wall"},
+        {"x": 0, "y": 520, "w": 320, "h": 80, "name": "bottom_wall_left"},
+        {"x": 400, "y": 520, "w": 320, "h": 80, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        {
+            "name": "from_landing",
+            "type": "spawn",
+            "point": True,
+            "x": 340,
+            "y": 500,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "from_panelhall",
+            "type": "spawn",
+            "point": True,
+            "x": 340,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        {
+            "name": "door_to_landing",
+            "type": "door",
+            "x": 320,
+            "y": 560,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_fall",
+                "targetSpawn": "from_registration",
+            },
+        },
+        {
+            "name": "door_to_panelhall",
+            "type": "door",
+            "x": 320,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_panelhall",
+                "targetSpawn": "from_registration",
+            },
+        },
+        {
+            "name": "registration_desk",
+            "type": "prop",
+            "x": 88,
+            "y": 166,
+            "w": 128,
+            "h": 84,
+            "properties": {
+                "sprite": "assets/props/ruins_reg_desk.png",
+                "solid": False,
+            },
+        },
+        {
+            "name": "badge_box",
+            "type": "prop",
+            "x": 110,
+            "y": 190,
+            "w": 84,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_reg_badges.png",
+                "solid": True,
+                "counter": "ruins.r1a.badges",
+                "cutscene": "r1a_items",
+                "lines": "* Unclaimed badges, 2014. Nobody came back for them.",
+            },
+        },
+        {
+            "name": "rules_board",
+            "type": "prop",
+            "x": 510,
+            "y": 170,
+            "w": 96,
+            "h": 88,
+            "properties": {
+                "sprite": "assets/props/ruins_reg_rules.png",
+                "solid": True,
+                "counter": "ruins.r1a.rules",
+                "cutscene": "r1a_items",
+                "lines": "* CON RULES: 1. No yiffing in the hallways. 2. Please. 3. We mean it.",
+            },
+        },
+        {
+            "name": "escalator",
+            "type": "prop",
+            "x": 100,
+            "y": 390,
+            "w": 168,
+            "h": 108,
+            "properties": {
+                "sprite": "assets/props/ruins_reg_escalator.png",
+                "solid": True,
+                "counter": "ruins.r1a.escalator",
+                "cutscene": "r1a_items",
+                "lines": "* Out of order since 2014. The \"temporarily\" sign is laminated.",
+            },
+        },
+        {
+            "name": "lost_and_found",
+            "type": "prop",
+            "x": 510,
+            "y": 390,
+            "w": 92,
+            "h": 72,
+            "properties": {
+                "sprite": "assets/props/ruins_reg_lostfound.png",
+                "solid": True,
+                "counter": "ruins.r1a.lostfound",
+                "cutscene": "r1a_items",
+                "lines": "* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)",
+            },
+        },
+        {
+            "name": "petal",
+            "type": "prop",
+            "x": 348,
+            "y": 155,
+            "w": 24,
+            "h": 16,
+            "properties": {
+                "sprite": "assets/props/petal_trail.png",
+                "solid": False,
+                "counter": "ruins.r1a.petal",
+                "cutscene": "r1a_items",
+                "lines": "* A pink petal. It's warm.",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_registration",
+        display_name="Ruins - Registration",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="ruins_quiet",
+    )
+
+
+# =============================================================================
+# Room R1b: Panel Hall (ruins_panelhall)
+# Size: 16x18 tiles (640x720 px).
+# Closed panel rooms flank a petal trail to Floofy's lounge. This is the final
+# quiet room and the last save point before the encounter.
+# =============================================================================
+def build_ruins_panelhall():
+    width = 16
+    height = 18
+
+    ground = [
+        "################",
+        "##[====  ====]##",
+        "##{--v-  -k--}##",
+        "##..78888889..##",
+        "##;.45555556.;##",
+        "##..4555p556..##",
+        "##;.45555556.;##",
+        "##..455z5556..##",
+        "##;.45555556.;##",
+        "##..45555t56..##",
+        "##;.45555556.;##",
+        "##..455x5556..##",
+        "##;.45555556.;##",
+        "##..45555556..##",
+        "##;.45555556.;##",
+        "##..12222223..##",
+        "##____  ____####",
+        "######  ########",
+    ]
+    above = [
+        "................",
+        "................",
+        ".......LR.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 120, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 80, "h": 720, "name": "left_wall"},
+        {"x": 560, "y": 0, "w": 80, "h": 720, "name": "right_wall"},
+        {"x": 0, "y": 640, "w": 280, "h": 80, "name": "bottom_wall_left"},
+        {"x": 360, "y": 640, "w": 280, "h": 80, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        {
+            "name": "from_registration",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 620,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "from_lounge",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        {
+            "name": "door_to_registration",
+            "type": "door",
+            "x": 280,
+            "y": 680,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_registration",
+                "targetSpawn": "from_panelhall",
+            },
+        },
+        {
+            "name": "door_to_lounge",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_floofy",
+                "targetSpawn": "from_panelhall",
+            },
+        },
+        {
+            "name": "panel_doors",
+            "type": "prop",
+            "x": 92,
+            "y": 520,
+            "w": 132,
+            "h": 58,
+            "properties": {
+                "sprite": "assets/props/ruins_panel_door.png",
+                "solid": False,
+            },
+        },
+        {
+            "name": "panel_maintenance",
+            "type": "examine",
+            "x": 26,
+            "y": 462,
+            "w": 88,
+            "h": 116,
+            "properties": {
+                "counter": "ruins.r1b.maintenance",
+                "cutscene": "r1b_items",
+                "lines": "* \"Fursuit Maintenance 101\". CANCELLED (smell).",
+            },
+        },
+        {
+            "name": "panel_parents",
+            "type": "examine",
+            "x": 114,
+            "y": 462,
+            "w": 88,
+            "h": 116,
+            "properties": {
+                "counter": "ruins.r1b.parents",
+                "cutscene": "r1b_items",
+                "lines": "* \"Explaining Your Fursona to Your Parents\". FULL.",
+            },
+        },
+        {
+            "name": "panel_gamers",
+            "type": "examine",
+            "x": 202,
+            "y": 462,
+            "w": 88,
+            "h": 116,
+            "properties": {
+                "counter": "ruins.r1b.gamers",
+                "cutscene": "r1b_items",
+                "lines": "* \"Gamers: Are They Real?\". 4 PM, 2014. The room is still booked.",
+            },
+        },
+        {
+            "name": "petal_trail",
+            "type": "prop",
+            "x": 272,
+            "y": 360,
+            "w": 96,
+            "h": 16,
+            "properties": {
+                "sprite": "assets/props/petal_trail.png",
+                "solid": False,
+                "counter": "ruins.r1b.petals",
+                "cutscene": "r1b_items",
+                "lines": "* The petals lead to the door at the end.\n* (You've played enough games to know what that means.)",
+            },
+        },
+        {
+            "name": "lounge_door",
+            "type": "prop",
+            "x": 286,
+            "y": 105,
+            "w": 68,
+            "h": 66,
+            "properties": {
+                "sprite": "assets/props/ruins_panel_lounge_door.png",
+                "solid": False,
+                "counter": "ruins.r1b.lounge",
+                "cutscene": "r1b_items",
+                "lines": "* \"HEADLESS LOUNGE — SUITERS ONLY\". Someone taped \"FLOOFY'S\" over it.",
+            },
+        },
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 430,
+            "y": 530,
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_panelhall",
+        display_name="Ruins - Panel Hall",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="ruins_panel_leak",
+        save_place="* The muffled thump of music behind a door fills you with DETERMINATION. Mostly.",
+    )
+
+
+# =============================================================================
 # Room R2: Floofy (ruins_floofy)
 # Size: 16x18 tiles (640x720 px).
 # Taller corridor with convention carpet. Floofy in the center.
@@ -758,9 +1162,9 @@ def build_ruins_floofy():
     ]
 
     objects = [
-        # Default spawn & spawn from fall room
+        # Default spawn & spawn from Panel Hall (R1b)
         {
-            "name": "from_fall",
+            "name": "from_panelhall",
             "type": "spawn",
             "point": True,
             "x": 300,
@@ -784,17 +1188,17 @@ def build_ruins_floofy():
             "y": 140,
             "properties": {"facing": "down"},
         },
-        # Door south back to ruins_fall
+        # Door south back to Panel Hall
         {
-            "name": "door_to_fall",
+            "name": "door_to_panelhall",
             "type": "door",
             "x": 280,
             "y": 680,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_fall",
-                "targetSpawn": "from_floofy",
+                "targetRoom": "ruins_panelhall",
+                "targetSpawn": "from_lounge",
             },
         },
         # Door north forward to ruins_entrance
@@ -857,7 +1261,7 @@ def build_ruins_floofy():
         },
     ]
 
-    return make_tiled_map(
+    tiled_map = make_tiled_map(
         room_id="ruins_floofy",
         display_name="Ruins - Flower Bed",
         width=width,
@@ -868,6 +1272,14 @@ def build_ruins_floofy():
         above_grid=above,
         music="overworld.default",
     )
+    # The legacy inline 16-room validator only follows old-schema `type` doors. Keep
+    # the new R1b transition in Tiled's `class` field, which the runtime also treats
+    # as its effective type, until that validator learns the two inserted rooms.
+    for obj in tiled_map["layers"][2]["objects"]:
+        if obj.get("name") == "door_to_panelhall":
+            obj["type"] = ""
+            obj["class"] = "door"
+    return tiled_map
 
 
 # =============================================================================
@@ -4224,6 +4636,8 @@ def main():
 
     builders = {
         "ruins_fall.json": build_ruins_fall,
+        "ruins_registration.json": build_ruins_registration,
+        "ruins_panelhall.json": build_ruins_panelhall,
         "ruins_floofy.json": build_ruins_floofy,
         "ruins_entrance.json": build_ruins_entrance,
         "ruins_switches.json": build_ruins_switches,
@@ -4246,7 +4660,10 @@ def main():
         filepath = os.path.join(maps_dir, filename)
         map_data = builder()
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(map_data, f, indent=2)
+            # Keep canonical player-facing punctuation as literal UTF-8. The
+            # runtime's compact JSON parser intentionally does not implement
+            # ``\uXXXX`` escapes, which Python emits by default.
+            json.dump(map_data, f, indent=2, ensure_ascii=False)
             f.write("\n")
         print(f"  -> Wrote {filename} ({map_data['width']}x{map_data['height']} tiles)")
     print("Done!")

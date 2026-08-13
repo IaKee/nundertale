@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"Fursuit Maintenance 101\". CANCELLED (smell)."],
+      "if": "ruins.r1b.maintenance >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"Explaining Your Fursona to Your Parents\". FULL."],
+      "if": "ruins.r1b.parents >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"Gamers: Are They Real?\". 4 PM, 2014. The room is still booked."],
+      "if": "ruins.r1b.gamers >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* The petals lead to the door at the end.",
+        "* (You've played enough games to know what that means.)"
+      ],
+      "if": "ruins.r1b.petals >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"HEADLESS LOUNGE — SUITERS ONLY\". Someone taped \"FLOOFY'S\" over it."],
+      "if": "ruins.r1b.lounge >= 1"
+    },
+    {"type": "setFlag", "key": "ruins.r1b.maintenance", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1b.parents", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1b.gamers", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1b.petals", "value": 0},
+    {"type": "setFlag", "key": "ruins.r1b.lounge", "value": 0}
+  ]
+}
