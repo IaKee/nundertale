@@ -1,0 +1,76 @@
+{
+  "id": "floofy_bass",
+  "name": "Floofy",
+  "hp": 1,
+  "maxHp": 1,
+  "atk": 3,
+  "def": 999,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "floofy",
+  "check": "Floral. Zesty. Pure thorns.",
+  "invulnerable": true,
+  "canSpare": false,
+  "suppressFurMirror": true,
+  "furCap": 99,
+  "scriptedEnd": {
+    "afterEnemyTurns": 6,
+    "interruptOnTurnStart": true,
+    "endCutscene": "r2_floofy_end"
+  },
+  "turnOffsetFlag": "ruins.floofy.deaths",
+  "scriptedEndText": "* *SPRITZ* The track scratches to a stop.",
+  "fleeBlockedText": "* The petals block the exit.",
+  "invulnerableTexts": [
+    "* You hit him. Your fist sinks into the fursuit padding.",
+    "* It's too soft to hurt."
+  ],
+  "invulnerableBubble": "Aww~ was that a hug?",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "plead",
+      "label": "Plead",
+      "text": "* You say you're not into it.",
+      "response": "That's what they ALL say~",
+      "effects": {}
+    },
+    {
+      "id": "compliment_crown",
+      "label": "Compliment the Crown",
+      "text": "* You say the crown is nice.",
+      "response": "I KNOW.",
+      "effects": {}
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* The bass rattles Floofy's flower crown.",
+      "* Floofy sways to the bass. His bouquet tail sways a beat behind.",
+      "* Thorns tick against the box in time with the track.",
+      "* The air smells aggressively floral."
+    ],
+    "lowHp": [],
+    "spareable": []
+  },
+  "dialogue": {
+    "default": [
+      "Keep up, darling~",
+      "Feel that? That's the BASS.",
+      "Don't stop moving, gamer~"
+    ]
+  },
+  "patterns": [
+    {
+      "id": "bass_thorn_petals",
+      "kind": "beat",
+      "weight": 1,
+      "params": { "beatmap": "floofy_bass", "speed": 110, "damage": 1, "furry": 6 }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "track": "battle.bass_shake",
+  "bpm": 130,
+  "offset": 0.0,
+  "loopLength": 3.692307692308,
+  "menuLoop": [1.846153846154, 3.692307692308],
+  "passesPerTurn": 3,
+  "turnEndsAt": 1.384615384615,
+  "latencyMs": 0,
+  "shots": [
+    { "from": 0.0,            "to": 1.384615384615, "shot": "closeup" },
+    { "from": 1.384615384615, "to": 3.692307692308, "shot": "wide" }
+  ],
+  "burst": {
+    "notes": [0.0, 0.115384615385, 0.230769230769, 0.346153846154, 0.461538461538, 0.692307692308, 0.923076923077, 1.038461538462, 1.153846153846, 1.269230769231],
+    "bigNotes": [4, 5],
+    "kicks": [0.0, 0.461538461538, 0.923076923077]
+  },
+  "expressions": ["smug", "wink", "pout", "smirk"],
+  "closeupSprite": "fursuit_dummy_close",
+  "bullet": {
+    "sprite": "assets/sprites/bullets/thorn_petal.png",
+    "spriteBig": "assets/sprites/bullets/thorn_petal.png",
+    "radius": 4,
+    "radiusBig": 6,
+    "bigDamageBonus": 1,
+    "speedPerTurn": 0.06
+  },
+  "wide": { "stepSixteenths": 4 },
+  "finale": {
+    "pass": 2,
+    "time": 0.0,
+    "sfx": ["assets/sfx/spray.ogg", "assets/sfx/record_scratch.ogg"]
+  }
+}

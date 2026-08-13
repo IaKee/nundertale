@@ -24,6 +24,15 @@ struct BeatShot {
     std::string shot;
 };
 
+// C1-028: the drop where Furiell's spray lands on the scripted final turn (the record
+// scratch stops the track there). Absent = the legacy end-of-turn behaviour.
+struct BeatFinale {
+    bool enabled = false;
+    int pass = 0;
+    double time = 0.0;
+    std::vector<std::string> sfx;
+};
+
 struct BeatMap {
     std::string track;
     double bpm = 130.0;
@@ -39,6 +48,16 @@ struct BeatMap {
     std::vector<int> bigNotes;
     std::vector<double> kicks;
     std::vector<std::string> expressions;
+    // C1-028 data hooks; the defaults keep the dummy's fluff tufts and shots unchanged.
+    std::string closeupSprite;        // battle sprite base used when "<enemy sprite>_close" is missing
+    std::string bulletSprite;         // empty = fluff tufts
+    std::string bulletSpriteBig;      // empty = bulletSprite
+    float bulletRadius = 4.0f;
+    float bulletRadiusBig = 6.0f;
+    int bigDamageBonus = 0;           // extra damage on the "big" notes
+    double speedPerTurn = 0.0;        // +fraction of bullet speed for each enemy turn after the first
+    int wideStepSixteenths = 1;       // wide shot advances one idle frame every N sixteenths
+    BeatFinale finale;
 };
 
 struct BeatEvent {
@@ -190,6 +209,18 @@ inline bool canonicalizeTiming(BeatMap& map) {
     for (double& kick : map.kicks) {
         if (!snapToSixteenth(kick, sixteenth)) return false;
     }
+    if (map.finale.enabled) {
+        if (!snapToSixteenth(map.finale.time, sixteenth) || map.finale.pass < 0 ||
+            map.finale.pass >= map.passesPerTurn || map.finale.time < 0.0 ||
+            map.finale.time >= map.loopLength) {
+            return false;
+        }
+    }
+    if (map.wideStepSixteenths < 1 || !(map.bulletRadius > 0.0f) ||
+        !(map.bulletRadiusBig > 0.0f) || !(map.speedPerTurn >= 0.0) ||
+        !std::isfinite(map.speedPerTurn)) {
+        return false;
+    }
     return map.passesPerTurn > 0 && map.menuLoopStart >= 0.0 &&
            map.menuLoopEnd > map.menuLoopStart && map.menuLoopEnd <= map.loopLength &&
            map.turnEndsAt >= 0.0 && map.turnEndsAt <= map.loopLength;
@@ -251,6 +282,41 @@ inline bool parseBeatMap(const std::string& jsonText, BeatMap& out) {
             !beat_detail::readDoubleArray(*burst, "kicks", parsed.kicks)) {
             return false;
         }
+    }
+
+    if (!beat_detail::readString(root, "closeupSprite", parsed.closeupSprite)) return false;
+
+    if (const JsonValue* bullet = root.field("bullet")) {
+        double radius = static_cast<double>(parsed.bulletRadius);
+        double radiusBig = static_cast<double>(parsed.bulletRadiusBig);
+        if (bullet->kind != JsonValue::Kind::Object ||
+            !beat_detail::readString(*bullet, "sprite", parsed.bulletSprite) ||
+            !beat_detail::readString(*bullet, "spriteBig", parsed.bulletSpriteBig) ||
+            !beat_detail::readDouble(*bullet, "radius", radius) ||
+            !beat_detail::readDouble(*bullet, "radiusBig", radiusBig) ||
+            !beat_detail::readInt(*bullet, "bigDamageBonus", parsed.bigDamageBonus) ||
+            !beat_detail::readDouble(*bullet, "speedPerTurn", parsed.speedPerTurn)) {
+            return false;
+        }
+        parsed.bulletRadius = static_cast<float>(radius);
+        parsed.bulletRadiusBig = static_cast<float>(radiusBig);
+    }
+
+    if (const JsonValue* wide = root.field("wide")) {
+        if (wide->kind != JsonValue::Kind::Object ||
+            !beat_detail::readInt(*wide, "stepSixteenths", parsed.wideStepSixteenths)) {
+            return false;
+        }
+    }
+
+    if (const JsonValue* finale = root.field("finale")) {
+        if (finale->kind != JsonValue::Kind::Object ||
+            !beat_detail::readInt(*finale, "pass", parsed.finale.pass) ||
+            !beat_detail::readDouble(*finale, "time", parsed.finale.time) ||
+            !beat_detail::readStringArray(*finale, "sfx", parsed.finale.sfx)) {
+            return false;
+        }
+        parsed.finale.enabled = true;
     }
 
     if (!beat_detail::canonicalizeTiming(parsed)) return false;
@@ -366,6 +432,26 @@ inline double beatTurnDuration(const BeatMap& map) {
 
 inline bool beatTurnFinished(const BeatMap& map, double turnTime) {
     return turnTime >= beatTurnDuration(map);
+}
+
+// Turn time of the finale drop (Furiell's spray); negative when the map has none.
+inline double beatFinaleTime(const BeatMap& map) {
+    if (!map.finale.enabled) return -1.0;
+    return static_cast<double>(map.finale.pass) * map.loopLength + map.finale.time;
+}
+
+inline bool beatFinaleReached(const BeatMap& map, double turnTime) {
+    return map.finale.enabled && turnTime + BEAT_TIMING_TOLERANCE >= beatFinaleTime(map);
+}
+
+// Bullet speed for the n-th enemy turn (one-based): the fight gets harder every turn.
+inline float beatBulletSpeed(const BeatMap& map, float baseSpeed, int turnNumber) {
+    const double steps = static_cast<double>(std::max(0, turnNumber - 1));
+    return static_cast<float>(static_cast<double>(baseSpeed) * (1.0 + map.speedPerTurn * steps));
+}
+
+inline int beatBulletDamage(const BeatMap& map, int baseDamage, bool big) {
+    return std::max(1, baseDamage) + (big ? std::max(0, map.bigDamageBonus) : 0);
 }
 
 inline double firstCompensatedBeatEvent(const BeatMap& map) {
@@ -488,8 +574,9 @@ inline BeatVisualState beatVisualStateAt(const BeatMap& map,
                     !beatTurnFinished(map, state.turnTime);
     state.expressionIndex = beatExpressionIndex(map, turnIndex, state.pass);
     const int frameCount = std::max(1, wideFrameCount);
-    state.wideFrame = static_cast<int>(std::floor(state.phase / beatSixteenth(map) + 1e-12)) %
-                      frameCount;
+    const double wideStep = beatSixteenth(map) *
+                            static_cast<double>(std::max(1, map.wideStepSixteenths));
+    state.wideFrame = static_cast<int>(std::floor(state.phase / wideStep + 1e-12)) % frameCount;
     state.pose = beatShakePose(map, state.phase);
     state.closeColumn = beatCloseColumn(state.pose.sway, closeFrameCount);
     return state;

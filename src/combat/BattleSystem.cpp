@@ -779,7 +779,9 @@ void BattleSystem::handleMercyInput(GameContext& context) {
 void BattleSystem::startEnemyTurn(GameContext& context) {
     m_turnCount++;
 
-    if (finishScriptedBattleIfComplete(context, true)) return;
+    // A beat fight plays its last turn up to the finale drop instead of cutting at the turn start.
+    const bool beatFinale = beatFinaleTurn(context);
+    if (!beatFinale && finishScriptedBattleIfComplete(context, true)) return;
 
     if (m_frozenTurns > 0 || m_beatStopped) {
         if (m_frozenTurns > 0) m_frozenTurns--;
@@ -842,6 +844,9 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
         if (m_genericPatternIndex >= patterns.size()) m_genericPatternIndex = 0;
         m_enemyTurnDuration = 5.0f;
         if (beatPatternSelected()) startBeatTurn(context);
+        m_beatFinaleActive = beatFinale && m_beatTurnActive;
+        // never trap the player in a finale turn that has no beat pattern to play
+        if (beatFinale && !m_beatTurnActive && finishScriptedBattleIfComplete(context, true)) return;
     }
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
@@ -958,6 +963,10 @@ bool BattleSystem::updateBeatTurn(float dt, GameContext& context) {
     const BeatClockSample clockSample = m_beatClock.advance(m_beatMap, raw);
     if (clockSample.accepted) {
         m_beatTurnTime = clockSample.turnTime;
+        if (m_beatFinaleActive && beatFinaleReached(m_beatMap, m_beatTurnTime)) {
+            finishBeatFinale(context);
+            return false;
+        }
         const auto& patterns = m_enemy->getPatterns();
         for (const BeatEvent& event : beatEventsBetween(m_beatMap, m_beatPrevTime, m_beatTurnTime)) {
             spawnBeatTuft(patterns[m_genericPatternIndex], event);
@@ -975,7 +984,28 @@ void BattleSystem::endBeatTurn(GameContext& context) {
     context.audio.setMusicLoopPoints(static_cast<float>(m_beatMap.offset + m_beatMap.menuLoopStart),
                                      static_cast<float>(m_beatMap.offset + m_beatMap.menuLoopEnd));
     m_beatTurnActive = false;
+    m_beatFinaleActive = false;
     m_enemyTurnDuration = 5.0f;
+}
+
+bool BattleSystem::beatFinaleTurn(const GameContext& context) const {
+    if (m_isBarky || !m_beatMapLoaded || !m_beatMap.finale.enabled || !m_enemy) return false;
+    const ScriptedBattleEnd& scriptedEnd = m_enemy->getScriptedEnd();
+    return scriptedBattleEndsOnTurnStart(m_turnCount, effectiveScriptedEndTurn(context),
+                                         scriptedEnd.interruptOnTurnStart);
+}
+
+void BattleSystem::finishBeatFinale(GameContext& context) {
+    // Furiell's spray lands on the drop and the record scratch stops the track dead
+    for (const std::string& sfx : m_beatMap.finale.sfx) context.audio.playSound(sfx, 1.0f);
+    context.audio.stopMusic();
+    m_beatTurnActive = false;
+    m_beatFinaleActive = false;
+    m_enemyTurnDuration = 5.0f;
+    m_bullets.clear();
+    m_zones.clear();
+    m_soulTrails.clear();
+    finishScriptedBattleIfComplete(context, true);
 }
 
 void BattleSystem::spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent& event) {
@@ -987,20 +1017,27 @@ void BattleSystem::spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent
     // low-discrepancy lanes so consecutive tufts never stack into a wall
     const float lane = std::fmod(static_cast<float>(event.noteIndex) * 0.618034f +
                                  static_cast<float>(event.pass) * 0.29f, 1.0f);
-    const float speed = pattern.speed > 0.0f ? pattern.speed : 110.0f;
+    const float baseSpeed = pattern.speed > 0.0f ? pattern.speed : 110.0f;
+    const float speed = beatBulletSpeed(m_beatMap, baseSpeed, m_turnCount);
 
     Bullet bullet;
     bullet.type = BulletType::Normal;
-    bullet.radius = event.big ? 6.0f : 4.0f;
+    bullet.radius = event.big ? m_beatMap.bulletRadiusBig : m_beatMap.bulletRadius;
     bullet.color = WHITE;
     bullet.position = { fromLeft ? box.x - 8.0f : box.x + box.width + 8.0f, innerTop + lane * innerHeight };
     // gentle drift toward the middle row
     const float drift = (lane < 0.5f ? 1.0f : -1.0f) * speed * 0.10f;
     bullet.velocity = { fromLeft ? speed : -speed, drift };
-    bullet.damage = std::max(1, pattern.damage);
+    bullet.damage = beatBulletDamage(m_beatMap, pattern.damage, event.big);
     bullet.fur = std::max(0, pattern.furry);
-    bullet.spritePath = event.big ? "assets/sprites/bullets/fluff_tuft_big.png"
-                                  : "assets/sprites/bullets/fluff_tuft_small.png";
+    if (!m_beatMap.bulletSprite.empty()) {
+        bullet.spritePath = event.big && !m_beatMap.bulletSpriteBig.empty()
+            ? m_beatMap.bulletSpriteBig
+            : m_beatMap.bulletSprite;
+    } else {
+        bullet.spritePath = event.big ? "assets/sprites/bullets/fluff_tuft_big.png"
+                                      : "assets/sprites/bullets/fluff_tuft_small.png";
+    }
     m_bullets.push_back(bullet);
 
     if (event.kick) {
@@ -1059,8 +1096,13 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     bool turnOver = m_enemyTurnTimer >= m_enemyTurnDuration;
     if (m_beatTurnActive) {
         turnOver = updateBeatTurn(dt, context);
+        if (m_state != BattleState::EnemyTurn) return; // the finale ended the battle
     }
     if (turnOver) {
+        if (m_beatFinaleActive) { // stalled music clock: the scripted end still happens
+            finishBeatFinale(context);
+            return;
+        }
         if (m_beatTurnActive) endBeatTurn(context);
         m_bullets.clear();
         m_zones.clear();
@@ -2066,8 +2108,15 @@ void BattleSystem::render(GameContext& context) {
         bool drewBeatCloseup = false;
         if (renderBeatCloseup && !m_isSpared &&
             m_enemyShakeTimer <= 0.0f) {
-            const std::string closePng = spriteBase + "_close.png";
-            const SpriteSheetDef* closeSheet = spriteSheetCache().load(closePng, spriteBase + "_close.json");
+            std::string closeBase = spriteBase + "_close";
+            std::string closePng = closeBase + ".png";
+            const SpriteSheetDef* closeSheet = spriteSheetCache().load(closePng, closeBase + ".json");
+            if (closeSheet == nullptr && !m_beatMap.closeupSprite.empty()) {
+                // C1-028: stand-in close-up until the enemy gets its own "<sprite>_close" art
+                closeBase = "assets/sprites/battle/" + m_beatMap.closeupSprite;
+                closePng = closeBase + ".png";
+                closeSheet = spriteSheetCache().load(closePng, closeBase + ".json");
+            }
             Texture2D closeTex = { 0, 0, 0, 0, 0 };
             if (closeSheet != nullptr) closeTex = context.resources.getTexture(closePng);
             if (closeSheet != nullptr && closeTex.id > 0) {

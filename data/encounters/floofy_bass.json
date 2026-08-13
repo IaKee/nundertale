@@ -1,9 +1,9 @@
 {
-  "id": "encounter_floofy_bass",
-  "enemies": ["floofy"],
-  "introText": "* Floofy is shaking his head. Fast.",
+  "id": "floofy_bass",
+  "enemies": ["floofy_bass"],
+  "introText": "* ...DANCE.",
   "background": "black",
-  "music": "bass_shake",
+  "music": "battle.bass_shake",
   "canFlee": false,
   "intro": {
     "music": "floofy_lounge",

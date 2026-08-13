@@ -271,10 +271,14 @@ private:
     void startBeatTurn(GameContext& context);
     bool updateBeatTurn(float dt, GameContext& context); // returns true when the turn is over
     void endBeatTurn(GameContext& context);
+    // C1-028: the scripted last turn of a beat fight ends on a drop (spray + record scratch)
+    bool beatFinaleTurn(const GameContext& context) const;
+    void finishBeatFinale(GameContext& context);
     void spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent& event);
     BeatMap m_beatMap;
     bool m_beatMapLoaded = false;
     bool m_beatTurnActive = false;
+    bool m_beatFinaleActive = false; // this beat turn is the scripted last one
     BeatTurnClock m_beatClock;
     double m_beatPrevTime = 0.0;
     double m_beatTurnTime = 0.0;
