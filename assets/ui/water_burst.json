@@ -1,0 +1,49 @@
+{
+  "image": "water_burst.png",
+  "cell": [
+    24,
+    24
+  ],
+  "origin": [
+    12,
+    12
+  ],
+  "anims": {
+    "battle": {
+      "row": 0,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    },
+    "burst_battle": {
+      "row": 0,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    },
+    "white": {
+      "row": 0,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    },
+    "overworld": {
+      "row": 1,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    },
+    "burst_overworld": {
+      "row": 1,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    },
+    "blue": {
+      "row": 1,
+      "frames": 3,
+      "fps": 12.0,
+      "loop": false
+    }
+  }
+}
