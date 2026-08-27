@@ -7,5 +7,7 @@
   "accept_hug_furiell": 30,
   "furiell_bed": 5,
   "fursuit_head": 40,
-  "quiz_wrong": 5
+  "quiz_wrong": 5,
+  "stage_ears_min": 20,
+  "stage_ears_max": 39
 }

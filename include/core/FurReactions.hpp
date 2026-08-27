@@ -6,9 +6,18 @@
 namespace nundertale {
 
 constexpr const char* THOUGHT_SQUEAK_SUFFIX = " (squeak)";
+constexpr const char* FUR_EARS_STAGE_LINE_1 = "* Something is poking through your hood.";
+constexpr const char* FUR_EARS_STAGE_LINE_2 = "* Ears. Soft ones.";
 
 inline std::string thoughtSqueakSuffix() {
     return THOUGHT_SQUEAK_SUFFIX;
+}
+
+inline std::string furStageLine(int fur) {
+    if (fur >= 20 && fur <= 39) {
+        return std::string(FUR_EARS_STAGE_LINE_1) + "\n" + FUR_EARS_STAGE_LINE_2;
+    }
+    return "";
 }
 
 inline bool isThoughtLine(const std::string& line) {
