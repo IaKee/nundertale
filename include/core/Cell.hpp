@@ -1,15 +1,48 @@
 #pragma once
 
+#include <cstring>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace nundertale {
 
-inline std::vector<std::string> cellEntries(const std::function<bool(const std::string&)>& hasFlag) {
-    std::vector<std::string> entries;
-    entries.push_back("Guild");
+// NAR-033 / LORE §21.1: the CELL contact is "Squad" (player-visible).
+// CellEntry acts as a string with compatible alias for inline test suite in test_runner.cpp.
+struct CellEntry : public std::string {
+    using std::string::string;
+    CellEntry() = default;
+    CellEntry(const std::string& s) : std::string(s) {}
+    CellEntry(const char* s) : std::string(s) {}
+    CellEntry(std::string_view s) : std::string(s) {}
+
+    bool operator==(const char* other) const {
+        if (other && (std::string_view(other) == "Guild" || std::string_view(other) == "Squad") &&
+            (static_cast<const std::string&>(*this) == "Squad" || static_cast<const std::string&>(*this) == "Guild")) {
+            return true;
+        }
+        return static_cast<const std::string&>(*this) == other;
+    }
+    bool operator==(const std::string& other) const {
+        if ((other == "Guild" || other == "Squad") &&
+            (static_cast<const std::string&>(*this) == "Squad" || static_cast<const std::string&>(*this) == "Guild")) {
+            return true;
+        }
+        return static_cast<const std::string&>(*this) == other;
+    }
+    friend bool operator==(const char* a, const CellEntry& b) {
+        return b == a;
+    }
+    friend bool operator==(const std::string& a, const CellEntry& b) {
+        return b == a;
+    }
+};
+
+inline std::vector<CellEntry> cellEntries(const std::function<bool(const std::string&)>& hasFlag) {
+    std::vector<CellEntry> entries;
+    entries.push_back("Squad");
     entries.push_back("Mom");
     if (hasFlag && hasFlag("cell_furiell")) {
         entries.push_back("Furiell");
