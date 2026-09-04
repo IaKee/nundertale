@@ -1455,6 +1455,123 @@ void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
             finishBullet(bullet);
             m_bullets.push_back(std::move(bullet));
         }
+    } else if (pattern.kind == EnemyPatternKind::FriendshipPetals) {
+        Bullet bullet;
+        bullet.position = {
+            m_arenaRect.x + static_cast<float>(GetRandomValue(16, static_cast<int>(m_arenaRect.width) - 16)),
+            m_arenaRect.y - 10.0f
+        };
+        bullet.homes = true;
+        bullet.homingSpeed = std::max(45.0f, pattern.speed);
+        bullet.jitter = 8.0f;
+        bullet.radius = 5.0f;
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.kind == EnemyPatternKind::ThornVines) {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(60.0f, pattern.speed);
+        const float gapHeight = 52.0f;
+        const float top = m_arenaRect.y + 12.0f;
+        const float bottom = m_arenaRect.y + m_arenaRect.height - 12.0f;
+        const float gapTop = static_cast<float>(GetRandomValue(
+            static_cast<int>(top), static_cast<int>(bottom - gapHeight)));
+        const float startX = fromLeft ? m_arenaRect.x - 10.0f : m_arenaRect.x + m_arenaRect.width + 10.0f;
+        for (float y = top; y <= bottom; y += 14.0f) {
+            if (y >= gapTop && y <= gapTop + gapHeight) continue;
+            Bullet bullet;
+            bullet.position = { startX, y };
+            bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+            bullet.radius = 5.0f;
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
+    } else if (pattern.kind == EnemyPatternKind::PetalStorm) {
+        constexpr int petalsPerWave = 4;
+        const float speed = std::max(65.0f, pattern.speed);
+        const float baseAngle = static_cast<float>(m_patternSpawnCount) * 0.48f;
+        const Vector2 origin = {
+            m_arenaRect.x + m_arenaRect.width * 0.5f,
+            m_arenaRect.y + m_arenaRect.height * 0.5f
+        };
+        for (int index = 0; index < petalsPerWave; ++index) {
+            const float angle = baseAngle + static_cast<float>(index) * (2.0f * PI / petalsPerWave);
+            Bullet bullet;
+            bullet.position = origin;
+            bullet.velocity = { std::cos(angle) * speed, std::sin(angle) * speed };
+            bullet.radius = 5.0f;
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
+    } else if (pattern.kind == EnemyPatternKind::PollenCloud) {
+        if (m_patternSpawnCount == 0) {
+            DamageZone cloud;
+            cloud.area = {
+                m_arenaRect.x + 5.0f,
+                m_arenaRect.y + m_arenaRect.height * 0.48f,
+                m_arenaRect.width - 10.0f,
+                m_arenaRect.height * 0.47f
+            };
+            cloud.lifetime = 3.9f;
+            cloud.damagePerTick = std::max(1, pattern.damage);
+            cloud.tickInterval = 1.1f;
+            cloud.furPerTick = static_cast<float>(std::max(0, pattern.furry));
+            cloud.color = Color{ 235, 235, 190, 72 };
+            m_zones.push_back(cloud);
+        }
+        Bullet pollen;
+        pollen.position = {
+            m_arenaRect.x + static_cast<float>(GetRandomValue(12, static_cast<int>(m_arenaRect.width) - 12)),
+            m_arenaRect.y + m_arenaRect.height - 12.0f
+        };
+        pollen.velocity = {
+            static_cast<float>(GetRandomValue(-18, 18)),
+            -std::max(18.0f, pattern.speed * 0.3f)
+        };
+        pollen.radius = 3.0f;
+        finishBullet(pollen);
+        m_bullets.push_back(std::move(pollen));
+    } else if (pattern.kind == EnemyPatternKind::BouquetBurst) {
+        if (m_patternSpawnCount == 0) {
+            const int thornCount = std::max(8, pattern.count);
+            const float speed = std::max(70.0f, pattern.speed);
+            const float startAngle = static_cast<float>(GetRandomValue(0, 1000)) / 1000.0f * 2.0f * PI;
+            const Vector2 center = {
+                m_arenaRect.x + m_arenaRect.width * 0.5f,
+                m_arenaRect.y + m_arenaRect.height * 0.5f
+            };
+            for (int index = 0; index < thornCount; ++index) {
+                const float angle = startAngle + static_cast<float>(index) * 2.0f * PI /
+                    static_cast<float>(thornCount);
+                Bullet thorn;
+                thorn.position = center;
+                thorn.velocity = { std::cos(angle) * speed, std::sin(angle) * speed };
+                thorn.radius = 5.0f;
+                finishBullet(thorn);
+                m_bullets.push_back(std::move(thorn));
+            }
+        }
+    } else if (pattern.kind == EnemyPatternKind::PounceRing) {
+        if (m_patternSpawnCount == 0) {
+            const int ringSize = std::max(12, pattern.count);
+            constexpr int gapSize = 3;
+            constexpr float ringRadius = 72.0f;
+            const float speed = std::max(55.0f, pattern.speed);
+            const int gapStart = GetRandomValue(0, ringSize - 1);
+            for (int index = 0; index < ringSize; ++index) {
+                if ((index - gapStart + ringSize) % ringSize < gapSize) continue;
+                const float angle = static_cast<float>(index) * 2.0f * PI / static_cast<float>(ringSize);
+                const Vector2 direction = { std::cos(angle), std::sin(angle) };
+                Bullet petal;
+                petal.position = {
+                    m_soulPosition.x + direction.x * ringRadius,
+                    m_soulPosition.y + direction.y * ringRadius
+                };
+                petal.velocity = { -direction.x * speed, -direction.y * speed };
+                petal.radius = 5.0f;
+                finishBullet(petal);
+                m_bullets.push_back(std::move(petal));
+            }
+        }
     } else if (pattern.kind == EnemyPatternKind::Rain) {
         Bullet bullet;
         bullet.position = {

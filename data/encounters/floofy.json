@@ -3,7 +3,9 @@
   "enemies": ["floofy"],
   "introText": "* Floofy shares some friendship petals.",
   "background": "black",
-  "music": "battle.default",
+  "music": "floofy_fight",
+  "fleeBlockedText": "* The petals block the exit.",
+  "furCap": 99,
   "canFlee": false,
   "intro": {
     "music": "floofy_lounge",

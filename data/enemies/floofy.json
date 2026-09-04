@@ -3,68 +3,77 @@
   "name": "Floofy",
   "hp": 1,
   "maxHp": 1,
-  "atk": 0,
+  "atk": 5,
   "def": 999,
   "exp": 0,
   "gold": 0,
   "sprite": "floofy",
-  "check": "A zesty flower fox with a rose and zero shame. Wants to make you a furry.",
+  "check": "* FLOOFY - ATK 5 DEF ???\n* Floral. Zesty. Pure thorns.",
   "invulnerable": true,
   "canSpare": false,
   "suppressFurMirror": true,
-  "scriptedEndAfterTurns": 2,
-  "scriptedEndText": "* The petals close in. A burst of glitter cuts through them.",
-  "invulnerableHitText": "* Floofy has no shame to hurt.",
+  "furCap": 99,
+  "scriptedEnd": {
+    "afterEnemyTurns": 6,
+    "interruptOnTurnStart": false,
+    "endCutscene": "r2_floofy_end"
+  },
+  "turnOffsetFlag": "ruins.floofy.deaths",
+  "scriptedEndText": "* *SPRITZ* The petals scatter.",
+  "fleeBlockedText": "* The petals block the exit.",
+  "invulnerableTexts": [
+    "* You hit him. Your fist sinks into the fursuit padding.",
+    "* It's too soft to hurt."
+  ],
+  "invulnerableBubble": "Aww~ was that a hug?",
   "acts": [
-    {
-      "id": "check",
-      "label": "Check",
-      "text": "",
-      "effects": {}
-    }
+    { "id": "check", "label": "Check", "text": "", "effects": {} },
+    { "id": "plead", "label": "Plead", "text": "* You say you're not into it.", "response": "That's what they ALL say~", "effects": {} },
+    { "id": "compliment_crown", "label": "Compliment the Crown", "text": "* You say the crown is nice.", "response": "I KNOW.", "effects": {} }
   ],
   "flavor": {
     "default": [
-      "* Floofy offers another friendship petal and a wink.",
+      "* Floofy's petals buzz against the battle box.",
       "* The air smells aggressively floral.",
-      "* Floofy strikes a pose with his rose. It is a recruiting pose."
+      "* You're allergic. To him.",
+      "* Floofy adjusts his flower crown. The thorns adjust back."
     ],
     "lowHp": [],
     "spareable": []
   },
   "dialogue": {
-    "default": [
-      "Catch them, cutie~",
-      "OwO what's this? A new friend?",
-      "In this world, it's YIFF or be YIFFED."
-    ]
+    "default": [ "Catch them, cutie~", "No need to be shy~", "Let's get you fluffy!", "In this world, it's YIFF or be YIFFED." ]
   },
   "patterns": [
     {
-      "id": "friendship_petals",
-      "kind": "rain",
-      "weight": 1,
+      "id": "friendship_petals", "kind": "friendship_petals", "weight": 1,
       "speech": "Catch them, cutie~",
-      "params": {
-        "count": 6,
-        "speed": 65,
-        "damage": 1,
-        "fur": 20,
-        "sprite": "assets/bullets/petal.png"
-      }
+      "params": { "count": 10, "speed": 62, "damage": 3, "fur": 8, "intensity": 1.0, "seed": 5707542, "sprite": "assets/sprites/bullets/petal.png" }
     },
     {
-      "id": "pounce_ring",
-      "kind": "ring",
-      "weight": 1,
-      "speech": "*pounces*",
-      "params": {
-        "count": 1,
-        "speed": 42,
-        "damage": 1,
-        "fur": 20,
-        "sprite": "assets/bullets/petal.png"
-      }
+      "id": "thorn_vines", "kind": "thorn_vines", "weight": 1,
+      "speech": "A little thorn never hurt anybody~",
+      "params": { "count": 2, "speed": 72, "damage": 3, "fur": 8, "intensity": 1.15, "seed": 5707543, "sprite": "assets/sprites/bullets/rose_vine.png" }
+    },
+    {
+      "id": "petal_storm", "kind": "petal_storm", "weight": 1,
+      "speech": "Now we're blooming!",
+      "params": { "count": 20, "speed": 78, "damage": 3, "fur": 8, "intensity": 1.3, "seed": 5707544, "sprite": "assets/sprites/bullets/thorn_petal.png" }
+    },
+    {
+      "id": "pollen_cloud", "kind": "pollen_cloud", "weight": 1,
+      "speech": "Breathe deep, darling~",
+      "params": { "count": 16, "speed": 82, "damage": 3, "fur": 8, "intensity": 1.45, "seed": 5707545, "sprite": "assets/sprites/bullets/pollen.png" }
+    },
+    {
+      "id": "bouquet_burst", "kind": "bouquet_burst", "weight": 1,
+      "speech": "For you~",
+      "params": { "count": 12, "speed": 90, "damage": 4, "fur": 8, "intensity": 1.65, "seed": 5707546, "sprite": "assets/sprites/bullets/thorn_petal.png" }
+    },
+    {
+      "id": "pounce_ring", "kind": "pounce_ring", "weight": 1,
+      "speech": "Hold STILL~",
+      "params": { "count": 18, "speed": 96, "damage": 4, "fur": 8, "intensity": 1.85, "seed": 5707547, "sprite": "assets/sprites/bullets/petal.png" }
     }
   ]
 }

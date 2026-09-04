@@ -39,7 +39,10 @@ inline void suite_ru03() {
     assert(floofy->getId() == "floofy");
     assert(floofy->isInvulnerable());
     assert(!floofy->canBeSpared());
-    assert(floofy->getScriptedEndAfterTurns() == 2);
+    assert(floofy->getScriptedEndAfterTurns() == 6);
+    assert(!floofy->getScriptedEnd().interruptOnTurnStart);
+    assert(floofy->getScriptedEnd().endCutscene == "r2_floofy_end");
+    assert(floofy->getFurCap() == 99);
     assert(floofy->suppressesFurMirror());
 
     const int startingHp = floofy->getHp();
@@ -49,24 +52,30 @@ inline void suite_ru03() {
     assert(!floofy->isSpareable());
 
     const auto& patterns = floofy->getPatterns();
-    assert(patterns.size() == 2U);
+    assert(patterns.size() == 6U);
     assert(patterns[0].id == "friendship_petals");
-    assert(patterns[0].kind == EnemyPatternKind::Rain);
-    assert(patterns[0].furry == 20);
-    assert(floofy->getPatternFur(patterns[0].id, -1) == 20);
-    assert(floofy->getPatternSprite(patterns[0].id) == "assets/bullets/petal.png");
-    assert(patterns[1].id == "pounce_ring");
-    assert(patterns[1].kind == EnemyPatternKind::Ring);
-    assert(patterns[1].furry == 20);
-    assert(floofy->getPatternSpeech(patterns[1].id) == "*pounces*");
+    assert(patterns[0].kind == EnemyPatternKind::FriendshipPetals);
+    assert(patterns[0].furry == 8);
+    assert(floofy->getPatternFur(patterns[0].id, -1) == 8);
+    assert(floofy->getPatternSprite(patterns[0].id) == "assets/sprites/bullets/petal.png");
+    assert(patterns[5].id == "pounce_ring");
+    assert(patterns[5].kind == EnemyPatternKind::PounceRing);
+    assert(patterns[5].furry == 8);
+    assert(floofy->getPatternSpeech(patterns[5].id) == "Hold STILL~");
+    for (std::size_t i = 0; i < patterns.size(); ++i) {
+        assert(patterns[i].furry == 8);
+        assert(patterns[i].damage == (i < 4U ? 3 : 4));
+        assert(scriptedPatternIndex(static_cast<int>(i + 1U), patterns.size()) == i);
+    }
 
     assert(scriptedPatternIndex(0, patterns.size()) == 0U);
     assert(scriptedPatternIndex(1, patterns.size()) == 0U);
     assert(scriptedPatternIndex(2, patterns.size()) == 1U);
-    assert(scriptedPatternIndex(99, patterns.size()) == 1U);
+    assert(scriptedPatternIndex(6, patterns.size()) == 5U);
+    assert(scriptedPatternIndex(99, patterns.size()) == 5U);
     assert(!scriptedBattleEndsAfterTurn(1, floofy->getScriptedEndAfterTurns()));
-    assert(scriptedBattleEndsAfterTurn(2, floofy->getScriptedEndAfterTurns()));
-    assert(scriptedBattleEndsAfterTurn(3, floofy->getScriptedEndAfterTurns()));
+    assert(!scriptedBattleEndsAfterTurn(5, floofy->getScriptedEndAfterTurns()));
+    assert(scriptedBattleEndsAfterTurn(6, floofy->getScriptedEndAfterTurns()));
     assert(!scriptedBattleEndsAfterTurn(100, 0));
 
     tiled_detail::JsonValue encounter;
@@ -104,6 +113,6 @@ inline void suite_ru03() {
     assert(!ru03_detail::hasFlagStep(rescue, "battle.floofy.spared", 1));
     assert(!ru03_detail::hasFlagStep(rescue, "battle.floofy.fled", 1));
 
-    std::cout << "[PASS] C1-002: Floofy petals +20 FUR, scripted pounce end, invulnerability, encounter and rescue flags verified."
+    std::cout << "[PASS] C1-027: Floofy six-turn petal fight, +8 FUR hits, scripted pounce end, invulnerability and encounter verified."
               << std::endl;
 }

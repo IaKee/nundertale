@@ -82,12 +82,12 @@ inline void suite_ru18() {
     state.pendingCutscene = scripted->getScriptedEnd().endCutscene;
     assert(state.pendingCutscene == "r2_floofy_end");
 
-    // The old round-6 scalar remains a compatible alias for existing Floofy data.
-    const auto legacyFloofy = Enemy::loadFromJson("data/enemies/floofy.json");
-    assert(legacyFloofy != nullptr);
-    assert(legacyFloofy->getScriptedEndAfterTurns() == 2);
-    assert(!legacyFloofy->getScriptedEnd().interruptOnTurnStart);
-    assert(legacyFloofy->getScriptedEnd().endCutscene.empty());
+    // Floofy's data uses the structured form and lets all six petal turns finish.
+    const auto petalFloofy = Enemy::loadFromJson("data/enemies/floofy.json");
+    assert(petalFloofy != nullptr);
+    assert(petalFloofy->getScriptedEndAfterTurns() == 6);
+    assert(!petalFloofy->getScriptedEnd().interruptOnTurnStart);
+    assert(petalFloofy->getScriptedEnd().endCutscene == "r2_floofy_end");
 
     std::cout << "[PASS] RU18: scripted battle end, retry offset, no-Spare MERCY, blocked Flee, invulnerability text and FUR cap verified."
               << std::endl;
