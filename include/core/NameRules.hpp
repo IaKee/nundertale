@@ -425,6 +425,9 @@ inline NameReaction reactionFor(const std::string& rawName, const NameTable& tab
     }
 
     // Generic rules after the table
+    if (name.empty()) {
+        return NameReaction{ "", "* You have to be someone. Even online.", false, NameEffect::None };
+    }
     bool allSame = !name.empty();
     for (std::size_t i = 1; i < name.size(); ++i) {
         if (name[i] != name[0]) {
