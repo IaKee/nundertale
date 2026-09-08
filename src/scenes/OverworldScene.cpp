@@ -55,6 +55,7 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_backgroundOffset = { 0.0f, 0.0f };
     m_saveLinesOverride.clear();
     m_roomEncounters.clear();
+    m_waterBursts.clear();
     m_encounterBudget = 0;
     m_encounterStepsRemaining = 0;
     initObstacles();
@@ -175,23 +176,22 @@ bool OverworldScene::roomObjectVisible(const TiledObject& object, GameContext& c
         if (inv >= 0) return inv;
         return context.state.getFlag(key, 0);
     };
-    const auto evaluate = [this, &lookup, &object](const std::string& propertyName,
-                                                   const std::string& condition) {
-        if (condition.empty()) return true;
-        bool parsed = false;
-        const bool result = evaluateRoomCondition(condition, lookup, &parsed);
-        if (!parsed) {
-            const std::string key = std::to_string(object.id) + ":" + propertyName + ":" + condition;
-            if (m_loggedConditions.insert(key).second) {
-                std::clog << "Invalid room condition '" << condition << "'; treating it as true.\n";
-            }
-        }
-        return result;
-    };
-
     const std::string showIf = tiledStringProperty(object.properties, "showIf");
     const std::string hideIf = tiledStringProperty(object.properties, "hideIf");
-    return evaluate("showIf", showIf) && (hideIf.empty() || !evaluate("hideIf", hideIf));
+    bool showParsed = true;
+    bool hideParsed = true;
+    const bool visible = roomObjectConditionVisible(
+        showIf, hideIf, lookup, &showParsed, &hideParsed);
+    const auto logInvalid = [this, &object](const std::string& propertyName,
+                                            const std::string& condition) {
+        const std::string key = std::to_string(object.id) + ":" + propertyName + ":" + condition;
+        if (m_loggedConditions.insert(key).second) {
+            std::clog << "Invalid room condition '" << condition << "'; treating it as true.\n";
+        }
+    };
+    if (!showParsed) logInvalid("showIf", showIf);
+    if (!hideParsed) logInvalid("hideIf", hideIf);
+    return visible;
 }
 
 void OverworldScene::refreshDynamicObstacles(GameContext& context) {
@@ -506,6 +506,8 @@ void OverworldScene::onResume(GameContext& context) {
     context.audio.playMusic(resumeTrack.path, true, resumeTrack.loopStart, resumeTrack.loopEnd);
     context.audio.setMusicPitch(overworldMusicPitch(toxicTrack(context.state), context.state.currentRoom));
     initRoomObjects(context);
+    const std::string endCutscene = takePendingCutscene(context.state.pendingCutscene);
+    if (!endCutscene.empty()) startCutscene(endCutscene);
 }
 
 void OverworldScene::drawSoul(float x, float y) const {
@@ -984,6 +986,11 @@ void OverworldScene::update(float dt, GameContext& context) {
     m_controlsLockedRemaining = std::max(0.0f, m_controlsLockedRemaining - std::max(0.0f, dt));
     m_roomAnimationTime += dt;
     m_player.updateOverrideAnimation(dt);
+    for (WaterBurst& burst : m_waterBursts) burst.update(dt);
+    m_waterBursts.erase(
+        std::remove_if(m_waterBursts.begin(), m_waterBursts.end(),
+                       [](const WaterBurst& burst) { return burst.isDone(); }),
+        m_waterBursts.end());
     refreshDynamicObstacles(context);
 
     // RAD-003 / BUG-40: r1_wake sets the squad message flag at the buzz; that is when the clock starts.
@@ -1022,13 +1029,15 @@ void OverworldScene::update(float dt, GameContext& context) {
                                   std::vector<TiledObject>& roomObjects,
                                   std::unordered_set<std::string>& hidden,
                                   std::unordered_map<std::string, std::string>& animations,
+                                  std::vector<WaterBurst>& waterBursts,
                                   std::unordered_set<std::string>& logged,
                                   float& controlsLockedRemaining, float& fadeAlphaValue,
                                   float& fadeStart, float& fadeTarget, float& fadeElapsed,
                                   bool& fadeActive, bool& battleStarted, int& choice)
                 : m_dialogBox(dialogBox), m_player(player), m_context(context),
                   m_roomObjects(roomObjects), m_hidden(hidden), m_animations(animations),
-                  m_logged(logged), m_controlsLockedRemaining(controlsLockedRemaining),
+                  m_waterBursts(waterBursts), m_logged(logged),
+                  m_controlsLockedRemaining(controlsLockedRemaining),
                   m_fadeAlpha(fadeAlphaValue), m_fadeStart(fadeStart),
                   m_fadeTarget(fadeTarget), m_fadeElapsed(fadeElapsed),
                   m_fadeActive(fadeActive), m_battleStarted(battleStarted), m_choice(choice) {}
@@ -1222,6 +1231,22 @@ void OverworldScene::update(float dt, GameContext& context) {
                 return loadCutsceneFile(id, cutscene);
             }
 
+            void waterBurst(const std::string& target) override {
+                Vector2 position = m_player.getSpritePivot();
+                if (!target.empty() && target != "player" && target != "grub") {
+                    for (const TiledObject& object : m_roomObjects) {
+                        if (object.name != target) continue;
+                        const TiledRect bounds = object.bounds();
+                        position = { bounds.x + bounds.width * 0.5f,
+                                     bounds.y + bounds.height * 0.5f };
+                        break;
+                    }
+                }
+                m_waterBursts.emplace_back(
+                    position.x, position.y, WaterBurstVariant::Overworld,
+                    0x508172u + static_cast<std::uint32_t>(m_waterBursts.size()));
+            }
+
         private:
             bool fadeTo(float target, float seconds, float dt) {
                 if (!m_fadeActive || m_fadeTarget != target) {
@@ -1243,6 +1268,7 @@ void OverworldScene::update(float dt, GameContext& context) {
             std::vector<TiledObject>& m_roomObjects;
             std::unordered_set<std::string>& m_hidden;
             std::unordered_map<std::string, std::string>& m_animations;
+            std::vector<WaterBurst>& m_waterBursts;
             std::unordered_set<std::string>& m_logged;
             float& m_controlsLockedRemaining;
             float& m_fadeAlpha;
@@ -1253,7 +1279,7 @@ void OverworldScene::update(float dt, GameContext& context) {
             bool& m_battleStarted;
             int& m_choice;
         } host(m_dialogBox, m_player, context, m_roomObjects, m_hiddenRoomObjects,
-               m_roomObjectAnimations, m_loggedConditions, m_controlsLockedRemaining,
+               m_roomObjectAnimations, m_waterBursts, m_loggedConditions, m_controlsLockedRemaining,
                m_cutsceneFadeAlpha, m_cutsceneFadeStart, m_cutsceneFadeTarget,
                m_cutsceneFadeElapsed, m_cutsceneFadeActive, m_cutsceneBattleStarted, m_cutsceneChoice);
 
@@ -1644,6 +1670,30 @@ void OverworldScene::render(GameContext& context) {
     for (const SortedDraw& entry : sorted) {
         if (entry.object == nullptr) drawPlayer(context);
         else drawRoomObject(*entry.object, context);
+    }
+
+    for (const WaterBurst& burst : m_waterBursts) {
+        if (burst.activeAnimFrame() >= 0) {
+            const std::string spritePath(burst.spriteSheetPath());
+            const SpriteSheetDef* sheet = spriteSheetCache().load(
+                spritePath, std::string(burst.spriteSheetJson()));
+            if (sheet != nullptr) {
+                Texture2D texture = context.resources.getTexture(spritePath);
+                SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+                drawSprite(texture, *sheet, std::string(burst.animName()), burst.getElapsed(),
+                           { burst.getOriginX(), burst.getOriginY() });
+            }
+        }
+        for (const WaterDroplet& droplet : burst.getDroplets()) {
+            if (!droplet.alive()) continue;
+            const float alpha = droplet.alpha();
+            DrawRectangle(
+                static_cast<int>(droplet.x), static_cast<int>(droplet.y),
+                std::max(1, static_cast<int>(droplet.size)),
+                std::max(1, static_cast<int>(droplet.size)),
+                Color{ droplet.color.r, droplet.color.g, droplet.color.b,
+                       static_cast<unsigned char>(static_cast<float>(droplet.color.a) * alpha) });
+        }
     }
 
     drawTileLayers(context, true);

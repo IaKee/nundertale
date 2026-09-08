@@ -41,6 +41,7 @@ enum class CutsceneStepType {
     Choice,
     RecordKill,
     PlayCutscene,
+    WaterBurst,
     Unsupported,
     Unknown
 };
@@ -88,6 +89,14 @@ inline bool cutsceneStartsBattle(const Cutscene& cutscene) {
 // stays free so the player meets the fight on the next visit instead of losing it for good.
 inline bool triggerOnceShouldBurn(bool cutsceneHasBattle, bool battleStarted) {
     return !cutsceneHasBattle || battleStarted;
+}
+
+// Battle scripted ends leave this one-shot hook in GameState. The overworld takes ownership when
+// it resumes so a later resume/save load cannot replay the same ending.
+inline std::string takePendingCutscene(std::string& pending) {
+    std::string result = std::move(pending);
+    pending.clear();
+    return result;
 }
 
 // C1-014: a "choice" step shows `lines` as the prompt and 2-3 options in the dialog box. The picked
@@ -168,6 +177,7 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "choice") return CutsceneStepType::Choice;
     if (type == "recordKill") return CutsceneStepType::RecordKill;
     if (type == "cutscene") return CutsceneStepType::PlayCutscene;
+    if (type == "waterBurst") return CutsceneStepType::WaterBurst;
     if (type == "cameraPan") {
         return CutsceneStepType::Unsupported;
     }
@@ -271,7 +281,7 @@ private:
         if (key == "item") return parseString(step.item);
         if (key == "fullLines") return parseStringArray(step.fullLines);
         if (key == "options") return parseStringArray(step.options);
-        if (key == "npc") return parseString(step.npc);
+        if (key == "npc" || key == "target") return parseString(step.npc);
 
         if (key == "seconds") {
             step.secondsSpecified = true;
@@ -474,6 +484,8 @@ public:
     virtual void recordKill(const std::string&) {}
     // C1-014 "cutscene": hands over to another cutscene (data/cutscenes/<key>.json).
     virtual bool loadCutscene(const std::string&, Cutscene&) { return false; }
+    // C1-002: spawn the overworld spritz at "player" (default) or an NPC/prop name.
+    virtual void waterBurst(const std::string&) {}
 };
 
 class CutsceneRunner {
@@ -687,6 +699,10 @@ public:
                     m_conditionChecked = false;
                     break;
                 }
+                case CutsceneStepType::WaterBurst:
+                    host.waterBurst(step.npc);
+                    finishStep();
+                    break;
                 case CutsceneStepType::Unsupported:
                     std::clog << "Cutscene step '" << step.typeName
                               << "' not supported yet; skipping.\n";

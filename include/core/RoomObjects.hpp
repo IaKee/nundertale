@@ -119,6 +119,22 @@ inline bool evaluateRoomCondition(
     return true;
 }
 
+// showIf/hideIf are deliberately evaluated from the current state on every use. Nothing about a
+// room visit is cached, so returning to a room or rebuilding GameState from a save gives the same
+// result. Invalid conditions retain the historic permissive showIf / conservative hideIf behavior.
+inline bool roomObjectConditionVisible(
+    const std::string& showIf,
+    const std::string& hideIf,
+    const std::function<int(const std::string&)>& flagLookup,
+    bool* showParsed = nullptr,
+    bool* hideParsed = nullptr) {
+    const bool shown = showIf.empty() || evaluateRoomCondition(showIf, flagLookup, showParsed);
+    const bool hidden = !hideIf.empty() && evaluateRoomCondition(hideIf, flagLookup, hideParsed);
+    if (showIf.empty() && showParsed != nullptr) *showParsed = true;
+    if (hideIf.empty() && hideParsed != nullptr) *hideParsed = true;
+    return shown && !hidden;
+}
+
 inline std::vector<std::string> splitRoomPages(const std::string& text) {
     std::vector<std::string> pages;
     std::size_t start = 0;

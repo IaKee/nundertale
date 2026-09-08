@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core/ToxicTrack.hpp"
+#include "core/Cutscene.hpp"
+#include "core/RoomObjects.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -87,6 +89,62 @@ inline void suite_ru31() {
     assert(std::fabs(hud.corruption - fade.value) < epsilon);
     assert(!hud.active);
 
-    std::cout << "[PASS] PRG-032: toxic fade, room countdown, permanent ending, and exclusions verified."
+    // T62: a scripted battle end is consumed exactly once when the overworld resumes.
+    std::string pending = "r2_floofy_end";
+    assert(takePendingCutscene(pending) == "r2_floofy_end");
+    assert(pending.empty());
+    assert(takePendingCutscene(pending).empty());
+
+    // The overworld water effect is a data-driven cutscene step. Both `target` (preferred) and
+    // `npc` use the existing target field so content can aim it at Grub or a named room object.
+    Cutscene waterScene;
+    assert(parseCutsceneJson(
+        R"({"steps":[{"type":"waterBurst","target":"player"}]})", waterScene));
+    assert(waterScene.steps.size() == 1U);
+    assert(waterScene.steps[0].type == CutsceneStepType::WaterBurst);
+    assert(waterScene.steps[0].npc == "player");
+
+    class WaterHost final : public CutsceneHost {
+    public:
+        void dialog(const std::string&, const std::vector<std::string>&) override {}
+        bool dialogOpen() const override { return false; }
+        void sound(const std::string&, float) override {}
+        void setFlag(const std::string&, int) override {}
+        void shake(float, float) override {}
+        void flash(int, int, int, float) override {}
+        void startBattle(const std::string&) override {}
+        void setFur(int) override {}
+        void healFull() override {}
+        void facePlayer(const std::string&) override {}
+        void playerAnim(const std::string&, const std::string&, float) override {}
+        void waterBurst(const std::string& target) override { lastTarget = target; }
+        std::string lastTarget;
+    } waterHost;
+    CutsceneRunner waterRunner;
+    waterRunner.start(std::move(waterScene));
+    waterRunner.update(0.0f, waterHost);
+    assert(!waterRunner.running());
+    assert(waterHost.lastTarget == "player");
+
+    // R1's Floofy/pile-dent pair must be re-evaluated from flags, not cached per visit. A copy
+    // models save/load reconstruction and must produce the same post-return visibility.
+    GameState landing;
+    const auto landingFlags = [&landing](const std::string& key) {
+        return landing.getFlag(key, 0);
+    };
+    const std::string leftLanding = "ruins.floofy.left_landing >= 1";
+    assert(roomObjectConditionVisible("", leftLanding, landingFlags));       // Floofy shown
+    assert(!roomObjectConditionVisible(leftLanding, "", landingFlags));     // dent hidden
+    landing.setFlag("ruins.floofy.left_landing", 1);
+    assert(!roomObjectConditionVisible("", leftLanding, landingFlags));      // Floofy hidden
+    assert(roomObjectConditionVisible(leftLanding, "", landingFlags));       // dent shown
+    GameState loadedLanding = landing;
+    const auto loadedFlags = [&loadedLanding](const std::string& key) {
+        return loadedLanding.getFlag(key, 0);
+    };
+    assert(!roomObjectConditionVisible("", leftLanding, loadedFlags));
+    assert(roomObjectConditionVisible(leftLanding, "", loadedFlags));
+
+    std::cout << "[PASS] PRG-032/T62: toxic fade, battle end hook, water burst step, and R1 visibility verified."
               << std::endl;
 }

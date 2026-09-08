@@ -10,6 +10,7 @@
 #include "core/RoomObjects.hpp"
 #include "core/RandomEncounters.hpp"
 #include "core/Fur.hpp"
+#include "core/WaterBurst.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -98,6 +99,7 @@ private:
     std::unordered_set<std::string> m_hiddenRoomObjects;
     std::unordered_map<std::string, std::string> m_roomObjectAnimations;
     std::unordered_map<int, BumpTracker> m_bumpTrackers;
+    std::vector<WaterBurst> m_waterBursts;
     Vector2 m_lastHazardSafePosition = { 0.0f, 0.0f };
     int m_hazardCooldown = 0;
     float m_controlsLockedRemaining = 0.0f;
