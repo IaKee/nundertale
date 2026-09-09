@@ -1737,7 +1737,7 @@ void BattleSystem::drawSoul(GameContext& context, float x, float y, Color color)
             tint.a = color.a;
 
             if (color.r == 255 && color.g == 0 && color.b == 0) {
-                anim = "red";
+                anim = context.player.name == "GRUB" ? "headset" : "red";
             } else if ((color.r == 0 && color.g == 255 && color.b == 0) ||
                        (color.r == 0 && color.g == 192 && color.b == 0)) {
                 anim = "green";

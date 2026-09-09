@@ -8,6 +8,7 @@
     "green": { "row": 2, "frames": 1 },
     "yellow": { "row": 3, "frames": 1 },
     "plush": { "row": 4, "frames": 1 },
-    "frog": { "row": 5, "frames": 1 }
+    "frog": { "row": 5, "frames": 1 },
+    "headset": { "row": 6, "frames": 1 }
   }
 }

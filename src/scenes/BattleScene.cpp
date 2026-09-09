@@ -249,7 +249,8 @@ void drawIntroSoul(GameContext& context, float x, float y, Color color) {
         Texture2D soulTex = context.resources.getTexture("assets/ui/souls.png");
         if (soulTex.id > 0) {
             SetTextureFilter(soulTex, TEXTURE_FILTER_POINT);
-            drawSprite(soulTex, *soulSheet, "red", 0.0f, { x, y + 1.0f }, 2.0f, WHITE);
+            const std::string anim = context.player.name == "GRUB" ? "headset" : "red";
+            drawSprite(soulTex, *soulSheet, anim, 0.0f, { x, y + 1.0f }, 2.0f, WHITE);
             return;
         }
     }
