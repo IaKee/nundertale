@@ -29,18 +29,24 @@ inline void suite_ru05() {
 
     const auto dummy = Enemy::loadFromJson("data/enemies/fursuit_dummy.json");
     assert(dummy != nullptr);
-    const ActDef* shake = findAct(*dummy, "shake");
-    assert(shake != nullptr);
-    assert(shake->useTexts.size() == 3U);
-    assert(shake->useResponses.size() == 3U);
-    assert(actTextForUse(*shake, 1) == "* You bob your head to the bass. The dummy sways along.");
-    assert(actTextForUse(*shake, 2) == "* You shake harder. The coat rack rattles in rhythm.");
-    assert(actTextForUse(*shake, 3) == "* You go all in. Furiell joins in, bouncing on her paws.");
-    assert(actTextForUse(*shake, 4) == actTextForUse(*shake, 3));
-    assert(actResponseForUse(*shake, 1) == "* thump... thump...");
-    assert(actResponseForUse(*shake, 2) == "* THUMP. THUMP.");
-    assert(actResponseForUse(*shake, 3) == "uwu~ pump the bass, pup!");
-    assert(actResponseForUse(*shake, 4) == actResponseForUse(*shake, 3));
+    // v3.2: a plain dummy. Talk (spareable) and Accept Hug are the only live ACTs; the old Bass Shake
+    // ACTs stay in data only as flag-gated aliases (the inline ACT-009 suite still reads them).
+    const ActDef* talk = findAct(*dummy, "talk");
+    const ActDef* hug = findAct(*dummy, "accept_hug");
+    assert(talk != nullptr && talk->spareable && !talk->stopsBeat);
+    assert(hug != nullptr && hug->spareNow && hug->fur == 10);
+    for (const char* legacy : { "shake", "turn_down" }) {
+        const ActDef* act = findAct(*dummy, legacy);
+        assert(act != nullptr);
+        assert(!act->requiresFlag.empty());
+        assert(!act->spareable && !act->stopsBeat && !act->spareNow);
+    }
+    assert(dummy->getPatterns().size() == 1U);
+    const EnemyPatternDef& tufts = dummy->getPatterns()[0];
+    assert(tufts.kind == EnemyPatternKind::Rain);
+    assert(tufts.kind != EnemyPatternKind::Beat);
+    assert(tufts.damage == 0 && tufts.furry == 2 && tufts.color == AttackColor::Green);
+    assert(tufts.speed <= 40.0f);
 
     const auto napstablurk = Enemy::loadFromJson("data/enemies/napstablurk.json");
     assert(napstablurk != nullptr);

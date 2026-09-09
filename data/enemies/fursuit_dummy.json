@@ -19,12 +19,13 @@
     {
       "id": "talk",
       "label": "Talk",
-      "text": "* It doesn't seem much for conversation. It's busy vibing.",
-      "effects": { "skipAttack": true, "setFlag": "ruins.dummy.talked" }
+      "text": "* You talk to the dummy. It listens. It has no choice.",
+      "effects": { "spareable": true, "setFlag": "ruins.dummy.talked" }
     },
     {
       "id": "shake",
       "label": "Shake to the Bass",
+      "requiresFlag": "ruins.dummy.legacy_bass",
       "text": "* You bob your head to the bass. The dummy sways along.",
       "response": "* thump... thump...",
       "useTexts": [
@@ -38,13 +39,14 @@
         "uwu~ pump the bass, pup!"
       ],
       "minUses": 3,
-      "effects": { "spareable": true, "setFlag": "ruins.dummy.shook" }
+      "effects": {}
     },
     {
       "id": "turn_down",
       "label": "Turn It Down",
+      "requiresFlag": "ruins.dummy.legacy_bass",
       "text": "* You turn the bass down. The dummy stops swaying and slumps. It looks sad.",
-      "effects": { "spareable": true, "stopsBeat": true, "setFlag": "ruins.dummy.quiet" }
+      "effects": {}
     },
     {
       "id": "accept_hug",
@@ -56,14 +58,13 @@
   "flavor": {
     "default": [
       "* Fursuit Dummy sways on its coat rack.",
-      "* The bass rattles the dummy's fluffy ears.",
-      "* The damp fursuit head nods along to a beat only it can hear.",
-      "* Fursuit Dummy is vibing."
+      "* The damp fursuit head nods slowly.",
+      "* Fursuit Dummy is just standing there. Swaying.",
+      "* Fursuit Dummy waits."
     ],
     "spareable": [
-      "* Fursuit Dummy is bobbing along happily. It doesn't want to fight.",
-      "* The bass has mellowed out. The dummy looks content.",
-      "* Fursuit Dummy sways gently, waiting for the next song."
+      "* Fursuit Dummy sways gently. It doesn't want to fight.",
+      "* The dummy looks content."
     ]
   },
   "dialogue": {
@@ -71,10 +72,10 @@
   },
   "patterns": [
     {
-      "id": "bass_fluff_fast",
-      "kind": "beat",
+      "id": "slow_fluff",
+      "kind": "rain",
       "weight": 1,
-      "params": { "beatmap": "bass_shake", "speed": 110, "damage": 1 }
+      "params": { "count": 5, "speed": 35, "damage": 0, "furry": 2, "color": "green" }
     }
   ],
   "spareText": "...",
