@@ -2225,7 +2225,12 @@ void BattleSystem::render(GameContext& context) {
         bool drewBeatCloseup = false;
         if (renderBeatCloseup && !m_isSpared &&
             m_enemyShakeTimer <= 0.0f) {
-            std::string closeBase = spriteBase + "_close";
+            std::string closeBase = spriteBase;
+            constexpr std::string_view wideSuffix = "_wide";
+            if (closeBase.ends_with(wideSuffix)) {
+                closeBase.erase(closeBase.size() - wideSuffix.size());
+            }
+            closeBase += "_close";
             std::string closePng = closeBase + ".png";
             const SpriteSheetDef* closeSheet = spriteSheetCache().load(closePng, closeBase + ".json");
             if (closeSheet == nullptr && !m_beatMap.closeupSprite.empty()) {

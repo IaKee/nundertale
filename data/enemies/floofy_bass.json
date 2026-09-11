@@ -7,7 +7,7 @@
   "def": 999,
   "exp": 0,
   "gold": 0,
-  "sprite": "floofy",
+  "sprite": "floofy_wide",
   "check": "Floral. Zesty. Pure thorns.",
   "invulnerable": true,
   "canSpare": false,
