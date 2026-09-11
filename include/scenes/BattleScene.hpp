@@ -4,6 +4,10 @@
 #include "combat/BattleIntroScript.hpp"
 #include "combat/BattleSystem.hpp"
 #include "combat/FurHud.hpp"
+#include "combat/Hitmarker.hpp"
+#include "combat/Hitsplat.hpp"
+#include "combat/KillAnnouncer.hpp"
+#include "combat/Killfeed.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,8 +53,24 @@ private:
     void drawIntroBoxText(GameContext& context, const std::string& text, std::size_t shownChars);
     void drawIntroHud(GameContext& context);
 
+    // TOX-002..008: the toxic track's overlays. Every one of them is gated on toxic.track == 1
+    // (BattleScene only watches BattleSystem from outside; it never changes the battle rules).
+    void updateToxicFx(float dt, GameContext& context, FightPhase phaseBefore, int killsBefore, int expBefore);
+    void onToxicHit(GameContext& context);
+    void onToxicKill(GameContext& context);
+    void renderToxicBackdrop(GameContext& context) const;
+    void renderToxicOverlay(GameContext& context) const;
+    void drawPkSkull(GameContext& context) const;
+    void drawHitsplats(GameContext& context) const;
+    void drawHitmarker() const;
+    void drawKillfeed(GameContext& context) const;
+    void drawAnnouncerBanner(GameContext& context) const;
+    void drawXpDrops(GameContext& context) const;
+
     std::unique_ptr<BattleSystem> m_battleSystem;
     std::string m_encounterId;
+    std::string m_enemyId;
+    std::string m_enemyName;
     std::string m_musicId;
     std::string m_backgroundId;
     std::string m_enemySprite;
@@ -77,6 +97,14 @@ private:
     std::vector<IntroPetal> m_introPetals;
     float m_introInvuln = 0.0f;
     FurHudTrembleClock m_introFurTremble;
+
+    HitmarkerState m_hitmarker;
+    ToxicCombatFxManager m_toxicFx;
+    KillAnnouncer m_announcer;
+    Killfeed m_killfeed;
+    KillAnnouncementKind m_voicedBanner = KillAnnouncementKind::None;   // the banner whose voice line already played
+    bool m_lastHitWasCrit = false;
+    float m_toxicClock = 0.0f;           // drives the corruption flicker
 };
 
 } // namespace nundertale

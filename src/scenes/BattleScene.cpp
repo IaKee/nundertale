@@ -8,7 +8,9 @@
 #include "core/TiledMap.hpp"
 #include "core/Fur.hpp"
 #include "ui/SpriteDraw.hpp"
+#include "combat/Corruption.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -89,7 +91,11 @@ bool BattleScene::loadEncounter(const std::string& encounterId, bool readIntro) 
         value->kind == tiled_detail::JsonValue::Kind::Number) furCap = static_cast<int>(value->number);
 
     auto enemy = Enemy::loadFromJson("data/enemies/" + enemyId + ".json");
-    if (enemy) m_enemySprite = enemy->getSprite();
+    if (enemy) {
+        m_enemySprite = enemy->getSprite();
+        m_enemyId = enemy->getId();
+        m_enemyName = enemy->getName();
+    }
     m_battleSystem = std::make_unique<BattleSystem>(
         std::move(enemy), introText, canFlee, std::move(fleeBlockedText), furCap);
     m_backgroundId = std::move(backgroundId);
@@ -149,7 +155,11 @@ void BattleScene::update(float dt, GameContext& context) {
         return;
     }
     if (m_battleSystem) {
+        const FightPhase phaseBefore = m_battleSystem->getFightPhase();
+        const int killsBefore = toxicKills(context.state);
+        const int expBefore = context.player.exp;
         m_battleSystem->update(dt, context);
+        updateToxicFx(dt, context, phaseBefore, killsBefore, expBefore);
 
         // BND-010 & BUG-03: Transition directly to authentic GameOverScene
         if (m_battleSystem->getState() == BattleState::Defeat) {
@@ -186,11 +196,13 @@ void BattleScene::render(GameContext& context) {
 
     if (m_battleSystem) {
         m_battleSystem->render(context);
+        renderToxicBackdrop(context);
 
         if (m_battleSystem->isFinished() && !m_battleSystem->isFled()) {
             Font font8Bit = context.resources.getFont8Bit(20);
             context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to continue]", 364, 20, COLOR_UNDERTALE_YELLOW, 1.0f);
         }
+        renderToxicOverlay(context);
     }
 }
 
@@ -671,6 +683,404 @@ void BattleScene::renderIntro(GameContext& context) {
     }
 
     drawIntroHud(context);
+    drawPkSkull(context);
+}
+
+// ---------------------------------------------------------------- TOX-002..008: the toxic track in battle
+
+namespace {
+
+constexpr float TOXIC_HITSPLAT_LIFETIME = 1.5f;     // same as BattleSystem's damage number, so the splat covers it exactly
+constexpr float TOXIC_HITMARKER_LIFETIME = 0.25f;
+constexpr float TOXIC_HITMARKER_INNER = 6.0f;
+constexpr float TOXIC_HITMARKER_TICK = 10.0f;
+constexpr int TOXIC_ENEMY_CENTER_Y = ENEMY_BASELINE_Y - 105;
+constexpr float TOXIC_HP_BAR_Y = static_cast<float>(ENEMY_BASELINE_Y) - 145.0f;   // where BattleSystem puts the damage number
+constexpr float TOXIC_BANNER_Y = 118.0f;
+constexpr int TOXIC_MERCY_BUTTON_X = BATTLE_BUTTON_X_MERCY;
+constexpr int TOXIC_FIGHT_BUTTON_X = BATTLE_BUTTON_X_FIGHT;
+
+constexpr Color OSRS_SPLAT_RED{ 196, 28, 28, 255 };
+constexpr Color OSRS_SPLAT_RED_EDGE{ 92, 6, 6, 255 };
+constexpr Color OSRS_SPLAT_BLUE{ 44, 98, 214, 255 };
+constexpr Color OSRS_SPLAT_BLUE_EDGE{ 12, 30, 92, 255 };
+constexpr Color LOL_BANNER_RED{ 150, 18, 28, 255 };
+constexpr Color LOL_BANNER_GOLD{ 240, 196, 72, 255 };
+constexpr Color XP_GOLD{ 255, 208, 64, 255 };
+
+Color withAlpha(Color color, float alpha) {
+    color.a = static_cast<unsigned char>(std::clamp(alpha, 0.0f, 1.0f) * static_cast<float>(color.a));
+    return color;
+}
+
+Color killfeedColor(const KillfeedColor& c, float alpha) {
+    return withAlpha(Color{ c.r, c.g, c.b, c.a }, alpha);
+}
+
+// Deterministic noise for the glitch overlay; the game's own RNG is never consumed by cosmetics.
+unsigned int toxicNoise(unsigned int seed) {
+    seed ^= seed << 13U;
+    seed ^= seed >> 17U;
+    seed ^= seed << 5U;
+    return seed * 2654435761U;
+}
+
+float toxicNoise01(unsigned int seed) {
+    return static_cast<float>(toxicNoise(seed) % 1000U) / 1000.0f;
+}
+
+std::string announcerVoiceId(KillAnnouncementKind kind) {
+    switch (kind) {
+    case KillAnnouncementKind::FirstBlood: return "announcer_first_blood";
+    case KillAnnouncementKind::DoubleKill: return "announcer_double_kill";
+    case KillAnnouncementKind::TripleKill: return "announcer_triple_kill";
+    case KillAnnouncementKind::QuadraKill: return "announcer_quadra_kill";
+    case KillAnnouncementKind::PentaKill: return "announcer_penta_kill";
+    case KillAnnouncementKind::Ace: return "announcer_ace";
+    case KillAnnouncementKind::None: break;
+    }
+    return "";
+}
+
+// A tiny pixel icon for the killfeed: '#' cells are drawn, scaled by `scale`.
+template <std::size_t N>
+void drawPixelIcon(const std::array<const char*, N>& rows, float x, float y, int scale, Color color) {
+    for (std::size_t row = 0; row < N; ++row) {
+        for (std::size_t col = 0; rows[row][col] != '\0'; ++col) {
+            if (rows[row][col] != '#') continue;
+            DrawRectangle(static_cast<int>(x) + static_cast<int>(col) * scale,
+                          static_cast<int>(y) + static_cast<int>(row) * scale, scale, scale, color);
+        }
+    }
+}
+
+constexpr std::array<const char*, 8> PK_SKULL_ROWS{
+    "..####..",
+    ".######.",
+    "##.##.##",
+    "##.##.##",
+    ".######.",
+    "..####..",
+    "..#.#.#.",
+    "..####..",
+};
+constexpr int PK_SKULL_SCALE = 2;
+
+constexpr std::array<const char*, 5> KILLFEED_WEAPON_ROWS{
+    "......##",
+    ".....##.",
+    "....##..",
+    "###.#...",
+    "##......",
+};
+constexpr std::array<const char*, 7> KILLFEED_HEADSHOT_ROWS{
+    "..###..",
+    ".#...#.",
+    "#..#..#",
+    "#.###.#",
+    "#..#..#",
+    ".#...#.",
+    "..###..",
+};
+
+} // namespace
+
+void BattleScene::updateToxicFx(float dt, GameContext& context, FightPhase phaseBefore, int killsBefore, int expBefore) {
+    m_toxicClock += dt;
+    // The overlays that are already running finish on their own; nothing new starts off the toxic track.
+    m_hitmarker.update(dt);
+    m_toxicFx.update(dt);
+    m_killfeed.update(dt);
+    m_announcer.update(dt);
+
+    if (m_announcer.hasActiveBanner() && m_announcer.currentBanner().kind != m_voicedBanner) {
+        m_voicedBanner = m_announcer.currentBanner().kind;
+        const std::string voice = "assets/sfx/" + announcerVoiceId(m_voicedBanner) + ".ogg";
+        // AUD-014: the voice lines are not recorded yet; the bell stands in until they exist.
+        const std::string path = std::filesystem::exists(voice) ? voice : "assets/sfx/bell.ogg";
+        context.audio.playSound(path, 0.6f);
+    } else if (!m_announcer.hasActiveBanner()) {
+        m_voicedBanner = KillAnnouncementKind::None;
+    }
+
+    if (!m_battleSystem || toxicTrack(context.state) != 1) return;
+
+    const FightPhase phaseAfter = m_battleSystem->getFightPhase();
+    if (phaseBefore == FightPhase::Moving && phaseAfter != FightPhase::Moving) onToxicHit(context);
+
+    if (toxicKills(context.state) > killsBefore) onToxicKill(context);
+
+    const int expGain = context.player.exp - expBefore;
+    if (expGain > 0 && xpDropsActive(context.state)) m_toxicFx.spawnXpDrop(expGain);
+}
+
+void BattleScene::onToxicHit(GameContext& context) {
+    const bool miss = m_battleSystem->wasLastMiss();
+    const bool crit = !miss && m_battleSystem->wasLastCrit();
+    const int damage = m_battleSystem->getLastDamage();
+    m_lastHitWasCrit = crit;
+
+    if (!miss && shouldPlayToxicHitmarker(context.state)) {
+        m_hitmarker.spawn(static_cast<float>(VIRTUAL_WIDTH / 2), static_cast<float>(TOXIC_ENEMY_CENTER_Y),
+                          TOXIC_HITMARKER_LIFETIME, TOXIC_HITMARKER_INNER, TOXIC_HITMARKER_TICK);
+        // a critical hit already plays the hitmarker in BattleSystem (FGT-008)
+        if (!crit) context.audio.playSound(std::string(hitmarkerSoundId()), 0.7f);
+    }
+    if (hitsplatsActive(context.state)) {
+        m_toxicFx.spawnHitsplat(hitsplatKindFor(damage, crit, miss), damage,
+                                static_cast<float>(VIRTUAL_WIDTH / 2), TOXIC_HP_BAR_Y, TOXIC_HITSPLAT_LIFETIME);
+    }
+}
+
+void BattleScene::onToxicKill(GameContext& context) {
+    GameState& state = context.state;
+    m_announcer.onKill(toxicKills(state), toxicStreak(state));
+
+    // ACE: the notice is remembered in a flag, like the overworld does
+    const std::string area = "ruins";
+    const int areaKills = state.getFlag("kills." + area, 0);
+    const std::string announcedFlag = areaExhaustedAnnouncedFlag(area);
+    if (areaExhaustedNoticeDue(area, areaKills, state.getFlag(announcedFlag, 0))) {
+        state.setFlag(announcedFlag, 1);
+        m_announcer.enqueue(makeAceAnnouncement());
+    }
+
+    // ex-gamers show their old gamertag; everybody else their name
+    const std::string victim = lookupExGamerGamertag(m_enemyId).empty() ? m_enemyName : m_enemyId;
+    const std::string attacker = context.player.name.empty() ? "GRUB" : context.player.name;
+    const std::string weapon = context.player.weapon.empty() ? "crowbar" : context.player.weapon;
+    m_killfeed.push(attacker, weapon, victim, m_lastHitWasCrit);
+}
+
+void BattleScene::renderToxicBackdrop(GameContext& context) const {
+    if (toxicTrack(context.state) != 1) return;
+    const CorruptionLook look = corruptionLook(context.state);
+    if (look.stage <= 0) return;
+
+    const float clock = m_toxicClock;
+    const unsigned int tick = static_cast<unsigned int>(clock * 12.0f);
+    const float flicker = look.gridFlicker * (0.55f + 0.45f * std::sin(clock * 19.0f)) *
+                          (toxicNoise01(tick * 7U + 3U) > 0.35f ? 1.0f : 0.25f);
+
+    // the text box, the buttons and the HUD line are never covered: only the play field above the box is tinted
+    const int fieldBottom = BATTLE_BOX_Y - 6;
+    const int sideTop = BATTLE_BOX_Y - 6;
+    const int sideBottom = BATTLE_BOX_Y + BATTLE_BOX_H + 6;
+    const int boxRight = BATTLE_BOX_X + BATTLE_BOX_W;
+
+    // 1. dark red tint (9+ kills)
+    const float tintAlpha = look.overlayAlpha * look.gridDarkness;
+    if (tintAlpha > 0.0f) {
+        const Color tint = withAlpha(Color{ 70, 0, 6, 255 }, tintAlpha);
+        DrawRectangle(0, 0, VIRTUAL_WIDTH, fieldBottom, tint);
+        DrawRectangle(0, sideTop, BATTLE_BOX_X - 3, sideBottom - sideTop, tint);
+        DrawRectangle(boxRight + 3, sideTop, VIRTUAL_WIDTH - boxRight - 3, sideBottom - sideTop, tint);
+    }
+
+    // 2. the grid flickers red at the edges
+    const Color edge = withAlpha(Color{ 230, 24, 24, 255 }, 0.55f * flicker);
+    DrawRectangle(0, 0, 5, VIRTUAL_HEIGHT - 90, edge);
+    DrawRectangle(VIRTUAL_WIDTH - 5, 0, 5, VIRTUAL_HEIGHT - 90, edge);
+    DrawRectangle(0, 0, VIRTUAL_WIDTH, 4, edge);
+
+    // 3. scanlines and glitch blocks, kept to the play field above the box
+    for (int i = 0; i < look.scanlines; ++i) {
+        const unsigned int seed = tick * 31U + static_cast<unsigned int>(i) * 97U;
+        const int y = static_cast<int>(toxicNoise01(seed) * static_cast<float>(fieldBottom - 2));
+        const Color line = (i % 2 == 0) ? Color{ 255, 70, 70, 255 } : Color{ 255, 255, 255, 255 };
+        DrawRectangle(0, y, VIRTUAL_WIDTH, 1, withAlpha(line, 0.22f));
+    }
+    const int blocks = static_cast<int>(look.glitch * 8.0f);
+    for (int i = 0; i < blocks; ++i) {
+        const unsigned int seed = tick * 53U + static_cast<unsigned int>(i) * 131U + 11U;
+        const int w = 24 + static_cast<int>(toxicNoise01(seed) * 90.0f);
+        const int x = static_cast<int>(toxicNoise01(seed + 1U) * static_cast<float>(VIRTUAL_WIDTH - w));
+        const int y = static_cast<int>(toxicNoise01(seed + 2U) * static_cast<float>(fieldBottom - 8));
+        const Color glitch = (i % 2 == 0) ? Color{ 255, 40, 60, 255 } : Color{ 40, 220, 255, 255 };
+        DrawRectangle(x, y, w, 2 + static_cast<int>(toxicNoise01(seed + 3U) * 3.0f), withAlpha(glitch, 0.30f * look.glitch + 0.1f));
+    }
+
+    // 4. MERCY goes gray (and cracks), FIGHT glows. Both stay fully usable and readable.
+    const Rectangle mercy{ static_cast<float>(TOXIC_MERCY_BUTTON_X), static_cast<float>(BATTLE_BUTTON_Y),
+                           static_cast<float>(BATTLE_BUTTON_W), static_cast<float>(BATTLE_BUTTON_H) };
+    if (look.mercyGray) {
+        DrawRectangleRec(mercy, withAlpha(Color{ 110, 110, 110, 255 }, 0.45f));
+    }
+    if (look.mercyCracked) {
+        const Color crack{ 12, 0, 0, 255 };
+        // the crack runs down the gap between the icon and the label, so the word stays readable
+        DrawLineEx({ mercy.x + 33.0f, mercy.y }, { mercy.x + 37.0f, mercy.y + 12.0f }, 2.0f, crack);
+        DrawLineEx({ mercy.x + 37.0f, mercy.y + 12.0f }, { mercy.x + 31.0f, mercy.y + 24.0f }, 2.0f, crack);
+        DrawLineEx({ mercy.x + 31.0f, mercy.y + 24.0f }, { mercy.x + 35.0f, mercy.y + BATTLE_BUTTON_H }, 2.0f, crack);
+        DrawLineEx({ mercy.x + 37.0f, mercy.y + 12.0f }, { mercy.x + 44.0f, mercy.y + 16.0f }, 1.0f, crack);
+    }
+    if (look.fightGlow) {
+        const Rectangle fight{ static_cast<float>(TOXIC_FIGHT_BUTTON_X), static_cast<float>(BATTLE_BUTTON_Y),
+                               static_cast<float>(BATTLE_BUTTON_W), static_cast<float>(BATTLE_BUTTON_H) };
+        const float pulse = 0.5f + 0.5f * std::sin(clock * 5.0f);
+        DrawRectangleLinesEx({ fight.x - 5.0f, fight.y - 5.0f, fight.width + 10.0f, fight.height + 10.0f }, 2.0f,
+                             withAlpha(Color{ 255, 30, 30, 255 }, 0.18f + 0.15f * pulse));
+        DrawRectangleLinesEx({ fight.x - 2.0f, fight.y - 2.0f, fight.width + 4.0f, fight.height + 4.0f }, 2.0f,
+                             withAlpha(Color{ 255, 40, 40, 255 }, 0.45f + 0.35f * pulse));
+    }
+}
+
+void BattleScene::renderToxicOverlay(GameContext& context) const {
+    // Finished fx are drained in update(); the gate here keeps the neutral route untouched.
+    if (toxicTrack(context.state) != 1) return;
+    drawPkSkull(context);
+    drawHitsplats(context);
+    drawHitmarker();
+    drawXpDrops(context);
+    drawKillfeed(context);
+    drawAnnouncerBanner(context);
+}
+
+void BattleScene::drawPkSkull(GameContext& context) const {
+    if (toxicTrack(context.state) != 1 || toxicKills(context.state) < 1) return;   // TOX-004: from the first kill, visual only
+    Font font = context.resources.getFont8Bit(22);
+    const float nameW = context.resources.measureTextWidth(font, context.player.name, 20, 1.0f);
+    const float skullW = 8.0f * static_cast<float>(PK_SKULL_SCALE);
+    float x = static_cast<float>(HUD_NAME_X) + nameW + 6.0f;
+    float y = static_cast<float>(HUD_Y) + 2.0f;
+    if (x + skullW > static_cast<float>(HUD_LV_X) - 4.0f) {   // a long name: the skull rides above it instead
+        x = static_cast<float>(HUD_NAME_X);
+        y = static_cast<float>(HUD_Y) - skullW - 2.0f;
+    }
+    drawPixelIcon(PK_SKULL_ROWS, x, y, PK_SKULL_SCALE, WHITE);
+}
+
+void BattleScene::drawHitsplats(GameContext& context) const {
+    Font font = context.resources.getFont8Bit(22);
+    for (const Hitsplat& splat : m_toxicFx.hitsplats()) {
+        if (!splat.active()) continue;
+        const bool miss = splat.kind == HitsplatKind::Miss;
+        const bool max = splat.kind == HitsplatKind::MaxHit;
+        const float alpha = splat.alpha();
+
+        // it sits exactly where BattleSystem draws its own number / MISS, and covers it
+        float top = 0.0f;
+        std::string text;
+        float coverSize = 26.0f;
+        if (miss) {
+            top = splat.y - 6.0f;
+            text = "0";
+            coverSize = 24.0f;
+        } else {
+            const float t = splat.timer;
+            const float bounce = (t > 1.2f) ? -12.0f * std::sin((1.5f - t) / 0.3f * 3.14159f) : -4.0f;
+            top = splat.y - 26.0f + bounce;
+            text = std::to_string(splat.amount);
+        }
+        const std::string cover = miss ? "MISS" : text;
+        const float coverW = context.resources.measureTextWidth(font, cover, coverSize, 1.0f);
+        const float width = std::max(34.0f, coverW + 18.0f);
+        const Rectangle rect{ static_cast<float>(VIRTUAL_WIDTH / 2) - width * 0.5f, top - 4.0f, width, coverSize + 8.0f };
+
+        const Color fill = miss ? OSRS_SPLAT_BLUE : OSRS_SPLAT_RED;
+        const Color edge = miss ? OSRS_SPLAT_BLUE_EDGE : OSRS_SPLAT_RED_EDGE;
+        DrawRectangleRounded(rect, 0.5f, 6, withAlpha(fill, alpha));
+        DrawRectangleRoundedLinesEx(rect, 0.5f, 6, 2.0f, withAlpha(edge, alpha));
+        if (max) {
+            // the max-hit splat: a pale rim
+            DrawRectangleRoundedLinesEx({ rect.x + 3.0f, rect.y + 3.0f, rect.width - 6.0f, rect.height - 6.0f }, 0.5f, 6, 1.0f,
+                                        withAlpha(Color{ 255, 220, 220, 255 }, alpha));
+        }
+        const float textW = context.resources.measureTextWidth(font, text, 22, 1.0f);
+        const Vector2 pos{ rect.x + (rect.width - textW) * 0.5f, rect.y + 5.0f };
+        context.resources.drawText(font, text, { pos.x + 1.0f, pos.y + 1.0f }, 22, withAlpha(BLACK, alpha), 1.0f);
+        context.resources.drawText(font, text, pos, 22, withAlpha(WHITE, alpha), 1.0f);
+    }
+}
+
+void BattleScene::drawHitmarker() const {
+    if (!m_hitmarker.active) return;
+    const float alpha = m_hitmarker.alpha();
+    // a slight outward drift as it fades, like the CoD one
+    HitmarkerState drawn = m_hitmarker;
+    drawn.innerRadius += (1.0f - alpha) * 3.0f;
+    for (const HitmarkerTick& tick : drawn.ticks()) {
+        DrawLineEx({ tick.x1 + 1.0f, tick.y1 + 1.0f }, { tick.x2 + 1.0f, tick.y2 + 1.0f }, 3.0f, withAlpha(BLACK, alpha * 0.6f));
+        DrawLineEx({ tick.x1, tick.y1 }, { tick.x2, tick.y2 }, 2.0f, withAlpha(WHITE, alpha));
+    }
+}
+
+void BattleScene::drawXpDrops(GameContext& context) const {
+    Font font = context.resources.getFont8Bit(22);
+    for (const XpDrop& drop : m_toxicFx.xpDrops()) {
+        if (!drop.active()) continue;
+        const float alpha = drop.alpha();
+        const std::string text = drop.text();
+        const float width = context.resources.measureTextWidth(font, text, 20, 1.0f);
+        const float right = static_cast<float>(VIRTUAL_WIDTH) - 14.0f;
+        const float x = right - width;
+        // the gold XP orb sits to the left of the number
+        DrawCircle(static_cast<int>(x) - 10, static_cast<int>(drop.currentY) + 10, 6.0f, withAlpha(XP_GOLD, alpha));
+        DrawCircleLines(static_cast<int>(x) - 10, static_cast<int>(drop.currentY) + 10, 6.0f, withAlpha(Color{ 120, 80, 0, 255 }, alpha));
+        context.resources.drawText(font, text, { x + 1.0f, drop.currentY + 1.0f }, 20, withAlpha(BLACK, alpha), 1.0f);
+        context.resources.drawText(font, text, { x, drop.currentY }, 20, withAlpha(XP_GOLD, alpha), 1.0f);
+    }
+}
+
+void BattleScene::drawKillfeed(GameContext& context) const {
+    if (m_killfeed.empty()) return;
+    Font font = context.resources.getFont8Bit(16);
+    constexpr float lineH = 18.0f;
+    constexpr float gap = 6.0f;
+    constexpr float iconW = 16.0f;
+    float y = 8.0f;
+    for (const KillfeedEntry& entry : m_killfeed.entries()) {
+        // CS 1.6: no box, each line fades out over its last seconds
+        const float alpha = std::min(1.0f, entry.alphaRatio() * 3.0f);
+        const float attackerW = context.resources.measureTextWidth(font, entry.attacker, 16, 1.0f);
+        const float victimW = context.resources.measureTextWidth(font, entry.victim, 16, 1.0f);
+        float total = attackerW + gap + iconW + gap + victimW;
+        if (entry.headshot) total += iconW + gap;
+        float x = static_cast<float>(VIRTUAL_WIDTH) - 8.0f - total;
+
+        const auto shadowed = [&](const std::string& text, float tx, Color color) {
+            context.resources.drawText(font, text, { tx + 1.0f, y + 1.0f }, 16, withAlpha(BLACK, alpha * 0.8f), 1.0f);
+            context.resources.drawText(font, text, { tx, y }, 16, color, 1.0f);
+        };
+        shadowed(entry.attacker, x, killfeedColor(KILLFEED_COLOR_ATTACKER_RED, alpha));
+        x += attackerW + gap;
+        drawPixelIcon(KILLFEED_WEAPON_ROWS, x, y + 3.0f, 2, killfeedColor(KILLFEED_COLOR_WEAPON_ORANGE, alpha));
+        x += iconW + gap;
+        if (entry.headshot) {
+            drawPixelIcon(KILLFEED_HEADSHOT_ROWS, x, y + 1.0f, 2, killfeedColor(KILLFEED_COLOR_HEADSHOT_YELLOW, alpha));
+            x += iconW + gap;
+        }
+        shadowed(entry.victim, x, killfeedColor(KILLFEED_COLOR_VICTIM_BLUE, alpha));
+        y += lineH;
+    }
+}
+
+void BattleScene::drawAnnouncerBanner(GameContext& context) const {
+    if (!m_announcer.hasActiveBanner()) return;
+    const KillAnnouncement& banner = m_announcer.currentBanner();
+    const float elapsed = banner.duration - m_announcer.currentRemainingTime();
+    const float remaining = m_announcer.currentRemainingTime();
+    const float alpha = std::clamp(std::min(elapsed / 0.2f, remaining / 0.4f), 0.0f, 1.0f);
+    const float slide = (1.0f - std::clamp(elapsed / 0.2f, 0.0f, 1.0f)) * 40.0f;   // sweeps in from the left
+
+    Font bigFont = context.resources.getFont8Bit(36);
+    Font smallFont = context.resources.getFont8Bit(16);
+    const bool hasSub = !banner.subText.empty();
+    const float height = hasSub ? 62.0f : 42.0f;
+    const Rectangle band{ 110.0f - slide, TOXIC_BANNER_Y, 420.0f, height };
+
+    DrawRectangleRec(band, withAlpha(LOL_BANNER_RED, 0.88f * alpha));
+    DrawRectangle(static_cast<int>(band.x), static_cast<int>(band.y), static_cast<int>(band.width), 3, withAlpha(LOL_BANNER_GOLD, alpha));
+    DrawRectangle(static_cast<int>(band.x), static_cast<int>(band.y + band.height) - 3, static_cast<int>(band.width), 3, withAlpha(LOL_BANNER_GOLD, alpha));
+
+    const float textW = context.resources.measureTextWidth(bigFont, banner.bannerText, 32, 2.0f);
+    const Vector2 textPos{ band.x + (band.width - textW) * 0.5f, band.y + 7.0f };
+    context.resources.drawText(bigFont, banner.bannerText, { textPos.x + 2.0f, textPos.y + 2.0f }, 32, withAlpha(Color{ 40, 4, 8, 255 }, alpha), 2.0f);
+    context.resources.drawText(bigFont, banner.bannerText, textPos, 32, withAlpha(LOL_BANNER_GOLD, alpha), 2.0f);
+    if (hasSub) {
+        const float subW = context.resources.measureTextWidth(smallFont, banner.subText, 16, 1.0f);
+        context.resources.drawText(smallFont, banner.subText, { band.x + (band.width - subW) * 0.5f, band.y + 40.0f }, 16, withAlpha(WHITE, alpha), 1.0f);
+    }
 }
 
 void BattleScene::onExit(GameContext& /*context*/) {

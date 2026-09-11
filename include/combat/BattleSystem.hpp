@@ -110,6 +110,10 @@ public:
     float getFurTrembleTimer() const { return m_furTrembleTimer; }
     bool isFurTrembling() const { return furHudShouldTremble(m_furTrembleTimer); }
     bool isHealNextAttack() const { return m_healNextAttack; }
+    // Read-only view of the last FIGHT swing, for the toxic-track overlays (TOX-003/005/006).
+    int getLastDamage() const { return m_lastDamage; }
+    bool wasLastMiss() const { return m_lastMiss; }
+    bool wasLastCrit() const { return m_lastPlayerAction == PlayerTurnAction::FightCrit; }
 
 private:
     void handleMenuInput(GameContext& context);
