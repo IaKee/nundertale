@@ -1,0 +1,220 @@
+{
+  "image": "grub_fur.png",
+  "cell": [
+    32,
+    32
+  ],
+  "origin": [
+    16,
+    31
+  ],
+  "base": "grub.png",
+  "stages": [
+    {
+      "name": "ears",
+      "min_fur": 20,
+      "row_offset": 0
+    },
+    {
+      "name": "paws",
+      "min_fur": 40,
+      "row_offset": 6
+    },
+    {
+      "name": "tail",
+      "min_fur": 60,
+      "row_offset": 12
+    },
+    {
+      "name": "snout",
+      "min_fur": 80,
+      "row_offset": 18
+    }
+  ],
+  "anims": {
+    "ears_stand_down": {
+      "row": 0,
+      "frames": 1
+    },
+    "ears_walk_down": {
+      "row": 0,
+      "frames": 4,
+      "fps": 6
+    },
+    "ears_stand_up": {
+      "row": 1,
+      "frames": 1
+    },
+    "ears_walk_up": {
+      "row": 1,
+      "frames": 4,
+      "fps": 6
+    },
+    "ears_stand_left": {
+      "row": 2,
+      "frames": 1
+    },
+    "ears_walk_left": {
+      "row": 2,
+      "frames": 2,
+      "fps": 4
+    },
+    "ears_stand_right": {
+      "row": 3,
+      "frames": 1
+    },
+    "ears_walk_right": {
+      "row": 3,
+      "frames": 2,
+      "fps": 4
+    },
+    "ears_lying": {
+      "row": 4,
+      "frames": 1
+    },
+    "ears_get_up": {
+      "row": 5,
+      "frames": 3,
+      "fps": 4,
+      "loop": false
+    },
+    "paws_stand_down": {
+      "row": 6,
+      "frames": 1
+    },
+    "paws_walk_down": {
+      "row": 6,
+      "frames": 4,
+      "fps": 6
+    },
+    "paws_stand_up": {
+      "row": 7,
+      "frames": 1
+    },
+    "paws_walk_up": {
+      "row": 7,
+      "frames": 4,
+      "fps": 6
+    },
+    "paws_stand_left": {
+      "row": 8,
+      "frames": 1
+    },
+    "paws_walk_left": {
+      "row": 8,
+      "frames": 2,
+      "fps": 4
+    },
+    "paws_stand_right": {
+      "row": 9,
+      "frames": 1
+    },
+    "paws_walk_right": {
+      "row": 9,
+      "frames": 2,
+      "fps": 4
+    },
+    "paws_lying": {
+      "row": 10,
+      "frames": 1
+    },
+    "paws_get_up": {
+      "row": 11,
+      "frames": 3,
+      "fps": 4,
+      "loop": false
+    },
+    "tail_stand_down": {
+      "row": 12,
+      "frames": 1
+    },
+    "tail_walk_down": {
+      "row": 12,
+      "frames": 4,
+      "fps": 6
+    },
+    "tail_stand_up": {
+      "row": 13,
+      "frames": 1
+    },
+    "tail_walk_up": {
+      "row": 13,
+      "frames": 4,
+      "fps": 6
+    },
+    "tail_stand_left": {
+      "row": 14,
+      "frames": 1
+    },
+    "tail_walk_left": {
+      "row": 14,
+      "frames": 2,
+      "fps": 4
+    },
+    "tail_stand_right": {
+      "row": 15,
+      "frames": 1
+    },
+    "tail_walk_right": {
+      "row": 15,
+      "frames": 2,
+      "fps": 4
+    },
+    "tail_lying": {
+      "row": 16,
+      "frames": 1
+    },
+    "tail_get_up": {
+      "row": 17,
+      "frames": 3,
+      "fps": 4,
+      "loop": false
+    },
+    "snout_stand_down": {
+      "row": 18,
+      "frames": 1
+    },
+    "snout_walk_down": {
+      "row": 18,
+      "frames": 4,
+      "fps": 6
+    },
+    "snout_stand_up": {
+      "row": 19,
+      "frames": 1
+    },
+    "snout_walk_up": {
+      "row": 19,
+      "frames": 4,
+      "fps": 6
+    },
+    "snout_stand_left": {
+      "row": 20,
+      "frames": 1
+    },
+    "snout_walk_left": {
+      "row": 20,
+      "frames": 2,
+      "fps": 4
+    },
+    "snout_stand_right": {
+      "row": 21,
+      "frames": 1
+    },
+    "snout_walk_right": {
+      "row": 21,
+      "frames": 2,
+      "fps": 4
+    },
+    "snout_lying": {
+      "row": 22,
+      "frames": 1
+    },
+    "snout_get_up": {
+      "row": 23,
+      "frames": 3,
+      "fps": 4,
+      "loop": false
+    }
+  }
+}
