@@ -494,13 +494,59 @@
         {
           "height": 40,
           "id": 12,
+          "name": "trigger_thought",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 400,
+          "x": 120,
+          "y": 560,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r2_lair_thought"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r2.thought"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 13,
+          "name": "trigger_floofy_scene",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 400,
+          "x": 120,
+          "y": 400,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r2_floofy_scene"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 14,
           "name": "floofy",
           "rotation": 0,
           "type": "npc",
           "visible": true,
           "width": 40,
           "x": 300,
-          "y": 340,
+          "y": 280,
           "properties": [
             {
               "name": "sprite",
@@ -510,7 +556,12 @@
             {
               "name": "anim",
               "type": "string",
-              "value": "idle"
+              "value": "vanity_back"
+            },
+            {
+              "name": "noTurn",
+              "type": "bool",
+              "value": true
             },
             {
               "name": "hideIf",
@@ -525,68 +576,405 @@
           ]
         },
         {
-          "height": 40,
-          "id": 13,
-          "name": "trigger_floofy",
+          "height": 28,
+          "id": 15,
+          "name": "fairy_lights_left",
           "rotation": 0,
-          "type": "trigger",
+          "type": "prop",
           "visible": true,
-          "width": 400,
+          "width": 160,
           "x": 120,
-          "y": 420,
+          "y": 120,
           "properties": [
             {
-              "name": "cutscene",
+              "name": "sprite",
               "type": "string",
-              "value": "r2_floofy"
+              "value": "assets/props/ruins_lounge_lights.png"
             },
             {
-              "name": "once",
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 28,
+          "id": 16,
+          "name": "fairy_lights_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 160,
+          "x": 360,
+          "y": 120,
+          "properties": [
+            {
+              "name": "sprite",
               "type": "string",
-              "value": "ruins.floofy.met.seen"
+              "value": "assets/props/ruins_lounge_lights.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
             }
           ]
         },
         {
           "height": 80,
-          "id": 14,
-          "name": "furiell",
+          "id": 17,
+          "name": "flowerwall_left",
           "rotation": 0,
-          "type": "npc",
+          "type": "prop",
           "visible": true,
-          "width": 64,
-          "x": 220,
-          "y": 130,
+          "width": 80,
+          "x": 120,
+          "y": 160,
           "properties": [
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/sprites/ow/furiell.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "stand_down"
-            },
-            {
-              "name": "showIf",
-              "type": "string",
-              "value": "ruins.floofy.met >= 1"
-            },
-            {
-              "name": "speaker",
-              "type": "string",
-              "value": "FURIELL"
-            },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "Welcome to your new home, my child. ...Do you like blankets? I have forty."
+              "value": "assets/props/ruins_lounge_flowerwall.png"
             },
             {
               "name": "solid",
               "type": "bool",
               "value": true
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 18,
+          "name": "flowerwall_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 440,
+          "y": 160,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_flowerwall.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 56,
+          "id": 19,
+          "name": "flowerbed",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 112,
+          "x": 140,
+          "y": 140,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_flowerbed.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "still"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 60,
+          "id": 20,
+          "name": "prop_neon",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 120,
+          "x": 380,
+          "y": 140,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_neon.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 104,
+          "id": 21,
+          "name": "prop_vanity",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 100,
+          "x": 270,
+          "y": 200,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_vanity.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 104,
+          "id": 22,
+          "name": "prop_headrack",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 160,
+          "x": 120,
+          "y": 280,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_headrack.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 92,
+          "id": 23,
+          "name": "prop_throne",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 440,
+          "y": 280,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_throne.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 56,
+          "id": 24,
+          "name": "prop_rope",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 128,
+          "x": 390,
+          "y": 380,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_rope.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 64,
+          "id": 25,
+          "name": "prop_beanbag",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 140,
+          "y": 460,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_beanbag.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 104,
+          "id": 26,
+          "name": "headrack",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 160,
+          "x": 120,
+          "y": 280,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r2.headrack"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Fursuit heads. Dozens. All empty. All facing the door."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            }
+          ]
+        },
+        {
+          "height": 104,
+          "id": 27,
+          "name": "vanity",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 100,
+          "x": 270,
+          "y": 200,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r2.vanity"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A vanity mirror. Forty bulbs. Thirty-nine work."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            }
+          ]
+        },
+        {
+          "height": 60,
+          "id": 28,
+          "name": "neon",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 120,
+          "x": 380,
+          "y": 140,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r2.neon"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* \"GOOD VIBES ONLY\". It hums. Everything in here hums."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            }
+          ]
+        },
+        {
+          "height": 64,
+          "id": 29,
+          "name": "beanbag",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 140,
+          "y": 460,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r2.beanbag"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Heart-shaped. Still warm."
+            },
+            {
+              "name": "lines2",
+              "type": "string",
+              "value": "* You decide not to sit on it."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            }
+          ]
+        },
+        {
+          "height": 56,
+          "id": 30,
+          "name": "velvet_rope",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 128,
+          "x": 390,
+          "y": 380,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r2.rope"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* VIP. Very Important Plushies."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
             }
           ]
         }
@@ -907,18 +1295,18 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 15,
+  "nextobjectid": 31,
   "orientation": "orthogonal",
   "properties": [
     {
       "name": "displayName",
       "type": "string",
-      "value": "Ruins - Flower Bed"
+      "value": "Ruins - Headless Lounge"
     },
     {
       "name": "music",
       "type": "string",
-      "value": "overworld.default"
+      "value": "floofy_lounge"
     }
   ],
   "renderorder": "right-down",
