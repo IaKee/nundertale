@@ -9,6 +9,7 @@
 #include "core/Fur.hpp"
 #include "ui/SpriteDraw.hpp"
 #include "combat/Corruption.hpp"
+#include "combat/KillScaling.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -22,6 +23,38 @@
 #include <cctype>
 
 namespace nundertale {
+
+namespace {
+
+template <typename Tag, typename Tag::type Member>
+struct PrivateAccess {
+    friend typename Tag::type accessMember(Tag) { return Member; }
+};
+
+struct BattleSystemEnemyTag {
+    using type = std::unique_ptr<Enemy> BattleSystem::*;
+    friend type accessMember(BattleSystemEnemyTag);
+};
+template struct PrivateAccess<BattleSystemEnemyTag, &BattleSystem::m_enemy>;
+
+const void* s_lastScaledBattleSystem = nullptr;
+
+void applyBattleKillScaling(BattleSystem* battleSystem, const std::string& enemyId, int ruinsKills) {
+    if (!battleSystem || ruinsKills <= 0 || enemyId.empty()) return;
+    if (s_lastScaledBattleSystem == battleSystem) return;
+
+    KillScalingDef scaling;
+    if (!loadKillScalingFromFile("data/enemies/" + enemyId + ".json", scaling)) return;
+    if (!scaling.present) return;
+
+    Enemy* enemy = (battleSystem->*accessMember(BattleSystemEnemyTag{})).get();
+    if (enemy) {
+        applyKillScaling(*enemy, scaling, ruinsKills);
+        s_lastScaledBattleSystem = battleSystem;
+    }
+}
+
+} // namespace
 
 static bool safeEncounterId(const std::string& id) {
     if (id.empty()) return false;
@@ -146,6 +179,8 @@ void BattleScene::onEnter(GameContext& context) {
             if (locked != 0) swapEncounter(introFightEncounter(locked));
         }
     }
+    const int ruinsKills = context.state.getFlag("kills.ruins", 0);
+    applyBattleKillScaling(m_battleSystem.get(), m_enemyId, ruinsKills);
     playEncounterMusic(context);
 }
 
@@ -327,6 +362,8 @@ void BattleScene::endIntro(GameContext& context) {
         m_introFurTremble = FurHudTrembleClock{};
     }
     if (variant != 0) swapEncounter(introFightEncounter(variant));
+    const int ruinsKills = context.state.getFlag("kills.ruins", 0);
+    applyBattleKillScaling(m_battleSystem.get(), m_enemyId, ruinsKills);
     playEncounterMusic(context);
 }
 
