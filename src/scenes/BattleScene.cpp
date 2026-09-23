@@ -190,11 +190,27 @@ void BattleScene::update(float dt, GameContext& context) {
         return;
     }
     if (m_battleSystem) {
+        if (m_bossYiffActive) {
+            m_bossYiffTimer += dt;
+            if (!m_bossYiffDismissing && m_bossYiffTimer >= 0.35f && context.input.isConfirmPressed()) {
+                m_bossYiffDismissing = true;
+                m_bossYiffTimer = 0.0f;
+            } else if (m_bossYiffDismissing && m_bossYiffTimer >= 0.30f) {
+                m_bossYiffActive = false;
+                m_bossYiffDismissing = false;
+                m_bossYiffTimer = 0.0f;
+            }
+            return;
+        }
+
         const FightPhase phaseBefore = m_battleSystem->getFightPhase();
         const int killsBefore = toxicKills(context.state);
         const int expBefore = context.player.exp;
+        const int trackBefore = toxicTrack(context.state);
+        const bool sparedBefore = m_battleSystem->isSpared();
         m_battleSystem->update(dt, context);
         updateToxicFx(dt, context, phaseBefore, killsBefore, expBefore);
+        updateMercyTransition(dt, context, trackBefore, sparedBefore);
 
         // BND-010 & BUG-03: Transition directly to authentic GameOverScene
         if (m_battleSystem->getState() == BattleState::Defeat) {
@@ -233,12 +249,133 @@ void BattleScene::render(GameContext& context) {
         m_battleSystem->render(context);
         renderToxicBackdrop(context);
 
-        if (m_battleSystem->isFinished() && !m_battleSystem->isFled()) {
+        if (m_battleSystem->isFinished() && !m_battleSystem->isFled() && !m_bossYiffActive) {
             Font font8Bit = context.resources.getFont8Bit(20);
             context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to continue]", 364, 20, COLOR_UNDERTALE_YELLOW, 1.0f);
         }
         renderToxicOverlay(context);
+        renderMercyGlitch(context);
+        renderBossYiff(context);
     }
+}
+
+namespace {
+
+constexpr float MERCY_GLITCH_SECONDS = 0.48f;
+constexpr float BOSS_YIFF_FADE_IN = 0.35f;
+constexpr float BOSS_YIFF_FADE_OUT = 0.30f;
+
+bool hasBossYiffEnding(const std::string& enemyId) {
+    return enemyId == "barky" || enemyId == "furiell";
+}
+
+Color mercyFxColor(Color color, float alpha) {
+    color.a = static_cast<unsigned char>(std::clamp(alpha, 0.0f, 1.0f) * 255.0f);
+    return color;
+}
+
+unsigned int mercyFxNoise(unsigned int seed) {
+    seed ^= seed << 13U;
+    seed ^= seed >> 17U;
+    seed ^= seed << 5U;
+    return seed;
+}
+
+} // namespace
+
+void BattleScene::updateMercyTransition(float dt, GameContext& context, int trackBefore, bool sparedBefore) {
+    if (m_mercyGlitchTimer > 0.0f) m_mercyGlitchTimer = std::max(0.0f, m_mercyGlitchTimer - dt);
+
+    const int trackAfter = toxicTrack(context.state);
+    if ((trackBefore != 1 && trackAfter == 1) || (trackBefore == 1 && trackAfter != 1)) {
+        m_mercyGlitchTimer = MERCY_GLITCH_SECONDS;
+    }
+
+    if (context.state.getFlag("debug.mercy_glitch", 0) == 1 && m_mercyGlitchTimer <= 0.0f) {
+        context.state.setFlag("debug.mercy_glitch", 0);
+        m_mercyGlitchTimer = MERCY_GLITCH_SECONDS;
+    }
+
+    if (context.state.getFlag("debug.boss_yiff", 0) == 1 && !m_bossYiffActive && m_bossYiffTimer == 0.0f) {
+        context.state.setFlag("debug.boss_yiff", 0);
+        m_bossYiffText = m_enemyId == "barky"
+            ? "* The narrator refuses to describe this."
+            : "* The narrator refuses to describe this.\n* (You don't want to talk about it.)";
+        m_bossYiffTimer = BOSS_YIFF_FADE_IN;
+        m_bossYiffDismissing = false;
+        m_bossYiffActive = true;
+    }
+
+    const bool yiffedBoss = !sparedBefore && m_battleSystem->isSpared() &&
+                            trackBefore != 1 && hasBossYiffEnding(m_enemyId);
+    if (!yiffedBoss) return;
+
+    applyFurCapped(context.state.furry.value, context.state.furry.stageMax, 15, false);
+    m_bossYiffText = m_enemyId == "barky"
+        ? "* The narrator refuses to describe this."
+        : "* The narrator refuses to describe this.\n* (You don't want to talk about it.)";
+    m_bossYiffTimer = 0.0f;
+    m_bossYiffDismissing = false;
+    m_bossYiffActive = true;
+}
+
+void BattleScene::renderMercyGlitch(GameContext& context) const {
+    if (m_mercyGlitchTimer <= 0.0f) return;
+
+    const float progress = 1.0f - m_mercyGlitchTimer / MERCY_GLITCH_SECONDS;
+    const float strength = std::sin(std::clamp(progress, 0.0f, 1.0f) * 3.14159265f);
+    const Rectangle labelArea{
+        static_cast<float>(BATTLE_BUTTON_X_MERCY + 34),
+        static_cast<float>(BATTLE_BUTTON_Y + 5),
+        static_cast<float>(BATTLE_BUTTON_W - 39),
+        static_cast<float>(BATTLE_BUTTON_H - 10)
+    };
+    DrawRectangleRec(labelArea, BLACK);
+
+    Font font = context.resources.getFont8Bit(18);
+    const bool toSpare = (toxicTrack(context.state) == 1);
+    const bool targetFrame = (static_cast<int>(progress * 24.0f) % 2) == 0 || progress > 0.72f;
+    const bool isSpare = toSpare ? targetFrame : !targetFrame;
+    const std::string label = isSpare ? "SPARE" : "YIFF";
+    const float textW = context.resources.measureTextWidth(font, label, 18, 1.0f);
+    const float jitter = (isSpare ? 1.0f : -1.0f) * std::ceil(strength * 2.0f);
+    const Color color = isSpare ? UI_ORANGE : Color{ 255, 119, 200, 255 };
+    context.resources.drawText(font, label,
+        { labelArea.x + (labelArea.width - textW) * 0.5f + jitter, labelArea.y + 5.0f },
+        18, color, 1.0f);
+
+    const unsigned int frame = static_cast<unsigned int>(progress * 1000.0f);
+    for (unsigned int i = 0; i < 4U; ++i) {
+        const unsigned int noise = mercyFxNoise(frame + i * 41U);
+        const float y = labelArea.y + static_cast<float>(noise % 22U);
+        const float x = labelArea.x + static_cast<float>((noise >> 5U) % 18U) - 5.0f;
+        const float width = 18.0f + static_cast<float>((noise >> 11U) % 35U);
+        DrawRectangleRec({ x, y, width, 1.0f + static_cast<float>(i % 2U) },
+                         mercyFxColor(i % 2U == 0U ? color : WHITE, 0.35f + strength * 0.45f));
+    }
+}
+
+void BattleScene::renderBossYiff(GameContext& context) const {
+    if (!m_bossYiffActive) return;
+
+    const float alpha = m_bossYiffDismissing
+        ? 1.0f - std::clamp(m_bossYiffTimer / BOSS_YIFF_FADE_OUT, 0.0f, 1.0f)
+        : std::clamp(m_bossYiffTimer / BOSS_YIFF_FADE_IN, 0.0f, 1.0f);
+    DrawRectangle(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, mercyFxColor(BLACK, alpha));
+    if (m_bossYiffTimer < BOSS_YIFF_FADE_IN && !m_bossYiffDismissing) return;
+
+    Font font = context.resources.getFont8Bit(20);
+    std::stringstream ss(m_bossYiffText);
+    std::string line;
+    float lineY = (m_bossYiffText.find('\n') != std::string::npos) ? 200.0f : 220.0f;
+    while (std::getline(ss, line)) {
+        if (!line.empty()) {
+            context.resources.drawCenteredText(font, line, lineY, 20, mercyFxColor(WHITE, alpha), 1.0f);
+            lineY += 32.0f;
+        }
+    }
+    context.resources.drawCenteredText(font, "[Press Z or ENTER]", 360, 16,
+                                       mercyFxColor(COLOR_UNDERTALE_YELLOW, alpha), 1.0f);
 }
 
 // ---------------------------------------------------------------- C1-002: the in-box intro (LORE §19.0 beats 8-18)

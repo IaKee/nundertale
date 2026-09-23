@@ -66,6 +66,9 @@ private:
     void drawKillfeed(GameContext& context) const;
     void drawAnnouncerBanner(GameContext& context) const;
     void drawXpDrops(GameContext& context) const;
+    void updateMercyTransition(float dt, GameContext& context, int trackBefore, bool sparedBefore);
+    void renderMercyGlitch(GameContext& context) const;
+    void renderBossYiff(GameContext& context) const;
 
     std::unique_ptr<BattleSystem> m_battleSystem;
     std::string m_encounterId;
@@ -105,6 +108,11 @@ private:
     KillAnnouncementKind m_voicedBanner = KillAnnouncementKind::None;   // the banner whose voice line already played
     bool m_lastHitWasCrit = false;
     float m_toxicClock = 0.0f;           // drives the corruption flicker
+    float m_mercyGlitchTimer = 0.0f;     // MRC-006: first kill visibly flips Yiff to Spare
+    float m_bossYiffTimer = 0.0f;
+    bool m_bossYiffActive = false;
+    bool m_bossYiffDismissing = false;
+    std::string m_bossYiffText;
 };
 
 } // namespace nundertale
