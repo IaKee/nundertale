@@ -12,6 +12,10 @@
         "Back already, darling? I KNEW you'd miss me~",
         "Same SOUL. Same smell. Let's go again."
       ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "floofy"
     }
   ]
 }

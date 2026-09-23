@@ -3,7 +3,7 @@
   "name": "Floofy",
   "hp": 1,
   "maxHp": 1,
-  "atk": 5,
+  "atk": 1,
   "def": 999,
   "exp": 0,
   "gold": 0,

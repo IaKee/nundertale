@@ -1110,6 +1110,9 @@ def build_ruins_panelhall():
 # Step-in trigger: r2_lair_thought (once ruins.r2.thought).
 # Center trigger: r2_floofy_scene (hideIf ruins.floofy.met >= 1, no once flag: BUG-43).
 # Floofy NPC at the vanity facing away (anim vanity_back, hidden once met).
+# Furiell NPC at the south edge, shown by r2_floofy_end (ruins.furiell.r2_arrived), hidden once met.
+# The scene (C1-002): r2_floofy_scene -> r2_floofy_retry (deaths >= 1) | r2_floofy_intro -> battle `floofy`
+# (the battle picks the variant) -> scripted end -> r2_floofy_end -> door north to R3.
 # Exits: south to R1b (from_lounge), north to ruins_entrance.
 # =============================================================================
 def build_ruins_floofy():
@@ -1260,6 +1263,23 @@ def build_ruins_floofy():
                 "noTurn": True,
                 "hideIf": "ruins.floofy.met >= 1",
                 "solid": True,
+            },
+        },
+        # Furiell: appears from the south door in r2_floofy_end (ruins.furiell.r2_arrived), gone once met
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 278,
+            "y": 610,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_up",
+                "noTurn": True,
+                "showIf": "ruins.furiell.r2_arrived >= 1",
+                "hideIf": "ruins.floofy.met >= 1",
+                "solid": False,
             },
         },
         # --- PROPS (LORE §12 R2, ART-183 #18) ---

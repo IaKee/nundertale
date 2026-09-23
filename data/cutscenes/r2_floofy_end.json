@@ -1,8 +1,58 @@
 {
   "steps": [
     {
-      "type": "showNpc",
+      "type": "sound",
+      "path": "assets/sfx/spray.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "waterBurst",
       "npc": "floofy"
+    },
+    {
+      "type": "shake",
+      "intensity": 3.0,
+      "seconds": 0.3
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "soaked"
+    },
+    {
+      "type": "wait",
+      "seconds": 0.6
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "EEP!!"
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.35
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "My BLOWOUT!",
+        "This isn't over, gamer! I know where you SAVE~!"
+      ]
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pounce.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "moveNpc",
+      "npc": "floofy",
+      "x": 170,
+      "y": 170,
+      "speed": 240
     },
     {
       "type": "npcAnim",
@@ -15,12 +65,56 @@
       "npc": "floofy"
     },
     {
+      "type": "npcAnim",
+      "npc": "flowerbed",
+      "key": "shaking",
+      "seconds": 1.0
+    },
+    {
+      "type": "npcAnim",
+      "npc": "flowerbed",
+      "key": "still"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/sparkle.ogg",
+      "volume": 0.5
+    },
+    {
       "type": "wait",
       "seconds": 0.8
     },
     {
-      "type": "showNpc",
-      "npc": "furiell"
+      "type": "setFlag",
+      "key": "ruins.furiell.r2_arrived",
+      "value": 1
+    },
+    {
+      "type": "facePlayer",
+      "key": "down"
+    },
+    {
+      "type": "movePlayer",
+      "x": 318,
+      "y": 400,
+      "speed": 140
+    },
+    {
+      "type": "npcFace",
+      "npc": "furiell",
+      "key": "up"
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 278,
+      "y": 470,
+      "speed": 120
+    },
+    {
+      "type": "npcAnim",
+      "npc": "furiell",
+      "key": "spritz_left"
     },
     {
       "type": "sound",
@@ -39,6 +133,18 @@
       "seconds": 0.45
     },
     {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 278,
+      "y": 400,
+      "speed": 100
+    },
+    {
+      "type": "npcAnim",
+      "npc": "furiell",
+      "key": "talk_down"
+    },
+    {
       "type": "dialog",
       "speaker": "FURIELL",
       "lines": [
@@ -46,9 +152,18 @@
       ]
     },
     {
+      "type": "npcAnim",
+      "npc": "furiell",
+      "key": "spritz_right"
+    },
+    {
       "type": "sound",
       "path": "assets/sfx/spray.ogg",
       "volume": 0.8
+    },
+    {
+      "type": "waterBurst",
+      "npc": "player"
     },
     {
       "type": "dialog",
@@ -74,6 +189,11 @@
     {
       "type": "wait",
       "seconds": 0.4
+    },
+    {
+      "type": "npcAnim",
+      "npc": "furiell",
+      "key": "talk_down"
     },
     {
       "type": "dialog",
@@ -102,17 +222,73 @@
       "key": "up"
     },
     {
+      "type": "facePlayer",
+      "key": "up"
+    },
+    {
       "type": "moveNpc",
       "npc": "furiell",
-      "x": 320,
-      "y": 100,
-      "speed": 75
+      "x": 330,
+      "y": 350,
+      "speed": 90
     },
     {
       "type": "movePlayer",
-      "x": 320,
-      "y": 100,
-      "speed": 75
+      "x": 330,
+      "y": 400,
+      "speed": 90
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 398,
+      "y": 300,
+      "speed": 90
+    },
+    {
+      "type": "movePlayer",
+      "x": 398,
+      "y": 350,
+      "speed": 90
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 398,
+      "y": 200,
+      "speed": 90
+    },
+    {
+      "type": "movePlayer",
+      "x": 398,
+      "y": 250,
+      "speed": 90
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 398,
+      "y": 120,
+      "speed": 90
+    },
+    {
+      "type": "movePlayer",
+      "x": 398,
+      "y": 170,
+      "speed": 90
+    },
+    {
+      "type": "moveNpc",
+      "npc": "furiell",
+      "x": 330,
+      "y": 50,
+      "speed": 90
+    },
+    {
+      "type": "movePlayer",
+      "x": 318,
+      "y": 30,
+      "speed": 90
     },
     {
       "type": "setFlag",

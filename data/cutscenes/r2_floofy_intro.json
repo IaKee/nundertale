@@ -71,8 +71,20 @@
     {
       "type": "npcAnim",
       "npc": "floofy",
-      "key": "pounce",
-      "seconds": 0.45
+      "key": "pounce"
+    },
+    {
+      "type": "moveNpc",
+      "npc": "floofy",
+      "x": 300,
+      "y": 302,
+      "speed": 260
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "idle",
+      "seconds": 0.2
     },
     {
       "type": "dialog",
@@ -152,6 +164,10 @@
         "Someone ought to teach you how things work down here!",
         "I guess little old me will have to do."
       ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "floofy"
     }
   ]
 }

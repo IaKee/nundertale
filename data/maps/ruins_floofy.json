@@ -576,8 +576,51 @@
           ]
         },
         {
-          "height": 28,
+          "height": 40,
           "id": 15,
+          "name": "furiell",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 40,
+          "x": 278,
+          "y": 610,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/furiell.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "stand_up"
+            },
+            {
+              "name": "noTurn",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.furiell.r2_arrived >= 1"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.floofy.met >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 28,
+          "id": 16,
           "name": "fairy_lights_left",
           "rotation": 0,
           "type": "prop",
@@ -600,7 +643,7 @@
         },
         {
           "height": 28,
-          "id": 16,
+          "id": 17,
           "name": "fairy_lights_right",
           "rotation": 0,
           "type": "prop",
@@ -623,7 +666,7 @@
         },
         {
           "height": 80,
-          "id": 17,
+          "id": 18,
           "name": "flowerwall_left",
           "rotation": 0,
           "type": "prop",
@@ -646,7 +689,7 @@
         },
         {
           "height": 80,
-          "id": 18,
+          "id": 19,
           "name": "flowerwall_right",
           "rotation": 0,
           "type": "prop",
@@ -669,7 +712,7 @@
         },
         {
           "height": 56,
-          "id": 19,
+          "id": 20,
           "name": "flowerbed",
           "rotation": 0,
           "type": "prop",
@@ -697,7 +740,7 @@
         },
         {
           "height": 60,
-          "id": 20,
+          "id": 21,
           "name": "prop_neon",
           "rotation": 0,
           "type": "prop",
@@ -720,7 +763,7 @@
         },
         {
           "height": 104,
-          "id": 21,
+          "id": 22,
           "name": "prop_vanity",
           "rotation": 0,
           "type": "prop",
@@ -743,7 +786,7 @@
         },
         {
           "height": 104,
-          "id": 22,
+          "id": 23,
           "name": "prop_headrack",
           "rotation": 0,
           "type": "prop",
@@ -766,7 +809,7 @@
         },
         {
           "height": 92,
-          "id": 23,
+          "id": 24,
           "name": "prop_throne",
           "rotation": 0,
           "type": "prop",
@@ -789,7 +832,7 @@
         },
         {
           "height": 56,
-          "id": 24,
+          "id": 25,
           "name": "prop_rope",
           "rotation": 0,
           "type": "prop",
@@ -812,7 +855,7 @@
         },
         {
           "height": 64,
-          "id": 25,
+          "id": 26,
           "name": "prop_beanbag",
           "rotation": 0,
           "type": "prop",
@@ -835,7 +878,7 @@
         },
         {
           "height": 104,
-          "id": 26,
+          "id": 27,
           "name": "headrack",
           "rotation": 0,
           "type": "examine",
@@ -863,7 +906,7 @@
         },
         {
           "height": 104,
-          "id": 27,
+          "id": 28,
           "name": "vanity",
           "rotation": 0,
           "type": "examine",
@@ -891,7 +934,7 @@
         },
         {
           "height": 60,
-          "id": 28,
+          "id": 29,
           "name": "neon",
           "rotation": 0,
           "type": "examine",
@@ -919,7 +962,7 @@
         },
         {
           "height": 64,
-          "id": 29,
+          "id": 30,
           "name": "beanbag",
           "rotation": 0,
           "type": "examine",
@@ -952,7 +995,7 @@
         },
         {
           "height": 56,
-          "id": 30,
+          "id": 31,
           "name": "velvet_rope",
           "rotation": 0,
           "type": "examine",
@@ -1295,7 +1338,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 31,
+  "nextobjectid": 32,
   "orientation": "orthogonal",
   "properties": [
     {

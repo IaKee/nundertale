@@ -1,0 +1,76 @@
+{
+  "defaults": { "seconds": 160 },
+  "segments": [
+    {
+      "name": "r2_floofy_polite",
+      "description": "R1b save -> R2 thought, intro, choice 1 'Sorry.', in-box tutorial, petal fight (6 turns), SPRITZ, Furiell's heal and hand, R3",
+      "room": "ruins_panelhall",
+      "spawn": "from_registration",
+      "input": "../r2_floofy/polite.input",
+      "seconds": 160,
+      "expect": [
+        { "event": "room", "id": "ruins_floofy" },
+        { "event": "cutscene_start", "id": "r2_lair_thought" },
+        { "event": "cutscene_start", "id": "r2_floofy_scene" },
+        { "event": "cutscene_start", "id": "r2_floofy_intro" },
+        { "event": "flag", "name": "ruins.floofy.choice1", "value": 1 },
+        { "event": "battle_start", "encounter": "floofy" },
+        { "event": "flag", "name": "ruins.floofy.choice2", "value": 1 },
+        { "event": "flag", "name": "ruins.floofy.fight", "value": 1 },
+        { "event": "battle_end", "encounter": "floofy", "outcome": "won" },
+        { "event": "cutscene_start", "id": "r2_floofy_end" },
+        { "event": "flag", "name": "ruins.furiell.r2_arrived", "value": 1 },
+        { "event": "cutscene_end", "id": "r2_floofy_end" },
+        { "event": "flag", "name": "ruins.floofy.met", "value": 1 },
+        { "event": "room", "id": "ruins_entrance" },
+        { "event": "cutscene_start", "id": "r3_furiell" }
+      ],
+      "forbid": [{ "event": "game_over" }],
+      "note": "Run with LOCALAPPDATA pointing at a scratch folder: the input saves at the R1b star."
+    },
+    {
+      "name": "r2_floofy_annoyed",
+      "description": "the same walk with 'You broke my fall.' and 'Those are NOT petals.': the Bass Shake variant (floofy_bass), then the same ending",
+      "room": "ruins_panelhall",
+      "spawn": "from_registration",
+      "input": "../r2_floofy/annoyed.input",
+      "seconds": 195,
+      "expect": [
+        { "event": "cutscene_start", "id": "r2_floofy_intro" },
+        { "event": "flag", "name": "ruins.floofy.choice1", "value": 2 },
+        { "event": "battle_start", "encounter": "floofy" },
+        { "event": "flag", "name": "ruins.floofy.annoyed", "value": 2 },
+        { "event": "flag", "name": "ruins.floofy.choice2", "value": 2 },
+        { "event": "flag", "name": "ruins.floofy.fight", "value": 2 },
+        { "event": "battle_end", "encounter": "floofy_bass", "outcome": "won" },
+        { "event": "cutscene_start", "id": "r2_floofy_end" },
+        { "event": "cutscene_end", "id": "r2_floofy_end" },
+        { "event": "flag", "name": "ruins.floofy.met", "value": 1 },
+        { "event": "room", "id": "ruins_entrance" },
+        { "event": "cutscene_start", "id": "r3_furiell" }
+      ],
+      "forbid": [{ "event": "game_over" }],
+      "note": "Run with LOCALAPPDATA pointing at a scratch folder: the input saves at the R1b star."
+    },
+    {
+      "name": "r2_floofy_retry",
+      "description": "die in turn 4, WELCOME HOME back at the R1b save, walk in again: r2_floofy_retry skips the intro and the fight keeps its variant",
+      "room": "ruins_panelhall",
+      "spawn": "from_registration",
+      "input": "../r2_floofy/retry.input",
+      "seconds": 125,
+      "expect": [
+        { "event": "cutscene_start", "id": "r2_floofy_intro" },
+        { "event": "flag", "name": "ruins.floofy.fight", "value": 1 },
+        { "event": "game_over" },
+        { "event": "flag", "name": "ruins.floofy.deaths", "value": 1 },
+        { "event": "room", "id": "ruins_floofy" },
+        { "event": "cutscene_start", "id": "r2_floofy_scene" },
+        { "event": "cutscene_start", "id": "r2_floofy_retry" },
+        { "event": "battle_start", "encounter": "floofy" }
+      ],
+      "forbid": [{ "event": "flag", "name": "ruins.floofy.fight", "value": 2 }],
+      "note": "Run with LOCALAPPDATA pointing at a scratch folder: the input saves at the R1b star."
+    }
+  ]
+}
