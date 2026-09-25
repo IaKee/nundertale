@@ -1591,9 +1591,9 @@ void OverworldScene::drawPlayer(GameContext& context) {
         }
     }
 
-    const SpriteSheetDef* pepeSheet = spriteSheetCache().load(
-        "assets/sprites/ow/pepe_frog.png", "assets/sprites/ow/pepe_frog.json");
-    if (pepeSheet != nullptr) {
+    const SpriteSheetDef* grubSheet = spriteSheetCache().load(
+        "assets/sprites/ow/grub.png", "assets/sprites/ow/grub.json");
+    if (grubSheet != nullptr) {
         std::string direction;
         switch (m_player.getDirection()) {
             case Direction::Up: direction = "up"; break;
@@ -1602,9 +1602,9 @@ void OverworldScene::drawPlayer(GameContext& context) {
             case Direction::Right: direction = "right"; break;
         }
         const std::string animation = (m_player.isMoving() ? "walk_" : "stand_") + direction;
-        Texture2D pepeTexture = context.resources.getTexture("assets/sprites/ow/pepe_frog.png");
-        SetTextureFilter(pepeTexture, TEXTURE_FILTER_POINT);
-        drawSprite(pepeTexture, *pepeSheet, animation,
+        Texture2D grubTexture = context.resources.getTexture("assets/sprites/ow/grub.png");
+        SetTextureFilter(grubTexture, TEXTURE_FILTER_POINT);
+        drawSprite(grubTexture, *grubSheet, animation,
                    m_player.getSpriteAnimationTime(), m_player.getSpritePivot());
     } else {
         Texture2D pepeTexture = context.resources.getMaskedTexture(

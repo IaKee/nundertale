@@ -81,18 +81,18 @@ void EncounterTransitionScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
     if (m_phase == Phase::Alert) {
-        // Draw player character (Pepe)
+        // Draw player character (Grub)
         Vector2 pPos = { m_startPos.x - 14.0f, m_startPos.y - 22.0f };
-        const SpriteSheetDef* pepeSheet = spriteSheetCache().load(
-            "assets/sprites/ow/pepe_frog.png",
-            "assets/sprites/ow/pepe_frog.json"
+        const SpriteSheetDef* grubSheet = spriteSheetCache().load(
+            "assets/sprites/ow/grub.png",
+            "assets/sprites/ow/grub.json"
         );
-        if (pepeSheet != nullptr) {
-            Texture2D pepeTexture = context.resources.getTexture("assets/sprites/ow/pepe_frog.png");
-            SetTextureFilter(pepeTexture, TEXTURE_FILTER_POINT);
+        if (grubSheet != nullptr) {
+            Texture2D grubTexture = context.resources.getTexture("assets/sprites/ow/grub.png");
+            SetTextureFilter(grubTexture, TEXTURE_FILTER_POINT);
             drawSprite(
-                pepeTexture,
-                *pepeSheet,
+                grubTexture,
+                *grubSheet,
                 "stand_down",
                 0.0f,
                 { pPos.x + 19.0f, pPos.y + 58.0f }
