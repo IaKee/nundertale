@@ -398,9 +398,9 @@
           "y": 40,
           "properties": [
             {
-              "name": "lines",
+              "name": "cutscene",
               "type": "string",
-              "value": "* Cold air. A neon aurora flickers over a frozen forest.||* Far away, someone is asleep at a sentry station.||* (Snowdinha. The demo ends here. For now.)"
+              "value": "r13_door"
             }
           ]
         },

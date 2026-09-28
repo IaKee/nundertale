@@ -1,0 +1,36 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* The iron door groans open."
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.35
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* Cold air spills in beneath a neon aurora.",
+        "* A frozen forest stretches toward a tiny sentry station.",
+        "* In the distance, Senpai Sans sleeps through his shift."
+      ]
+    },
+    {
+      "type": "wait",
+      "seconds": 0.6
+    },
+    {
+      "type": "fadeOut",
+      "seconds": 0.75
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* TO BE CONTINUED."
+      ]
+    }
+  ]
+}

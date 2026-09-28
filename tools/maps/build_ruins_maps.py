@@ -4563,7 +4563,7 @@ def build_ruins_exit():
             "w": 80,
             "h": 60,
             "properties": {
-                "lines": "* Cold air. A neon aurora flickers over a frozen forest.||* Far away, someone is asleep at a sentry station.||* (Snowdinha. The demo ends here. For now.)",
+                "cutscene": "r13_door",
             },
         },
         # Save point
