@@ -1,0 +1,695 @@
+{
+  "defaults": {
+    "seconds": 200
+  },
+  "static": [
+    {
+      "kind": "spawnPose",
+      "comment": "BUG-40: the new-game spawn of R1 puts Grub lying until r1_wake sets ruins.r1.woke",
+      "map": "ruins_fall",
+      "spawn": "spawn",
+      "pose": "lying",
+      "untilFlag": "ruins.r1.woke"
+    },
+    {
+      "kind": "cutsceneSteps",
+      "comment": "Furiell's spray rescue (r2_floofy_end): spray sound twice, the water burst on Grub, the full heal, the hand grab",
+      "cutscene": "r2_floofy_end",
+      "require": [
+        {
+          "type": "sound",
+          "path": "assets/sfx/spray.ogg",
+          "min": 2
+        },
+        {
+          "type": "waterBurst",
+          "npc": "player"
+        },
+        {
+          "type": "healFull"
+        },
+        {
+          "type": "dialog",
+          "text": "*grabs your hand*"
+        },
+        {
+          "type": "setFlag",
+          "min": 2
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "name": "opening_frame0",
+      "description": "new game: Grub is lying when R1 is first drawn, still lying when the squad message buzzes, standing after r1_wake (frames recorded with --record)",
+      "input": "opening/polite.input",
+      "seconds": 24.3,
+      "expect": [
+        {
+          "event": "scene_push",
+          "scene": "DisclaimerScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "NameSelectScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_wake",
+          "within": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.r1.squad_msg",
+          "value": 1
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r1_wake"
+        }
+      ],
+      "forbid": [
+        {
+          "event": "room",
+          "id": "ruins_registration"
+        },
+        {
+          "event": "game_over"
+        }
+      ],
+      "pose": {
+        "map": "ruins_fall",
+        "spawn": "spawn",
+        "scale": 2,
+        "lyingMin": 0.35,
+        "upMax": 0.25,
+        "frames": [
+          {
+            "after": {
+              "event": "scene_push",
+              "scene": "OverworldScene"
+            },
+            "plus": 30,
+            "expect": "lying"
+          },
+          {
+            "after": {
+              "event": "flag",
+              "name": "ruins.r1.squad_msg"
+            },
+            "plus": 3,
+            "expect": "lying"
+          },
+          {
+            "after": {
+              "event": "cutscene_end",
+              "id": "r1_wake"
+            },
+            "plus": 2,
+            "expect": "up"
+          }
+        ]
+      },
+      "note": "the white fade into R1 hides the first ~20 frames, so the first sample is 30 ticks after the Overworld is pushed; the first frame itself is covered by the static spawnPose check and by r1_wake starting within 2 ticks"
+    },
+    {
+      "name": "opening_polite",
+      "description": "new game -> R1 -> R1a -> R1b (save) -> R2 polite ('Sorry.', '...Okay.'), petal fight (variant 1), Furiell's spray, walk to R3",
+      "input": "opening/polite.input",
+      "seconds": 195,
+      "expect": [
+        {
+          "event": "room",
+          "id": "ruins_fall"
+        },
+        {
+          "event": "scene_push",
+          "scene": "DisclaimerScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "LoreScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "TitleScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "InstructionsScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "NameSelectScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_wake",
+          "within": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.r1.squad_msg",
+          "value": 1
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r1_wake"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_landing_items"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.left_landing",
+          "value": 1
+        },
+        {
+          "event": "room",
+          "id": "ruins_registration",
+          "spawn": "from_landing"
+        },
+        {
+          "event": "room",
+          "id": "ruins_panelhall",
+          "spawn": "from_registration"
+        },
+        {
+          "event": "room",
+          "id": "ruins_floofy",
+          "spawn": "from_panelhall"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_lair_thought"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.r2.thought",
+          "value": 1
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r2_lair_thought"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_scene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice1",
+          "value": 1
+        },
+        {
+          "event": "battle_start",
+          "encounter": "floofy"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice2",
+          "value": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.fight",
+          "value": 1
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy",
+          "outcome": "won"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_end"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.furiell.r2_arrived",
+          "value": 1
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r2_floofy_end"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.met",
+          "value": 1
+        },
+        {
+          "event": "room",
+          "id": "ruins_entrance",
+          "spawn": "from_floofy"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r3_furiell"
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r3_furiell"
+        }
+      ],
+      "counts": [
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro",
+          "equals": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.pokes",
+          "max": 0
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.annoyed",
+          "max": 0
+        },
+        {
+          "event": "battle_end",
+          "equals": 1
+        }
+      ],
+      "forbid": [
+        {
+          "event": "game_over"
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy_bass"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_retry"
+        }
+      ],
+      "files": [
+        {
+          "path": "nUndertale/file0.json",
+          "contains": "ruins_panelhall"
+        }
+      ],
+      "note": "the R1b star saves into the scratch LOCALAPPDATA; r2_floofy_end must come after the petal fight"
+    },
+    {
+      "name": "opening_annoyed",
+      "description": "the same walk with 'You broke my fall.' and 'Those are NOT petals.': the Bass Shake variant (floofy_bass), then the same ending",
+      "input": "opening/annoyed.input",
+      "seconds": 235,
+      "expect": [
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_wake",
+          "within": 2
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r1_wake"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_landing_items"
+        },
+        {
+          "event": "room",
+          "id": "ruins_registration",
+          "spawn": "from_landing"
+        },
+        {
+          "event": "room",
+          "id": "ruins_panelhall",
+          "spawn": "from_registration"
+        },
+        {
+          "event": "room",
+          "id": "ruins_floofy",
+          "spawn": "from_panelhall"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_lair_thought"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_scene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.annoyed",
+          "value": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice1",
+          "value": 2
+        },
+        {
+          "event": "battle_start",
+          "encounter": "floofy"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.annoyed",
+          "value": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice2",
+          "value": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.fight",
+          "value": 2
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy_bass",
+          "outcome": "won"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_end"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.furiell.r2_arrived",
+          "value": 1
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r2_floofy_end"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.met",
+          "value": 1
+        },
+        {
+          "event": "room",
+          "id": "ruins_entrance",
+          "spawn": "from_floofy"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r3_furiell"
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r3_furiell"
+        }
+      ],
+      "counts": [
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro",
+          "equals": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.pokes",
+          "max": 0
+        },
+        {
+          "event": "battle_end",
+          "equals": 1
+        }
+      ],
+      "forbid": [
+        {
+          "event": "game_over"
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_retry"
+        }
+      ],
+      "files": [
+        {
+          "path": "nUndertale/file0.json",
+          "contains": "ruins_panelhall"
+        }
+      ]
+    },
+    {
+      "name": "opening_pokes",
+      "description": "new game, poke Floofy three times in R1, walk to R2: annoyed starts at 1 in the intro and 'You broke my fall.' makes it 2",
+      "input": "opening/pokes.input",
+      "seconds": 100,
+      "expect": [
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_wake",
+          "within": 2
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r1_wake"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_floofy_poke"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.pokes",
+          "value": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.pokes",
+          "value": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.pokes",
+          "value": 3
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r1_landing_items"
+        },
+        {
+          "event": "room",
+          "id": "ruins_registration",
+          "spawn": "from_landing"
+        },
+        {
+          "event": "room",
+          "id": "ruins_panelhall",
+          "spawn": "from_registration"
+        },
+        {
+          "event": "room",
+          "id": "ruins_floofy",
+          "spawn": "from_panelhall"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.annoyed",
+          "value": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.annoyed",
+          "value": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice1",
+          "value": 2
+        }
+      ],
+      "counts": [
+        {
+          "event": "cutscene_start",
+          "id": "r1_floofy_poke",
+          "equals": 3
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro",
+          "equals": 1
+        }
+      ],
+      "forbid": [
+        {
+          "event": "game_over"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.fight"
+        }
+      ],
+      "note": "the run stops in the intro (the battle has not started): this only checks that three pokes count as annoyance"
+    },
+    {
+      "name": "opening_death_retry",
+      "description": "polite walk, die in the petal fight, WELCOME HOME at the R1b save, walk back into R2: r2_floofy_retry (no second intro), same variant, deaths counted",
+      "input": "opening/retry.input",
+      "seconds": 200,
+      "expect": [
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "cutscene_end",
+          "id": "r1_wake"
+        },
+        {
+          "event": "room",
+          "id": "ruins_floofy",
+          "spawn": "from_panelhall"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice1",
+          "value": 1
+        },
+        {
+          "event": "battle_start",
+          "encounter": "floofy"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.fight",
+          "value": 1
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy",
+          "outcome": "lost"
+        },
+        {
+          "event": "game_over",
+          "room": "ruins_floofy"
+        },
+        {
+          "event": "room",
+          "id": "ruins_panelhall"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.deaths",
+          "value": 1
+        },
+        {
+          "event": "scene_pop",
+          "scene": "GameOverScene"
+        },
+        {
+          "event": "scene_push",
+          "scene": "OverworldScene"
+        },
+        {
+          "event": "room",
+          "id": "ruins_floofy",
+          "spawn": "from_panelhall"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_scene"
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_retry"
+        },
+        {
+          "event": "battle_start",
+          "encounter": "floofy"
+        },
+        {
+          "event": "battle_end",
+          "encounter": "floofy",
+          "outcome": "lost"
+        },
+        {
+          "event": "game_over",
+          "room": "ruins_floofy"
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.deaths",
+          "value": 2
+        }
+      ],
+      "counts": [
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_intro",
+          "equals": 1
+        },
+        {
+          "event": "cutscene_start",
+          "id": "r2_floofy_retry",
+          "equals": 1
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.choice1",
+          "equals": 1
+        }
+      ],
+      "forbid": [
+        {
+          "event": "flag",
+          "name": "ruins.floofy.fight",
+          "value": 2
+        },
+        {
+          "event": "flag",
+          "name": "ruins.floofy.met"
+        }
+      ],
+      "files": [
+        {
+          "path": "nUndertale/file0.json",
+          "contains": "ruins_panelhall"
+        }
+      ],
+      "note": "the retry input stands still in the fourth turn of both fights, so the second death is by design"
+    }
+  ]
+}
