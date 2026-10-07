@@ -208,9 +208,18 @@ void BattleScene::update(float dt, GameContext& context) {
         const int expBefore = context.player.exp;
         const int trackBefore = toxicTrack(context.state);
         const bool sparedBefore = m_battleSystem->isSpared();
+        const int hpBefore = context.player.hp;
         m_battleSystem->update(dt, context);
         updateToxicFx(dt, context, phaseBefore, killsBefore, expBefore);
         updateMercyTransition(dt, context, trackBefore, sparedBefore);
+
+        if (context.player.hp < hpBefore) {
+            const bool defeated = context.player.hp <= 0 ||
+                m_battleSystem->getState() == BattleState::Defeat;
+            context.audio.playSound(
+                defeated ? "assets/sfx/grunt_death.ogg" : "assets/sfx/grunt_hurt.ogg",
+                defeated ? 0.9f : 0.65f);
+        }
 
         // BND-010 & BUG-03: Transition directly to authentic GameOverScene
         if (m_battleSystem->getState() == BattleState::Defeat) {
@@ -545,6 +554,7 @@ void BattleScene::hitIntroSoul(GameContext& context) {
     context.player.hp = introHpAfterHit(context.player.hp, hit.damage);   // the tutorial can't kill
     applyFurCapped(state.furry.value, state.furry.stageMax, hit.furDelta, false);
     context.audio.playSound("assets/sfx/hurt.ogg", 0.7f);
+    context.audio.playSound("assets/sfx/grunt_hurt.ogg", 0.65f);
     context.shake(6.0f, 0.25f);
     context.flash({ 255, 0, 0, 255 }, 0.15f);
     m_introPetals.clear();

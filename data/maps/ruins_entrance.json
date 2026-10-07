@@ -645,6 +645,11 @@
               "name": "lines",
               "type": "string",
               "value": "* A pile of Dorito bags. *crunch*"
+            },
+            {
+              "name": "sound",
+              "type": "string",
+              "value": "assets/sfx/step_crunch.ogg"
             }
           ]
         },

@@ -348,8 +348,10 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
             playerBox.x + playerBox.width * 0.5f, playerBox.y + playerBox.height * 0.5f);
     }
     const bool firstSwitchFlip = counter == 0 && counterKey.rfind("ruins.r4.sw", 0) == 0;
-    context.audio.playSound(
-        firstSwitchFlip ? "assets/sfx/switch_click.ogg" : "assets/sfx/menu_select.wav", 0.6f);
+    const std::string interactionSound = tiledStringProperty(
+        object.properties, "sound",
+        firstSwitchFlip ? "assets/sfx/switch_click.ogg" : "assets/sfx/menu_select.wav");
+    context.audio.playSound(interactionSound, 0.6f);
     if (!cutsceneId.empty()) {
         startCutscene(cutsceneId);
         return;
@@ -383,6 +385,7 @@ void OverworldScene::updateHazards(GameContext& context) {
     context.player.hp = applyHazardDamage(
         context.player.hp, tiledIntProperty(hit->properties, "damage", 2));
     context.audio.playSound("assets/sfx/zap.ogg", 0.85f);
+    context.audio.playSound("assets/sfx/grunt_hurt.ogg", 0.65f);
     context.flash({ 255, 48, 48, 255 }, 0.12f);
     context.shake(2.0f, 0.12f);
     m_player.setPosition(m_lastHazardSafePosition);
@@ -971,7 +974,10 @@ void OverworldScene::handleSaveBoxInput(GameContext& context) {
                 context.state.playerPos = m_player.getPosition();
                 context.save.saveGame(context.state);
                 sessionOnSave(context.session);
-                context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
+                const char* saveSound = context.state.currentRoom == "ruins_entrance"
+                    ? "assets/sfx/intro_noise.ogg"
+                    : "assets/sfx/u_activate.wav";
+                context.audio.playSound(saveSound, 0.9f);
                 m_saveBoxState = SaveBoxState::Saved;
             } else { // Return
                 m_saveBoxState = SaveBoxState::Closed;

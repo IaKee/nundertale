@@ -1683,6 +1683,7 @@ def build_ruins_entrance():
                 "anim": "pile",
                 "solid": False,
                 "lines": "* A pile of Dorito bags. *crunch*",
+                "sound": "assets/sfx/step_crunch.ogg",
             },
         },
         # Savepoint star
