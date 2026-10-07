@@ -11,6 +11,7 @@
 #include "core/FurReactions.hpp"
 #include "core/Cell.hpp"
 #include "core/Camera2DFollow.hpp"
+#include "core/RgbKeyboard.hpp"
 #include "core/RoomObjects.hpp"
 #include "services/MusicTracks.hpp"
 #include "ui/SpriteDraw.hpp"
@@ -22,6 +23,28 @@
 #include <iostream>
 
 namespace nundertale {
+
+namespace {
+
+constexpr std::array<const char*, RGB_KEY_COUNT> RGB_KEY_FLAGS = {{
+    "ruins.r4.key0", "ruins.r4.key1", "ruins.r4.key2", "ruins.r4.key3", "ruins.r4.key4"
+}};
+
+int rgbKeyboardMaskFromState(const GameState& state) {
+    int mask = 0;
+    for (int key = 0; key < RGB_KEY_COUNT; ++key) {
+        if (state.getFlag(RGB_KEY_FLAGS[static_cast<std::size_t>(key)], 0) != 0) mask |= 1 << key;
+    }
+    return mask;
+}
+
+void setRgbKeyboardMask(GameState& state, int mask) {
+    for (int key = 0; key < RGB_KEY_COUNT; ++key) {
+        state.setFlag(RGB_KEY_FLAGS[static_cast<std::size_t>(key)], rgbKeyboardKeyLit(mask, key) ? 1 : 0);
+    }
+}
+
+} // namespace
 
 OverworldScene::OverworldScene()
     : m_player(Vector2{ 300.0f, 320.0f }) {
@@ -146,6 +169,14 @@ void OverworldScene::initRoomObjects(GameContext& context) {
     if (context.state.getFlag("ruins.barky.state", 0) == 0) {
         if (context.state.getFlag("ruins.barky.killed", 0) != 0) context.state.setFlag("ruins.barky.state", 2);
         else if (context.state.getFlag("ruins.barky.spared", 0) != 0) context.state.setFlag("ruins.barky.state", 1);
+    }
+
+    if (context.state.currentRoom == "ruins_switches" &&
+        context.state.getFlag("ruins.r4.rgb_initialized", 0) == 0) {
+        const int initialMask = context.state.getFlag("ruins.r4.solved", 0) != 0
+            ? RGB_KEY_TARGET_MASK : RGB_KEY_START_MASK;
+        setRgbKeyboardMask(context.state, initialMask);
+        context.state.setFlag("ruins.r4.rgb_initialized", 1);
     }
 
     for (const TiledLayer& layer : m_tiledMap.layers) {
@@ -275,6 +306,25 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
     }
 
     if (type != "sign" && type != "examine" && type != "prop" && type != "npc") return;
+    const int rgbKey = tiledIntProperty(object.properties, "rgbKey", -1);
+    if (type == "prop" && rgbKey >= 0 && rgbKey < RGB_KEY_COUNT) {
+        if (context.state.getFlag("ruins.r4.solved", 0) != 0) {
+            m_dialogBox.startDialog({ "* The keyboard is locked on pink." }, "");
+            return;
+        }
+        const int nextMask = pressRgbKeyboardKey(rgbKeyboardMaskFromState(context.state), rgbKey);
+        setRgbKeyboardMask(context.state, nextMask);
+        context.audio.playSound("assets/sfx/switch_click.ogg", 0.6f);
+        if (rgbKeyboardSolved(nextMask)) {
+            context.state.setFlag("ruins.r4.solved", 1);
+            m_dialogBox.startDialog({ "* The keyboard locks into pink. The cable barrier retracts." }, "");
+        } else if (context.state.getFlag("ruins.r4.keys_thought", 0) == 0) {
+            startCutscene(tiledStringProperty(object.properties, "cutscene", "r4_keys"));
+        } else {
+            m_dialogBox.startDialog({ "* The neighboring keys change color." }, "");
+        }
+        return;
+    }
     std::vector<std::string> variants;
     const std::string first = tiledStringProperty(object.properties, "lines");
     const std::string cutsceneId = tiledStringProperty(object.properties, "cutscene");
@@ -1635,6 +1685,14 @@ void OverworldScene::render(GameContext& context) {
                     static_cast<int>(m_backgroundOffset.y), WHITE);
     }
     drawTileLayers(context, false);
+
+    // C1-004: a steady (never animated/flashed) wash mixes the currently lit RGB keys into the room.
+    if (context.state.currentRoom == "ruins_switches") {
+        const RgbKeyboardColor tint = rgbKeyboardTint(rgbKeyboardMaskFromState(context.state));
+        DrawRectangle(0, 0, static_cast<int>(m_roomWidth), static_cast<int>(m_roomHeight),
+                      Color{ static_cast<unsigned char>(tint.r), static_cast<unsigned char>(tint.g),
+                             static_cast<unsigned char>(tint.b), 42 });
+    }
 
     // 2. Render Interactables & SavePoint
     for (auto& item : m_interactables) {

@@ -2067,6 +2067,95 @@ def build_ruins_switches():
         },
     ]
 
+    # C1-004 v3.1 replaces the old three independent switches above.  The five
+    # key props are one Lights-Out keyboard; OverworldScene owns their atomic
+    # neighbor toggle so a save can never observe half of a press.
+    key_specs = [
+        (0, "red"),
+        (1, "yellow"),
+        (2, "green"),
+        (3, "blue"),
+        (4, "magenta"),
+    ]
+    objects = [
+        {
+            "name": "from_entrance", "type": "spawn", "point": True,
+            "x": 320, "y": 370, "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn", "type": "spawn", "point": True,
+            "x": 320, "y": 370, "properties": {"facing": "up"},
+        },
+        {
+            "name": "from_dummy", "type": "spawn", "point": True,
+            "x": 320, "y": 140, "properties": {"facing": "down"},
+        },
+        {
+            "name": "door_to_entrance", "type": "door",
+            "x": 280, "y": 440, "w": 80, "h": 40,
+            "properties": {"targetRoom": "ruins_entrance", "targetSpawn": "from_switches"},
+        },
+        {
+            "name": "door_to_dummy", "type": "door",
+            "x": 280, "y": 40, "w": 80, "h": 40,
+            "properties": {"targetRoom": "ruins_dummy", "targetSpawn": "from_switches"},
+        },
+        {
+            "name": "trigger_hint", "type": "trigger",
+            "x": 240, "y": 380, "w": 160, "h": 40,
+            "properties": {"cutscene": "r4_hint", "once": "ruins.r4.intro"},
+        },
+        {
+            "name": "rgb_keyboard_frame", "type": "decoration",
+            "x": 220, "y": 160, "w": 200, "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_rgb_keyboard.png",
+                "solid": False,
+            },
+        },
+        {
+            "name": "note_keyboard", "type": "examine",
+            "x": 120, "y": 155, "w": 40, "h": 50,
+            "properties": {"lines": "* \"Not this one. - Ruins Administration (not Furiell)\""},
+        },
+        {
+            "name": "sign_courage", "type": "sign",
+            "x": 480, "y": 155, "w": 40, "h": 50,
+            "properties": {
+                "lines": "* \"Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob.\"",
+            },
+        },
+    ]
+    for key, color in key_specs:
+        objects.append({
+            "name": f"rgb_key_{key}", "type": "prop",
+            "x": 224 + key * 38, "y": 144, "w": 36, "h": 50,
+            "properties": {
+                "rgbKey": key,
+                "sprite": "assets/props/ruins_rgb_keys.png",
+                "anim": f"{color}_off",
+                "altAnim": f"{color}_on",
+                "altAnimIf": f"ruins.r4.key{key} >= 1",
+                "cutscene": "r4_keys",
+                "solid": False,
+            },
+        })
+    for suffix, x, y in (("cables_left", 280, 80), ("cables_right", 320, 80),
+                         ("front_left", 280, 120), ("front_right", 320, 120)):
+        properties = {
+            "sprite": "assets/props/ruins_cables.png",
+            "anim": "on",
+            "solid": True,
+            "hideIf": "ruins.r4.solved >= 1",
+        }
+        if suffix.startswith("front"):
+            properties["lines"] = "* A tangle of live cables blocks the way.\n* Make the keyboard pink."
+        objects.append({
+            "name": f"gate_{suffix}", "type": "prop",
+            "x": x, "y": y, "w": 40, "h": 40,
+            "properties": properties,
+        })
+
     return make_tiled_map(
         room_id="ruins_switches",
         display_name="Ruins - Switch Room",

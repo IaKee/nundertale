@@ -418,152 +418,104 @@
           ]
         },
         {
-          "height": 50,
+          "height": 40,
           "id": 13,
-          "name": "sw1",
+          "name": "rgb_keyboard_frame",
           "rotation": 0,
-          "type": "prop",
+          "type": "decoration",
+          "visible": true,
+          "width": 200,
+          "x": 220,
+          "y": 160,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_keyboard.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 14,
+          "name": "note_keyboard",
+          "rotation": 0,
+          "type": "examine",
           "visible": true,
           "width": 40,
           "x": 120,
-          "y": 80,
+          "y": 155,
           "properties": [
-            {
-              "name": "counter",
-              "type": "string",
-              "value": "ruins.r4.sw1"
-            },
             {
               "name": "lines",
               "type": "string",
-              "value": "* You flipped the switch. Click! Glitter spilled everywhere."
-            },
-            {
-              "name": "lines2",
-              "type": "string",
-              "value": "* The switch is already flipped. There is glitter all over your hands."
+              "value": "* \"Not this one. - Ruins Administration (not Furiell)\""
             }
           ]
         },
         {
-          "height": 40,
-          "id": 14,
-          "name": "sw1_marked",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 120,
-          "y": 80,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "marked"
-            },
-            {
-              "name": "hideIf",
-              "type": "string",
-              "value": "ruins.r4.sw1 >= 1"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "height": 40,
+          "height": 50,
           "id": 15,
-          "name": "sw1_on",
+          "name": "sign_courage",
           "rotation": 0,
-          "type": "prop",
+          "type": "sign",
           "visible": true,
           "width": 40,
-          "x": 120,
-          "y": 80,
+          "x": 480,
+          "y": 155,
           "properties": [
             {
-              "name": "sprite",
+              "name": "lines",
               "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "on"
-            },
-            {
-              "name": "showIf",
-              "type": "string",
-              "value": "ruins.r4.sw1 >= 1"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": false
+              "value": "* \"Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob.\""
             }
           ]
         },
         {
           "height": 50,
           "id": 16,
-          "name": "sw2",
+          "name": "rgb_key_0",
           "rotation": 0,
           "type": "prop",
           "visible": true,
-          "width": 40,
-          "x": 200,
-          "y": 80,
+          "width": 36,
+          "x": 224,
+          "y": 144,
           "properties": [
             {
-              "name": "counter",
-              "type": "string",
-              "value": "ruins.r4.sw2"
+              "name": "rgbKey",
+              "type": "int",
+              "value": 0
             },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "* You flipped the switch. It made a hollow clunk. Nothing happened."
-            },
-            {
-              "name": "lines2",
-              "type": "string",
-              "value": "* Still nothing. It feels like pressing an unmapped key."
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 17,
-          "name": "sw2_off",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 200,
-          "y": 80,
-          "properties": [
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
+              "value": "assets/props/ruins_rgb_keys.png"
             },
             {
               "name": "anim",
               "type": "string",
-              "value": "off"
+              "value": "red_off"
             },
             {
-              "name": "hideIf",
+              "name": "altAnim",
               "type": "string",
-              "value": "ruins.r4.sw2 >= 1"
+              "value": "red_on"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.key0 >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_keys"
             },
             {
               "name": "solid",
@@ -573,30 +525,93 @@
           ]
         },
         {
-          "height": 40,
-          "id": 18,
-          "name": "sw2_on",
+          "height": 50,
+          "id": 17,
+          "name": "rgb_key_1",
           "rotation": 0,
           "type": "prop",
           "visible": true,
-          "width": 40,
-          "x": 200,
-          "y": 80,
+          "width": 36,
+          "x": 262,
+          "y": 144,
           "properties": [
+            {
+              "name": "rgbKey",
+              "type": "int",
+              "value": 1
+            },
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
+              "value": "assets/props/ruins_rgb_keys.png"
             },
             {
               "name": "anim",
               "type": "string",
-              "value": "on"
+              "value": "yellow_off"
             },
             {
-              "name": "showIf",
+              "name": "altAnim",
               "type": "string",
-              "value": "ruins.r4.sw2 >= 1"
+              "value": "yellow_on"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.key1 >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_keys"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 50,
+          "id": 18,
+          "name": "rgb_key_2",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 36,
+          "x": 300,
+          "y": 144,
+          "properties": [
+            {
+              "name": "rgbKey",
+              "type": "int",
+              "value": 2
+            },
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_rgb_keys.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "green_off"
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "green_on"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.key2 >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_keys"
             },
             {
               "name": "solid",
@@ -608,136 +623,102 @@
         {
           "height": 50,
           "id": 19,
-          "name": "note_switch2",
+          "name": "rgb_key_3",
           "rotation": 0,
-          "type": "examine",
+          "type": "prop",
           "visible": true,
-          "width": 40,
-          "x": 240,
-          "y": 80,
+          "width": 36,
+          "x": 338,
+          "y": 144,
           "properties": [
             {
-              "name": "lines",
+              "name": "rgbKey",
+              "type": "int",
+              "value": 3
+            },
+            {
+              "name": "sprite",
               "type": "string",
-              "value": "* \"Not this one. - Ruins Administration (not Furiell)\""
+              "value": "assets/props/ruins_rgb_keys.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "blue_off"
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "blue_on"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.key3 >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_keys"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
             }
           ]
         },
         {
           "height": 50,
           "id": 20,
-          "name": "sign_courage",
+          "name": "rgb_key_4",
           "rotation": 0,
-          "type": "sign",
+          "type": "prop",
           "visible": true,
-          "width": 40,
-          "x": 400,
-          "y": 80,
+          "width": 36,
+          "x": 376,
+          "y": 144,
           "properties": [
             {
-              "name": "lines",
+              "name": "rgbKey",
+              "type": "int",
+              "value": 4
+            },
+            {
+              "name": "sprite",
               "type": "string",
-              "value": "* \"Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob.\""
+              "value": "assets/props/ruins_rgb_keys.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "magenta_off"
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "magenta_on"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.key4 >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r4_keys"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
             }
           ]
         },
         {
-          "height": 50,
+          "height": 40,
           "id": 21,
-          "name": "sw3",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 480,
-          "y": 80,
-          "properties": [
-            {
-              "name": "counter",
-              "type": "string",
-              "value": "ruins.r4.sw3"
-            },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "* You flipped the switch. Click! A distant latch clicked open."
-            },
-            {
-              "name": "lines2",
-              "type": "string",
-              "value": "* The switch is already on. It emits a faint RGB glow."
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 22,
-          "name": "sw3_marked",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 480,
-          "y": 80,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "marked"
-            },
-            {
-              "name": "hideIf",
-              "type": "string",
-              "value": "ruins.r4.sw3 >= 1"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 23,
-          "name": "sw3_on",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 480,
-          "y": 80,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_rgb_switch.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "on"
-            },
-            {
-              "name": "showIf",
-              "type": "string",
-              "value": "ruins.r4.sw3 >= 1"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 24,
           "name": "gate_cables_left",
           "rotation": 0,
           "type": "prop",
@@ -764,13 +745,13 @@
             {
               "name": "hideIf",
               "type": "string",
-              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+              "value": "ruins.r4.solved >= 1"
             }
           ]
         },
         {
           "height": 40,
-          "id": 25,
+          "id": 22,
           "name": "gate_cables_right",
           "rotation": 0,
           "type": "prop",
@@ -797,13 +778,13 @@
             {
               "name": "hideIf",
               "type": "string",
-              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+              "value": "ruins.r4.solved >= 1"
             }
           ]
         },
         {
           "height": 40,
-          "id": 26,
+          "id": 23,
           "name": "gate_front_left",
           "rotation": 0,
           "type": "prop",
@@ -830,18 +811,18 @@
             {
               "name": "hideIf",
               "type": "string",
-              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+              "value": "ruins.r4.solved >= 1"
             },
             {
               "name": "lines",
               "type": "string",
-              "value": "* A tangle of live cables blocks the way.\n* Somewhere, a switch is waiting."
+              "value": "* A tangle of live cables blocks the way.\n* Make the keyboard pink."
             }
           ]
         },
         {
           "height": 40,
-          "id": 27,
+          "id": 24,
           "name": "gate_front_right",
           "rotation": 0,
           "type": "prop",
@@ -868,12 +849,12 @@
             {
               "name": "hideIf",
               "type": "string",
-              "value": "ruins.r4.sw1 >= 1 && ruins.r4.sw3 >= 1"
+              "value": "ruins.r4.solved >= 1"
             },
             {
               "name": "lines",
               "type": "string",
-              "value": "* A tangle of live cables blocks the way.\n* Somewhere, a switch is waiting."
+              "value": "* A tangle of live cables blocks the way.\n* Make the keyboard pink."
             }
           ]
         }
@@ -1098,7 +1079,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 28,
+  "nextobjectid": 25,
   "orientation": "orthogonal",
   "properties": [
     {

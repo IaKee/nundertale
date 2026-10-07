@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* (You've done this a thousand times. In the RGB app.)"
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r4.keys_thought",
+      "value": 1
+    }
+  ]
+}
