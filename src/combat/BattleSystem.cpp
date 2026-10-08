@@ -39,15 +39,23 @@ BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy,
                            bool canFlee,
                            std::string fleeBlockedText,
                            int furCap)
-    : m_enemy(std::move(enemy)) {
-    if (m_enemy) {
+    : m_canFlee(canFlee), m_fleeBlockedText(std::move(fleeBlockedText)), m_furCap(furCap) {
+    if (enemy) {
+        Encounter encounter;
+        encounter.enemies.push_back(enemy->getId());
+        encounter.canFlee = canFlee;
+        std::vector<std::string> names{ enemy->getName() };
+        m_enemies.push_back(std::move(enemy));
+        m_encounterState = EncounterState(std::move(encounter), std::move(names));
+        m_patternIndices.resize(1U);
+        m_frozenTurnsByEnemy.resize(1U);
+        m_tempAtkDeltasByEnemy.resize(1U);
+        selectEnemy(0U);
         m_isBarky = m_enemy->getId() == "barky";
         m_exGamer = readExGamer(m_enemy->getId());
         // Barky's pre-existing battle allowed Flee despite its encounter data saying false.
         m_canFlee = canFlee || m_isBarky;
-        m_fleeBlockedText = fleeBlockedText.empty()
-            ? m_enemy->getFleeBlockedText()
-            : std::move(fleeBlockedText);
+        if (m_fleeBlockedText.empty()) m_fleeBlockedText = m_enemy->getFleeBlockedText();
         m_furCap = furCap >= 0 ? furCap : m_enemy->getFurCap();
         m_narratorText = introText.empty()
             ? "* " + m_enemy->getName() + " blocked your path!"
@@ -64,6 +72,154 @@ BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy,
             }
         }
     }
+}
+
+BattleSystem::BattleSystem(std::vector<std::unique_ptr<Enemy>> enemies,
+                           Encounter encounter,
+                           std::string introText,
+                           std::string fleeBlockedText,
+                           int furCap)
+    : m_enemies(std::move(enemies)),
+      m_canFlee(encounter.canFlee),
+      m_fleeBlockedText(std::move(fleeBlockedText)),
+      m_furCap(furCap) {
+    std::vector<std::string> names;
+    names.reserve(m_enemies.size());
+    for (const auto& enemy : m_enemies) names.push_back(enemy ? enemy->getName() : std::string{});
+    m_encounterState = EncounterState(std::move(encounter), std::move(names));
+    m_patternIndices.resize(m_enemies.size());
+    m_frozenTurnsByEnemy.resize(m_enemies.size());
+    m_tempAtkDeltasByEnemy.resize(m_enemies.size());
+    if (m_enemies.empty() || !m_enemies.front()) return;
+
+    selectEnemy(0U);
+    m_isBarky = m_enemies.size() == 1U && m_enemy->getId() == "barky";
+    m_exGamer = readExGamer(m_enemy->getId());
+    m_canFlee = m_canFlee || m_isBarky;
+    if (m_fleeBlockedText.empty()) m_fleeBlockedText = m_enemy->getFleeBlockedText();
+    if (m_furCap < 0) m_furCap = m_enemy->getFurCap();
+    m_narratorText = introText.empty() ? m_encounterState.introText() : std::move(introText);
+
+    // Scripted/beat bosses remain single-enemy encounters. Multi-enemy random fights use
+    // the ordinary pattern aggregator below, which deliberately has no shared music clock.
+    if (m_enemies.size() == 1U && !m_isBarky) {
+        for (const EnemyPatternDef& pattern : m_enemy->getPatterns()) {
+            if (pattern.kind != EnemyPatternKind::Beat || pattern.beatmap.empty()) continue;
+            m_beatMapLoaded = loadBeatMap("data/beatmaps/" + pattern.beatmap + ".json", m_beatMap) &&
+                              m_beatMap.loopLength > 0.0f;
+            if (!m_beatMapLoaded) TraceLog(LOG_WARNING, "BattleSystem: beat map '%s' failed to load", pattern.beatmap.c_str());
+            break;
+        }
+    }
+}
+
+std::vector<std::size_t> BattleSystem::activeEnemyIndices() const {
+    return m_encounterState.activeIndices();
+}
+
+void BattleSystem::selectEnemy(std::size_t index) {
+    if (index >= m_enemies.size() || !m_enemies[index]) return;
+    m_selectedEnemyIndex = index;
+    m_enemy = m_enemies[index].get();
+    m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
+    m_isBarky = m_enemies.size() == 1U && m_enemy->getId() == "barky";
+    m_exGamer = readExGamer(m_enemy->getId());
+}
+
+int BattleSystem::enemyPositionX(std::size_t index) const {
+    const std::size_t count = m_enemies.size();
+    if (count <= 1U) return VIRTUAL_WIDTH / 2;
+    if (count == 2U) return index == 0U ? VIRTUAL_WIDTH / 2 - 115 : VIRTUAL_WIDTH / 2 + 115;
+    return VIRTUAL_WIDTH / 2 - 150 + static_cast<int>(index) * 150;
+}
+
+void BattleSystem::resolveCurrentEnemy(GameContext& context, EnemyStatus outcome) {
+    if (!m_enemy || !m_encounterState.isActive(m_selectedEnemyIndex)) return;
+
+    if (m_selectedEnemyIndex < m_tempAtkDeltasByEnemy.size() &&
+        m_tempAtkDeltasByEnemy[m_selectedEnemyIndex] != 0) {
+        m_enemy->modifyAtk(-m_tempAtkDeltasByEnemy[m_selectedEnemyIndex]);
+        m_tempAtkDeltasByEnemy[m_selectedEnemyIndex] = 0;
+    }
+
+    if (outcome == EnemyStatus::Spared) {
+        m_encounterState.spare(m_selectedEnemyIndex);
+        m_isSpared = true;
+        const int gold = m_isBarky ? 10 : m_enemy->getGold();
+        context.player.gold += gold;
+        m_battleGoldEarned += gold;
+        if (m_isBarky) {
+            context.state.setFlag("ruins.barky.spared", 1);
+            context.state.setFlag("ruins.barky.state", 1);
+        } else {
+            context.state.incFlag("battle." + m_enemy->getId() + ".spared");
+        }
+        if (!m_enemy->getSpareFlag().empty()) context.state.setFlag(m_enemy->getSpareFlag(), 1);
+        context.state.sparesTotal += 1;
+        toxicTrackOnSpare(context.state, m_enemy->getId());
+    } else if (outcome == EnemyStatus::Dead) {
+        m_encounterState.kill(m_selectedEnemyIndex);
+        const int exp = m_isBarky ? 20 : m_enemy->getExp();
+        const int gold = m_isBarky ? 15 : m_enemy->getGold();
+        context.player.exp += exp;
+        context.player.gold += gold;
+        m_battleExpEarned += exp;
+        m_battleGoldEarned += gold;
+        if (m_enemy->countsAsKill()) {
+            if (m_isBarky) {
+                context.state.setFlag("ruins.barky.killed", 1);
+                context.state.setFlag("ruins.barky.state", 2);
+            } else {
+                context.state.incFlag("battle." + m_enemy->getId() + ".killed");
+                context.state.incFlag("kills.ruins");
+            }
+            if (!m_enemy->getKillFlag().empty()) context.state.setFlag(m_enemy->getKillFlag(), 1);
+            context.state.killsTotal += 1;
+            toxicTrackOnKill(context.state, m_enemy->getId());
+            sessionOnKill(context.session);
+            context.state.killsByArea["ruins"] += 1;
+        }
+
+        static const int expThresholds[] = {
+            0, 10, 30, 70, 120, 200, 300, 500, 800, 1200,
+            1700, 2500, 3500, 5000, 7000, 10000, 15000, 25000, 50000, 99999
+        };
+        int newLevel = context.player.level;
+        for (int lvl = 20; lvl >= 1; --lvl) {
+            if (context.player.exp >= expThresholds[lvl - 1]) {
+                newLevel = lvl;
+                break;
+            }
+        }
+        if (newLevel > context.player.level) {
+            context.player.level = newLevel;
+            context.player.maxHp = (newLevel == 20) ? 99 : (16 + 4 * newLevel);
+            context.player.hp = context.player.maxHp;
+            context.audio.playSound("assets/sfx/level_up.ogg", 0.9f);
+        }
+    } else if (outcome == EnemyStatus::Fled) {
+        m_encounterState.flee(m_selectedEnemyIndex);
+    }
+
+    m_targetSparedPending = false;
+    m_enemyFledPending = false;
+    m_healNextAttack = false;
+    m_residual.clear();
+
+    if (m_encounterState.isVictory()) {
+        if (outcome == EnemyStatus::Fled && m_enemies.size() == 1U) {
+            m_state = BattleState::Fled;
+            return;
+        }
+        m_state = BattleState::Victory;
+        m_narratorText = "* YOU WON!\n* You earned " + std::to_string(m_battleExpEarned) +
+            " EXP and " + std::to_string(m_battleGoldEarned) + " gold.";
+        return;
+    }
+
+    const std::vector<std::size_t> active = activeEnemyIndices();
+    if (!active.empty()) selectEnemy(active.front());
+    startEnemyTurn(context);
 }
 
 void BattleSystem::update(float dt, GameContext& context) {
@@ -112,7 +268,8 @@ void BattleSystem::update(float dt, GameContext& context) {
         }
     }
 
-    if (m_enemy && !m_enemy->isDead() && m_enemyShakeTimer <= 0.0f && !m_isSpared) {
+    if (m_enemy && !m_enemy->isDead() && m_enemyShakeTimer <= 0.0f &&
+        m_encounterState.isActive(m_selectedEnemyIndex)) {
         m_enemyIdleTimer += dt;
     }
 
@@ -138,7 +295,9 @@ void BattleSystem::update(float dt, GameContext& context) {
     m_arenaRect.width += (m_targetBoxRect.width - m_arenaRect.width) * speed;
     m_arenaRect.height += (m_targetBoxRect.height - m_arenaRect.height) * speed;
 
-    switch (m_state) {
+    if (m_selectingEnemy) {
+        handleEnemySelectInput(context);
+    } else switch (m_state) {
         case BattleState::MenuSelect:
             handleMenuInput(context);
             break;
@@ -173,10 +332,12 @@ void BattleSystem::update(float dt, GameContext& context) {
                     m_dialogReturnsToMenu = false;
                     m_state = BattleState::MenuSelect;
                 } else if (m_enemyFledPending) {
-                    m_enemyFledPending = false;
-                    m_state = BattleState::Fled;
-                    m_residual.clear();
-                } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
+                    resolveCurrentEnemy(context, EnemyStatus::Fled);
+                } else if (m_enemy->isDead()) {
+                    resolveCurrentEnemy(context, EnemyStatus::Dead);
+                } else if (m_targetSparedPending) {
+                    resolveCurrentEnemy(context, EnemyStatus::Spared);
+                } else if (false) { // Legacy single-target payout; outcomes are resolved above.
                     m_healNextAttack = false;
                     if (m_tempAtkDelta != 0) {
                         m_enemy->modifyAtk(-m_tempAtkDelta);
@@ -274,6 +435,63 @@ void BattleSystem::update(float dt, GameContext& context) {
     }
 }
 
+void BattleSystem::beginFightTarget() {
+    m_state = BattleState::FightTarget;
+    m_fightPhase = FightPhase::Moving;
+    m_fightPhaseTimer = 0.0f;
+    const bool fromLeft = GetRandomValue(0, 1) == 0;
+    const float innerLeft = m_arenaRect.x + 5.0f;
+    const float innerRight = m_arenaRect.x + m_arenaRect.width - 5.0f;
+    const float speed = attackBarSpeed(innerRight - innerLeft);
+    m_targetCursorX = fromLeft ? innerLeft : innerRight;
+    m_targetCursorSpeed = fromLeft ? speed : -speed;
+    m_targetCursorMoving = true;
+}
+
+void BattleSystem::beginTargetAction(MainButton action, GameContext& context) {
+    const std::vector<std::size_t> active = activeEnemyIndices();
+    if (active.empty()) return;
+    m_targetAction = action;
+    m_subOptionIndex = 0;
+    selectEnemy(active.front());
+    if (active.size() > 1U) {
+        m_selectingEnemy = true;
+        return;
+    }
+    if (action == MainButton::Fight) beginFightTarget();
+    else if (action == MainButton::Act) m_state = BattleState::ActSelect;
+    else if (action == MainButton::Mercy) m_state = BattleState::MercySelect;
+    (void)context;
+}
+
+void BattleSystem::handleEnemySelectInput(GameContext& context) {
+    const std::vector<std::size_t> active = activeEnemyIndices();
+    if (active.empty()) return;
+    m_subOptionIndex = std::clamp(m_subOptionIndex, 0, static_cast<int>(active.size()) - 1);
+    if (context.input.isUpPressed() || context.input.isLeftPressed()) {
+        m_subOptionIndex = (m_subOptionIndex + static_cast<int>(active.size()) - 1) % static_cast<int>(active.size());
+        selectEnemy(active[static_cast<std::size_t>(m_subOptionIndex)]);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
+    } else if (context.input.isDownPressed() || context.input.isRightPressed()) {
+        m_subOptionIndex = (m_subOptionIndex + 1) % static_cast<int>(active.size());
+        selectEnemy(active[static_cast<std::size_t>(m_subOptionIndex)]);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
+    }
+
+    if (context.input.isConfirmPressed()) {
+        selectEnemy(active[static_cast<std::size_t>(m_subOptionIndex)]);
+        m_subOptionIndex = 0;
+        m_selectingEnemy = false;
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
+        if (m_targetAction == MainButton::Fight) beginFightTarget();
+        else if (m_targetAction == MainButton::Act) m_state = BattleState::ActSelect;
+        else m_state = BattleState::MercySelect;
+    } else if (context.input.isCancelPressed()) {
+        m_selectingEnemy = false;
+        m_state = BattleState::MenuSelect;
+    }
+}
+
 void BattleSystem::handleMenuInput(GameContext& context) {
     if (context.input.isLeftPressed()) {
         int idx = (static_cast<int>(m_selectedButton) + 3) % 4;
@@ -290,22 +508,11 @@ void BattleSystem::handleMenuInput(GameContext& context) {
         m_subOptionIndex = 0;
         switch (m_selectedButton) {
             case MainButton::Fight: {
-                m_state = BattleState::FightTarget;
-                m_fightPhase = FightPhase::Moving;
-                m_fightPhaseTimer = 0.0f;
-                // BUG-17: Random entry side
-                bool fromLeft = (GetRandomValue(0, 1) == 0);
-                float innerLeft = m_arenaRect.x + 5.0f;
-                float innerRight = m_arenaRect.x + m_arenaRect.width - 5.0f;
-                float innerW = innerRight - innerLeft;
-                float speed = attackBarSpeed(innerW);
-                m_targetCursorX = fromLeft ? innerLeft : innerRight;
-                m_targetCursorSpeed = fromLeft ? speed : -speed;
-                m_targetCursorMoving = true;
+                beginTargetAction(MainButton::Fight, context);
                 break;
             }
             case MainButton::Act:
-                m_state = BattleState::ActSelect;
+                beginTargetAction(MainButton::Act, context);
                 break;
             case MainButton::Item:
                 m_state = BattleState::ItemSelect;
@@ -316,7 +523,7 @@ void BattleSystem::handleMenuInput(GameContext& context) {
                     m_dialogReturnsToMenu = true;
                     m_state = BattleState::DialogMessage;
                 } else {
-                    m_state = BattleState::MercySelect;
+                    beginTargetAction(MainButton::Mercy, context);
                 }
                 break;
         }
@@ -437,6 +644,10 @@ std::vector<int> BattleSystem::getAvailableActIndices(const GameContext& context
     std::vector<int> indices;
     const auto& acts = m_enemy->getMenuActs();
     for (size_t i = 0; i < acts.size(); ++i) {
+        if (m_enemy->getId() == "reply_guy" && acts[i].id == "talk" &&
+            !m_encounterState.isAlone(m_selectedEnemyIndex)) {
+            continue;
+        }
         if (m_enemy->peaceActAvailable(acts[i].label) &&
             actAvailable(acts[i], context.player.inventory, context.state.furry.value,
                          [&context](const std::string& flag) { return context.state.hasFlag(flag); })) {
@@ -508,7 +719,9 @@ void BattleSystem::handleActInput(GameContext& context) {
                 const bool toxic = toxicTrack(context.state) == 1;
                 peaceStep = m_enemy->applyPeaceAct(act.label, toxic);
                 if (peaceStep.known && m_enemySpeechBubble.empty()) m_enemySpeechBubble = peaceStep.line;
-                if (peaceStep.known && peaceStep.skipsAttack && !act.skipAttack) ++m_frozenTurns;
+                if (peaceStep.known && peaceStep.skipsAttack && !act.skipAttack) {
+                    ++m_frozenTurnsByEnemy[m_selectedEnemyIndex];
+                }
                 if (peaceStep.goalReached) {
                     spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 8, COLOR_UNDERTALE_YELLOW);
                 }
@@ -535,7 +748,7 @@ void BattleSystem::handleActInput(GameContext& context) {
             }
             if (applies && act.spareNow && !peaceEnemy && m_enemy->canBeSpared()) {
                 // ACT-005: spares on the spot; the dialog then ends the battle as a spare
-                m_isSpared = true;
+                m_targetSparedPending = true;
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/spare_poof.ogg", 0.9f);
             }
@@ -550,10 +763,11 @@ void BattleSystem::handleActInput(GameContext& context) {
                 }
                 m_enemy->modifyAtk(act.atkDelta);
                 if (act.atkDelta != 0 && act.atkDeltaOnce) {
-                    m_tempAtkDelta += act.atkDelta;
+                    m_tempAtkDeltasByEnemy[m_selectedEnemyIndex] += act.atkDelta;
                 }
                 m_enemy->modifyDef(act.defDelta);
-                m_frozenTurns += std::max(0, act.freezeTurns) + (act.skipAttack ? 1 : 0);
+                m_frozenTurnsByEnemy[m_selectedEnemyIndex] +=
+                    std::max(0, act.freezeTurns) + (act.skipAttack ? 1 : 0);
                 if (act.healNextAttack) {
                     m_healNextAttack = true;
                 }
@@ -727,7 +941,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_lastPlayerAction = PlayerTurnAction::MercySpareFail;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".";
             } else if (m_enemy->isSpareable()) {
-                m_isSpared = true;
+                m_targetSparedPending = true;
                 const bool yiffed = toxicTrack(context.state) != 1 &&
                                     usesRegularYiffNarration(m_enemy->getId());
                 if (yiffed) {
@@ -776,15 +990,85 @@ void BattleSystem::handleMercyInput(GameContext& context) {
     }
 }
 
+void BattleSystem::choosePatternsForActiveEnemies() {
+    m_turnAttackers.clear();
+    for (std::size_t index : activeEnemyIndices()) {
+        if (index >= m_enemies.size() || !m_enemies[index]) continue;
+        if (index < m_frozenTurnsByEnemy.size() && m_frozenTurnsByEnemy[index] > 0) {
+            --m_frozenTurnsByEnemy[index];
+            continue;
+        }
+        const auto& patterns = m_enemies[index]->getPatterns();
+        if (patterns.empty()) continue;
+        const std::uint32_t randomValue = static_cast<std::uint32_t>(GetRandomValue(0, 1000000));
+        m_patternIndices[index] = pickWeightedPatternIndex(patterns, randomValue);
+        if (m_patternIndices[index] >= patterns.size()) m_patternIndices[index] = 0U;
+        m_turnAttackers.push_back(index);
+    }
+}
+
+void BattleSystem::spawnAggregatedBulletWave() {
+    if (m_turnAttackers.empty()) return;
+    const std::size_t savedIndex = m_selectedEnemyIndex;
+    Enemy* savedEnemy = m_enemy;
+    const std::size_t savedPattern = m_genericPatternIndex;
+    for (std::size_t index : m_turnAttackers) {
+        if (!m_encounterState.isActive(index) || index >= m_enemies.size()) continue;
+        m_enemy = m_enemies[index].get();
+        const auto& patterns = m_enemy->getPatterns();
+        if (patterns.empty() || m_patternIndices[index] >= patterns.size()) continue;
+        m_genericPatternIndex = m_patternIndices[index];
+        spawnGenericBulletWave(patterns[m_genericPatternIndex]);
+    }
+    m_enemy = savedEnemy;
+    m_selectedEnemyIndex = savedIndex;
+    m_genericPatternIndex = savedPattern;
+}
+
 void BattleSystem::startEnemyTurn(GameContext& context) {
     m_turnCount++;
+
+    if (m_enemies.size() > 1U) {
+        choosePatternsForActiveEnemies();
+        m_bullets.clear();
+        m_zones.clear();
+        m_soulTrails.clear();
+        m_ribbitState = RibbitState{};
+        m_patternSpawnCount = 0;
+        m_patternWordIndex = 0;
+        m_enemyTurnDuration = 5.0f;
+        m_enemyTurnTimer = 0.0f;
+        m_spawnTimer = 0.0f;
+        if (m_turnAttackers.empty()) {
+            const std::vector<std::size_t> active = activeEnemyIndices();
+            if (!active.empty()) selectEnemy(active.front());
+            m_narratorText = m_enemy ? m_enemy->getFlavorText(m_lastActionDetail) : std::string{};
+            m_enemySpeechBubble.clear();
+            m_state = BattleState::MenuSelect;
+            return;
+        }
+        selectEnemy(m_turnAttackers.front());
+        const auto& patterns = m_enemy->getPatterns();
+        m_genericPatternIndex = m_patternIndices[m_selectedEnemyIndex];
+        m_enemySpeechBubble = m_enemy->getDialogueForTrigger("", m_lastActResponse);
+        if (m_genericPatternIndex < patterns.size()) {
+            const std::string& speech = m_enemy->getPatternSpeech(patterns[m_genericPatternIndex].id);
+            if (!speech.empty()) m_enemySpeechBubble = speech;
+        }
+        m_soulPosition = { 320.0f, 320.0f };
+        m_invulnerableDialogBubble = false;
+        m_lastPlayerAction = PlayerTurnAction::None;
+        m_lastActResponse.clear();
+        m_state = BattleState::EnemyTurn;
+        return;
+    }
 
     // A beat fight plays its last turn up to the finale drop instead of cutting at the turn start.
     const bool beatFinale = beatFinaleTurn(context);
     if (!beatFinale && finishScriptedBattleIfComplete(context, true)) return;
 
-    if (m_frozenTurns > 0 || m_beatStopped) {
-        if (m_frozenTurns > 0) m_frozenTurns--;
+    if (m_frozenTurnsByEnemy[0] > 0 || m_beatStopped) {
+        if (m_frozenTurnsByEnemy[0] > 0) --m_frozenTurnsByEnemy[0];
         m_bullets.clear();
         m_zones.clear();
         m_soulTrails.clear();
@@ -1047,7 +1331,15 @@ void BattleSystem::spawnBeatTuft(const EnemyPatternDef& pattern, const BeatEvent
 }
 
 bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur) {
-    int reducedDamage = rawDamage + m_enemy->getAtk() - (context.player.df + context.player.armorDf);
+    int enemyAttack = m_enemy->getAtk();
+    if (m_enemies.size() > 1U) {
+        for (std::size_t index : m_turnAttackers) {
+            if (index < m_enemies.size() && m_enemies[index]) {
+                enemyAttack = std::max(enemyAttack, m_enemies[index]->getAtk());
+            }
+        }
+    }
+    int reducedDamage = rawDamage + enemyAttack - (context.player.df + context.player.armorDf);
     int finalDamage = std::max(1, reducedDamage);
 
     context.player.hp -= finalDamage;
@@ -1111,6 +1403,15 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
         if (m_tempAtkDelta != 0) {
             m_enemy->modifyAtk(-m_tempAtkDelta);
             m_tempAtkDelta = 0;
+        }
+        if (m_enemies.size() > 1U) {
+            for (std::size_t i = 0; i < m_tempAtkDeltasByEnemy.size(); ++i) {
+                if (m_tempAtkDeltasByEnemy[i] == 0 || !m_enemies[i]) continue;
+                m_enemies[i]->modifyAtk(-m_tempAtkDeltasByEnemy[i]);
+                m_tempAtkDeltasByEnemy[i] = 0;
+            }
+            const std::vector<std::size_t> active = activeEnemyIndices();
+            if (!active.empty()) selectEnemy(active.front());
         }
         if (m_soulSpeedBuffTurns > 0) {
             m_soulSpeedBuffTurns--;
@@ -1178,7 +1479,8 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     const float spawnInterval = m_isBarky ? 0.38f : 0.72f;
     if (!m_beatTurnActive && m_spawnTimer >= spawnInterval) {
         m_spawnTimer = 0.0f;
-        spawnBulletWave();
+        if (m_enemies.size() > 1U) spawnAggregatedBulletWave();
+        else spawnBulletWave();
         context.audio.playSound("assets/sfx/bullet_spawn.ogg", 0.22f);
     }
 
@@ -2199,7 +2501,25 @@ void BattleSystem::render(GameContext& context) {
 
     // 2. Enemy Drawing (Feet aligned at baseline y = 241, BUI-003)
     int baselineY = ENEMY_BASELINE_Y;
-    int enemyCenterX = VIRTUAL_WIDTH / 2;
+    int enemyCenterX = enemyPositionX(m_selectedEnemyIndex);
+    const bool selectedSpared = m_targetSparedPending ||
+        m_encounterState.status(m_selectedEnemyIndex) == EnemyStatus::Spared;
+
+    // The selected enemy keeps the complete legacy animation path below. Other active
+    // enemies use their idle sheet at stable roster positions so target changes never
+    // make the formation jump.
+    for (std::size_t i : activeEnemyIndices()) {
+        if (i == m_selectedEnemyIndex || i >= m_enemies.size() || !m_enemies[i]) continue;
+        const Enemy& other = *m_enemies[i];
+        const std::string spriteBase = "assets/sprites/battle/" + other.getSprite();
+        const SpriteSheetDef* sheet = spriteSheetCache().load(spriteBase + ".png", spriteBase + ".json");
+        if (sheet == nullptr) continue;
+        Texture2D texture = context.resources.getTexture(spriteBase + ".png");
+        if (texture.id <= 0) continue;
+        SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+        drawSprite(texture, *sheet, "idle", m_enemyIdleTimer,
+                   { static_cast<float>(enemyPositionX(i)), static_cast<float>(baselineY) }, 2.0f, WHITE);
+    }
 
     // FGT-006: Enemy shake upon taking damage
     if (m_enemyShakeTimer > 0.0f) {
@@ -2223,7 +2543,7 @@ void BattleSystem::render(GameContext& context) {
 
         // BSK (C7): close-up shot during the beat burst (hard cut, snap zoom, never over the box)
         bool drewBeatCloseup = false;
-        if (renderBeatCloseup && !m_isSpared &&
+        if (renderBeatCloseup && !selectedSpared &&
             m_enemyShakeTimer <= 0.0f) {
             std::string closeBase = spriteBase;
             constexpr std::string_view wideSuffix = "_wide";
@@ -2273,7 +2593,7 @@ void BattleSystem::render(GameContext& context) {
         } else if (enemySheet != nullptr && enemyTexture.id > 0) {
             std::string animation = "idle";
             Color tint = WHITE;
-            if (m_isSpared) {
+            if (selectedSpared) {
                 if (enemySheet->anims.find("spared") != enemySheet->anims.end()) animation = "spared";
                 tint.a = 120;
             } else if (m_enemyShakeTimer > 0.0f &&
@@ -2323,7 +2643,7 @@ void BattleSystem::render(GameContext& context) {
         Color tailColor = { 70, 70, 90, 255 };
 
         // BUI-011: Spared enemy stays translucent (~50% opacity) and pauses idle
-        if (m_isSpared) {
+        if (selectedSpared) {
             bodyColor.a = 120;
             headColor.a = 120;
             earColor.a  = 120;
@@ -2331,9 +2651,9 @@ void BattleSystem::render(GameContext& context) {
         }
 
         // BUI-010: Idle animation (tail sway, ear twitch, breathing bob)
-        float breathBob = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 2.8f) * 2.0f : 0.0f;
-        float earSway   = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 3.5f) * 2.5f : 0.0f;
-        float tailSway  = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 4.2f) * 12.0f : 0.0f;
+        float breathBob = (m_enemyShakeTimer <= 0.0f && !selectedSpared) ? std::sin(m_enemyIdleTimer * 2.8f) * 2.0f : 0.0f;
+        float earSway   = (m_enemyShakeTimer <= 0.0f && !selectedSpared) ? std::sin(m_enemyIdleTimer * 3.5f) * 2.5f : 0.0f;
+        float tailSway  = (m_enemyShakeTimer <= 0.0f && !selectedSpared) ? std::sin(m_enemyIdleTimer * 4.2f) * 12.0f : 0.0f;
 
         // Tail behind body
         DrawTriangle(
@@ -2365,10 +2685,10 @@ void BattleSystem::render(GameContext& context) {
         );
 
         // Eyes
-        DrawCircle(enemyCenterX - 10, headCenterY - 4, 5, m_isSpared ? Fade(WHITE, 0.5f) : WHITE);
-        DrawCircle(enemyCenterX + 10, headCenterY - 4, 5, m_isSpared ? Fade(WHITE, 0.5f) : WHITE);
-        DrawCircle(enemyCenterX - 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
-        DrawCircle(enemyCenterX + 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
+        DrawCircle(enemyCenterX - 10, headCenterY - 4, 5, selectedSpared ? Fade(WHITE, 0.5f) : WHITE);
+        DrawCircle(enemyCenterX + 10, headCenterY - 4, 5, selectedSpared ? Fade(WHITE, 0.5f) : WHITE);
+        DrawCircle(enemyCenterX - 10, headCenterY - 4, 2, selectedSpared ? Fade(BLACK, 0.5f) : BLACK);
+        DrawCircle(enemyCenterX + 10, headCenterY - 4, 2, selectedSpared ? Fade(BLACK, 0.5f) : BLACK);
         }
     }
 
@@ -2441,7 +2761,7 @@ void BattleSystem::render(GameContext& context) {
     // The bubble also shows on the spare dialog (Barky's spare / Accept Hug lines, LORE §19.1)
     const bool showBubble = m_state == BattleState::EnemyTurn ||
         (m_state == BattleState::DialogMessage &&
-         (m_invulnerableDialogBubble || m_isSpared ||
+         (m_invulnerableDialogBubble || selectedSpared ||
           (m_enemy->isDead() && !m_enemy->getDeathLines().empty())));
     if (showBubble && !m_enemySpeechBubble.empty()) {
         float textW = context.resources.measureTextWidth(fontSmall, m_enemySpeechBubble, 16, 1.0f);
@@ -2529,6 +2849,23 @@ void BattleSystem::render(GameContext& context) {
             DrawLineEx(p2, p3, 1.0f, BLACK);
 
             context.resources.drawText(fontTiny, "ribbit", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
+        }
+    } else if (m_selectingEnemy) {
+        const std::vector<std::size_t> active = activeEnemyIndices();
+        for (std::size_t i = 0; i < active.size(); ++i) {
+            const std::size_t enemyIndex = active[i];
+            const int col = static_cast<int>(i % 2U);
+            const int row = static_cast<int>(i / 2U);
+            const float optionX = col == 0 ? m_arenaRect.x + 55.0f : m_arenaRect.x + 300.0f;
+            const float optionY = m_arenaRect.y + 25.0f + static_cast<float>(row) * 35.0f;
+            if (m_subOptionIndex == static_cast<int>(i)) {
+                drawSoul(optionX - 20.0f, optionY + 10.0f, SOUL_RED);
+            }
+            const Enemy* optionEnemy = enemyAt(enemyIndex);
+            if (optionEnemy == nullptr) continue;
+            const Color nameColor = optionEnemy->isSpareable() ? UI_YELLOW : WHITE;
+            context.resources.drawText(font8Bit, "* " + optionEnemy->getName(),
+                                       { optionX, optionY }, 20, nameColor, 1.0f);
         }
     } else if (m_state == BattleState::FightTarget) {
         drawAttackTarget(context);

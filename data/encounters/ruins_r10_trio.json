@@ -1,0 +1,8 @@
+{
+  "id": "ruins_r10_trio",
+  "enemies": ["reply_guy", "lurkeye", "grasstoid"],
+  "introText": "* Reply Guy and co. blocked your path!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

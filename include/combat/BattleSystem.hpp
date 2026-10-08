@@ -15,6 +15,7 @@
 #include "FurHud.hpp"
 #include "FloofyScript.hpp"
 #include "BeatMap.hpp"
+#include "EncounterModel.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -89,6 +90,11 @@ public:
                           bool canFlee = false,
                           std::string fleeBlockedText = {},
                           int furCap = -1);
+    BattleSystem(std::vector<std::unique_ptr<Enemy>> enemies,
+                 Encounter encounter,
+                 std::string introText = {},
+                 std::string fleeBlockedText = {},
+                 int furCap = -1);
 
     void update(float dt, GameContext& context);
     void render(GameContext& context);
@@ -114,9 +120,16 @@ public:
     int getLastDamage() const { return m_lastDamage; }
     bool wasLastMiss() const { return m_lastMiss; }
     bool wasLastCrit() const { return m_lastPlayerAction == PlayerTurnAction::FightCrit; }
+    std::size_t enemyCount() const { return m_enemies.size(); }
+    Enemy* enemyAt(std::size_t index) const {
+        return index < m_enemies.size() ? m_enemies[index].get() : nullptr;
+    }
+    std::string currentEnemyId() const { return m_enemy ? m_enemy->getId() : std::string{}; }
+    std::string currentEnemyName() const { return m_enemy ? m_enemy->getName() : std::string{}; }
 
 private:
     void handleMenuInput(GameContext& context);
+    void handleEnemySelectInput(GameContext& context);
     void handleFightTargetInput(float dt, GameContext& context);
     void handleActInput(GameContext& context);
     void handleItemInput(GameContext& context);
@@ -131,6 +144,14 @@ private:
     bool finishScriptedBattleIfComplete(GameContext& context, bool atTurnStart);
     int effectiveScriptedEndTurn(const GameContext& context) const;
     bool applySoulDamage(GameContext& context, int rawDamage, int fur);
+    void beginTargetAction(MainButton action, GameContext& context);
+    void beginFightTarget();
+    void selectEnemy(std::size_t index);
+    void resolveCurrentEnemy(GameContext& context, EnemyStatus outcome);
+    void choosePatternsForActiveEnemies();
+    void spawnAggregatedBulletWave();
+    std::vector<std::size_t> activeEnemyIndices() const;
+    int enemyPositionX(std::size_t index) const;
 
     void drawBackgroundGrid() const;
     void drawSoul(float x, float y, Color color = SOUL_RED) const;
@@ -146,17 +167,29 @@ private:
     void drawAttackTarget(GameContext& context) const;
     void drawBullet(GameContext& context, const Bullet& b) const;
 
-    std::unique_ptr<Enemy> m_enemy;
+    std::vector<std::unique_ptr<Enemy>> m_enemies;
+    Enemy* m_enemy = nullptr;
+    EncounterState m_encounterState;
+    std::size_t m_selectedEnemyIndex = 0;
+    MainButton m_targetAction = MainButton::Fight;
+    bool m_selectingEnemy = false;
+    std::vector<std::size_t> m_turnAttackers;
+    std::vector<std::size_t> m_patternIndices;
+    std::vector<int> m_frozenTurnsByEnemy;
+    std::vector<int> m_tempAtkDeltasByEnemy;
     BattleState m_state = BattleState::MenuSelect;
     MainButton m_selectedButton = MainButton::Fight;
     int m_subOptionIndex = 0;
     bool m_isSpared = false;
+    bool m_targetSparedPending = false;
     bool m_enemyFledPending = false;
     bool m_isBarky = true;
     bool m_canFlee = false;
     std::string m_fleeBlockedText;
     int m_furCap = -1;
     int m_turnCount = 0;
+    int m_battleExpEarned = 0;
+    int m_battleGoldEarned = 0;
 
     // Heart inside dodge box
     Vector2 m_soulPosition{ 320.0f, 320.0f };

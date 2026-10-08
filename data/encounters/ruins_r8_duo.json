@@ -1,0 +1,8 @@
+{
+  "id": "ruins_r8_duo",
+  "enemies": ["froggsona", "shysona"],
+  "introText": "* Froggsona and co. blocked your path!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

@@ -1120,7 +1120,7 @@
     {
       "name": "encounters",
       "type": "string",
-      "value": "lurkeye:1,reply_guy:1,grasstoid:1"
+      "value": "lurkeye:1,reply_guy:1,grasstoid:1,ruins_r10_trio:1"
     },
     {
       "name": "encounterBudget",

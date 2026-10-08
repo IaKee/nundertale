@@ -26,32 +26,21 @@ namespace nundertale {
 
 namespace {
 
-template <typename Tag, typename Tag::type Member>
-struct PrivateAccess {
-    friend typename Tag::type accessMember(Tag) { return Member; }
-};
-
-struct BattleSystemEnemyTag {
-    using type = std::unique_ptr<Enemy> BattleSystem::*;
-    friend type accessMember(BattleSystemEnemyTag);
-};
-template struct PrivateAccess<BattleSystemEnemyTag, &BattleSystem::m_enemy>;
-
 const void* s_lastScaledBattleSystem = nullptr;
 
-void applyBattleKillScaling(BattleSystem* battleSystem, const std::string& enemyId, int ruinsKills) {
-    if (!battleSystem || ruinsKills <= 0 || enemyId.empty()) return;
+void applyBattleKillScaling(BattleSystem* battleSystem, int ruinsKills) {
+    if (!battleSystem || ruinsKills <= 0) return;
     if (s_lastScaledBattleSystem == battleSystem) return;
 
-    KillScalingDef scaling;
-    if (!loadKillScalingFromFile("data/enemies/" + enemyId + ".json", scaling)) return;
-    if (!scaling.present) return;
-
-    Enemy* enemy = (battleSystem->*accessMember(BattleSystemEnemyTag{})).get();
-    if (enemy) {
+    for (std::size_t i = 0; i < battleSystem->enemyCount(); ++i) {
+        Enemy* enemy = battleSystem->enemyAt(i);
+        if (enemy == nullptr) continue;
+        KillScalingDef scaling;
+        if (!loadKillScalingFromFile("data/enemies/" + enemy->getId() + ".json", scaling) ||
+            !scaling.present) continue;
         applyKillScaling(*enemy, scaling, ruinsKills);
-        s_lastScaledBattleSystem = battleSystem;
     }
+    s_lastScaledBattleSystem = battleSystem;
 }
 
 } // namespace
@@ -83,39 +72,35 @@ bool BattleScene::loadEncounter(const std::string& encounterId, bool readIntro) 
 
     std::stringstream ss;
     ss << encFile.rdbuf();
+    const std::string encounterJson = ss.str();
     tiled_detail::JsonValue root;
-    if (!tiled_detail::JsonParser(ss.str()).parse(root) ||
+    Encounter encounter;
+    if (!tiled_detail::JsonParser(encounterJson).parse(root) ||
+        !parseEncounter(encounterJson, encounter) ||
         root.kind != tiled_detail::JsonValue::Kind::Object) {
         std::clog << "Invalid encounter data for '" << encounterId << "'; battle not started.\n";
         return false;
     }
 
-    const tiled_detail::JsonValue* enemies = root.field("enemies");
-    if (enemies == nullptr || enemies->kind != tiled_detail::JsonValue::Kind::Array ||
-        enemies->array.empty() || enemies->array[0].kind != tiled_detail::JsonValue::Kind::String) {
-        std::clog << "Encounter '" << encounterId << "' has no supported enemy; battle not started.\n";
-        return false;
+    std::vector<std::unique_ptr<Enemy>> loadedEnemies;
+    std::vector<std::string> enemyNames;
+    loadedEnemies.reserve(encounter.enemies.size());
+    enemyNames.reserve(encounter.enemies.size());
+    for (const std::string& enemyId : encounter.enemies) {
+        if (!safeEncounterId(enemyId) || !std::filesystem::exists("data/enemies/" + enemyId + ".json")) {
+            std::clog << "Encounter '" << encounterId << "' references unknown enemy '"
+                      << enemyId << "'; battle not started.\n";
+            return false;
+        }
+        auto enemy = Enemy::loadFromJson("data/enemies/" + enemyId + ".json");
+        if (!enemy) return false;
+        enemyNames.push_back(enemy->getName());
+        loadedEnemies.push_back(std::move(enemy));
     }
 
-    const std::string enemyId = enemies->array[0].string;
-    if (!safeEncounterId(enemyId) || !std::filesystem::exists("data/enemies/" + enemyId + ".json")) {
-        std::clog << "Encounter '" << encounterId << "' references unknown enemy '"
-                  << enemyId << "'; battle not started.\n";
-        return false;
-    }
-
-    std::string introText = "* " + enemyId + " blocked your path!";
-    if (const auto* value = root.field("introText"); value != nullptr &&
-        value->kind == tiled_detail::JsonValue::Kind::String) introText = value->string;
-    std::string backgroundId = m_backgroundId;
-    if (const auto* value = root.field("background"); value != nullptr &&
-        value->kind == tiled_detail::JsonValue::Kind::String) backgroundId = value->string;
-    std::string musicId = m_musicId;
-    if (const auto* value = root.field("music"); value != nullptr &&
-        value->kind == tiled_detail::JsonValue::Kind::String) musicId = value->string;
-    bool canFlee = false;
-    if (const auto* value = root.field("canFlee"); value != nullptr &&
-        value->kind == tiled_detail::JsonValue::Kind::Boolean) canFlee = value->boolean;
+    const std::string introText = encounterIntroText(encounter, enemyNames);
+    std::string backgroundId = encounter.background.empty() ? m_backgroundId : encounter.background;
+    std::string musicId = encounter.music.empty() ? m_musicId : encounter.music;
     std::string fleeBlockedText;
     if (const auto* value = root.field("fleeBlockedText"); value != nullptr &&
         value->kind == tiled_detail::JsonValue::Kind::String) fleeBlockedText = value->string;
@@ -123,14 +108,11 @@ bool BattleScene::loadEncounter(const std::string& encounterId, bool readIntro) 
     if (const auto* value = root.field("furCap"); value != nullptr &&
         value->kind == tiled_detail::JsonValue::Kind::Number) furCap = static_cast<int>(value->number);
 
-    auto enemy = Enemy::loadFromJson("data/enemies/" + enemyId + ".json");
-    if (enemy) {
-        m_enemySprite = enemy->getSprite();
-        m_enemyId = enemy->getId();
-        m_enemyName = enemy->getName();
-    }
+    m_enemySprite = loadedEnemies.front()->getSprite();
+    m_enemyId = loadedEnemies.front()->getId();
+    m_enemyName = loadedEnemies.front()->getName();
     m_battleSystem = std::make_unique<BattleSystem>(
-        std::move(enemy), introText, canFlee, std::move(fleeBlockedText), furCap);
+        std::move(loadedEnemies), std::move(encounter), introText, std::move(fleeBlockedText), furCap);
     m_backgroundId = std::move(backgroundId);
     m_musicId = std::move(musicId);
     if (!m_backgroundId.empty()) m_battleSystem->setBackground(backgroundFromId(m_backgroundId));
@@ -180,7 +162,7 @@ void BattleScene::onEnter(GameContext& context) {
         }
     }
     const int ruinsKills = context.state.getFlag("kills.ruins", 0);
-    applyBattleKillScaling(m_battleSystem.get(), m_enemyId, ruinsKills);
+    applyBattleKillScaling(m_battleSystem.get(), ruinsKills);
     playEncounterMusic(context);
 }
 
@@ -509,7 +491,7 @@ void BattleScene::endIntro(GameContext& context) {
     }
     if (variant != 0) swapEncounter(introFightEncounter(variant));
     const int ruinsKills = context.state.getFlag("kills.ruins", 0);
-    applyBattleKillScaling(m_battleSystem.get(), m_enemyId, ruinsKills);
+    applyBattleKillScaling(m_battleSystem.get(), ruinsKills);
     playEncounterMusic(context);
 }
 

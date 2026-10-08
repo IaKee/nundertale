@@ -3092,7 +3092,7 @@ def build_ruins_notices():
         objects=objects,
         above_grid=above,
         music="overworld.default",
-        encounters="froggsona:2,shysona:1,modsmal:1",
+        encounters="froggsona:2,shysona:1,modsmal:1,ruins_r8_duo:1",
         encounter_budget=1,
     )
 
@@ -3729,7 +3729,7 @@ def build_ruins_bakesale():
         above_grid=above,
         music="overworld.default",
         save_place="* The smell of baked goods and spider-art fills you with DETERMINATION.",
-        encounters="lurkeye:1,reply_guy:1,grasstoid:1",
+        encounters="lurkeye:1,reply_guy:1,grasstoid:1,ruins_r10_trio:1",
         encounter_budget=1,
     )
 
