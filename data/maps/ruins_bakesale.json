@@ -461,7 +461,7 @@
           "y": 320,
           "properties": [
             {
-              "name": "cutscene",
+              "name": "phoneMessage",
               "type": "string",
               "value": "r10_call"
             },
@@ -475,6 +475,34 @@
         {
           "height": 40,
           "id": 14,
+          "name": "trigger_call2",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 720,
+          "x": 40,
+          "y": 240,
+          "properties": [
+            {
+              "name": "phoneMessage",
+              "type": "string",
+              "value": "r10_call2"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r10.call2"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r10.call >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 15,
           "name": "dorito_bowl",
           "rotation": 0,
           "type": "prop",
@@ -527,7 +555,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 16,
           "name": "dorito_bowl_knocked",
           "rotation": 0,
           "type": "prop",
@@ -570,7 +598,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 17,
           "name": "dorito_sign",
           "rotation": 0,
           "type": "sign",
@@ -588,7 +616,7 @@
         },
         {
           "height": 40,
-          "id": 17,
+          "id": 18,
           "name": "mod_rock",
           "rotation": 0,
           "type": "prop",
@@ -636,7 +664,7 @@
         },
         {
           "height": 40,
-          "id": 18,
+          "id": 19,
           "name": "sample_donut",
           "rotation": 0,
           "type": "itemPickup",
@@ -674,7 +702,7 @@
         },
         {
           "height": 80,
-          "id": 19,
+          "id": 20,
           "name": "bakesale_booth",
           "rotation": 0,
           "type": "prop",
@@ -702,7 +730,7 @@
         },
         {
           "height": 40,
-          "id": 20,
+          "id": 21,
           "name": "napstablurk",
           "rotation": 0,
           "type": "examine",
@@ -725,7 +753,7 @@
         },
         {
           "height": 140,
-          "id": 21,
+          "id": 22,
           "name": "trigger_napstablurk",
           "rotation": 0,
           "type": "trigger",
@@ -753,7 +781,7 @@
         },
         {
           "height": 140,
-          "id": 22,
+          "id": 23,
           "name": "trigger_napstablurk_killed",
           "rotation": 0,
           "type": "trigger",
@@ -781,7 +809,7 @@
         },
         {
           "height": 140,
-          "id": 23,
+          "id": 24,
           "name": "trigger_napstablurk_fled",
           "rotation": 0,
           "type": "trigger",
@@ -809,7 +837,7 @@
         },
         {
           "height": 40,
-          "id": 24,
+          "id": 25,
           "name": "door_to_house",
           "rotation": 0,
           "type": "door",
@@ -1099,7 +1127,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 25,
+  "nextobjectid": 26,
   "orientation": "orthogonal",
   "properties": [
     {

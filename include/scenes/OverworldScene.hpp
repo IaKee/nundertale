@@ -11,6 +11,7 @@
 #include "core/RandomEncounters.hpp"
 #include "core/Fur.hpp"
 #include "core/WaterBurst.hpp"
+#include "core/PhoneQueue.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -164,6 +165,7 @@ private:
     bool m_cutsceneStartsBattle = false;
     bool m_cutsceneBattleStarted = false;
     int m_cutsceneChoice = -1;      // C1-014: 0-based pick of the running "choice" step, -1 = pending
+    PhoneQueue m_phoneQueue;        // MNU-006: automatic messages wait until overworld control is free
 };
 
 } // namespace nundertale

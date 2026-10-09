@@ -3539,7 +3539,7 @@ def build_ruins_bakesale():
                 "lines": "* The smell of baked goods and spider-art fills you with DETERMINATION.",
             },
         },
-        # Trigger partway through the room for Furiell's forced phone call
+        # Forced calls are queued instead of interrupting another cutscene/menu/battle.
         {
             "name": "trigger_call",
             "type": "trigger",
@@ -3548,8 +3548,21 @@ def build_ruins_bakesale():
             "w": 720,
             "h": 40,
             "properties": {
-                "cutscene": "r10_call",
+                "phoneMessage": "r10_call",
                 "once": "ruins.r10.call",
+            },
+        },
+        {
+            "name": "trigger_call2",
+            "type": "trigger",
+            "x": 40,
+            "y": 240,
+            "w": 720,
+            "h": 40,
+            "properties": {
+                "phoneMessage": "r10_call2",
+                "once": "ruins.r10.call2",
+                "showIf": "ruins.r10.call >= 1",
             },
         },
         # Dorito Bowl (full/empty via altAnim)

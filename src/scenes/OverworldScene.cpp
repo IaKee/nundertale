@@ -464,6 +464,13 @@ void OverworldScene::updateDoorsAndTriggers(GameContext& context) {
         if (m_triggerOverlaps.find(object.id) != m_triggerOverlaps.end()) continue;
         const std::string once = tiledStringProperty(object.properties, "once");
         if (!once.empty() && context.state.getFlag(once, 0) != 0) continue;
+        const std::string phoneMessage = tiledStringProperty(object.properties, "phoneMessage");
+        if (!phoneMessage.empty()) {
+            m_phoneQueue.enqueue(phoneMessage);
+            if (!once.empty()) context.state.setFlag(once, 1);
+            m_triggerOverlaps = std::move(overlaps);
+            return;
+        }
         const std::string cutsceneId = tiledStringProperty(object.properties, "cutscene");
         startCutscene(cutsceneId);
         if (m_cutscene.running()) {
@@ -1386,7 +1393,8 @@ void OverworldScene::update(float dt, GameContext& context) {
         return;
     }
 
-    // RAD-003: Guild phone messages at raid clock thresholds
+    // RAD-003 / MNU-006: enqueue guild messages at their clock thresholds. Playback is
+    // serialized with forced calls below, after every overworld busy state has returned.
     if (context.state.raid.started) {
         const float nowLeft = context.state.raid.timeLeft;
         if (s_prevRaidTimeLeft < 0.0f || nowLeft > s_prevRaidTimeLeft) {
@@ -1397,12 +1405,27 @@ void OverworldScene::update(float dt, GameContext& context) {
         const int pendingIndex = raidPendingMessage(s_prevRaidTimeLeft, nowLeft, mask);
         if (pendingIndex >= 0) {
             context.state.setFlag("raid_msgs_shown", mask | (1 << pendingIndex));
-            context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
-            m_dialogBox.startDialog(raidMessageLines(pendingIndex, getRaidStartSeconds()), "");
-            return;
+            m_phoneQueue.enqueue("raid:" + std::to_string(pendingIndex));
         } else {
             s_prevRaidTimeLeft = nowLeft;
         }
+    }
+
+    const std::optional<std::string> phoneMessage = m_phoneQueue.takeNext({
+        m_cutscene.running(),
+        m_menuState != OverworldMenuState::Closed || m_saveBoxState != SaveBoxState::Closed,
+        false
+    });
+    if (phoneMessage.has_value()) {
+        constexpr std::string_view raidPrefix = "raid:";
+        if (phoneMessage->rfind(raidPrefix, 0) == 0) {
+            const int index = std::stoi(phoneMessage->substr(raidPrefix.size()));
+            context.audio.playSound("assets/sfx/phone_buzz.ogg", 0.7f);
+            m_dialogBox.startDialog(raidMessageLines(index, getRaidStartSeconds()), "");
+        } else {
+            startCutscene(*phoneMessage);
+        }
+        return;
     }
 
     if (IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL)) {

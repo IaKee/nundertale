@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {
+      "type": "sound",
+      "path": "assets/sfx/phone_buzz.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "wait",
+      "seconds": 0.6
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "I put something in your closet. Just in case. No pressure!"
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r10.call2",
+      "value": 1
+    }
+  ]
+}
