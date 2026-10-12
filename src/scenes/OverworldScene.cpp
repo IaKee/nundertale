@@ -1692,6 +1692,28 @@ void OverworldScene::drawPlayer(GameContext& context) {
     }
 }
 
+static void drawToxicPkSkull(Vector2 playerPivot, float animationTime) {
+    // Tiny, asset-free 9x7 pixel skull rendered at 2x. Keeping it in
+    // world space makes the marker follow Grub naturally as the camera moves.
+    const int x = static_cast<int>(std::round(playerPivot.x)) - 9;
+    const int bob = static_cast<int>(std::floor(animationTime * 3.0f)) % 2;
+    const int y = static_cast<int>(std::round(playerPivot.y)) - 40 - bob * 2;
+    constexpr Color bone = Color{ 244, 244, 244, 255 };
+    constexpr Color socket = Color{ 20, 16, 24, 255 };
+
+    DrawRectangle(x + 2, y, 14, 12, socket);
+    DrawRectangle(x + 4, y - 2, 10, 2, socket);
+    DrawRectangle(x + 4, y + 12, 10, 4, socket);
+    DrawRectangle(x + 6, y, 6, 2, bone);
+    DrawRectangle(x + 4, y + 2, 10, 8, bone);
+    DrawRectangle(x + 6, y + 10, 6, 2, bone);
+    DrawRectangle(x + 6, y + 12, 2, 2, bone);
+    DrawRectangle(x + 10, y + 12, 2, 2, bone);
+    DrawRectangle(x + 6, y + 4, 2, 4, socket);
+    DrawRectangle(x + 10, y + 4, 2, 4, socket);
+    DrawRectangle(x + 8, y + 8, 2, 2, socket);
+}
+
 void OverworldScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
@@ -1757,6 +1779,9 @@ void OverworldScene::render(GameContext& context) {
     for (const SortedDraw& entry : sorted) {
         if (entry.object == nullptr) drawPlayer(context);
         else drawRoomObject(*entry.object, context);
+    }
+    if (toxicPkSkullVisible(context.state)) {
+        drawToxicPkSkull(m_player.getSpritePivot(), m_player.getSpriteAnimationTime());
     }
 
     for (const WaterBurst& burst : m_waterBursts) {

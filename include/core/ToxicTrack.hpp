@@ -23,6 +23,13 @@ inline int toxicTrack(const GameState& state) {
     return state.getFlag(std::string(TOXIC_TRACK_FLAG), 0);
 }
 
+// The overworld PK marker identifies the currently active toxic route only.
+// It disappears as soon as a spare ends the route (track == 2), along with
+// being absent on neutral saves (track == 0).
+inline bool toxicPkSkullVisible(const GameState& state) {
+    return toxicTrack(state) == 1;
+}
+
 inline int toxicKills(const GameState& state) {
     return state.getFlag(std::string(TOXIC_KILLS_FLAG), 0);
 }
