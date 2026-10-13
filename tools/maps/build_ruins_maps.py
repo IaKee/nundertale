@@ -3843,6 +3843,20 @@ def build_ruins_house():
                 "lines": "* It's locked. You hear a printer.",
             },
         },
+        # Package by her door (LORE v3, D-19, C1-011)
+        {
+            "name": "furiell_package",
+            "type": "prop",
+            "x": 160,
+            "y": 40,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_package.png",
+                "solid": False,
+                "lines": "* A package for Furiell. Discreet packaging. The logo is not discreet.",
+            },
+        },
         # Spawn returning from Basement (stairs)
         {
             "name": "from_basement",
@@ -4278,6 +4292,22 @@ def build_ruins_house_pepe():
             "h": 60,
             "properties": {
                 "lines": "* A beanbag. It has a Grub-shaped dent already. Suspicious.",
+            },
+        },
+        # Faux-Fur Bandana itemPickup (LORE v3.3, NAR-030, C1-011)
+        {
+            "name": "bandana_pickup",
+            "type": "itemPickup",
+            "x": 280,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "item": "Faux-Fur Bandana",
+                "flag": "ruins.bandana.taken",
+                "lines": "* (You take the Faux-Fur Bandana.)\n* So soft. Too soft. It's working on you.",
+                "emptyLines": "* (The nightstand is empty.)",
+                "fullLines": "* You're carrying too much.",
             },
         },
     ]

@@ -476,6 +476,44 @@
               "value": "* A beanbag. It has a Grub-shaped dent already. Suspicious."
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 15,
+          "name": "bandana_pickup",
+          "rotation": 0,
+          "type": "itemPickup",
+          "visible": true,
+          "width": 40,
+          "x": 280,
+          "y": 80,
+          "properties": [
+            {
+              "name": "item",
+              "type": "string",
+              "value": "Faux-Fur Bandana"
+            },
+            {
+              "name": "flag",
+              "type": "string",
+              "value": "ruins.bandana.taken"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* (You take the Faux-Fur Bandana.)\n* So soft. Too soft. It's working on you."
+            },
+            {
+              "name": "emptyLines",
+              "type": "string",
+              "value": "* (The nightstand is empty.)"
+            },
+            {
+              "name": "fullLines",
+              "type": "string",
+              "value": "* You're carrying too much."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -682,7 +720,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 15,
+  "nextobjectid": 16,
   "orientation": "orthogonal",
   "properties": [
     {

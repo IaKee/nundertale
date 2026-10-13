@@ -452,8 +452,36 @@
           ]
         },
         {
-          "height": 0,
+          "height": 40,
           "id": 14,
+          "name": "furiell_package",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 160,
+          "y": 40,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_package.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A package for Furiell. Discreet packaging. The logo is not discreet."
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 15,
           "name": "from_basement",
           "rotation": 0,
           "type": "spawn",
@@ -472,7 +500,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 16,
           "name": "door_to_basement",
           "rotation": 0,
           "type": "door",
@@ -495,7 +523,7 @@
         },
         {
           "height": 0,
-          "id": 16,
+          "id": 17,
           "name": "from_hallway",
           "rotation": 0,
           "type": "spawn",
@@ -514,7 +542,7 @@
         },
         {
           "height": 0,
-          "id": 17,
+          "id": 18,
           "name": "from_pepe",
           "rotation": 0,
           "type": "spawn",
@@ -533,7 +561,7 @@
         },
         {
           "height": 80,
-          "id": 18,
+          "id": 19,
           "name": "door_to_hallway",
           "rotation": 0,
           "type": "door",
@@ -556,7 +584,7 @@
         },
         {
           "height": 40,
-          "id": 19,
+          "id": 20,
           "name": "laptop",
           "rotation": 0,
           "type": "examine",
@@ -574,7 +602,7 @@
         },
         {
           "height": 40,
-          "id": 20,
+          "id": 21,
           "name": "letterhead",
           "rotation": 0,
           "type": "examine",
@@ -592,7 +620,7 @@
         },
         {
           "height": 40,
-          "id": 21,
+          "id": 22,
           "name": "poptart_pickup",
           "rotation": 0,
           "type": "itemPickup",
@@ -630,7 +658,7 @@
         },
         {
           "height": 60,
-          "id": 22,
+          "id": 23,
           "name": "armchair",
           "rotation": 0,
           "type": "prop",
@@ -658,7 +686,7 @@
         },
         {
           "height": 80,
-          "id": 23,
+          "id": 24,
           "name": "fireplace",
           "rotation": 0,
           "type": "prop",
@@ -691,7 +719,7 @@
         },
         {
           "height": 80,
-          "id": 24,
+          "id": 25,
           "name": "bookshelf",
           "rotation": 0,
           "type": "prop",
@@ -719,7 +747,7 @@
         },
         {
           "height": 80,
-          "id": 25,
+          "id": 26,
           "name": "furiell",
           "rotation": 0,
           "type": "npc",
@@ -757,7 +785,7 @@
         },
         {
           "height": 80,
-          "id": 26,
+          "id": 27,
           "name": "furiell",
           "rotation": 0,
           "type": "npc",
@@ -1062,7 +1090,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 27,
+  "nextobjectid": 28,
   "orientation": "orthogonal",
   "properties": [
     {

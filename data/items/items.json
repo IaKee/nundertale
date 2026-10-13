@@ -399,9 +399,7 @@
     "info": "* So soft. Too soft. It's working on you.",
     "useText": "* You equipped the Faux-Fur Bandana.",
     "buyPrice": 0,
-    "sellPrice": 0,
-    "textTodo": true,
-    "priceTodo": true
+    "sellPrice": 0
   },
   {
     "id": "fursuit_head",
