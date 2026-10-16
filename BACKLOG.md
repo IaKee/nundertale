@@ -399,7 +399,7 @@ P0 · M · TXT-001
 - **O quê:** quebrar por largura em pixels da área útil; quando a linha começa com "* ", as linhas seguintes recuam até a coluna depois de "* " (ver o print: "pick on you!" alinhado com "Loox").
 - **Aceite:** nenhum texto passa da borda da caixa; o recuo bate com o print de referência.
 
-#### TXT-003 — Velocidade de digitação e pausas automáticas `[ ]`
+#### TXT-003 — Velocidade de digitação e pausas automáticas `[x]`
 P0 · P · TXT-001, CORE-001
 - **O quê:** padrão de 1 caractere por quadro (30 cps) (confirmar), com pausas automáticas extras depois de `.`, `!`, `?` e `,` (configurável por voz). Os sons de voz tocam em cada caractere não-espaço (algumas vozes, a cada 2).
 
@@ -407,12 +407,12 @@ P0 · P · TXT-001, CORE-001
 P0 · P · BUG-11
 - **O quê:** **X** (cancel) completa a página atual na hora; **Z** só avança quando a página terminou. Sem indicador piscando (o Undertale não mostra triângulo; remover o triângulo amarelo do `DialogBox`).
 
-#### TXT-005 — Caixa de diálogo do overworld (posição e retrato) `[ ]`
+#### TXT-005 — Caixa de diálogo do overworld (posição e retrato) `[x]`
 P0 · M · TXT-001
 - **O quê:** a caixa fica embaixo por padrão e **em cima quando o jogador está na metade de baixo da tela**. Retrato opcional à esquerda (sprite 2×, ex.: Furiell, Senpai Sans) com o texto deslocado à direita. Medidas a tirar de um print de overworld do Undertale (≈ x 32→608, y 320→470 embaixo; y 10→160 em cima) (confirmar).
 - **Remover:** a linha "* SPEAKER:" amarela (o Undertale não mostra o nome de quem fala; quem fala é indicado pela voz/retrato/fonte).
 
-#### TXT-006 — Vozes por personagem `[ ]`
+#### TXT-006 — Vozes por personagem `[x]`
 P0 · M · TXT-001, AUD-002
 - **O quê:** o registro `voices.json`: `{ "narrator": "snd_txt1", "furiell": "...", "sans": "...", "barky": "..." }` com pitch/variação opcional. Narrador (`* ...`) usa o "bip" padrão.
 
