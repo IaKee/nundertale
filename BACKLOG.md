@@ -813,7 +813,7 @@ P0 · M · OVW-003, CORE-003
 P1 · M · OVW-003, CORE-011
 - **O quê:** NPCs parados, andando em rota (waypoints), seguindo o jogador (Furiell guiando pelas Ruínas), com diálogos condicionados a flags e contagem de conversas ("talkCount").
 
-#### OVW-010 — Persistência de estado da sala `[ ]`
+#### OVW-010 — Persistência de estado da sala `[x]`
 P0 · M · CORE-010, BUG-04
 - **O quê:** objetos pegos/usados, NPCs derrotados, puzzles resolvidos e portas abertas lidos das flags ao entrar na sala.
 

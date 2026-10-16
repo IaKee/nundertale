@@ -94,6 +94,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                     if (m_isSpared) {
                         context.player.gold += 10;
                         context.state.setFlag("ruins.barky.spared", 1);
+                        context.state.setFlag("ruins.barky.state", 1);
                         context.state.sparesTotal += 1;
                         m_narratorText = "* YOU WON!\n* You earned 0 EXP and 10 gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
@@ -101,6 +102,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                         context.player.exp += 20;
                         context.player.gold += 15;
                         context.state.setFlag("ruins.barky.killed", 1);
+                        context.state.setFlag("ruins.barky.state", 2);
                         context.state.killsTotal += 1;
                         context.state.killsByArea["ruins"] += 1;
                         m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";

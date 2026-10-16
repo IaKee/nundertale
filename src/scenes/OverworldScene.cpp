@@ -12,7 +12,6 @@ namespace nundertale {
 OverworldScene::OverworldScene()
     : m_player(Vector2{ 300.0f, 320.0f }) {
     initObstacles();
-    initInteractables();
 }
 
 void OverworldScene::initObstacles() {
@@ -28,24 +27,24 @@ void OverworldScene::initObstacles() {
     m_obstacles.push_back({ 450, 160, 50, 80 });    // Right pillar
 }
 
-void OverworldScene::initInteractables() {
+void OverworldScene::initInteractables(GameContext& context) {
     m_interactables.clear();
 
-    // 1. Save Point Star
+    // 1. Save Point Star (SAV-001, SAV-002)
     m_savePoint = std::make_unique<SavePoint>(Vector2{ 320.0f, 260.0f });
 
     // 2. Signpost on the wall
     Rectangle signBounds = { 100, 70, 40, 30 };
     auto sign = std::make_unique<GenericInteractable>(
         signBounds,
-        [this](GameContext& context) {
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+        [this](GameContext& ctx) {
+            ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
             m_dialogBox.startDialog({
                 "NOTICE FROM THE RUINS ADMINISTRATION:\n* Please refrain from shedding faux-fur in the air ducts.",
                 "* Trespassing gamers will be subjected to mandatory waifu appreciation seminars."
             }, "SIGN");
         },
-        [](GameContext& context) {
+        [](GameContext& ctx) {
             DrawRectangle(105, 80, 30, 20, { 140, 90, 40, 255 });
             DrawRectangleLines(105, 80, 30, 20, BLACK);
             DrawText("?", 115, 82, 16, WHITE);
@@ -53,69 +52,173 @@ void OverworldScene::initInteractables() {
     );
     m_interactables.push_back(std::move(sign));
 
-    // 3. NPC Barky the Alpha Furry standing near the door
-    Rectangle npcBounds = { 490, 80, 40, 50 };
-    auto npc = std::make_unique<GenericInteractable>(
-        npcBounds,
-        [this](GameContext& context) {
-            context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
-            m_dialogBox.startDialog({
-                "* Awoo! What do we have here? A hairless gamer in my domain?!",
-                "* I am Barky, the Alpha Wolf of Mt. Dew! Prepare yourself!",
-                "* Step through the north doorway if you dare face my fursona!"
-            }, "BARKY");
-        },
-        [](GameContext& context) {
-            // NPC placeholder visual
-            DrawCircle(510, 95, 16, { 120, 120, 140, 255 });
-            DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 90, 110, 255 });
-            DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 90, 110, 255 });
-            DrawRectangle(496, 110, 28, 25, { 50, 50, 70, 255 });
-        }
-    );
-    m_interactables.push_back(std::move(npc));
+    // Check barky state (OVW-010, PRG-020): 0 = none, 1 = spared, 2 = killed
+    int barkyState = context.state.getFlag("ruins.barky.state", 0);
+    if (barkyState == 0) {
+        if (context.state.getFlag("ruins.barky.killed", 0) != 0) barkyState = 2;
+        else if (context.state.getFlag("ruins.barky.spared", 0) != 0) barkyState = 1;
+    }
 
-    // 4. North Doorway Trigger to Battle Scene
-    Rectangle doorBounds = { 280, 50, 80, 30 };
-    auto door = std::make_unique<GenericInteractable>(
-        doorBounds,
-        [this](GameContext& context) {
-            context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.8f);
-            m_dialogBox.startDialog({
-                "* An intense aura of cringe and determination blocks your path!",
-                "* Barky the Alpha Furry attacks!"
-            }, "", [this, &context]() {
-                Vector2 pPos = m_player.getPosition();
-                context.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), context);
-            });
-        },
-        [](GameContext& context) {
-            // Glowing doorway
-            DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
-            DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
-        }
-    );
-    m_interactables.push_back(std::move(door));
+    if (barkyState == 2) {
+        // Barky is dead - leaving a pile of dust (OVW-010, BND-003)
+        Rectangle dustBounds = { 490, 90, 40, 40 };
+        auto dust = std::make_unique<GenericInteractable>(
+            dustBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                m_dialogBox.startDialog({
+                    "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
+                }, "");
+            },
+            [](GameContext& ctx) {
+                DrawEllipse(510, 115, 16, 6, { 150, 150, 150, 220 });
+                DrawCircle(506, 113, 2, { 180, 180, 180, 255 });
+                DrawCircle(514, 114, 2, { 130, 130, 130, 255 });
+            }
+        );
+        m_interactables.push_back(std::move(dust));
 
-    // 5. Snack Bowl (ITM-004: Monster Candy parody with 8-slot limit check)
+        // North Doorway is open (OVW-008, OVW-010)
+        Rectangle doorBounds = { 280, 50, 80, 30 };
+        auto door = std::make_unique<GenericInteractable>(
+            doorBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                m_dialogBox.startDialog({
+                    "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
+                }, "");
+            },
+            [](GameContext& ctx) {
+                DrawRectangleLines(280, 50, 80, 30, GREEN);
+                DrawText("OPEN", 300, 56, 16, GREEN);
+            }
+        );
+        m_interactables.push_back(std::move(door));
+    } else if (barkyState == 1) {
+        // Barky is standing peacefully in the room (OVW-010, NAR-002)
+        Rectangle npcBounds = { 490, 80, 40, 50 };
+        auto npc = std::make_unique<GenericInteractable>(
+            npcBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
+                m_dialogBox.startDialog({
+                    "* Awoo! Hey there, fellow cool gamer.",
+                    "* Thanks for not roasting my fursona back there.",
+                    "* The northern gate is unlocked! Safe travels through the Underground!"
+                }, "BARKY");
+            },
+            [](GameContext& ctx) {
+                DrawCircle(510, 95, 16, { 120, 150, 140, 255 });
+                DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 130, 110, 255 });
+                DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 130, 110, 255 });
+                DrawRectangle(496, 110, 28, 25, { 50, 80, 70, 255 });
+            }
+        );
+        m_interactables.push_back(std::move(npc));
+
+        // North Doorway is open
+        Rectangle doorBounds = { 280, 50, 80, 30 };
+        auto door = std::make_unique<GenericInteractable>(
+            doorBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+                m_dialogBox.startDialog({
+                    "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
+                }, "");
+            },
+            [](GameContext& ctx) {
+                DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
+                DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
+            }
+        );
+        m_interactables.push_back(std::move(door));
+    } else {
+        // Barky alive, initial encounter waiting (ENC-001, ENC-002)
+        Rectangle npcBounds = { 490, 80, 40, 50 };
+        auto npc = std::make_unique<GenericInteractable>(
+            npcBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
+                m_dialogBox.startDialog({
+                    "* Awoo! What do we have here? A hairless gamer in my domain?!",
+                    "* I am Barky, the Alpha Wolf of Mt. Dew! Prepare yourself!",
+                    "* Step through the north doorway if you dare face my fursona!"
+                }, "BARKY");
+            },
+            [](GameContext& ctx) {
+                DrawCircle(510, 95, 16, { 120, 120, 140, 255 });
+                DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 90, 110, 255 });
+                DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 90, 110, 255 });
+                DrawRectangle(496, 110, 28, 25, { 50, 50, 70, 255 });
+            }
+        );
+        m_interactables.push_back(std::move(npc));
+
+        Rectangle doorBounds = { 280, 50, 80, 30 };
+        auto door = std::make_unique<GenericInteractable>(
+            doorBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.8f);
+                m_dialogBox.startDialog({
+                    "* An intense aura of cringe and determination blocks your path!",
+                    "* Barky the Alpha Furry attacks!"
+                }, "", [this, &ctx]() {
+                    Vector2 pPos = m_player.getPosition();
+                    ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
+                });
+            },
+            [](GameContext& ctx) {
+                DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
+                DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
+            }
+        );
+        m_interactables.push_back(std::move(door));
+    }
+
+    // 5. Snack Bowl with persistent take count tracking (OVW-010, OVW-011, ITM-004)
     Rectangle bowlBounds = { 200, 160, 40, 30 };
     auto snackBowl = std::make_unique<GenericInteractable>(
         bowlBounds,
-        [this](GameContext& context) {
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
-            if (!context.player.canAddItem()) {
+        [this](GameContext& ctx) {
+            ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
+            int takenCount = ctx.state.getFlag("ruins.dew.taken", 0);
+
+            if (takenCount >= 4) {
+                m_dialogBox.startDialog({
+                    "* (Look at what you've done.)\n* (The bowl is completely empty.)"
+                }, "");
+                return;
+            }
+
+            if (!ctx.player.canAddItem()) {
                 m_dialogBox.startDialog({
                     "* (You tried to take a snack...)\n* (You're carrying too much.)"
                 }, "");
             } else {
-                context.player.addItem("Mt. Dew");
-                context.audio.playSound("assets/sfx/heal.ogg", 0.7f);
-                m_dialogBox.startDialog({
-                    "* (You took a can of warm Mountain Dew.)\n* (Your inventory feels slightly heavier.)"
-                }, "");
+                ctx.player.addItem("Mt. Dew");
+                ctx.audio.playSound("assets/sfx/heal.ogg", 0.7f);
+                takenCount++;
+                ctx.state.setFlag("ruins.dew.taken", takenCount);
+                if (takenCount == 1) {
+                    m_dialogBox.startDialog({
+                        "* (You took a can of warm Mountain Dew.)\n* (Your inventory feels slightly heavier.)"
+                    }, "");
+                } else if (takenCount == 2) {
+                    m_dialogBox.startDialog({
+                        "* (You took another Mountain Dew.)\n* (How greedy.)"
+                    }, "");
+                } else if (takenCount == 3) {
+                    m_dialogBox.startDialog({
+                        "* (You took yet another Mountain Dew.)\n* (You feel like scum.)"
+                    }, "");
+                } else {
+                    m_dialogBox.startDialog({
+                        "* (You took the last Mountain Dew.)\n* (You knocked the bowl over. Disgusting.)"
+                    }, "");
+                }
             }
         },
-        [](GameContext& context) {
+        [](GameContext& ctx) {
             DrawRectangle(205, 165, 30, 20, { 50, 120, 50, 255 });
             DrawRectangleLines(205, 165, 30, 20, WHITE);
             DrawText("DEW", 208, 168, 12, COLOR_UNDERTALE_YELLOW);
@@ -129,10 +232,12 @@ void OverworldScene::onEnter(GameContext& context) {
     if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
         m_player.setPosition(context.state.playerPos);
     }
+    initInteractables(context);
 }
 
 void OverworldScene::onResume(GameContext& context) {
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+    initInteractables(context);
 }
 
 void OverworldScene::drawSoul(float x, float y) const {
