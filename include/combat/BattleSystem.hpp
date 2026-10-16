@@ -20,6 +20,8 @@ enum class BattleState {
     MercySelect,
     DialogMessage,
     EnemyTurn,
+    Fleeing,
+    Fled,
     Victory,
     Defeat
 };
@@ -38,8 +40,9 @@ public:
     void update(float dt, GameContext& context);
     void render(GameContext& context);
 
-    bool isFinished() const { return m_state == BattleState::Victory || m_state == BattleState::Defeat; }
+    bool isFinished() const { return m_state == BattleState::Victory || m_state == BattleState::Fled || m_state == BattleState::Defeat; }
     bool isVictory() const { return m_state == BattleState::Victory; }
+    bool isFled() const { return m_state == BattleState::Fled; }
     bool isSpared() const { return m_isSpared; }
     BattleState getState() const { return m_state; }
     Vector2 getSoulPosition() const { return m_soulPosition; }
@@ -58,12 +61,16 @@ private:
     void drawSoul(float x, float y, Color color = SOUL_RED) const;
     void drawHUD(GameContext& context, Font font) const;
     void drawButtons(GameContext& context, Font font) const;
+    void spawnDust(Vector2 center, int count, Color col);
+    void updateDust(float dt);
+    void drawDust() const;
 
     std::unique_ptr<Enemy> m_enemy;
     BattleState m_state = BattleState::MenuSelect;
     MainButton m_selectedButton = MainButton::Fight;
     int m_subOptionIndex = 0;
     bool m_isSpared = false;
+    int m_turnCount = 0;
 
     // Heart inside dodge box
     Vector2 m_soulPosition{ 320.0f, 320.0f };
@@ -88,6 +95,29 @@ private:
     // Messages
     std::string m_narratorText;
     std::string m_enemySpeechBubble;
+
+    // Enemy damage feedback (FGT-004, FGT-005, FGT-006, FGT-007)
+    float m_enemyShakeTimer = 0.0f;
+    float m_damageDisplayTimer = 0.0f;
+    float m_slashAnimTimer = 0.0f;
+    float m_enemyVisualHp = 0.0f;
+    int m_lastDamage = 0;
+    bool m_lastMiss = false;
+
+    // Flee animation (MRC-002)
+    float m_fleeSoulX = 0.0f;
+    float m_fleeSoulY = 0.0f;
+    float m_fleeTimer = 0.0f;
+
+    // Dust particles (FGT-007, BND-002, BND-003)
+    struct DustParticle {
+        Vector2 pos;
+        Vector2 vel;
+        float alpha;
+        float size;
+        Color color;
+    };
+    std::vector<DustParticle> m_dustParticles;
 };
 
 } // namespace nundertale
