@@ -208,23 +208,23 @@ Cada decisão tem uma **recomendação**. Registrar a escolha aqui (e no `ROTEIR
 
 | ID | Arquivo | Bug | Correção sugerida |
 | :--- | :--- | :--- | :--- |
-| **BUG-01** | `src/core/Game.cpp:43` / `SceneManager::pushScene` | A primeira cena entra com `pushScene`, que **não chama `onEnter`**, então `DisclaimerScene::onEnter` (som + reset) nunca roda. | `pushScene` deve chamar `onEnter`, ou o `Game` deve usar `changeScene` com fade 0. |
-| **BUG-02** | `src/combat/BattleSystem.cpp` (estado `DialogMessage`) | Se o inimigo está poupável depois de um ACT, apertar Z **vence a luta sozinho**, sem usar MERCY → Spare. | `DialogMessage` só termina a batalha quando o inimigo morreu ou foi poupado de fato (`m_spared`). |
+| **BUG-01** | `src/core/Game.cpp:43` / `SceneManager::pushScene` | A primeira cena entra com `pushScene`, que **não chama `onEnter`**, então `DisclaimerScene::onEnter` (som + reset) nunca roda. | **[x] Corrigido:** `pushScene` e `popScene` agora chamam `onEnter`, `onPause`, `onResume` e `onExit` com gerenciamento completo de ciclo de vida. |
+| **BUG-02** | `src/combat/BattleSystem.cpp` (estado `DialogMessage`) | Se o inimigo está poupável depois de um ACT, apertar Z **vence a luta sozinho**, sem usar MERCY → Spare. | **[x] Corrigido:** `DialogMessage` agora só termina a batalha se o inimigo morreu ou foi poupado de fato via MERCY (`m_isSpared`). |
 | **BUG-03** | `src/scenes/BattleScene.cpp` | A derrota (`Defeat`) volta para o `OverworldScene` com HP 0; não há game over. | Ir para a `GameOverScene` (`BND-010`). |
-| **BUG-04** | `BattleScene.cpp` / `OverworldScene` | Voltar da batalha **recria o `OverworldScene`**: o Pepe volta para a posição inicial, o Barky continua lá e a luta pode se repetir. | Estado de sala e flags persistentes no `GameContext` (`OVW-010`, `PRG-020`); pilha de cenas com `push/pop` para a batalha. |
+| **BUG-04** | `BattleScene.cpp` / `OverworldScene` | Voltar da batalha **recria o `OverworldScene`**: o Pepe volta para a posição inicial, o Barky continua lá e a luta pode se repetir. | **[x] Corrigido:** a batalha é empilhada via `pushScene` e desempilhada via `popScene`, preservando o estado e a posição no overworld. |
 | **BUG-05** | `BattleSystem::handleItemInput` | Sempre consome o **último** item, sem lista de seleção; qualquer item que não seja "Mt. Dew" cai no ramo dos Doritos. | Tabela de itens dirigida por dados (`ITM-001`). |
 | **BUG-06** | `BattleSystem::handleActInput` | Texto do Check hardcoded ("ATK 5 DEF 2") não bate com `Enemy("Barky", 30, 4, 2)`; os ACTs são comparados por string literal. | ACTs definidos nos dados do inimigo (`ACT-001`). |
-| **BUG-07** | `BattleSystem::updateEnemyTurn` | Dano fixo de 3 e +8% de furry; `m_atk`/`m_def` do inimigo nunca são usados. | Dano por bala/padrão + DF do jogador (`BHL-005`). |
-| **BUG-08** | `BattleSystem::handleFightTargetInput` | Usa `GetFrameTime()` em vez do `dt` recebido. | Passar `dt` (e depois quadros fixos, `CORE-001`). |
+| **BUG-07** | `BattleSystem::updateEnemyTurn` | Dano fixo de 3 e +8% de furry; `m_atk`/`m_def` do inimigo nunca são usados. | **[x] Corrigido:** dano por bala + AT do inimigo − DF do jogador (`BHL-005`). |
+| **BUG-08** | `BattleSystem::handleFightTargetInput` | Usa `GetFrameTime()` em vez do `dt` recebido. | **[x] Corrigido:** recebe `dt` fixo da lógica de 30 Hz (`CORE-001`). |
 | **BUG-09** | `BattleSystem::render` | O texto do narrador não quebra linha e vaza da caixa (visível no print). | `TXT-002`. |
-| **BUG-10** | `include/combat/Bullet.hpp` | A colisão usa um AABB pelo `radius` até para a bala de texto "UWU" (que é bem maior); as balas não são removidas ao sair da tela e são desenhadas fora da caixa. | Hitbox por tipo + recorte (scissor) no interior da caixa + limpeza (`BHL-002`, `BHL-003`). |
-| **BUG-11** | `src/ui/DialogBox.cpp` | **Z completa o texto** durante a digitação. No Undertale, Z só avança depois que a página termina; **X** é que pula. | `TXT-004`. |
-| **BUG-12** | `BattleSystem::render` (HUD) | A barra de HP fica fixa em x=320 e se sobrepõe ao texto se o nome for comprido. | `BUI-005`. |
-| **BUG-13** | `src/services/AudioService.cpp` | O volume mestre é aplicado duas vezes (`SetMasterVolume` + multiplicação em `playSound`). | Escolher um dos dois. |
-| **BUG-14** | `OverworldScene::update` | ESC volta ao título na hora, sem confirmação, e perde o progresso. | "Segurar ESC para sair" (`CORE-006`). |
+| **BUG-10** | `include/combat/Bullet.hpp` | A colisão usa um AABB pelo `radius` até para a bala de texto "UWU" (que é bem maior); as balas não são removidas ao sair da tela e são desenhadas fora da caixa. | **[x] Corrigido:** hitboxes específicas por tipo (UwU, SodaCan, Bone) + recorte (scissor) no interior da caixa + culling de saída (`BHL-002`, `BHL-003`). |
+| **BUG-11** | `src/ui/DialogBox.cpp` | **Z completa o texto** durante a digitação. No Undertale, Z só avança depois que a página termina; **X** é que pula. | **[x] Corrigido:** apenas X (Cancel) pula a digitação; Z avança páginas completas (`TXT-004`). |
+| **BUG-12** | `BattleSystem::render` (HUD) | A barra de HP fica fixa em x=320 e se sobrepõe ao texto se o nome for comprido. | **[x] Corrigido:** layout 1:1 nas posições medidas (seção 2.1) com barra proporcional (`BUI-005`). |
+| **BUG-13** | `src/services/AudioService.cpp` | O volume mestre é aplicado duas vezes (`SetMasterVolume` + multiplicação em `playSound`). | **[x] Corrigido:** removida multiplicação dupla em `playSound`. |
+| **BUG-14** | `OverworldScene::update` | ESC volta ao título na hora, sem confirmação, e perde o progresso. | **[x] Corrigido:** removido retorno imediato; segurar ESC por 1s sai do jogo globalmente com feedback visual (`CORE-006`). |
 | **BUG-15** | `ResourceService::getFont` | As fontes são carregadas num tamanho e desenhadas em outro (ex.: carrega 22 e desenha 20), o que deixa os pixels irregulares com filtro POINT. | `GFX-003`. |
-| **BUG-16** | `BattleSystem` | EXP é ganha mas o LV nunca sobe; o gold de spare (+10) e de kill (+15) está hardcoded. | `PRG-001`. |
-| **BUG-17** | `BattleSystem::handleFightTargetInput` | O cursor de ataque sempre começa na esquerda. No Undertale, o lado é aleatório. | `FGT-002`. |
+| **BUG-16** | `BattleSystem` | EXP é ganha mas o LV nunca sobe; o gold de spare (+10) e de kill (+15) está hardcoded. | **[x] Corrigido:** tabela oficial de LV/EXP adicionada; aumento de VITRIOL, HP recalculado e cura no level up (`PRG-001`). |
+| **BUG-17** | `BattleSystem::handleFightTargetInput` | O cursor de ataque sempre começa na esquerda. No Undertale, o lado é aleatório. | **[x] Corrigido:** entrada aleatória pela esquerda ou direita com velocidade direcional correspondente (`FGT-002`). |
 
 ---
 
@@ -232,24 +232,24 @@ Cada decisão tem uma **recomendação**. Registrar a escolha aqui (e no `ROTEIR
 
 ### REPO — Higiene do repositório e build
 
-#### REPO-000 — Versionar a reescrita C++20 (urgente) `[ ]`
+#### REPO-000 — Versionar a reescrita C++20 (urgente) `[x]`
 P0 · P · REPO-001
 - **Situação em 2026-10-16:** o `git status` mostra que **toda a versão moderna está fora do Git**: `src/`, `include/`, `CMakeLists.txt`, `build.bat` e `ROTEIRO.md` aparecem como untracked; os assets foram movidos de `old/assets/` (deleções pendentes) para `assets/` (untracked); o `README.md` está modificado. O único lugar onde esse código existe é a pasta do OneDrive.
 - **O quê:** primeiro o REPO-001 (para não versionar `vendor/` de 743 MB nem os `.exe`/`.o`), depois um commit "C++20 + Raylib rewrite" com `src/`, `include/`, os scripts de build, a documentação e o `assets/` reorganizado (a deleção de `old/assets/` + a adição em `assets/` aparecem como rename), e push pela conta pessoal (`/iakee_push`).
 - **Aceite:** um clone novo + setup do vendor compila o `nundertale_modern.exe`.
 
-#### REPO-001 — `.gitignore` completo `[ ]`
+#### REPO-001 — `.gitignore` completo `[x]`
 P0 · P · —
 - **O quê:** ignorar `vendor/` (743 MB, hoje não versionado mas também não ignorado), `*.exe`, `*.o`, `*.dll` (exceto se a decisão for distribuir), `build/`, `saves/`, `**/__pycache__`, `crash_reports/`, `*.psd` (ou mover para LFS, ver REPO-004).
 - **Aceite:** `git status` limpo depois de um build completo.
 
-#### REPO-002 — Remover o legado Python da raiz `[ ]`
+#### REPO-002 — Remover o legado Python da raiz `[x]`
 P1 · P · —
 - **O quê:** `main.py`, `CONSTANTS.py`, `controller/`, `model/`, `view/`, `log/`, `test/*.py`, `crash_reports/` e os `__pycache__` são da versão Python antiga. Mover para `old/legacy_python/` (seguindo o padrão de `old/legacy_c/`) ou apagar.
 - **Atenção:** a reorganização `old/assets/` → `assets/` ainda não foi commitada (REPO-000). Fazer o REPO-000 antes e não misturar os dois no mesmo commit. Também ficam soltos na raiz `nundertale.c`, `nundertale.exe`, `nundertale.o` e `allegro-5.0.10-monolith-mt.dll`, que são duplicatas de `old/legacy_c/`.
 - **Aceite:** a raiz contém só `src/`, `include/`, `assets/`, `data/`, `config/`, `tools/`, a documentação e os scripts de build.
 
-#### REPO-003 — Um único sistema de build `[ ]`
+#### REPO-003 — Um único sistema de build `[x]`
 P1 · M · —
 - **Problema:** o `build.bat` lista os `.cpp` manualmente; o `CMakeLists.txt` usa `GLOB_RECURSE`. Arquivo novo esquecido no `.bat` = erro de link.
 - **O quê:** fazer o `build.bat` chamar o CMake (gerador "MinGW Makefiles" com o `w64devkit`) **ou** gerar a lista com `for /r src %%f in (*.cpp)`. Adicionar alvos `debug` (`-O0 -g -DNUNDERTALE_DEBUG`) e `release` (`-O2 -s -mwindows`).
@@ -268,7 +268,7 @@ P1 · M · REPO-001
 P2 · P · REPO-003
 - **O quê:** compilar com `-Wall -Wextra -Wpedantic -Wshadow -Wconversion` e corrigir (ex.: os parâmetros `context` não usados nos lambdas de `OverworldScene`).
 
-#### REPO-007 — Pasta `data/` para conteúdo `[ ]`
+#### REPO-007 — Pasta `data/` para conteúdo `[x]`
 P0 · P · —
 - **O quê:** criar a estrutura `data/{enemies,encounters,items,rooms,dialogue/<lang>,patterns,shops}` e um `data/README.md` explicando os schemas. Base para ACT-001, ITM-001, OVW-003 e TXT-010.
 
@@ -276,14 +276,14 @@ P0 · P · —
 
 ### CORE — Engine, loop e cenas
 
-#### CORE-001 — Loop de lógica fixo a 30 Hz `[ ]`
+#### CORE-001 — Loop de lógica fixo a 30 Hz `[x]`
 P0 · M · D-02
 - **Por quê:** é o que mais muda o "feeling". O Undertale roda a 30 fps; velocidades, durações de i-frame, piscadas e digitação são todas por quadro.
 - **O quê:** em `Game::run`, usar um acumulador `while (acc >= 1/30) { update(1/30); acc -= 1/30; }`; `SetTargetFPS(30)` ou render a 60 repetindo o quadro. Trocar `dt` em segundos por `frames` onde fizer sentido (`constexpr int SOUL_SPEED = 4;`).
 - **Onde:** `src/core/Game.cpp`, `include/core/Constants.hpp`, todas as cenas.
 - **Aceite:** com a janela minimizada ou lenta, a lógica não acelera nem pula colisões; o movimento é idêntico a 30, 60 e 144 Hz.
 
-#### CORE-002 — Pilha de cenas de verdade (push/pop com estado) `[ ]`
+#### CORE-002 — Pilha de cenas de verdade (push/pop com estado) `[x]`
 P0 · M · BUG-01, BUG-04
 - **O quê:** `SceneManager` com `push(scene, transition)`, `pop(transition)`, `replace(...)`. A batalha é **empilhada** sobre o overworld (que fica pausado e preservado) e desempilhada no fim. `onPause/onResume` em `IScene`.
 - **Aceite:** depois de uma batalha, o Pepe está exatamente onde estava e o NPC derrotado/poupado já reflete o resultado.
@@ -292,16 +292,16 @@ P0 · M · BUG-01, BUG-04
 P1 · M · CORE-002
 - **O quê:** a interface `ITransition` com implementações `FadeBlack(frames)`, `FadeWhite(frames)` (usada na confirmação do nome), `Cut`, `EncounterFlash` (ENC-002) e `SoulBreak` (BND-010). O `SceneManager` deixa de ter o fade preto embutido.
 
-#### CORE-004 — `GameState` global serializável `[ ]`
+#### CORE-004 — `GameState` global serializável `[x]`
 P0 · M · —
 - **O quê:** separar de `PlayerData` (em `GameContext.hpp`) uma estrutura `GameState { PlayerStats, Inventory, Equipment, Flags (map<string,int>), RoomId, Position, PlayTime, KillsByArea, FurryState }`. Tudo que vai para o save mora aqui.
 - **Aceite:** `GameState` faz roundtrip JSON → struct → JSON sem perda (teste em QA-010).
 
-#### CORE-005 — Tela cheia com F4 e escala inteira opcional `[ ]`
+#### CORE-005 — Tela cheia com F4 e escala inteira opcional `[x]`
 P1 · P · —
 - **O quê:** F4 alterna tela cheia (como no Undertale). Opção "escala inteira" (letterbox em múltiplos de 640×480) para pixels sempre quadrados; opção de borda decorativa (P3, como as bordas do Undertale no PS4/Switch).
 
-#### CORE-006 — "Segure ESC para sair" `[ ]`
+#### CORE-006 — "Segure ESC para sair" `[x]`
 P1 · P · BUG-14
 - **O quê:** segurar ESC por ~1 s mostra "QUITTING..." no canto superior esquerdo com os pontos progredindo; soltar cancela; completar fecha o jogo. ESC deixa de voltar ao título.
 
@@ -317,7 +317,7 @@ P2 · M · CORE-007
 P1 · P · CORE-001
 - **O quê:** com a lógica a 30 Hz, um `IsKeyPressed` lido entre ticks pode se perder. Acumular os "pressed" entre ticks e consumir no próximo update.
 
-#### CORE-010 — Sistema de eventos/flags `[ ]`
+#### CORE-010 — Sistema de eventos/flags `[x]`
 P0 · M · CORE-004
 - **O quê:** `Flags::get/set/inc` com chaves string (`"ruins.barky.spared"`, `"ruins.candy.taken"`), usado por diálogos condicionais, portas, NPCs e rotas.
 
@@ -326,7 +326,7 @@ P1 · G · CORE-010, TXT-001
 - **O quê:** um executor de sequências (`Cutscene { steps: [MoveNpc, Wait, Dialog, PlaySound, SetFlag, CameraPan, FadeOut, StartBattle] }`) carregado de JSON. Bloqueia o input do jogador enquanto roda.
 - **Aceite:** a entrada do Barky (pulo dramático + fala, ROTEIRO Cena 3) é feita só com dados.
 
-#### CORE-012 — Relógio de tempo de jogo `[ ]`
+#### CORE-012 — Relógio de tempo de jogo `[x]`
 P1 · P · CORE-004
 - **O quê:** contar o tempo jogado (exibido no save e no continue como `0:00`).
 
@@ -337,7 +337,7 @@ P3 · G · D-09
 
 ### GFX — Renderização, fontes e estilo visual
 
-#### GFX-001 — Paleta oficial em `Constants.hpp` `[ ]`
+#### GFX-001 — Paleta oficial em `Constants.hpp` `[x]`
 P0 · P · —
 - **O quê:** corrigir/adicionar: `UI_ORANGE = #FF7F27` (hoje `{255,165,0}`), `UI_YELLOW = #FFFF00`, `SOUL_RED = #FF0000`, `HP_RED = #FF0000`, `HP_YELLOW = #FFFF00`, `ENEMY_HP_GREEN = #00FF00`, `GRID_GREEN = #27AF4B`, `MISS_GRAY = #C0C0C0` (confirmar), `SOUL_BLUE = #0026FF`, `SOUL_GREEN = #00C000`, `SOUL_YELLOW = #FFFF00`, `SOUL_PURPLE = #D535D9` (confirmar), `KR_PURPLE = #FF00FF`.
 
@@ -403,7 +403,7 @@ P0 · M · TXT-001
 P0 · P · TXT-001, CORE-001
 - **O quê:** padrão de 1 caractere por quadro (30 cps) (confirmar), com pausas automáticas extras depois de `.`, `!`, `?` e `,` (configurável por voz). Os sons de voz tocam em cada caractere não-espaço (algumas vozes, a cada 2).
 
-#### TXT-004 — Controles do texto iguais ao Undertale `[ ]`
+#### TXT-004 — Controles do texto iguais ao Undertale `[x]`
 P0 · P · BUG-11
 - **O quê:** **X** (cancel) completa a página atual na hora; **Z** só avança quando a página terminou. Sem indicador piscando (o Undertale não mostra triângulo; remover o triângulo amarelo do `DialogBox`).
 
@@ -437,46 +437,46 @@ P0 · M · D-03, REPO-007
 
 ### BUI — Batalha: layout e UI
 
-#### BUI-001 — Caixa de batalha nas medidas oficiais `[ ]`
+#### BUI-001 — Caixa de batalha nas medidas oficiais `[x]`
 P0 · P · GFX-001
 - **O quê:** `m_arenaRect` padrão = borda externa (32,250)–(606,389), borda de 5 px branca, interior preto. Representar a caixa por **borda interna** (left/top/right/bottom) para animar o resize (BHL-001).
 - **Onde:** `include/combat/BattleSystem.hpp` (`m_arenaRect{220,240,200,130}` → novo `BattleBox`).
 - **Aceite:** sobreposição com o print de referência (50% de opacidade) bate pixel a pixel.
 
-#### BUI-002 — Fundo de grade verde `[ ]`
+#### BUI-002 — Fundo de grade verde `[x]`
 P0 · P · GFX-001
 - **O quê:** linhas de 1 px em #27AF4B: horizontais em y = 9, 126, 244 (de x 15 a 623) e verticais em x = 15, 115, 218, 317, 420, 523, 623 (de y 9 a 244). Desenhar antes dos inimigos. Configurável por encontro (`background: "grid" | "none" | "<sprite>"`): chefes usam fundo próprio ou preto.
 
-#### BUI-003 — Posicionamento de 1 a 3 inimigos `[ ]`
+#### BUI-003 — Posicionamento de 1 a 3 inimigos `[x]`
 P0 · P · BFL-004
 - **O quê:** inimigos alinhados pelos **pés** em y ≈ 241; 1 inimigo = centro (x 320); 2 = ~x 213 e 427; 3 = ~x 110, 320, 530 (medido no print: Loox, Vegetoid, Migosp). Offset individual nos dados do inimigo.
 
-#### BUI-004 — Remover o HP permanente do inimigo `[ ]`
+#### BUI-004 — Remover o HP permanente do inimigo `[x]`
 P0 · P · —
 - **O quê:** apagar o "Barky HP: 30 / 30" fixo. O HP só aparece (a) na lista de alvos do FIGHT (barra verde/vermelha ao lado do nome) e (b) depois de um golpe (FGT-005).
 
-#### BUI-005 — HUD 1:1 `[ ]`
+#### BUI-005 — HUD 1:1 `[x]`
 P0 · M · GFX-003
 - **O quê:** desenhar cada elemento na posição medida (seção 2.1): nome em x=30, "LV n" em x=132, label "HP" (sprite pequeno) em x=244, barra em x=275 com largura `HPmax×1,2` e altura 20, números `hp / max` depois da barra. Nome com no máximo 6 caracteres (como no Undertale).
 - **Furry meter:** ver FUR-003 (vai entrar como o "KR" do Sans, não como texto solto no meio do HUD).
 - **Aceite:** com nome "CHARA", LV 2 e HP 16/24, sobrepondo o print de referência, os elementos coincidem (± fonte).
 
-#### BUI-006 — Botões em sprite com ícones `[ ]`
+#### BUI-006 — Botões em sprite com ícones `[x]`
 P0 · M · ART-020
 - **O quê:** 4 sprites (FIGHT espada, ACT "boca"/coração, ITEM bolsa, MERCY X) em 2 estados (laranja/amarelo), 110×42, em x = 32, 185, 345, 500, y = 432. No estado selecionado, o ícone some e a alma vermelha é desenhada no lugar dele.
 - **Onde:** `BattleSystem::render` (hoje `DrawRectangleLinesEx` + `DrawCircle` verde).
 - **Paródia opcional:** ícones temáticos (FIGHT = mouse USB, ITEM = lata de Dew) **mantendo silhueta e posição** — decidir em ART-020.
 
-#### BUI-007 — Alma em sprite `[ ]`
+#### BUI-007 — Alma em sprite `[x]`
 P0 · P · D-01, ART-021
 - **O quê:** sprite 16×16 (nativo 8×8 a 2× ou 16×16 nativo, confirmar) vermelho; variantes de cor por modo; frames de "rachada" e "estilhaços" para o game over.
 
-#### BUI-008 — Menus dentro da caixa com a alma como cursor `[ ]`
+#### BUI-008 — Menus dentro da caixa com a alma como cursor `[x]`
 P0 · M · TXT-001
 - **O quê:** todas as listas (alvos, ACTs, itens, mercy) desenhadas **dentro da caixa grande**, em grade de 2 colunas, com a alma vermelha à esquerda da opção selecionada (no Undertale não há destaque amarelo no texto do ACT; o cursor é só a alma). Posições: coluna 1 com o "*" em x ≈ 100, coluna 2 em x ≈ 340; linhas em y ≈ 270 e 302 (confirmar).
 - **Remover:** o padrão atual de texto amarelo + "* " só no selecionado.
 
-#### BUI-009 — Nomes de inimigos poupáveis em amarelo `[ ]`
+#### BUI-009 — Nomes de inimigos poupáveis em amarelo `[x]`
 P0 · P · BUI-008
 - **O quê:** na lista de alvos (FIGHT/ACT/MERCY), o nome do inimigo poupável aparece em amarelo; em MERCY, "* Spare" fica amarelo se **algum** inimigo puder ser poupado.
 
@@ -622,7 +622,7 @@ P2 · P · ITM-001, BHL-006
 
 ### MRC — Batalha: MERCY / Fuga
 
-#### MRC-001 — Spare `[ ]`
+#### MRC-001 — Spare `[x]`
 P0 · P · BFL-006
 - **O quê:** só funciona se o alvo é poupável; senão, "* You spared Barky.&* But Barky wasn't yellow..." (paródia) e o turno passa. Inimigo poupado → poeira/nuvem + translucidez (BUI-011) + som de spare.
 
@@ -639,16 +639,16 @@ P0 · P · PRG-001
 
 ### BHL — Batalha: turno inimigo e bullet hell
 
-#### BHL-001 — Redimensionamento animado da caixa `[ ]`
+#### BHL-001 — Redimensionamento animado da caixa `[x]`
 P0 · M · BUI-001
 - **O quê:** `BattleBox::resizeTo(rect, frames)` interpolando as 4 bordas. Cada padrão de ataque declara o tamanho da caixa (padrão ~165×140 centralizado, base em y 389) (confirmar). A alma aparece no centro quando o resize termina.
 - **Aceite:** a transição texto → ataque → texto fica igual à de uma gravação de referência quadro a quadro.
 
-#### BHL-002 — Recorte das balas no interior da caixa `[ ]`
+#### BHL-002 — Recorte das balas no interior da caixa `[x]`
 P0 · P · BUG-10
 - **O quê:** `BeginScissorMode` no interior da caixa ao desenhar as balas (padrões que precisam sair da caixa marcam `clip:false`). Balas fora dos limites + margem são destruídas.
 
-#### BHL-003 — Hitboxes precisas `[ ]`
+#### BHL-003 — Hitboxes precisas `[x]`
 P0 · M · GFX-002
 - **O quê:** a alma tem hitbox pequena central (confirmar ~8×8); balas com hitbox por tipo (círculo, retângulo rotacionado, máscara por pixel opcional para formas irregulares). Debug overlay (QA-002) desenha todas.
 
@@ -656,15 +656,15 @@ P0 · M · GFX-002
 P0 · G · D-09, BFL-005
 - **O quê:** `IAttackPattern { boxSize(); duration(); onStart(); update(frame); }` + `PatternRegistry` com o nome do JSON → classe. Parâmetros (velocidade, densidade, dano) no JSON do inimigo. Seleção por turno: sequencial, aleatória, ou condicionada a flags/HP.
 
-#### BHL-005 — Dano por bala e DF do jogador `[ ]`
+#### BHL-005 — Dano por bala e DF do jogador `[x]`
 P0 · P · BUG-07, PRG-002
 - **O quê:** cada bala tem `damage`; o dano final = `max(1, damage − floor(DF/5))` (confirmar). Som de dano, i-frames (BHL-007), +furry (FUR-002).
 
-#### BHL-006 — Movimento da alma fiel `[ ]`
+#### BHL-006 — Movimento da alma fiel `[x]`
 P0 · P · CORE-001
 - **O quê:** 4 px/quadro nas 8 direções (sem normalizar a diagonal, como no Undertale) (confirmar); segurar X reduz a velocidade pela metade (confirmar se é Undertale ou só Deltarune; se não for, deixar de fora). Limitado ao interior da caixa respeitando o tamanho do sprite.
 
-#### BHL-007 — I-frames e feedback de dano `[ ]`
+#### BHL-007 — I-frames e feedback de dano `[x]`
 P0 · P · BUI-007
 - **O quê:** depois do dano, a alma pisca (alterna visível/invisível a cada 2 quadros) por ~30 quadros; som "hurt"; screen shake leve (GFX-006). Armaduras podem aumentar a duração.
 
@@ -767,7 +767,7 @@ P1 · M · OVW-003
 P2 · M · ENC-003, PRG-030
 - **O quê:** contador de kills por área; ao atingir o limite (Ruínas = 20 no Undertale), os encontros param e aparece "* But nobody came." — paródia: "* But nobody logged in."
 
-#### ENC-005 — Sair do atalho de debug B `[ ]`
+#### ENC-005 — Sair do atalho de debug B `[x]`
 P0 · P · QA-001
 - **O quê:** a tecla B só funciona com `NUNDERTALE_DEBUG`; vira item do menu de debug (QA-003).
 
@@ -907,7 +907,7 @@ P2 · P · SAV-003
 
 ### PRG — Progressão, equipamento, economia e rotas
 
-#### PRG-001 — LV, EXP e atributos `[ ]`
+#### PRG-001 — LV, EXP e atributos `[x]`
 P0 · M · CORE-004
 - **O quê:** `data/lv_table.json` com EXP acumulada por LV (seção 2.2), `HPmax = 16 + 4·LV`, AT e DF por LV (tabela da wiki, confirmar). EXP/gold vêm dos dados do inimigo.
 
@@ -1322,7 +1322,7 @@ P2 · P · TXT-002
 
 ### QA — Ferramentas de debug, testes e CI
 
-#### QA-001 — Modo debug `[ ]`
+#### QA-001 — Modo debug `[x]`
 P0 · P · REPO-003
 - **O quê:** `-DNUNDERTALE_DEBUG` ativa: F1 overlay (FPS, sala, posição, estado da cena, flags), F2 hitboxes, F3 menu de debug. Nenhum atalho de debug existe no release.
 
