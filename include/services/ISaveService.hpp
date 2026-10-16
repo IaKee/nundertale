@@ -15,6 +15,13 @@ struct UserConfig {
     std::string lang = "en";
 };
 
+struct MetaData {
+    int resets = 0;
+    bool everKilled = false;
+    int timesTransformed = 0;
+    std::string lastClearedRoute = "none";
+};
+
 class ISaveService {
 public:
     virtual ~ISaveService() = default;
@@ -27,6 +34,9 @@ public:
     virtual bool saveConfig(const UserConfig& config) = 0;
     virtual bool loadConfig(UserConfig& config) = 0;
     virtual UserConfig getConfig() const = 0;
+
+    virtual bool saveMeta(const MetaData& meta) = 0;
+    virtual MetaData getMeta() const = 0;
 
     virtual std::string getSaveFilePath() const = 0;
     virtual std::string getRoomDisplayName(const std::string& roomId) const = 0;

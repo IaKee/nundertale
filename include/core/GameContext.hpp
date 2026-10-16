@@ -56,7 +56,24 @@ struct GameState {
     int playerFacing = 0; // 0: Down, 1: Up, 2: Left, 3: Right
     float playTime = 0.0f; // in seconds
     int killsTotal = 0;
+    int sparesTotal = 0;
+    int fleesTotal = 0;
     std::unordered_map<std::string, int> killsByArea;
+
+    enum class RouteType {
+        Wholesome,   // 0 kills
+        Normie,      // some kills
+        ToxicGamer   // exhausted ruins kill quota (>= 20)
+    };
+
+    RouteType getRoute() const {
+        if (killsTotal == 0) return RouteType::Wholesome;
+        auto it = killsByArea.find("ruins");
+        if (it != killsByArea.end() && it->second >= 20) {
+            return RouteType::ToxicGamer;
+        }
+        return RouteType::Normie;
+    }
 
     // Flag system helpers (CORE-010)
     int getFlag(const std::string& key, int defaultVal = 0) const {

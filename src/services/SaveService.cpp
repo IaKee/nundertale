@@ -8,6 +8,37 @@
 
 namespace nundertale {
 
+static std::string extractJsonString(const std::string& json, const std::string& key) {
+    std::string needle = "\"" + key + "\":";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return "";
+    pos += needle.size();
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
+    if (pos >= json.size() || json[pos] != '\"') return "";
+    pos++;
+    size_t end = json.find('\"', pos);
+    if (end == std::string::npos) return "";
+    return json.substr(pos, end - pos);
+}
+
+static double extractJsonNumber(const std::string& json, const std::string& key, double defaultVal = 0.0) {
+    std::string needle = "\"" + key + "\":";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return defaultVal;
+    pos += needle.size();
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
+    size_t end = pos;
+    while (end < json.size() && (std::isdigit(json[end]) || json[end] == '.' || json[end] == '-')) end++;
+    if (end > pos) {
+        try {
+            return std::stod(json.substr(pos, end - pos));
+        } catch (...) {
+            return defaultVal;
+        }
+    }
+    return defaultVal;
+}
+
 SaveService::SaveService() {
     const char* localAppData = std::getenv("LOCALAPPDATA");
     if (localAppData && localAppData[0] != '\0') {
@@ -19,6 +50,7 @@ SaveService::SaveService() {
     m_savePath = m_saveDir / "file0.json";
     m_backupPath = m_saveDir / "file0.bak";
     m_configPath = m_saveDir / "config.json";
+    m_metaPath = m_saveDir / "meta.json";
 
     ensureDirectoryExists();
     loadConfig(m_userConfig);
@@ -46,7 +78,53 @@ bool SaveService::deleteSaveGame() {
     if (std::filesystem::exists(m_savePath, ec)) {
         res = std::filesystem::remove(m_savePath, ec);
     }
+    // SAV-005: Meta persistence - record reset count
+    MetaData meta = getMeta();
+    meta.resets++;
+    saveMeta(meta);
     return res;
+}
+
+bool SaveService::saveMeta(const MetaData& meta) {
+    ensureDirectoryExists();
+    std::stringstream ss;
+    ss << "{\n";
+    ss << "  \"resets\": " << meta.resets << ",\n";
+    ss << "  \"everKilled\": " << (meta.everKilled ? "true" : "false") << ",\n";
+    ss << "  \"timesTransformed\": " << meta.timesTransformed << ",\n";
+    ss << "  \"lastClearedRoute\": \"" << meta.lastClearedRoute << "\"\n";
+    ss << "}\n";
+
+    std::filesystem::path tempPath = m_saveDir / "meta.tmp";
+    std::ofstream out(tempPath);
+    if (!out.is_open()) return false;
+    out << ss.str();
+    out.close();
+
+    std::error_code ec;
+    std::filesystem::rename(tempPath, m_metaPath, ec);
+    return !ec;
+}
+
+MetaData SaveService::getMeta() const {
+    MetaData meta;
+    std::error_code ec;
+    if (!std::filesystem::exists(m_metaPath, ec)) {
+        return meta;
+    }
+    std::ifstream file(m_metaPath);
+    if (!file.is_open()) return meta;
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string json = buffer.str();
+
+    meta.resets = (int)extractJsonNumber(json, "resets", 0.0);
+    meta.everKilled = (json.find("\"everKilled\": true") != std::string::npos || json.find("\"everKilled\":true") != std::string::npos);
+    meta.timesTransformed = (int)extractJsonNumber(json, "timesTransformed", 0.0);
+    std::string route = extractJsonString(json, "lastClearedRoute");
+    if (!route.empty()) meta.lastClearedRoute = route;
+
+    return meta;
 }
 
 std::string SaveService::getRoomDisplayName(const std::string& roomId) const {
@@ -110,37 +188,6 @@ std::string SaveService::serializeStateToJson(const GameState& state) const {
     ss << "  }\n";
     ss << "}\n";
     return ss.str();
-}
-
-static std::string extractJsonString(const std::string& json, const std::string& key) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return "";
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    if (pos >= json.size() || json[pos] != '\"') return "";
-    pos++;
-    size_t end = json.find('\"', pos);
-    if (end == std::string::npos) return "";
-    return json.substr(pos, end - pos);
-}
-
-static double extractJsonNumber(const std::string& json, const std::string& key, double defaultVal = 0.0) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return defaultVal;
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    size_t end = pos;
-    while (end < json.size() && (std::isdigit(json[end]) || json[end] == '.' || json[end] == '-')) end++;
-    if (end > pos) {
-        try {
-            return std::stod(json.substr(pos, end - pos));
-        } catch (...) {
-            return defaultVal;
-        }
-    }
-    return defaultVal;
 }
 
 bool SaveService::parseStateFromJson(const std::string& json, GameState& state) {
