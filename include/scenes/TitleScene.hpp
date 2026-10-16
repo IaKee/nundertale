@@ -17,9 +17,16 @@ public:
     void onExit(GameContext& context) override;
 
 private:
-    std::vector<std::string> m_options{ "Novo Jogo", "Instrucoes", "Creditos", "Sair" };
+    void drawSoul(float x, float y) const;
+
+    std::vector<std::string> m_options;
     int m_selectedIndex = 0;
     float m_animTimer = 0.0f;
+    bool m_hasSave = false;
+    std::string m_savedName = "PEPE";
+    int m_savedLevel = 1;
+    float m_savedPlayTime = 0.0f;
+    std::string m_savedRoom = "Ruins - Entrance";
 };
 
 } // namespace nundertale

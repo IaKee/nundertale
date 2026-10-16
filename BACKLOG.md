@@ -210,7 +210,7 @@ Cada decisão tem uma **recomendação**. Registrar a escolha aqui (e no `ROTEIR
 | :--- | :--- | :--- | :--- |
 | **BUG-01** | `src/core/Game.cpp:43` / `SceneManager::pushScene` | A primeira cena entra com `pushScene`, que **não chama `onEnter`**, então `DisclaimerScene::onEnter` (som + reset) nunca roda. | **[x] Corrigido:** `pushScene` e `popScene` agora chamam `onEnter`, `onPause`, `onResume` e `onExit` com gerenciamento completo de ciclo de vida. |
 | **BUG-02** | `src/combat/BattleSystem.cpp` (estado `DialogMessage`) | Se o inimigo está poupável depois de um ACT, apertar Z **vence a luta sozinho**, sem usar MERCY → Spare. | **[x] Corrigido:** `DialogMessage` agora só termina a batalha se o inimigo morreu ou foi poupado de fato via MERCY (`m_isSpared`). |
-| **BUG-03** | `src/scenes/BattleScene.cpp` | A derrota (`Defeat`) volta para o `OverworldScene` com HP 0; não há game over. | Ir para a `GameOverScene` (`BND-010`). |
+| **BUG-03** | `src/scenes/BattleScene.cpp` | A derrota (`Defeat`) volta para o `OverworldScene` com HP 0; não há game over. | **[x] Corrigido:** transição direta para `GameOverScene` com quebra da alma, determinação e recarregamento do save (`BND-010`). |
 | **BUG-04** | `BattleScene.cpp` / `OverworldScene` | Voltar da batalha **recria o `OverworldScene`**: o Pepe volta para a posição inicial, o Barky continua lá e a luta pode se repetir. | **[x] Corrigido:** a batalha é empilhada via `pushScene` e desempilhada via `popScene`, preservando o estado e a posição no overworld. |
 | **BUG-05** | `BattleSystem::handleItemInput` | Sempre consome o **último** item, sem lista de seleção; qualquer item que não seja "Mt. Dew" cai no ramo dos Doritos. | Tabela de itens dirigida por dados (`ITM-001`). |
 | **BUG-06** | `BattleSystem::handleActInput` | Texto do Check hardcoded ("ATK 5 DEF 2") não bate com `Enemy("Barky", 30, 4, 2)`; os ACTs são comparados por string literal. | ACTs definidos nos dados do inimigo (`ACT-001`). |
@@ -725,7 +725,7 @@ P0 · P · GFX-008
 P0 · P · PRG-001
 - **O quê:** quando a EXP passa do limite: a linha extra "* Your LOVE increased." (paródia: "* Your VITRIOL increased.") + som de level up; HPmax/AT/DF atualizados.
 
-#### BND-010 — Game over 1:1 + furrificação `[ ]`
+#### BND-010 — Game over 1:1 + furrificação `[x]`
 P0 · G · CORE-003, FUR-004
 - **O quê:** sequência do Undertale com a reviravolta do ROTEIRO:
   1. Tudo congela; a tela fica preta, menos a alma, que fica onde estava.
@@ -775,7 +775,7 @@ P0 · P · QA-001
 
 ### OVW — Overworld
 
-#### OVW-001 — Remover o HUD do overworld `[ ]`
+#### OVW-001 — Remover o HUD do overworld `[x]`
 P0 · P · MNU-001
 - **O quê:** o Undertale não tem HUD em exploração. Apagar a barra inferior com NOME/LV/HP/G/FURRY e as dicas "[Z: Interact | B: Battle | ESC: Menu]". As informações passam para o menu C (MNU-001).
 
@@ -796,7 +796,7 @@ P0 · P · OVW-003
 P0 · M · OVW-003
 - **O quê:** colisão por eixo (já existe) + deslizar ao longo das paredes diagonais (como andar na diagonal contra a parede em 45° no Undertale). Caixa de colisão do Pepe só nos pés (ajustar a atual `{x+5, y+38, 28, 18}` ao sprite novo).
 
-#### OVW-006 — Movimento fiel do Pepe `[ ]`
+#### OVW-006 — Movimento fiel do Pepe `[x]`
 P0 · P · CORE-001
 - **O quê:** 3 px de sala por quadro, que na view 2× dá 6 px de tela por quadro = 180 px/s a 30 fps (confirmar). **Sem normalizar a diagonal** (na diagonal o Frisk anda 3 px em cada eixo). A direção do sprite segue a regra do Undertale: na diagonal, mantém a direção que já estava apertada antes. Sem corrida (D-10).
 - **Hoje:** `PLAYER_SPEED = 180 px/s` já bate em linha reta, mas a diagonal é normalizada e a escolha de direção usa o eixo dominante → trocar.
@@ -837,16 +837,16 @@ P2 · P · OVW-003
 
 ### MNU — Menu do overworld (ITEM / STAT / CELL)
 
-#### MNU-001 — Menu C `[ ]`
+#### MNU-001 — Menu C `[x]`
 P0 · M · TXT-001
 - **O quê:** C/Ctrl abre: uma caixa pequena no canto superior esquerdo com NOME, "LV 1", "HP 20/20", "G 10" e, embaixo, outra caixa com `ITEM`, `STAT`, `CELL` e a alma como cursor. Quando o Pepe está na metade de cima da tela, as caixas vão para baixo. Medidas a tirar de referência (confirmar).
 - **Aceite:** abrir/fechar com C e X; o jogo fica pausado enquanto aberto.
 
-#### MNU-002 — ITEM `[ ]`
+#### MNU-002 — ITEM `[x]`
 P0 · M · MNU-001, ITM-001
 - **O quê:** a lista de até 8 itens numa caixa grande; escolher um item abre `USE / INFO / DROP`. INFO mostra a descrição ("* \"Mountain Dew (Warm)\" - Heals 10 HP&* Tastes like regret and citrus."). DROP: "* The Duct Tape was thrown away." Equipar arma/armadura troca com a atual.
 
-#### MNU-003 — STAT `[ ]`
+#### MNU-003 — STAT `[x]`
 P0 · M · MNU-001, PRG-001
 - **O quê:** uma caixa grande no formato do Undertale:
   ```
@@ -879,7 +879,7 @@ P3 · M · ITM-004
 P0 · P · ART-031
 - **O quê:** a estrela amarela de 4 pontas em sprite, com a animação de 2 frames do Undertale. Paródia do ROTEIRO: a estrela brilhando **em cima de uma garrafa de refrigerante vintage**. Hoje é feita com 3 `DrawRectangle`.
 
-#### SAV-002 — Fluxo do save point `[ ]`
+#### SAV-002 — Fluxo do save point `[x]`
 P0 · M · TXT-007, SAV-003
 - **O quê:**
   1. Texto de determinação da sala ("* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.") + HP cheio + som de cura.
@@ -887,11 +887,11 @@ P0 · M · TXT-007, SAV-003
   3. Save: as linhas viram **amarelo**, som de save, "File saved." no lugar das opções; Z fecha.
 - **Texto por save point:** cada save tem o próprio texto de determinação (dados), que pode mudar com flags (rota Toxic Gamer: "* Determination.").
 
-#### SAV-003 — Arquivo de save `[ ]`
+#### SAV-003 — Arquivo de save `[x]`
 P0 · M · CORE-004
 - **O quê:** `%LOCALAPPDATA%/nUndertale/file0.json` com o `GameState` completo + versão do schema; escrita atômica (arquivo temporário + rename). Um slot, como no Undertale.
 
-#### SAV-004 — Continue/Reset `[ ]`
+#### SAV-004 — Continue/Reset `[x]`
 P0 · M · SAV-003, FRT-005
 - **O quê:** com save existente, o título mostra a tela de continue (FRT-005). Reset apaga o save **mas não a meta-persistência** (SAV-005).
 
@@ -899,7 +899,7 @@ P0 · M · SAV-003, FRT-005
 P2 · M · SAV-003, NAR-012
 - **O quê:** `meta.json` separado (equivalente ao `undertale.ini`): nº de resets, se já matou alguém, se já zerou alguma rota, nº de furrificações completas (D-05). Usado por falas que "lembram" (o Senpai Sans quebrando a quarta parede, a paródia do Flowey).
 
-#### SAV-006 — Recuperação de save corrompido `[ ]`
+#### SAV-006 — Recuperação de save corrompido `[x]`
 P2 · P · SAV-003
 - **O quê:** se o JSON falhar, tentar o `file0.bak`; se falhar também, avisar e começar do zero sem crashar.
 

@@ -7,6 +7,7 @@
 #include "services/IAudioService.hpp"
 #include "services/IResourceService.hpp"
 #include "services/IInputService.hpp"
+#include "services/ISaveService.hpp"
 
 namespace nundertale {
 
@@ -74,12 +75,13 @@ struct GameContext {
     IResourceService& resources;
     IInputService& input;
     SceneManager& scenes;
+    ISaveService& save;
     GameState state;
     PlayerData& player;
     bool isRunning = true;
 
-    GameContext(IAudioService& a, IResourceService& r, IInputService& i, SceneManager& s)
-        : audio(a), resources(r), input(i), scenes(s), player(state.player) {}
+    GameContext(IAudioService& a, IResourceService& r, IInputService& i, SceneManager& s, ISaveService& sv)
+        : audio(a), resources(r), input(i), scenes(s), save(sv), player(state.player) {}
 };
 
 } // namespace nundertale

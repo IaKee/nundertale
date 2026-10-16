@@ -1,5 +1,6 @@
 #include "scenes/BattleScene.hpp"
 #include "scenes/OverworldScene.hpp"
+#include "scenes/GameOverScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
@@ -21,6 +22,13 @@ void BattleScene::onEnter(GameContext& context) {
 void BattleScene::update(float dt, GameContext& context) {
     if (m_battleSystem) {
         m_battleSystem->update(dt, context);
+
+        // BND-010 & BUG-03: Transition directly to authentic GameOverScene
+        if (m_battleSystem->getState() == BattleState::Defeat) {
+            Vector2 deathPos = m_battleSystem->getSoulPosition();
+            context.scenes.changeScene(std::make_unique<GameOverScene>(deathPos), 0.0f);
+            return;
+        }
 
         if (m_battleSystem->isFinished()) {
             if (context.input.isConfirmPressed()) {
