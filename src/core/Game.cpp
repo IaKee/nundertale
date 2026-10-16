@@ -84,6 +84,9 @@ void Game::run() {
         if (IsKeyPressed(KEY_F1)) {
             s_showDebugOverlay = !s_showDebugOverlay;
         }
+        if (IsKeyPressed(KEY_F2)) {
+            m_context->debugHitboxes = !m_context->debugHitboxes;
+        }
 #endif
 
         // 1. Update services

@@ -30,6 +30,11 @@ void BattleSystem::update(float dt, GameContext& context) {
     }
 
     updateDust(dt);
+    updateSoulTrails(dt);
+
+    if (m_enemy && !m_enemy->isDead() && m_enemyShakeTimer <= 0.0f && !m_isSpared) {
+        m_enemyIdleTimer += dt;
+    }
 
     if (m_enemy) {
         if (m_enemyVisualHp > static_cast<float>(m_enemy->getHp())) {
@@ -180,6 +185,7 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
 
         if (outOfBounds) {
             m_targetCursorMoving = false;
+            m_lastPlayerAction = PlayerTurnAction::FightMiss;
             m_narratorText = "* You swung wide and missed!";
             m_lastMiss = true;
             m_lastDamage = 0;
@@ -210,11 +216,13 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
 
             // FGT-008: Hitmarker on critical hit, slice sound on normal hit
             if (dist <= 12.0f) {
+                m_lastPlayerAction = PlayerTurnAction::FightCrit;
                 context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
                 context.shake(5.0f, 0.22f); // GFX-006: Critical screen shake
                 context.flash(WHITE, 0.12f); // GFX-007: Impact flash
                 m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
             } else {
+                m_lastPlayerAction = PlayerTurnAction::FightHit;
                 context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
                 context.shake(2.0f, 0.1f);
                 m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
@@ -269,6 +277,10 @@ void BattleSystem::handleActInput(GameContext& context) {
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
         const auto& act = acts[m_subOptionIndex];
 
+        m_lastPlayerAction = PlayerTurnAction::Act;
+        m_lastActionDetail = act.id;
+        m_lastActResponse = act.response;
+
         if (act.id == "check") {
             // BUG-06 & ACT-001: Data-driven check text matching enemy instance stats
             m_narratorText = m_enemy->getCheckText();
@@ -276,6 +288,7 @@ void BattleSystem::handleActInput(GameContext& context) {
         } else {
             m_narratorText = act.text;
             m_enemySpeechBubble = act.response;
+            m_enemy->addMercy(act.mercy);
             if (act.spareable) {
                 m_enemy->setSpareable(true);
             }
@@ -330,10 +343,14 @@ void BattleSystem::handleItemInput(GameContext& context) {
         std::string item = context.player.inventory[m_subOptionIndex];
         context.player.inventory.erase(context.player.inventory.begin() + m_subOptionIndex);
 
-        // ITM-001 & BUG-05: Handle specific item data behaviors
+        m_lastPlayerAction = PlayerTurnAction::Item;
+        m_lastActionDetail = item;
+
+        // ITM-001 & ITM-005: Handle specific item data behaviors + Mountain Dew speed buff
         if (item.find("Dew") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
-            m_narratorText = "* You chugged the warm Mountain Dew!\n* You recovered 10 HP! Citrus surged!";
+            m_soulSpeedBuffTurns = 2; // ITM-005: +35% speed buff for 2 enemy turns
+            m_narratorText = "* You chugged the warm Mountain Dew!\n* You recovered 10 HP! Citrus speed surge!";
         } else if (item.find("Doritos") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
             m_narratorText = "* You devoured the stale Doritos!\n* Pure nostalgia. You recovered 6 HP!";
@@ -371,6 +388,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/selection_sound.wav", 1.0f);
             } else {
+                m_lastPlayerAction = PlayerTurnAction::MercySpareFail;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
             }
             m_state = BattleState::DialogMessage;
@@ -401,27 +419,59 @@ void BattleSystem::startEnemyTurn() {
     m_bullets.clear();
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
-    m_enemySpeechBubble = m_enemy->getRandomDialogue();
+
+    // BFL-003: Contextual dialogue based on player's action
+    std::string trigger = "";
+    if (m_lastPlayerAction == PlayerTurnAction::FightCrit) {
+        trigger = "crit";
+    } else if (m_lastPlayerAction == PlayerTurnAction::FightHit) {
+        trigger = "hit";
+    } else if (m_lastPlayerAction == PlayerTurnAction::FightMiss) {
+        trigger = "miss";
+    } else if (m_lastPlayerAction == PlayerTurnAction::Item) {
+        trigger = "item";
+    }
+
+    m_enemySpeechBubble = m_enemy->getDialogueForTrigger(trigger, m_lastActResponse);
+
+    // Reset action state for the turn
+    m_lastPlayerAction = PlayerTurnAction::None;
+    m_lastActResponse = "";
 }
 
 void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     m_enemyTurnTimer += dt;
     if (m_enemyTurnTimer >= m_enemyTurnDuration) {
         m_bullets.clear();
-        m_narratorText = "* Barky is pacing back and forth.";
+        m_soulTrails.clear();
+        if (m_soulSpeedBuffTurns > 0) {
+            m_soulSpeedBuffTurns--;
+        }
+
+        // BFL-002: Query turn flavor text from enemy pools without repeating
+        m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
         m_state = BattleState::MenuSelect;
         return;
     }
 
     // Soul movement inside dodge box (BHL-006: 4 px/frame at 30 fps = 120 px/s)
+    // ITM-005: Mountain Dew speed surge (+35%)
+    float currentSpeed = (m_soulSpeedBuffTurns > 0) ? (m_soulSpeed * 1.35f) : m_soulSpeed;
+
     Vector2 moveDir = { 0, 0 };
     if (context.input.isLeft()) moveDir.x -= 1.0f;
     if (context.input.isRight()) moveDir.x += 1.0f;
     if (context.input.isUp()) moveDir.y -= 1.0f;
     if (context.input.isDown()) moveDir.y += 1.0f;
 
-    m_soulPosition.x += moveDir.x * m_soulSpeed * dt;
-    m_soulPosition.y += moveDir.y * m_soulSpeed * dt;
+    if (moveDir.x != 0.0f || moveDir.y != 0.0f) {
+        m_soulPosition.x += moveDir.x * currentSpeed * dt;
+        m_soulPosition.y += moveDir.y * currentSpeed * dt;
+
+        if (m_soulSpeedBuffTurns > 0) {
+            m_soulTrails.push_back({ m_soulPosition, 0.55f });
+        }
+    }
 
     // Clamp inside arena with margin
     float soulPadding = 12.0f;
@@ -629,6 +679,24 @@ void BattleSystem::drawDust() const {
     }
 }
 
+void BattleSystem::updateSoulTrails(float dt) {
+    for (size_t i = 0; i < m_soulTrails.size(); ) {
+        m_soulTrails[i].alpha -= 3.5f * dt;
+        if (m_soulTrails[i].alpha <= 0.0f) {
+            m_soulTrails.erase(m_soulTrails.begin() + i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+void BattleSystem::drawSoulTrails() const {
+    for (const auto& t : m_soulTrails) {
+        Color c = Fade(COLOR_UNDERTALE_GREEN, std::clamp(t.alpha, 0.0f, 1.0f) * 0.5f);
+        drawSoul(t.pos.x, t.pos.y, c);
+    }
+}
+
 void BattleSystem::render(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
@@ -656,36 +724,55 @@ void BattleSystem::render(GameContext& context) {
         Color bodyColor = { 50, 50, 70, 255 };
         Color headColor = { 120, 120, 140, 255 };
         Color earColor  = { 90, 90, 110, 255 };
+        Color tailColor = { 70, 70, 90, 255 };
 
-        if (m_isSpared && m_state == BattleState::Victory) {
-            // Translucent when spared
-            bodyColor.a = 70;
-            headColor.a = 70;
-            earColor.a  = 70;
+        // BUI-011: Spared enemy stays translucent (~50% opacity) and pauses idle
+        if (m_isSpared) {
+            bodyColor.a = 120;
+            headColor.a = 120;
+            earColor.a  = 120;
+            tailColor.a = 120;
         }
 
-        // Body
-        DrawRectangle(enemyCenterX - 35, baselineY - 80, 70, 70, bodyColor);
-        // Head
-        DrawCircle(enemyCenterX, baselineY - 110, 32, headColor);
-        // Ears
+        // BUI-010: Idle animation (tail sway, ear twitch, breathing bob)
+        float breathBob = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 2.8f) * 2.0f : 0.0f;
+        float earSway   = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 3.5f) * 2.5f : 0.0f;
+        float tailSway  = (m_enemyShakeTimer <= 0.0f && !m_isSpared) ? std::sin(m_enemyIdleTimer * 4.2f) * 12.0f : 0.0f;
+
+        // Tail behind body
         DrawTriangle(
-            { (float)enemyCenterX - 30, (float)baselineY - 135 },
-            { (float)enemyCenterX - 10, (float)baselineY - 140 },
-            { (float)enemyCenterX - 20, (float)baselineY - 165 },
+            { (float)enemyCenterX - 28.0f, (float)baselineY - 50.0f + breathBob },
+            { (float)enemyCenterX - 36.0f, (float)baselineY - 26.0f + breathBob },
+            { (float)enemyCenterX - 56.0f + tailSway, (float)baselineY - 58.0f + breathBob },
+            tailColor
+        );
+
+        // Body with breathing bob
+        DrawRectangle(enemyCenterX - 35, baselineY - 80 + (int)breathBob, 70, 70 - (int)breathBob, bodyColor);
+
+        // Head with breathing bob
+        int headCenterY = baselineY - 110 + (int)breathBob;
+        DrawCircle(enemyCenterX, headCenterY, 32, headColor);
+
+        // Ears with subtle twitch/sway
+        DrawTriangle(
+            { (float)enemyCenterX - 30, (float)headCenterY - 25 },
+            { (float)enemyCenterX - 10, (float)headCenterY - 30 },
+            { (float)enemyCenterX - 20 + earSway, (float)headCenterY - 55 },
             earColor
         );
         DrawTriangle(
-            { (float)enemyCenterX + 10, (float)baselineY - 140 },
-            { (float)enemyCenterX + 30, (float)baselineY - 135 },
-            { (float)enemyCenterX + 20, (float)baselineY - 165 },
+            { (float)enemyCenterX + 10, (float)headCenterY - 30 },
+            { (float)enemyCenterX + 30, (float)headCenterY - 25 },
+            { (float)enemyCenterX + 20 - earSway, (float)headCenterY - 55 },
             earColor
         );
+
         // Eyes
-        DrawCircle(enemyCenterX - 10, baselineY - 114, 5, WHITE);
-        DrawCircle(enemyCenterX + 10, baselineY - 114, 5, WHITE);
-        DrawCircle(enemyCenterX - 10, baselineY - 114, 2, BLACK);
-        DrawCircle(enemyCenterX + 10, baselineY - 114, 2, BLACK);
+        DrawCircle(enemyCenterX - 10, headCenterY - 4, 5, m_isSpared ? Fade(WHITE, 0.5f) : WHITE);
+        DrawCircle(enemyCenterX + 10, headCenterY - 4, 5, m_isSpared ? Fade(WHITE, 0.5f) : WHITE);
+        DrawCircle(enemyCenterX - 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
+        DrawCircle(enemyCenterX + 10, headCenterY - 4, 2, m_isSpared ? Fade(BLACK, 0.5f) : BLACK);
     }
 
     // FGT-004: Slash Animation
@@ -730,22 +817,28 @@ void BattleSystem::render(GameContext& context) {
     // Dust particles
     drawDust();
 
-    // Enemy Speech Bubble during enemy turn
+    // TXT-008: Enemy Speech Bubble with auto-sizing and tail pointer
     if (m_state == BattleState::EnemyTurn && !m_enemySpeechBubble.empty()) {
-        Rectangle bubbleRect = { (float)enemyCenterX + 45, (float)baselineY - 160, 180, 52 };
+        float textW = context.resources.measureTextWidth(fontSmall, m_enemySpeechBubble, 16, 1.0f);
+        float bubbleW = std::clamp(textW + 24.0f, 100.0f, 240.0f);
+        float bubbleH = 48.0f;
+        if (textW > 220.0f) {
+            bubbleH = 64.0f;
+        }
+        Rectangle bubbleRect = { (float)enemyCenterX + 45.0f, (float)baselineY - 165.0f, bubbleW, bubbleH };
+
         DrawRectangleRec(bubbleRect, WHITE);
         DrawRectangleLinesEx(bubbleRect, 2.0f, BLACK);
 
-        DrawTriangle(
-            { bubbleRect.x, bubbleRect.y + 20 },
-            { bubbleRect.x, bubbleRect.y + 35 },
-            { bubbleRect.x - 12, bubbleRect.y + 28 },
-            WHITE
-        );
-        DrawLineEx({ bubbleRect.x, bubbleRect.y + 20 }, { bubbleRect.x - 12, bubbleRect.y + 28 }, 2.0f, BLACK);
-        DrawLineEx({ bubbleRect.x, bubbleRect.y + 35 }, { bubbleRect.x - 12, bubbleRect.y + 28 }, 2.0f, BLACK);
+        // Tail pointer pointing toward Barky's head
+        Vector2 p1 = { bubbleRect.x, bubbleRect.y + 16.0f };
+        Vector2 p2 = { bubbleRect.x, bubbleRect.y + 32.0f };
+        Vector2 p3 = { bubbleRect.x - 14.0f, bubbleRect.y + 24.0f };
+        DrawTriangle(p1, p2, p3, WHITE);
+        DrawLineEx(p1, p3, 2.0f, BLACK);
+        DrawLineEx(p2, p3, 2.0f, BLACK);
 
-        context.resources.drawText(fontSmall, m_enemySpeechBubble, { bubbleRect.x + 8, bubbleRect.y + 14 }, 16, BLACK, 1.0f);
+        context.resources.drawText(fontSmall, m_enemySpeechBubble, { bubbleRect.x + 10.0f, bubbleRect.y + 14.0f }, 16, BLACK, 1.0f);
     }
 
     // 3. Battle Box (BUI-001: 5px solid white border, black interior)
@@ -765,6 +858,9 @@ void BattleSystem::render(GameContext& context) {
                 b.render();
             }
         EndScissorMode();
+
+        // ITM-005: Draw speed buff soul trails
+        drawSoulTrails();
 
         // Soul Heart inside arena (flashing when invulnerable)
         if (m_invulnTimer <= 0.0f || (int)(GetTime() * 15.0) % 2 == 0) {
@@ -886,6 +982,17 @@ void BattleSystem::render(GameContext& context) {
         float legCycle = std::sin(m_fleeTimer * 22.0f);
         DrawLineEx({ m_fleeSoulX - 4.0f, m_fleeSoulY + 7.0f }, { m_fleeSoulX - 4.0f + legCycle * 6.0f, m_fleeSoulY + 16.0f }, 2.0f, WHITE);
         DrawLineEx({ m_fleeSoulX + 4.0f, m_fleeSoulY + 7.0f }, { m_fleeSoulX + 4.0f - legCycle * 6.0f, m_fleeSoulY + 16.0f }, 2.0f, WHITE);
+    }
+
+    // 8. Hitbox Debug Overlay (QA-002)
+    if (context.debugHitboxes) {
+        if (m_state == BattleState::EnemyTurn) {
+            Rectangle soulHb = { m_soulPosition.x - 4.0f, m_soulPosition.y - 4.0f, 8.0f, 8.0f };
+            DrawRectangleLinesEx(soulHb, 1.0f, RED);
+            for (const auto& b : m_bullets) {
+                DrawRectangleLinesEx(b.getBounds(), 1.0f, COLOR_UNDERTALE_GREEN);
+            }
+        }
     }
 }
 

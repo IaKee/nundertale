@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 #include <raylib.h>
 
 namespace nundertale {
@@ -18,88 +20,84 @@ struct ActDef {
 
 class Enemy {
 public:
-    Enemy(const std::string& name, int maxHp, int atk, int def)
-        : m_name(name), m_maxHp(maxHp), m_hp(maxHp), m_atk(atk), m_def(def),
-          m_checkFlavor("The self-proclaimed Alpha Wolf of the Ruins.") {
-        initDefaultActs();
-    }
+    Enemy(const std::string& name, int maxHp, int atk, int def);
 
     std::string getName() const { return m_name; }
     int getHp() const { return m_hp; }
     int getMaxHp() const { return m_maxHp; }
     int getAtk() const { return m_atk; }
     int getDef() const { return m_def; }
+    int getExp() const { return m_exp; }
+    int getGold() const { return m_gold; }
+    int getMercy() const { return m_mercy; }
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
     void setSpareable(bool s) { m_spareable = s; }
 
-    void takeDamage(int dmg) {
-        m_hp -= dmg;
-        if (m_hp < 0) m_hp = 0;
-    }
+    void addMercy(int amount);
+    void takeDamage(int dmg);
 
     const std::vector<ActDef>& getActs() const { return m_acts; }
     void setActs(const std::vector<ActDef>& acts) { m_acts = acts; }
     void addAct(const ActDef& act) { m_acts.push_back(act); }
 
-    std::vector<std::string> getActOptions() const {
-        std::vector<std::string> options;
-        for (const auto& a : m_acts) {
-            options.push_back(a.label);
-        }
-        return options;
-    }
-
-    void setActOptions(const std::vector<std::string>& opts) {
-        // Compatibility helper
-        m_acts.clear();
-        for (const auto& opt : opts) {
-            m_acts.push_back({ opt, opt, "* You checked " + opt, "", false, false, 0 });
-        }
-    }
+    std::vector<std::string> getActOptions() const;
+    void setActOptions(const std::vector<std::string>& opts);
 
     std::string getCheckFlavor() const { return m_checkFlavor; }
     void setCheckFlavor(const std::string& flavor) { m_checkFlavor = flavor; }
+    std::string getCheckText() const;
 
-    std::string getCheckText() const {
-        return "* " + m_name + " - ATK " + std::to_string(m_atk) + " DEF " + std::to_string(m_def) + "\n* " + m_checkFlavor;
-    }
+    // BFL-002: Turn flavor text based on status & player actions
+    std::string getFlavorText(const std::string& lastActionFlag = "");
+    void setFlavorPools(const std::vector<std::string>& def,
+                        const std::vector<std::string>& lowHp,
+                        const std::vector<std::string>& spareable);
 
-    std::string getRandomDialogue() const {
-        if (m_dialogues.empty()) return "...";
-        int idx = GetRandomValue(0, (int)m_dialogues.size() - 1);
-        return m_dialogues[idx];
-    }
+    // BFL-003: Contextual dialogue based on triggers
+    std::string getRandomDialogue() const;
+    std::string getDialogueForTrigger(const std::string& trigger, const std::string& actResponse = "");
+    void setDialogues(const std::vector<std::string>& lines);
+    void setDialogueTriggers(const std::vector<std::string>& def,
+                             const std::vector<std::string>& afterHit,
+                             const std::vector<std::string>& crit,
+                             const std::vector<std::string>& miss,
+                             const std::vector<std::string>& item);
 
-    void setDialogues(const std::vector<std::string>& lines) {
-        m_dialogues = lines;
-    }
+    // BFL-005 & BFL-006: Data-driven enemy loader
+    static std::unique_ptr<Enemy> loadFromJson(const std::string& filepath);
 
 private:
-    void initDefaultActs() {
-        m_acts = {
-            { "check", "Check", "", "", false, false, 0 },
-            { "cringe_check", "Cringe Check",
-              "* You pointed out the visible zipper on Barky's fursuit!\n* Barky blushes furiously!",
-              "B-baka! Stop looking at the zipper! It's a ventilation slot!", false, false, 50 },
-            { "offer_dew", "Offer Mountain Dew",
-              "* You offered Barky a can of warm Mountain Dew.\n* His eyes widen with pure gamer ecstasy! Barky can be SPARED!",
-              "Is that... Citrus Blast 2012 edition?! You're alright, gamer.", true, false, 100 },
-            { "debate_lore", "Debate Anime Lore",
-              "* You challenged Barky on obscure anime filler arcs.\n* He gets overwhelmed thinking about it!",
-              "Wait, season 4 episode 12 was canon?! That can't be!", false, true, 20 }
-        };
-    }
+    void initDefaultActs();
+    void initDefaultFlavors();
+    void initDefaultDialogues();
 
     std::string m_name;
     int m_maxHp;
     int m_hp;
     int m_atk;
     int m_def;
+    int m_exp = 20;
+    int m_gold = 10;
+    int m_mercy = 0;
+    int m_mercyThreshold = 100;
     std::string m_checkFlavor;
     bool m_spareable = false;
+
     std::vector<ActDef> m_acts;
-    std::vector<std::string> m_dialogues{ "OwO what's this?!", "You cannot defeat my fursona!", "*Awoo noises*" };
+
+    // Flavor pools (BFL-002)
+    std::vector<std::string> m_defaultFlavor;
+    std::vector<std::string> m_lowHpFlavor;
+    std::vector<std::string> m_spareableFlavor;
+    int m_lastFlavorIndex = -1;
+
+    // Dialogue pools (BFL-003)
+    std::vector<std::string> m_dialoguesDefault;
+    std::vector<std::string> m_dialoguesAfterHit;
+    std::vector<std::string> m_dialoguesCrit;
+    std::vector<std::string> m_dialoguesMiss;
+    std::vector<std::string> m_dialoguesItem;
 };
 
 } // namespace nundertale

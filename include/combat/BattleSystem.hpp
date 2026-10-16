@@ -118,6 +118,33 @@ private:
         Color color;
     };
     std::vector<DustParticle> m_dustParticles;
+
+    // BFL-002 & BFL-003: Turn action tracking & contextual dialogue triggers
+    enum class PlayerTurnAction {
+        None,
+        FightHit,
+        FightCrit,
+        FightMiss,
+        Act,
+        Item,
+        MercySpareFail
+    };
+    PlayerTurnAction m_lastPlayerAction = PlayerTurnAction::None;
+    std::string m_lastActionDetail;
+    std::string m_lastActResponse;
+
+    // BUI-010: Enemy idle animation
+    float m_enemyIdleTimer = 0.0f;
+
+    // ITM-005: Mountain Dew speed buff & soul trail
+    int m_soulSpeedBuffTurns = 0;
+    struct SoulTrail {
+        Vector2 pos;
+        float alpha;
+    };
+    std::vector<SoulTrail> m_soulTrails;
+    void updateSoulTrails(float dt);
+    void drawSoulTrails() const;
 };
 
 } // namespace nundertale

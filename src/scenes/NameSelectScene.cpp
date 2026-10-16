@@ -233,12 +233,11 @@ void NameSelectScene::render(GameContext& context) {
                 bool isSelected = (m_cursorY == r && m_cursorX == c);
                 Color letterColor = isSelected ? COLOR_UNDERTALE_YELLOW : WHITE;
 
-                // Subtle authentic jitter from original nundertale.c
-                int jitter = (GetRandomValue(-1, 1));
+                // Subtle authentic jitter via drawShakyText (GFX-009)
                 const char* label = MATRIX[r][c];
-                Vector2 charPos = { (float)(startX + c * spacingX + jitter), (float)(startY + r * spacingY + jitter) };
+                Vector2 charPos = { (float)(startX + c * spacingX), (float)(startY + r * spacingY) };
 
-                context.resources.drawText(font8Bit, label, charPos, 24, letterColor, 1.0f);
+                context.resources.drawShakyText(font8Bit, label, charPos, 24, letterColor, 1.2f, 1.0f);
 
                 if (isSelected) {
                     DrawRectangleLines((int)charPos.x - 6, (int)charPos.y - 4, 38, 28, COLOR_UNDERTALE_YELLOW);
