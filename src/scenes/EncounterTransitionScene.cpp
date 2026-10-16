@@ -12,17 +12,26 @@ EncounterTransitionScene::EncounterTransitionScene(Vector2 playerPos, std::uniqu
 
 void EncounterTransitionScene::onEnter(GameContext& context) {
     context.audio.stopMusic();
-    m_phase = Phase::Flash;
+    m_phase = Phase::Alert;
     m_timer = 0.0f;
     m_flashStep = 0;
-    m_soulVisible = true;
-    context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+    m_soulVisible = false;
+    context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.9f);
 }
 
 void EncounterTransitionScene::update(float dt, GameContext& context) {
     m_timer += dt;
 
-    if (m_phase == Phase::Flash) {
+    if (m_phase == Phase::Alert) {
+        // ENC-001: Exclamation bubble stays for ~15 frames (~0.45s)
+        if (m_timer >= 0.45f) {
+            m_phase = Phase::Flash;
+            m_timer = 0.0f;
+            m_flashStep = 0;
+            m_soulVisible = true;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+        }
+    } else if (m_phase == Phase::Flash) {
         if (m_timer >= 0.08f) {
             m_timer = 0.0f;
             m_flashStep++;
@@ -70,8 +79,38 @@ void EncounterTransitionScene::drawSoul(float x, float y) const {
 void EncounterTransitionScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
-    if (m_soulVisible) {
-        drawSoul(m_currentPos.x, m_currentPos.y);
+    if (m_phase == Phase::Alert) {
+        // Draw player character (Pepe)
+        Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
+        Vector2 pPos = { m_startPos.x - 14.0f, m_startPos.y - 22.0f };
+        Rectangle src = { 1, 1, 19, 29 };
+        Rectangle dest = { pPos.x, pPos.y, 38, 58 };
+        DrawTexturePro(pepeTex, src, dest, { 0, 0 }, 0.0f, WHITE);
+
+        // Draw "!" exclamation balloon above player's head (ENC-001)
+        float balloonX = pPos.x + 9.0f;
+        float balloonY = pPos.y - 30.0f;
+        Rectangle bRect = { balloonX, balloonY, 20.0f, 22.0f };
+        DrawRectangleRec(bRect, WHITE);
+        DrawRectangleLinesEx(bRect, 2.0f, BLACK);
+
+        // Little speech tail pointing down to head
+        DrawTriangle(
+            { balloonX + 6.0f, balloonY + 22.0f },
+            { balloonX + 14.0f, balloonY + 22.0f },
+            { balloonX + 10.0f, balloonY + 28.0f },
+            WHITE
+        );
+        DrawLineEx({ balloonX + 6.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
+        DrawLineEx({ balloonX + 14.0f, balloonY + 22.0f }, { balloonX + 10.0f, balloonY + 28.0f }, 2.0f, BLACK);
+
+        // "!" mark
+        DrawRectangle((int)balloonX + 8, (int)balloonY + 4, 4, 9, BLACK);
+        DrawRectangle((int)balloonX + 8, (int)balloonY + 15, 4, 3, BLACK);
+    } else {
+        if (m_soulVisible) {
+            drawSoul(m_currentPos.x, m_currentPos.y);
+        }
     }
 }
 

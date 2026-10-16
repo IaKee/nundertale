@@ -22,6 +22,7 @@ private:
     std::unique_ptr<IScene> m_targetScene;
 
     enum class Phase {
+        Alert,     // ENC-001: "!" alert bubble above player's head
         Flash,     // 3 beeps with soul flashing (ENC-002)
         Slide,     // Soul slides down to FIGHT button
         Complete

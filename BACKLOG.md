@@ -744,7 +744,7 @@ P2 · M · BND-010, FUR-001
 
 ### ENC — Encontros e transição para batalha
 
-#### ENC-001 — "!" de alerta `[ ]`
+#### ENC-001 — "!" de alerta `[x]`
 P1 · P · ART-030
 - **O quê:** nos encontros scriptados, um balão "!" aparece sobre a cabeça do Pepe por ~15 quadros antes da transição (com som).
 
