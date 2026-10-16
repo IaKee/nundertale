@@ -1,0 +1,102 @@
+{
+  "id": "barky",
+  "name": "Barky",
+  "hp": 30,
+  "maxHp": 30,
+  "atk": 4,
+  "def": 2,
+  "exp": 20,
+  "gold": 10,
+  "sprite": "barky",
+  "offset": [0, 0],
+  "voice": "barky",
+  "check": "* BARKY - ATK 4 DEF 2\n* The self-proclaimed Alpha Wolf of the Ruins.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "* BARKY - ATK 4 DEF 2\n* The self-proclaimed Alpha Wolf of the Ruins.",
+      "effects": {}
+    },
+    {
+      "id": "cringe_check",
+      "label": "Cringe Check",
+      "text": "* You point at the obvious zipper on Barky's fursuit.\n* Barky blushes furiously!",
+      "effects": {
+        "mercy": 50,
+        "setFlag": "battle.barky.blushed"
+      },
+      "response": "B-baka! Stop looking at the zipper! It's just a costume flaw!"
+    },
+    {
+      "id": "offer_dew",
+      "label": "Offer Dew",
+      "text": "* You offer Barky a can of warm Mountain Dew.\n* His eyes widen with pure gamer ecstasy!",
+      "effects": {
+        "mercy": 100,
+        "spareable": true
+      },
+      "response": "Is that... Citrus Blast 2012 edition?! You're alright, gamer."
+    },
+    {
+      "id": "debate_lore",
+      "label": "Debate Lore",
+      "text": "* You challenge Barky on obscure anime filler arcs.\n* He gets overwhelmed thinking about it!",
+      "effects": {
+        "skipAttack": true
+      },
+      "response": "Wait, season 4 episode 12 was canon?! That can't be!"
+    }
+  ],
+  "spareWhen": {
+    "mercy": 100
+  },
+  "flavor": {
+    "default": [
+      "* Barky growls while adjusting his plastic wolf tail.",
+      "* The scent of cheap synthetic fur fills the air.",
+      "* Barky is practicing his menacing anime smirk."
+    ],
+    "lowHp": [
+      "* Barky's ears are drooping. He looks tired.",
+      "* Barky is panting and re-evaluating his life choices."
+    ],
+    "spareable": [
+      "* Barky is wagging his tail happily. He doesn't want to fight.",
+      "* Barky seems open to joining your Discord server."
+    ]
+  },
+  "dialogue": {
+    "default": [
+      "Awoooo! Fear the shadow fang pack!",
+      "You dare challenge an alpha gamer?",
+      "Rawr x3 means 'delete your save file' in wolf!"
+    ],
+    "afterHit": [
+      "Ouch! Watch the fursuit seams, man!",
+      "Hey! That cost 800 dollars on Etsy!"
+    ]
+  },
+  "patterns": [
+    {
+      "id": "uwu_rain",
+      "weight": 2,
+      "params": {
+        "speed": 3.0,
+        "damage": 3,
+        "furry": 6
+      }
+    },
+    {
+      "id": "dew_bounce",
+      "weight": 1,
+      "params": {
+        "cans": 3,
+        "damage": 4,
+        "furry": 4
+      }
+    }
+  ],
+  "canFlee": false,
+  "music": "boss_barky"
+}
