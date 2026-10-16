@@ -212,17 +212,17 @@ Cada decisão tem uma **recomendação**. Registrar a escolha aqui (e no `ROTEIR
 | **BUG-02** | `src/combat/BattleSystem.cpp` (estado `DialogMessage`) | Se o inimigo está poupável depois de um ACT, apertar Z **vence a luta sozinho**, sem usar MERCY → Spare. | **[x] Corrigido:** `DialogMessage` agora só termina a batalha se o inimigo morreu ou foi poupado de fato via MERCY (`m_isSpared`). |
 | **BUG-03** | `src/scenes/BattleScene.cpp` | A derrota (`Defeat`) volta para o `OverworldScene` com HP 0; não há game over. | **[x] Corrigido:** transição direta para `GameOverScene` com quebra da alma, determinação e recarregamento do save (`BND-010`). |
 | **BUG-04** | `BattleScene.cpp` / `OverworldScene` | Voltar da batalha **recria o `OverworldScene`**: o Pepe volta para a posição inicial, o Barky continua lá e a luta pode se repetir. | **[x] Corrigido:** a batalha é empilhada via `pushScene` e desempilhada via `popScene`, preservando o estado e a posição no overworld. |
-| **BUG-05** | `BattleSystem::handleItemInput` | Sempre consome o **último** item, sem lista de seleção; qualquer item que não seja "Mt. Dew" cai no ramo dos Doritos. | Tabela de itens dirigida por dados (`ITM-001`). |
-| **BUG-06** | `BattleSystem::handleActInput` | Texto do Check hardcoded ("ATK 5 DEF 2") não bate com `Enemy("Barky", 30, 4, 2)`; os ACTs são comparados por string literal. | ACTs definidos nos dados do inimigo (`ACT-001`). |
+| **BUG-05** | `BattleSystem::handleItemInput` | Sempre consome o **último** item, sem lista de seleção; qualquer item que não seja "Mt. Dew" cai no ramo dos Doritos. | **[x] Corrigido:** menu ITEM 2 colunas × 2 linhas com paginação (`PAGE 1/2`), navegação em grade e efeitos por item (`ITM-001`, `ITM-002`). |
+| **BUG-06** | `BattleSystem::handleActInput` | Texto do Check hardcoded ("ATK 5 DEF 2") não bate com `Enemy("Barky", 30, 4, 2)`; os ACTs são comparados por string literal. | **[x] Corrigido:** ACTs dirigidos por dados do inimigo (`ActDef`), Check com stats reais da instância (`ACT-001`, `ACT-002`). |
 | **BUG-07** | `BattleSystem::updateEnemyTurn` | Dano fixo de 3 e +8% de furry; `m_atk`/`m_def` do inimigo nunca são usados. | **[x] Corrigido:** dano por bala + AT do inimigo − DF do jogador (`BHL-005`). |
 | **BUG-08** | `BattleSystem::handleFightTargetInput` | Usa `GetFrameTime()` em vez do `dt` recebido. | **[x] Corrigido:** recebe `dt` fixo da lógica de 30 Hz (`CORE-001`). |
-| **BUG-09** | `BattleSystem::render` | O texto do narrador não quebra linha e vaza da caixa (visível no print). | `TXT-002`. |
+| **BUG-09** | `BattleSystem::render` | O texto do narrador não quebra linha e vaza da caixa (visível no print). | **[x] Corrigido:** quebra automática de linha com recuo deslocado (hanging indent) para "* " (`TXT-002`). |
 | **BUG-10** | `include/combat/Bullet.hpp` | A colisão usa um AABB pelo `radius` até para a bala de texto "UWU" (que é bem maior); as balas não são removidas ao sair da tela e são desenhadas fora da caixa. | **[x] Corrigido:** hitboxes específicas por tipo (UwU, SodaCan, Bone) + recorte (scissor) no interior da caixa + culling de saída (`BHL-002`, `BHL-003`). |
 | **BUG-11** | `src/ui/DialogBox.cpp` | **Z completa o texto** durante a digitação. No Undertale, Z só avança depois que a página termina; **X** é que pula. | **[x] Corrigido:** apenas X (Cancel) pula a digitação; Z avança páginas completas (`TXT-004`). |
 | **BUG-12** | `BattleSystem::render` (HUD) | A barra de HP fica fixa em x=320 e se sobrepõe ao texto se o nome for comprido. | **[x] Corrigido:** layout 1:1 nas posições medidas (seção 2.1) com barra proporcional (`BUI-005`). |
 | **BUG-13** | `src/services/AudioService.cpp` | O volume mestre é aplicado duas vezes (`SetMasterVolume` + multiplicação em `playSound`). | **[x] Corrigido:** removida multiplicação dupla em `playSound`. |
 | **BUG-14** | `OverworldScene::update` | ESC volta ao título na hora, sem confirmação, e perde o progresso. | **[x] Corrigido:** removido retorno imediato; segurar ESC por 1s sai do jogo globalmente com feedback visual (`CORE-006`). |
-| **BUG-15** | `ResourceService::getFont` | As fontes são carregadas num tamanho e desenhadas em outro (ex.: carrega 22 e desenha 20), o que deixa os pixels irregulares com filtro POINT. | `GFX-003`. |
+| **BUG-15** | `ResourceService::getFont` | As fontes são carregadas num tamanho e desenhadas em outro (ex.: carrega 22 e desenha 20), o que deixa os pixels irregulares com filtro POINT. | **[x] Corrigido:** desenho em tamanho nativo carregado (`baseSize`) eliminando distorção com filtro POINT (`GFX-003`). |
 | **BUG-16** | `BattleSystem` | EXP é ganha mas o LV nunca sobe; o gold de spare (+10) e de kill (+15) está hardcoded. | **[x] Corrigido:** tabela oficial de LV/EXP adicionada; aumento de VITRIOL, HP recalculado e cura no level up (`PRG-001`). |
 | **BUG-17** | `BattleSystem::handleFightTargetInput` | O cursor de ataque sempre começa na esquerda. No Undertale, o lado é aleatório. | **[x] Corrigido:** entrada aleatória pela esquerda ou direita com velocidade direcional correspondente (`FGT-002`). |
 
@@ -347,7 +347,7 @@ P0 · M · —
 - **Regra:** desenhar sempre com escala inteira (2× por padrão) e posição arredondada para inteiro.
 - **Aceite:** Pepe, a alma, as balas e o Barky saem de spritesheets; nenhuma primitiva desenha personagem.
 
-#### GFX-003 — Fontes em tamanho nativo e escala inteira `[ ]`
+#### GFX-003 — Fontes em tamanho nativo e escala inteira `[x]`
 P0 · M · BUG-15
 - **O quê:** carregar cada fonte no tamanho de pixel nativo (ex.: DTM Mono 16 px), renderizar a 2× (32 px) sem filtro. Melhor ainda: bitmap fonts (`.fnt` BMFont ou atlas PNG) para HUD, dano e botões. A API `ResourceService::drawText` recebe `FontId` + escala inteira, nunca tamanho arbitrário.
 - **Aceite:** o texto "* Barky blocked your path!" tem glifos com pixels todos do mesmo tamanho (2×2), igual ao print de referência.
@@ -394,7 +394,7 @@ P0 · G · GFX-003
   - `{shake}`/`{/shake}` texto tremido
 - **Aceite:** o renderer usado no overworld, na batalha, nas bolhas e no save é o mesmo.
 
-#### TXT-002 — Quebra de linha automática com recuo deslocado `[ ]`
+#### TXT-002 — Quebra de linha automática com recuo deslocado `[x]`
 P0 · M · TXT-001
 - **O quê:** quebrar por largura em pixels da área útil; quando a linha começa com "* ", as linhas seguintes recuam até a coluna depois de "* " (ver o print: "pick on you!" alinhado com "Loox").
 - **Aceite:** nenhum texto passa da borda da caixa; o recuo bate com o print de referência.
@@ -425,7 +425,7 @@ P0 · M · TXT-001
 - **O quê:** um sprite de bolha branca com rabicho (9-slice), texto preto em fonte pequena, posicionada à direita do inimigo que fala, tamanho automático pelo texto, digitação com a voz do inimigo, Z avança e fecha.
 - **Onde:** substitui o retângulo desenhado em `BattleSystem::render`.
 
-#### TXT-009 — Texto "Check" no padrão do Undertale `[ ]`
+#### TXT-009 — Texto "Check" no padrão do Undertale `[x]`
 P1 · P · ACT-001
 - **O quê:** formato `* BARKY - ATK 4 DEF 2&* Description...`, com o nome em maiúsculas e ATK/DEF lidos dos dados.
 
@@ -576,12 +576,12 @@ P2 · P · FGT-004
 
 ### ACT — Batalha: ACT
 
-#### ACT-001 — ACTs definidos por inimigo nos dados `[ ]`
+#### ACT-001 — ACTs definidos por inimigo nos dados `[x]`
 P0 · M · BFL-005
 - **O quê:** `acts: [{ id, label, text, effects: { mercy:+N, setFlag, spareable, heal, furry:-N }, requires?, responseDialogue? }]`. "Check" é sempre o primeiro e automático.
 - **Aceite:** adicionar um ACT novo ao Barky não exige recompilar.
 
-#### ACT-002 — ACTs do Barky conforme o ROTEIRO `[ ]`
+#### ACT-002 — ACTs do Barky conforme o ROTEIRO `[x]`
 P0 · P · ACT-001, NAR-002
 - **O quê:** `Check`, `Cringe Check` (aponta o zíper → resposta "b-baka!"), `Offer Mountain Dew` (deixa poupável → "citrus blast flavor?!"), `Debate Anime Lore` (confunde, pula o ataque dele?), `Laser Pointer` (ROTEIRO: "fica desorientado com laser vermelho"). Definir quais combinações deixam o nome amarelo (`D-06`/NAR-002).
 
@@ -597,16 +597,16 @@ P3 · M · BFL-004
 
 ### ITM — Batalha: ITEM
 
-#### ITM-001 — Base de itens dirigida por dados `[ ]`
+#### ITM-001 — Base de itens dirigida por dados `[x]`
 P0 · M · REPO-007
 - **O quê:** `data/items.json`: `{ id, name, shortName (≤ 9 caracteres, nome de batalha), type: consumable|weapon|armor|key, heal, at, df, furry, speedBuff, info, useText, sellPrice, buyPrice }`.
 - **Itens do ROTEIRO:** `Mountain Dew (Warm)` (+10 HP e velocidade temporária), `Stale Doritos` (+6 HP), `Duct Tape` (−15% furry), arma inicial `Frayed USB Optical Mouse` (≈ Stick), armadura inicial `One-Sided Broken Gaming Headset` (≈ Bandage).
 
-#### ITM-002 — Menu de itens na batalha `[ ]`
+#### ITM-002 — Menu de itens na batalha `[x]`
 P0 · M · ITM-001, BUI-008
 - **O quê:** 2 colunas × 2 linhas por página, "PAGE 1"/"PAGE 2" no canto inferior direito da caixa, esquerda/direita troca de coluna e de página, Z usa, X volta.
 
-#### ITM-003 — Textos de uso no padrão Undertale `[ ]`
+#### ITM-003 — Textos de uso no padrão Undertale `[x]`
 P0 · P · ITM-001
 - **O quê:** "* You drank the Mountain Dew.&* You recovered 10 HP!" / "* Your HP was maxed out." com o som de cura. Usar um item **gasta o turno** (o inimigo ataca em seguida).
 
@@ -748,7 +748,7 @@ P2 · M · BND-010, FUR-001
 P1 · P · ART-030
 - **O quê:** nos encontros scriptados, um balão "!" aparece sobre a cabeça do Pepe por ~15 quadros antes da transição (com som).
 
-#### ENC-002 — Transição de encontro 1:1 `[ ]`
+#### ENC-002 — Transição de encontro 1:1 `[x]`
 P0 · M · CORE-003, BUI-007
 - **O quê:** sequência exata:
   1. A música do overworld para.

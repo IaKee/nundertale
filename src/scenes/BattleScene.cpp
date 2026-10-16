@@ -10,7 +10,6 @@ namespace nundertale {
 
 BattleScene::BattleScene() {
     auto barky = std::make_unique<Enemy>("Barky", 30, 4, 2);
-    barky->setActOptions({ "Check", "Cringe Check", "Offer Mountain Dew" });
     barky->setDialogues({ "Awoo! You can't out-fur me!", "Is that... Mountain Dew?!", "Notice me senpai!", "*Aggressive tail wagging*" });
     m_battleSystem = std::make_unique<BattleSystem>(std::move(barky));
 }

@@ -1,0 +1,81 @@
+#include "scenes/EncounterTransitionScene.hpp"
+#include "core/GameContext.hpp"
+#include "core/Constants.hpp"
+#include "core/SceneManager.hpp"
+
+namespace nundertale {
+
+EncounterTransitionScene::EncounterTransitionScene(Vector2 playerPos, std::unique_ptr<IScene> targetScene)
+    : m_startPos({ playerPos.x + 14.0f, playerPos.y + 22.0f }),
+      m_currentPos(m_startPos),
+      m_targetScene(std::move(targetScene)) {}
+
+void EncounterTransitionScene::onEnter(GameContext& context) {
+    context.audio.stopMusic();
+    m_phase = Phase::Flash;
+    m_timer = 0.0f;
+    m_flashStep = 0;
+    m_soulVisible = true;
+    context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+}
+
+void EncounterTransitionScene::update(float dt, GameContext& context) {
+    m_timer += dt;
+
+    if (m_phase == Phase::Flash) {
+        if (m_timer >= 0.08f) {
+            m_timer = 0.0f;
+            m_flashStep++;
+            m_soulVisible = (m_flashStep % 2 == 0);
+
+            if (m_soulVisible) {
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.9f);
+            }
+
+            if (m_flashStep >= 6) {
+                m_phase = Phase::Slide;
+                m_timer = 0.0f;
+                m_soulVisible = true;
+                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.6f);
+            }
+        }
+    } else if (m_phase == Phase::Slide) {
+        float t = m_timer / 0.35f;
+        if (t >= 1.0f) {
+            t = 1.0f;
+            m_phase = Phase::Complete;
+            // Pop transition and launch battle scene (ENC-002)
+            auto battle = std::move(m_targetScene);
+            context.scenes.popScene(context);
+            context.scenes.pushScene(std::move(battle), context);
+            return;
+        }
+
+        // Ease-in quadratic slide down to FIGHT button
+        float ease = t * t;
+        m_currentPos.x = m_startPos.x + (m_targetPos.x - m_startPos.x) * ease;
+        m_currentPos.y = m_startPos.y + (m_targetPos.y - m_startPos.y) * ease;
+    }
+}
+
+void EncounterTransitionScene::drawSoul(float x, float y) const {
+    DrawRectangle((int)x + 2, (int)y, 4, 3, SOUL_RED);
+    DrawRectangle((int)x + 8, (int)y, 4, 3, SOUL_RED);
+    DrawRectangle((int)x + 1, (int)y + 3, 12, 4, SOUL_RED);
+    DrawRectangle((int)x + 2, (int)y + 7, 10, 3, SOUL_RED);
+    DrawRectangle((int)x + 4, (int)y + 10, 6, 2, SOUL_RED);
+    DrawRectangle((int)x + 6, (int)y + 12, 2, 2, SOUL_RED);
+}
+
+void EncounterTransitionScene::render(GameContext& context) {
+    ClearBackground(BLACK);
+
+    if (m_soulVisible) {
+        drawSoul(m_currentPos.x, m_currentPos.y);
+    }
+}
+
+void EncounterTransitionScene::onExit(GameContext& context) {
+}
+
+} // namespace nundertale
