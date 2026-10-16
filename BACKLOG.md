@@ -548,27 +548,27 @@ P0 · M · FGT-001
 - **O quê:** uma barra vertical branca com contorno preto entra por um lado **aleatório** (BUG-17) e atravessa a caixa em ~1,5–2 s (confirmar); Z para a barra. Depois do golpe, a barra pisca branco/preto alternando por alguns quadros. Se a barra sair do outro lado sem Z: "MISS".
 - **Armas especiais** (P2): várias barras (estilo Real Knife/Burnt Pan); dados da arma definem `bars`, `speed`.
 
-#### FGT-003 — Fórmula de dano dos dados `[ ]`
+#### FGT-003 — Fórmula de dano dos dados `[x]`
 P0 · P · PRG-001
 - **O quê:** aplicar a fórmula da seção 2.2 com AT do jogador + AT da arma − DF do inimigo. Valor mínimo 1 (ou "MISS" se a barra não foi parada).
 - **Aceite:** teste unitário com casos de borda (centro exato, borda, fora) (QA-011).
 
-#### FGT-004 — Animação de corte no inimigo `[ ]`
+#### FGT-004 — Animação de corte no inimigo `[x]`
 P0 · M · ART-023
 - **O quê:** um corte de ~6 frames sobre o inimigo (paródia ROTEIRO: cursor de mouse/"hitmarker" de FPS, mantendo a duração e a posição do corte original), com som de corte e, em seguida, som de dano.
 
-#### FGT-005 — Número de dano e barra de HP do inimigo `[ ]`
+#### FGT-005 — Número de dano e barra de HP do inimigo `[x]`
 P0 · M · GFX-003
 - **O quê:** o número de dano (fonte de dano própria, vermelho) aparece acima do inimigo, quica para cima e cai/assenta; embaixo dele aparece a barra de HP (fundo vermelho/cinza, verde #00FF00) que **diminui animada**; some depois de ~1 s. "MISS" em cinza sem barra.
 
-#### FGT-006 — Inimigo treme ao tomar dano `[ ]`
+#### FGT-006 — Inimigo treme ao tomar dano `[x]`
 P0 · P · —
 - **O quê:** o sprite oscila horizontalmente com amplitude decrescente (ex.: ±8, −6, +4, −2, 0 px em ~10 quadros).
 
-#### FGT-007 — Morte por golpe → vaporização `[ ]`
+#### FGT-007 — Morte por golpe → vaporização `[x]`
 P0 · P · GFX-008, BND-003
 
-#### FGT-008 — Hitmarker paródico `[ ]`
+#### FGT-008 — Hitmarker paródico `[x]`
 P2 · P · FGT-004
 - **O quê:** o ROTEIRO pede "som de hitmarker de FPS" no crítico. Tocar o hitmarker **no lugar** do som de corte quando `|distância| ≤ 12`, mantendo o resto da sequência idêntica.
 
@@ -626,12 +626,12 @@ P2 · P · ITM-001, BHL-006
 P0 · P · BFL-006
 - **O quê:** só funciona se o alvo é poupável; senão, "* You spared Barky.&* But Barky wasn't yellow..." (paródia) e o turno passa. Inimigo poupado → poeira/nuvem + translucidez (BUI-011) + som de spare.
 
-#### MRC-002 — Flee `[ ]`
+#### MRC-002 — Flee `[x]`
 P0 · M · ART-024
 - **O quê:** chance de fuga (base ~50%, maior com mais turnos, confirmar); sucesso: a alma vira o sprite "correndo" (com perninhas) e sai pela esquerda, com texto aleatório ("* I'm outta here." / paródia: "* Pepe alt-F4'd out of the fight."); falha: o turno passa. Chefes: `canFlee=false`.
 - **ROTEIRO:** "Pepe foge de costas com nuvenzinhas de poeira" → usar as nuvens de poeira na animação de fuga da alma.
 
-#### MRC-003 — Recompensa de spare/fuga `[ ]`
+#### MRC-003 — Recompensa de spare/fuga `[x]`
 P0 · P · PRG-001
 - **O quê:** spare: 0 EXP e gold do inimigo. Fuga: "* Escaped..." sem recompensa (no Undertale, fugir depois de dar dano dá EXP/gold parciais, confirmar).
 
@@ -692,7 +692,7 @@ P3 · G · BHL-004
 P3 · G · BHL-004
 - **O quê:** a alma presa em 3 linhas horizontais; cima/baixo troca de linha. Para a paródia da Muffet (C3+).
 
-#### BHL-014 — Padrões do Barky `[ ]`
+#### BHL-014 — Padrões do Barky `[x]`
 P0 · M · BHL-004, ART-012
 - **O quê:** 3–4 padrões:
   1. **UwU Rain** — letras "UWU" (sprite, não `DrawText`) caindo em colunas com leve zigue-zague.
@@ -709,19 +709,19 @@ P3 · P · —
 
 ### BND — Batalha: finais (vitória, poeira, level up, game over)
 
-#### BND-001 — Tela de vitória `[ ]`
+#### BND-001 — Tela de vitória `[x]`
 P0 · P · PRG-001
 - **O quê:** "* YOU WON!&* You earned X EXP and Y gold." na caixa grande, com a música cortada. Z → volta ao overworld com fade.
 
-#### BND-002 — Sequência de spare `[ ]`
+#### BND-002 — Sequência de spare `[x]`
 P0 · P · MRC-001
 - **O quê:** som de spare + nuvenzinhas saindo do inimigo + translucidez; se era o último inimigo, vai para BND-001 com 0 EXP.
 
-#### BND-003 — Vaporização `[ ]`
+#### BND-003 — Vaporização `[x]`
 P0 · P · GFX-008
 - **O quê:** o inimigo morto vira poeira (GFX-008) com o som de "vaporized"; o gold/EXP é contado no fim.
 
-#### BND-004 — Level up `[ ]`
+#### BND-004 — Level up `[x]`
 P0 · P · PRG-001
 - **O quê:** quando a EXP passa do limite: a linha extra "* Your LOVE increased." (paródia: "* Your VITRIOL increased.") + som de level up; HPmax/AT/DF atualizados.
 
