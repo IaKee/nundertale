@@ -84,7 +84,7 @@ void OverworldScene::initInteractables() {
                 "* An intense aura of cringe and determination blocks your path!",
                 "* Barky the Alpha Furry attacks!"
             }, "", [this, &context]() {
-                context.scenes.changeScene(std::make_unique<BattleScene>(), 0.6f);
+                context.scenes.pushScene(std::make_unique<BattleScene>(), context);
             });
         },
         [](GameContext& context) {
@@ -97,6 +97,10 @@ void OverworldScene::initInteractables() {
 }
 
 void OverworldScene::onEnter(GameContext& context) {
+    context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+}
+
+void OverworldScene::onResume(GameContext& context) {
     context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
 }
 
@@ -143,15 +147,12 @@ void OverworldScene::update(float dt, GameContext& context) {
         }
     }
 
-    // Quick Battle Trigger shortcut for testing
+#ifdef NUNDERTALE_DEBUG
+    // Quick Battle Trigger shortcut for testing (ENC-005)
     if (IsKeyPressed(KEY_B)) {
-        context.scenes.changeScene(std::make_unique<BattleScene>(), 0.5f);
+        context.scenes.pushScene(std::make_unique<BattleScene>(), context);
     }
-
-    // Return to title
-    if (context.input.isEscapePressed()) {
-        context.scenes.changeScene(std::make_unique<TitleScene>(), 0.4f);
-    }
+#endif
 }
 
 void OverworldScene::render(GameContext& context) {
