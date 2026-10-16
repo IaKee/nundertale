@@ -32,6 +32,16 @@ public:
 
 private:
     int m_lastCharPressed = 0;
+
+    mutable bool m_upPressed = false;
+    mutable bool m_downPressed = false;
+    mutable bool m_leftPressed = false;
+    mutable bool m_rightPressed = false;
+    mutable bool m_confirmPressed = false;
+    mutable bool m_cancelPressed = false;
+    mutable bool m_menuPressed = false;
+    mutable bool m_escapePressed = false;
+    mutable bool m_backspacePressed = false;
 };
 
 } // namespace nundertale

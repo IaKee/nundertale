@@ -211,9 +211,12 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
             // FGT-008: Hitmarker on critical hit, slice sound on normal hit
             if (dist <= 12.0f) {
                 context.audio.playSound("assets/sfx/u_activate.wav", 0.9f);
+                context.shake(5.0f, 0.22f); // GFX-006: Critical screen shake
+                context.flash(WHITE, 0.12f); // GFX-007: Impact flash
                 m_narratorText = "* CRITICAL HIT! Dealt " + std::to_string(damage) + " cringe damage!";
             } else {
                 context.audio.playSound("assets/sfx/u1.ogg", 0.8f);
+                context.shake(2.0f, 0.1f);
                 m_narratorText = "* You dealt " + std::to_string(damage) + " cringe damage to " + m_enemy->getName() + "!";
             }
 
@@ -452,6 +455,8 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
             context.player.furryMeter += m_bullets[i].furry;
             m_invulnTimer = 1.0f; // 30 frames of i-frame
             context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
+            context.shake(6.0f, 0.25f); // GFX-006: screen shake on hurt
+            context.flash({ 255, 0, 0, 255 }, 0.15f); // GFX-007: red hurt flash
 
             if (context.player.hp <= 0) {
                 context.player.hp = 0;
