@@ -1104,7 +1104,7 @@ P2 · M · SAV-005
 P2 · G · PRG-030, FUR-001
 - **O quê:** esboço dos finais: Wholesome (o Pepe volta para o PC e o raid group o recebe), Normie (variações), Toxic Gamer, Furry Ending (100% de furrificação: vira o mascote da convenção, como diz o ROTEIRO §1).
 
-#### NAR-014 — Guia de estilo de escrita `[ ]`
+#### NAR-014 — Guia de estilo de escrita `[x]`
 P1 · P · —
 - **O quê:** `docs/writing_style.md`: o narrador sempre com "* ", segunda pessoa, frases curtas, no máximo 3 linhas por página, o humor dos memes **sem** depender de slurs ou de conteúdo sexual explícito (o "yiff" da intro atual é um exemplo do que evitar para manter o tom do Undertale), as fontes e vozes por personagem.
 
@@ -1361,7 +1361,7 @@ P2 · M · REPO-005
 P3 · P · —
 - **O quê:** capturar exceções/sinais, gravar `crash_reports/<data>.txt` (a ideia existia na versão Python) com a cena, a sala e a pilha.
 
-#### QA-015 — Checklist de "feeling" `[ ]`
+#### QA-015 — Checklist de "feeling" `[x]`
 P1 · P · —
 - **O quê:** `docs/feel_checklist.md` com os itens que só se verificam jogando lado a lado com o Undertale: velocidade da alma, ritmo do texto, tempo da transição de encontro, peso do game over, resposta dos menus (sem input lag), som de cada ação. Rodar a cada marco.
 
