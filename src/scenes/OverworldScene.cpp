@@ -60,9 +60,9 @@ void OverworldScene::initInteractables() {
         [this](GameContext& context) {
             context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
             m_dialogBox.startDialog({
-                "Awoo! What do we have here? A hairless gamer in my domain?!",
-                "I am Barky, the Alpha Wolf of Mt. Dew! Prepare yourself!",
-                "Step through the north doorway if you dare face my fursona!"
+                "* Awoo! What do we have here? A hairless gamer in my domain?!",
+                "* I am Barky, the Alpha Wolf of Mt. Dew! Prepare yourself!",
+                "* Step through the north doorway if you dare face my fursona!"
             }, "BARKY");
         },
         [](GameContext& context) {
