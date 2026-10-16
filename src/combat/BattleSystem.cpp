@@ -346,8 +346,20 @@ void BattleSystem::handleItemInput(GameContext& context) {
         m_lastPlayerAction = PlayerTurnAction::Item;
         m_lastActionDetail = item;
 
-        // ITM-001 & ITM-005: Handle specific item data behaviors + Mountain Dew speed buff
-        if (item.find("Dew") != std::string::npos) {
+        // PRG-002: Equip weapon/armor or consume item
+        if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
+            std::string oldWeapon = context.player.weapon;
+            context.player.weapon = item;
+            context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
+            context.player.inventory.push_back(oldWeapon);
+            m_narratorText = "* You equipped the " + item + "!\n* Attack power updated!";
+        } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
+            std::string oldArmor = context.player.armor;
+            context.player.armor = item;
+            context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
+            context.player.inventory.push_back(oldArmor);
+            m_narratorText = "* You equipped the " + item + "!\n* Defense updated!";
+        } else if (item.find("Dew") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
             m_soulSpeedBuffTurns = 2; // ITM-005: +35% speed buff for 2 enemy turns
             m_narratorText = "* You chugged the warm Mountain Dew!\n* You recovered 10 HP! Citrus speed surge!";
@@ -362,7 +374,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
             m_narratorText = "* You used " + item + "!\n* Recovered 8 HP.";
         }
 
-        if (context.player.hp >= context.player.maxHp && item.find("Tape") == std::string::npos) {
+        if (context.player.hp >= context.player.maxHp && item.find("Tape") == std::string::npos && item.find("Mouse") == std::string::npos && item.find("Headset") == std::string::npos) {
             m_narratorText += "\n* Your HP was maxed out.";
         }
 
