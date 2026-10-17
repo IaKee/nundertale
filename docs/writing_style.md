@@ -15,10 +15,13 @@ Este guia define as diretrizes estritas de escrita e roteirização para o nUnde
 ---
 
 ## 2. Tom do Humor e Paródia
-- **Sátira Elegante de Internet vs. Cringe Barato:**
-  - O humor deve parodiar tropos da cultura de games dos anos 2000/2010 (lan houses, periféricos com fio quebrado, discussões de fórum, Mountain Dew, Doritos, Discord, streams).
-  - **Proibição Estrita de Conteúdo Explícito ou Ofensivo:** Manter a classificação indicativa equivalente a PG-13 / Teen. Não usar slurs, referências sexuais explícitas ("yiff" etc.), piadas degradantes ou termos que firam a acessibilidade e o respeito.
-  - A paródia funciona melhor através de situações cotidianas levadas ao extremo dramático (ex.: Barky com vergonha de ter deixado o zíper da fantasia aberto, a mãe protetora guardando o quarto com Pop-Tarts).
+- **Sátira de Internet:**
+  - O humor parodia a cultura furry (alvo principal) e a cultura gamer (alvo secundário, igualmente nojenta): fursuits, musk, commissions, love-bombing; garrafas, pasta "Homework", gacha, simps de Discord, lan houses, Mountain Dew, Doritos, streams.
+  - **Regras de conteúdo (canônicas em `docs/LORE.md` §2):**
+    - Conotação sexual e humor de nojo são permitidos **por vocabulário e referência aberta** ("yiff", "OwO", "musk", "NSFW", "horny jail", hentai/ecchi). **Nada visualmente explícito.**
+    - **Proibido:** qualquer referência a crianças ou personagem com aparência infantil (a única exceção é a piada do "dragão de 1 milhão de anos", em que a personagem nunca aparece nem é descrita e o alvo é o gamer); atos com animais reais; pessoas reais.
+    - Sem slurs. Sátira de comportamento, não de deficiência, etnia, gênero ou orientação.
+  - A paródia funciona melhor através da implicação: o narrador se recusa (`* No.`), a fala é cortada no meio, o objeto fica fechado (aba, pasta, cortina). Situações cotidianas levadas ao extremo dramático (ex.: Barky com vergonha do zíper, a mãe protetora guardando o quarto com Pop-Tarts).
 
 ---
 

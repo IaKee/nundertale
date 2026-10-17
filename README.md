@@ -81,3 +81,5 @@ The project includes a portable GCC/G++ compiler and Raylib in the `vendor/` dir
 
 ## 📖 Script & Game Design Document
 For full lore, character dialogue scripts, and design documentation, see [ROTEIRO.md](file:///c:/Users/delux/OneDrive/Documentos/Programas/C/nundertale/ROTEIRO.md).
+
+The canonical lore bible (world, cast, 30-minute structure, routes, endings, visual and audio direction) lives in [docs/LORE.md](docs/LORE.md).
