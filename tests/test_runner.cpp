@@ -1759,6 +1759,97 @@ int main() {
         std::cout << "[PASS] MET-004: same-name reaction verified." << std::endl;
     }
 
-    std::cout << "\nAll 32 test suites passed successfully!" << std::endl;
+    // 33. RAD-003: guild phone messages at raid clock thresholds
+    {
+        using nundertale::raidPendingMessage;
+        using nundertale::raidMessageLines;
+        using nundertale::raidFormatMinutesSeconds;
+
+        // Start message (index 0) and mask prevention
+        assert(raidPendingMessage(1320.0f, 1320.0f, 0) == 0);
+        assert(raidPendingMessage(1320.0f, 1319.0f, 0) == 0);
+        assert(raidPendingMessage(1320.0f, 1320.0f, 1) == -1);
+
+        // Threshold 1: 15:00 (crossing 900)
+        // Above threshold
+        assert(raidPendingMessage(950.0f, 910.0f, 1) == -1);
+        // Crossing threshold
+        assert(raidPendingMessage(910.0f, 890.0f, 1) == 1);
+        // Boundary crossing
+        assert(raidPendingMessage(900.0f, 899.0f, 1) == 1);
+        assert(raidPendingMessage(901.0f, 900.0f, 1) == 1);
+        // Already below threshold (no crossing)
+        assert(raidPendingMessage(890.0f, 880.0f, 1) == -1);
+        // Mask prevention (no double show)
+        assert(raidPendingMessage(910.0f, 890.0f, 1 | 2) == -1);
+
+        // Threshold 2: 5:00 (crossing 300)
+        // Above threshold
+        assert(raidPendingMessage(350.0f, 310.0f, 1 | 2) == -1);
+        // Crossing threshold
+        assert(raidPendingMessage(310.0f, 290.0f, 1 | 2) == 2);
+        // Boundary crossing
+        assert(raidPendingMessage(300.0f, 299.0f, 1 | 2) == 2);
+        assert(raidPendingMessage(301.0f, 300.0f, 1 | 2) == 2);
+        // Already below threshold
+        assert(raidPendingMessage(290.0f, 280.0f, 1 | 2) == -1);
+        // Mask prevention (no double show)
+        assert(raidPendingMessage(310.0f, 290.0f, 1 | 2 | 4) == -1);
+
+        // Threshold 3: 0:00 (crossing 0)
+        // Above threshold
+        assert(raidPendingMessage(10.0f, 1.0f, 1 | 2 | 4) == -1);
+        // Crossing threshold
+        assert(raidPendingMessage(1.0f, 0.0f, 1 | 2 | 4) == 3);
+        assert(raidPendingMessage(0.5f, -0.5f, 1 | 2 | 4) == 3);
+        assert(raidPendingMessage(0.0f, 0.0f, 1 | 2 | 4) == 3);
+        // Already below threshold
+        assert(raidPendingMessage(-1.0f, -2.0f, 1 | 2 | 4) == -1);
+        // Mask prevention (no double show)
+        assert(raidPendingMessage(1.0f, 0.0f, 1 | 2 | 4 | 8) == -1);
+
+        // Multi-threshold crossing in priority order
+        // Dropping across both 900 and 300: first yields 1, then with bit 1 set yields 2
+        assert(raidPendingMessage(1000.0f, 200.0f, 1) == 1);
+        assert(raidPendingMessage(1000.0f, 200.0f, 1 | 2) == 2);
+        assert(raidPendingMessage(1000.0f, 200.0f, 1 | 2 | 4) == -1);
+        // Dropping to 0 yields 3
+        assert(raidPendingMessage(1000.0f, 0.0f, 1 | 2 | 4) == 3);
+
+        // Text formatting and message content validation
+        assert(raidFormatMinutesSeconds(1320.0f) == "22:00");
+        assert(raidFormatMinutesSeconds(900.0f) == "15:00");
+        assert(raidFormatMinutesSeconds(300.0f) == "05:00");
+        assert(raidFormatMinutesSeconds(59.2f) == "01:00");
+        assert(raidFormatMinutesSeconds(0.0f) == "00:00");
+
+        const auto lines0 = raidMessageLines(0, 1320.0f);
+        assert(lines0.size() == 2);
+        assert(lines0[0] == "* Your phone buzzes.");
+        assert(lines0[1] == "* \"RAID STARTS IN 22:00. BE THERE OR GET KICKED. bring dew -xX_Moderator_Xx\"");
+
+        const auto lines1 = raidMessageLines(1);
+        assert(lines1.size() == 2);
+        assert(lines1[0] == "* Your phone buzzes.");
+        assert(lines1[1] == "* \"15 MIN WHERE ARE U\"");
+
+        const auto lines2 = raidMessageLines(2);
+        assert(lines2.size() == 2);
+        assert(lines2[0] == "* Your phone buzzes.");
+        assert(lines2[1] == "* \"5 min. ur kicked if ur late. no cap.\"");
+
+        const auto lines3 = raidMessageLines(3);
+        assert(lines3.size() == 3);
+        assert(lines3[0] == "* Your phone buzzes.");
+        assert(lines3[1] == "* \"Raid started without you. Kicked.\"");
+        assert(lines3[2] == "* ...You feel strangely okay with that.");
+
+        assert(raidMessageLines(4).empty());
+        assert(raidMessageLines(-1).empty());
+
+        std::cout << "[PASS] RAD-003: guild phone message threshold detection, masks, and texts verified." << std::endl;
+    }
+
+    std::cout << "\nAll 33 test suites passed successfully!" << std::endl;
     return 0;
 }
