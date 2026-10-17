@@ -8,6 +8,7 @@
 #include "core/SaveText.hpp"
 #include "core/FurReactions.hpp"
 #include "core/Cell.hpp"
+#include "ui/SpriteDraw.hpp"
 #include <raylib.h>
 #include <fstream>
 #include <sstream>
@@ -918,9 +919,33 @@ void OverworldScene::render(GameContext& context) {
         m_savePoint->render(context);
     }
 
-    // 4. Render Player (Pepe the frog using masked texture)
-    Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
-    m_player.render(pepeTex);
+    // 4. Render Player (optional PNG sheet, otherwise the legacy masked BMP)
+    const SpriteSheetDef* pepeSheet = spriteSheetCache().load(
+        "assets/sprites/ow/pepe_frog.png",
+        "assets/sprites/ow/pepe_frog.json"
+    );
+    if (pepeSheet != nullptr) {
+        std::string direction;
+        switch (m_player.getDirection()) {
+            case Direction::Up: direction = "up"; break;
+            case Direction::Down: direction = "down"; break;
+            case Direction::Left: direction = "left"; break;
+            case Direction::Right: direction = "right"; break;
+        }
+        const std::string animation = (m_player.isMoving() ? "walk_" : "stand_") + direction;
+        Texture2D pepeTex = context.resources.getTexture("assets/sprites/ow/pepe_frog.png");
+        SetTextureFilter(pepeTex, TEXTURE_FILTER_POINT);
+        drawSprite(
+            pepeTex,
+            *pepeSheet,
+            animation,
+            m_player.getSpriteAnimationTime(),
+            m_player.getSpritePivot()
+        );
+    } else {
+        Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
+        m_player.render(pepeTex);
+    }
 
     // Ambient fluff particles (FUR-010)
     for (const auto& p : m_fluffParticles) {

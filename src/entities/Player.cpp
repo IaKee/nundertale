@@ -10,6 +10,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
     m_isMoving = (inputDir.x != 0.0f || inputDir.y != 0.0f);
 
     if (m_isMoving) {
+        m_spriteAnimTimer += dt;
         // OVW-006: Undertale keeps the prior pressed direction if still pressed on diagonal
         bool dirXMatches = (inputDir.x > 0 && m_direction == Direction::Right) || (inputDir.x < 0 && m_direction == Direction::Left);
         bool dirYMatches = (inputDir.y > 0 && m_direction == Direction::Down) || (inputDir.y < 0 && m_direction == Direction::Up);
@@ -65,6 +66,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         }
     } else {
         m_animTimer = 0.0f;
+        m_spriteAnimTimer = 0.0f;
         m_alterna = false;
         m_alternaVert = false;
     }

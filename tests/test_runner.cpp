@@ -35,6 +35,7 @@
 #include "core/Cell.hpp"
 #include "core/Cutscene.hpp"
 #include "core/SessionMeta.hpp"
+#include "core/SpriteSheet.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -2356,6 +2357,62 @@ int main() {
         std::cout << "[PASS] MET-001: reload detection, session kill tracking, and game-over flags verified." << std::endl;
     }
 
-    std::cout << "\nAll 40 test suites passed successfully!" << std::endl;
+    // 41. GFX-002: sprite-sheet parsing defaults and frame selection
+    {
+        using namespace nundertale;
+
+        const std::string json = R"json({
+            "image": "barky.png",
+            "cell": [60, 80],
+            "origin": [30, 80],
+            "anims": {
+                "idle": { "row": 0, "frames": 2, "fps": 2, "loop": true },
+                "hurt": { "row": 1, "frames": 1 },
+                "blush": { "row": 2 },
+                "spared": { "row": 3, "frames": 3, "fps": 5, "loop": false }
+            }
+        })json";
+
+        SpriteSheetDef sheet;
+        assert(parseSpriteSheetJson(json, sheet));
+        assert(sheet.image == "barky.png");
+        assert(sheet.cellW == 60 && sheet.cellH == 80);
+        assert(sheet.originX == 30 && sheet.originY == 80);
+
+        assert(sheet.anims.at("hurt").frames == 1);
+        assert(sheet.anims.at("hurt").fps == 4.0f);
+        assert(sheet.anims.at("hurt").loop);
+        assert(sheet.anims.at("blush").frames == 1);
+
+        FrameRect frame = frameRect(sheet, "idle", 0.0f);
+        assert(frame.x == 0 && frame.y == 0 && frame.w == 60 && frame.h == 80);
+        frame = frameRect(sheet, "idle", 0.5f);
+        assert(frame.x == 60 && frame.y == 0);
+        frame = frameRect(sheet, "idle", 1.0f);
+        assert(frame.x == 0 && frame.y == 0);
+
+        frame = frameRect(sheet, "spared", 0.2f);
+        assert(frame.x == 60 && frame.y == 240);
+        frame = frameRect(sheet, "spared", 20.0f);
+        assert(frame.x == 120 && frame.y == 240);
+
+        frame = frameRect(sheet, "unknown", 0.5f);
+        assert(frame.x == 60 && frame.y == 0);
+
+        SpriteSheetDef noIdle;
+        noIdle.cellW = 12;
+        noIdle.cellH = 18;
+        frame = frameRect(noIdle, "unknown", 99.0f);
+        assert(frame.x == 0 && frame.y == 0 && frame.w == 12 && frame.h == 18);
+
+        SpriteSheetDef unchanged;
+        unchanged.image = "keep.png";
+        assert(!parseSpriteSheetJson("{ invalid", unchanged));
+        assert(unchanged.image == "keep.png");
+
+        std::cout << "[PASS] GFX-002: sprite-sheet parsing, defaults, loops, holds, and fallbacks verified." << std::endl;
+    }
+
+    std::cout << "\nAll 41 test suites passed successfully!" << std::endl;
     return 0;
 }
