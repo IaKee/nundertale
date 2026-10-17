@@ -8,6 +8,7 @@
 #include "core/SaveText.hpp"
 #include "core/FurReactions.hpp"
 #include "core/Cell.hpp"
+#include "services/MusicTracks.hpp"
 #include "ui/SpriteDraw.hpp"
 #include <raylib.h>
 #include <fstream>
@@ -274,7 +275,8 @@ void OverworldScene::onEnter(GameContext& context) {
         s_prevRaidTimeLeft = context.state.raid.timeLeft;
     }
     context.raidPaused = false;
-    context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+    const MusicEntry enterTrack = musicFor("overworld." + context.state.currentRoom);
+    context.audio.playMusic(enterTrack.path, true, enterTrack.loopStart, enterTrack.loopEnd);
     if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
         m_player.setPosition(context.state.playerPos);
     }
@@ -285,7 +287,8 @@ void OverworldScene::onResume(GameContext& context) {
     context.raidPaused = (m_menuState != OverworldMenuState::Closed);
     // AUD-004: back from a battle, the area track restarts from the beginning (even if it is the battle file)
     context.audio.stopMusic();
-    context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
+    const MusicEntry resumeTrack = musicFor("overworld." + context.state.currentRoom);
+    context.audio.playMusic(resumeTrack.path, true, resumeTrack.loopStart, resumeTrack.loopEnd);
     initInteractables(context);
 }
 

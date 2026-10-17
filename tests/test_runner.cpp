@@ -2413,6 +2413,97 @@ int main() {
         std::cout << "[PASS] GFX-002: sprite-sheet parsing, defaults, loops, holds, and fallbacks verified." << std::endl;
     }
 
-    std::cout << "\nAll 41 test suites passed successfully!" << std::endl;
+    // 42. AUD-001 + AUD-005: Music by context from data/music.json and loop points
+    {
+        using namespace nundertale;
+
+        // 1. shouldLoopSeek helper
+        assert(!shouldLoopSeek(10.0f, 0.0f));       // loopEnd <= 0 means whole file / no loop seek
+        assert(!shouldLoopSeek(10.0f, -1.0f));
+        assert(!shouldLoopSeek(10.0f, 15.0f));      // not reached
+        assert(shouldLoopSeek(15.0f, 15.0f));       // exact hit
+        assert(shouldLoopSeek(15.1f, 15.0f));       // crossed
+
+        // 2. MusicTable parse (valid JSON, custom loop points, defaults)
+        const std::string testJson = R"json({
+            "title": { "path": "assets/music/title.ogg" },
+            "loop_track": { "path": "assets/music/loop.ogg", "loopStart": 2.5, "loopEnd": 45.0 },
+            "overworld.default": { "path": "assets/music/ow_def.ogg" },
+            "overworld.ruins_entrance": { "path": "assets/music/ruins.ogg" },
+            "battle.default": { "path": "assets/music/bat_def.ogg" }
+        })json";
+
+        MusicTable table;
+        assert(table.parse(testJson));
+        assert(table.entries().size() == 5);
+
+        // Check defaults for loopStart / loopEnd when missing
+        MusicEntry titleEntry = table.musicFor("title");
+        assert(titleEntry.path == "assets/music/title.ogg");
+        assert(titleEntry.loopStart == 0.0f);
+        assert(titleEntry.loopEnd == 0.0f);
+
+        // Check explicit loop points
+        MusicEntry loopEntry = table.musicFor("loop_track");
+        assert(loopEntry.path == "assets/music/loop.ogg");
+        assert(std::fabs(loopEntry.loopStart - 2.5f) < 0.001f);
+        assert(std::fabs(loopEntry.loopEnd - 45.0f) < 0.001f);
+
+        // 3. Fallback chains
+        // Exact overworld room
+        MusicEntry ruinsEntry = table.musicFor("overworld.ruins_entrance");
+        assert(ruinsEntry.path == "assets/music/ruins.ogg");
+
+        // Unknown overworld room -> falls back to overworld.default
+        MusicEntry forestEntry = table.musicFor("overworld.forest");
+        assert(forestEntry.path == "assets/music/ow_def.ogg");
+
+        // Battle with encounter asset existing
+        auto existsBoss = [](const std::string& path) {
+            return path == "assets/music/boss_barky.ogg";
+        };
+        MusicEntry barkyFound = table.musicFor("battle.boss_barky", existsBoss);
+        assert(barkyFound.path == "assets/music/boss_barky.ogg");
+
+        // Battle with encounter asset missing -> falls back to battle.default
+        auto existsNone = [](const std::string&) { return false; };
+        MusicEntry barkyMissing = table.musicFor("battle.boss_barky", existsNone);
+        assert(barkyMissing.path == "assets/music/bat_def.ogg");
+
+        // Battle default lookup
+        MusicEntry batDef = table.musicFor("battle.default");
+        assert(batDef.path == "assets/music/bat_def.ogg");
+
+        // Empty table fallback to hardcoded DEFAULT_BATTLE_MUSIC
+        MusicTable emptyTable;
+        MusicEntry fallbackEntry = emptyTable.musicFor("overworld.cave");
+        assert(fallbackEntry.path == DEFAULT_BATTLE_MUSIC);
+        MusicEntry batFallback = emptyTable.musicFor("battle.unknown", existsNone);
+        assert(batFallback.path == DEFAULT_BATTLE_MUSIC);
+        MusicEntry genericFallback = emptyTable.musicFor("unregistered_context");
+        assert(genericFallback.path == DEFAULT_BATTLE_MUSIC);
+
+        // Parse invalid JSON returns false
+        MusicTable badTable;
+        assert(!badTable.parse("{ not a valid json"));
+
+        // 4. Test loading real data/music.json if readable
+        std::ifstream realFile("data/music.json");
+        if (realFile.is_open()) {
+            MusicTable realTable;
+            assert(realTable.loadFromFile("data/music.json"));
+            assert(realTable.musicFor("title").path == "assets/music/main_menu_loop.ogg");
+            assert(realTable.musicFor("lore").path == "assets/music/Undertale - Once Upon A Time Remix (ft Yuri, zR).ogg");
+            assert(realTable.musicFor("instructions").path == "assets/music/main_menu_loop.ogg");
+            assert(realTable.musicFor("overworld.ruins_entrance").path == "assets/music/epic_background_loop.ogg");
+            assert(realTable.musicFor("overworld.default").path == "assets/music/epic_background_loop.ogg");
+            assert(realTable.musicFor("battle.default").path == "assets/music/epic_background_loop.ogg");
+            assert(realTable.musicFor("gameover").path == "assets/music/epic_background_loop.ogg");
+        }
+
+        std::cout << "[PASS] AUD-001 + AUD-005: Music by context, JSON parsing, fallback chain, and loop points verified." << std::endl;
+    }
+
+    std::cout << "\nAll 42 test suites passed successfully!" << std::endl;
     return 0;
 }

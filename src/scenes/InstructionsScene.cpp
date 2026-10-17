@@ -5,12 +5,14 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "services/MusicTracks.hpp"
 #include <raylib.h>
 
 namespace nundertale {
 
 void InstructionsScene::onEnter(GameContext& context) {
-    context.audio.playMusic("assets/music/main_menu_loop.ogg", true);
+    const MusicEntry track = musicFor("instructions");
+    context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
     m_selectedIndex = 0;
 }
 

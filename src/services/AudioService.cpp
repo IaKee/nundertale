@@ -1,4 +1,5 @@
 #include "services/AudioService.hpp"
+#include "services/MusicTracks.hpp"
 #include <iostream>
 
 namespace nundertale {
@@ -15,7 +16,14 @@ AudioService::~AudioService() {
 }
 
 void AudioService::playMusic(const std::string& path, bool loop) {
+    playMusic(path, loop, 0.0f, 0.0f);
+}
+
+void AudioService::playMusic(const std::string& path, bool loop, float loopStart, float loopEnd) {
     if (m_hasActiveMusic && m_currentMusicPath == path) {
+        m_loopStart = loopStart;
+        m_loopEnd = loopEnd;
+        m_currentMusic.looping = (loopEnd > 0.0f) ? false : loop;
         if (!IsMusicStreamPlaying(m_currentMusic)) {
             ResumeMusicStream(m_currentMusic);
         }
@@ -27,14 +35,25 @@ void AudioService::playMusic(const std::string& path, bool loop) {
     if (FileExists(path.c_str())) {
         m_fade = MusicFade{};
         m_fadeFactor = 1.0f;
+        m_loopStart = loopStart;
+        m_loopEnd = loopEnd;
         m_currentMusic = LoadMusicStream(path.c_str());
-        m_currentMusic.looping = loop;
+        // If custom loopEnd is defined, raylib's internal loop is disabled so we manage seeking manually
+        m_currentMusic.looping = (loopEnd > 0.0f) ? false : loop;
         SetMusicVolume(m_currentMusic, m_musicVolume * m_fadeFactor);
         PlayMusicStream(m_currentMusic);
         m_currentMusicPath = path;
         m_hasActiveMusic = true;
     } else {
         std::cerr << "[AudioService] Music file not found: " << path << std::endl;
+    }
+}
+
+void AudioService::setMusicLoopPoints(float loopStart, float loopEnd) {
+    m_loopStart = loopStart;
+    m_loopEnd = loopEnd;
+    if (m_hasActiveMusic && loopEnd > 0.0f) {
+        m_currentMusic.looping = false;
     }
 }
 
@@ -47,6 +66,8 @@ void AudioService::stopMusic() {
     }
     m_fade = MusicFade{};
     m_fadeFactor = 1.0f;
+    m_loopStart = 0.0f;
+    m_loopEnd = 0.0f;
 }
 
 void AudioService::pauseMusic() {
@@ -66,6 +87,14 @@ void AudioService::updateMusic() {
         return;
     }
     UpdateMusicStream(m_currentMusic);
+
+    if (m_loopEnd > 0.0f) {
+        const float played = GetMusicTimePlayed(m_currentMusic);
+        if (shouldLoopSeek(played, m_loopEnd)) {
+            SeekMusicStream(m_currentMusic, m_loopStart);
+        }
+    }
+
     if (m_fade.active) {
         m_fadeFactor = fadeStep(m_fade, GetFrameTime());
         SetMusicVolume(m_currentMusic, m_musicVolume * m_fadeFactor);

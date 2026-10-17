@@ -47,10 +47,10 @@ void BattleScene::onEnter(GameContext& context) {
         }
     }
 
-    const std::string musicPath = resolveMusicPath(
-        musicId,
+    const MusicEntry track = musicFor(
+        "battle." + musicId,
         [](const std::string& path) { return std::filesystem::exists(path); });
-    context.audio.playMusic(musicPath, true);
+    context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
 }
 
 void BattleScene::update(float dt, GameContext& context) {

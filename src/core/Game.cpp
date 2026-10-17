@@ -1,5 +1,6 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
+#include "services/MusicTracks.hpp"
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -32,6 +33,8 @@ Game::Game() {
         furJson << furFile.rdbuf();
         m_context->furTable.parse(furJson.str());
     }
+
+    globalMusicTable().loadFromFile("data/music.json");
 
     // Create virtual render target for pixel-perfect 640x480 retro rendering
     m_virtualTarget = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
