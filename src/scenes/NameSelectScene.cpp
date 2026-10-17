@@ -181,6 +181,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                         meta.lastName = m_currentName;
                         context.save.saveMeta(meta);
                         context.audio.playSound("assets/sfx/u_activate.wav", 1.0f);
+                        context.audio.fadeOutMusic(2.5f); // AUD-006: the title music fades with the long white fade
                         context.scenes.changeScene(std::make_unique<OverworldScene>(), fadeWhite(3.0f, 0.6f));
                     }
                 }

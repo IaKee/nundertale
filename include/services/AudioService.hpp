@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IAudioService.hpp"
+#include "MusicFade.hpp"
 #include <raylib.h>
 #include <unordered_map>
 #include <string>
@@ -18,6 +19,8 @@ public:
     void resumeMusic() override;
     void updateMusic() override;
     void setMusicVolume(float volume) override;
+    void fadeOutMusic(float seconds) override;
+    void fadeInMusic(const std::string& path, float seconds, bool loop = true) override;
 
     void playSound(const std::string& path, float volume = 1.0f) override;
     void stopAllSounds() override;
@@ -31,6 +34,8 @@ private:
     bool m_hasActiveMusic = false;
     float m_musicVolume = 0.7f;
     float m_masterVolume = 1.0f;
+    MusicFade m_fade;
+    float m_fadeFactor = 1.0f;
 };
 
 } // namespace nundertale
