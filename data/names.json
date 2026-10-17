@@ -1,0 +1,142 @@
+[
+  {
+    "names": ["CHAD"],
+    "tag": "[GOLD]",
+    "message": "Gold plated. You are the ultimate gamer.",
+    "allowed": true,
+    "effect": "gold"
+  },
+  {
+    "names": ["PEPE"],
+    "tag": "[THE PROTAGONIST]",
+    "message": "Feels good man. Ready to climb down Mt. Dew.",
+    "allowed": true,
+    "effect": "frog_soul"
+  },
+  {
+    "names": ["FROG"],
+    "tag": "[RIBBIT]",
+    "message": "Feels froggy man.",
+    "allowed": true,
+    "effect": "frog_soul"
+  },
+  {
+    "names": ["SKYRIM"],
+    "tag": "[TAMRIEL]",
+    "message": "Hey you, you're finally awake...",
+    "allowed": true,
+    "effect": "skyrim"
+  },
+  {
+    "names": ["SANS"],
+    "tag": "[COMEDIAN]",
+    "message": "heh, you really think you have the backbone for this?",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["FRISK"],
+    "tag": "[FALLEN CHILD]",
+    "message": "Warning: This mode triggers extreme allergy to fursuits.",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["CHARA"],
+    "tag": "[THE FIRST]",
+    "message": "The true meaning of pure toxic gamer rage.",
+    "allowed": true,
+    "effect": "crimson_shake"
+  },
+  {
+    "names": ["FLOWEY"],
+    "tag": "[WEED]",
+    "message": "Not very original, are you?",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["TORIEL"],
+    "tag": "[MOM]",
+    "message": "Furiell has already trademarked this name.",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["ASGORE"],
+    "tag": "[KING]",
+    "message": "King of questionable herbal tea.",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["RUIVA", "LOIRA", "OTOME", "GOTICA", "MORENA", "YANDER"],
+    "tag": "[WAIFU CONFIRMED]",
+    "message": "A true cultured gamer of fine 2D taste.",
+    "allowed": true,
+    "effect": "waifu"
+  },
+  {
+    "names": ["FURIEL", "FURIELL"],
+    "tag": "",
+    "message": "Furiell is flattered. But no.",
+    "allowed": false,
+    "effect": "none"
+  },
+  {
+    "names": ["BARKY"],
+    "tag": "",
+    "message": "AWOO! ...wait. That's MY name.",
+    "allowed": false,
+    "effect": "none"
+  },
+  {
+    "names": ["FLOOFY"],
+    "tag": "",
+    "message": "No shame. Respect. ...Not allowed, though.",
+    "allowed": false,
+    "effect": "none"
+  },
+  {
+    "names": ["AZZY"],
+    "tag": "",
+    "message": "...",
+    "allowed": true,
+    "effect": "darken"
+  },
+  {
+    "names": ["YIFF"],
+    "tag": "",
+    "message": "The narrator refuses.",
+    "allowed": false,
+    "effect": "none"
+  },
+  {
+    "names": ["OWO"],
+    "tag": "",
+    "message": "What's this?",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["GAMER"],
+    "tag": "[REDUNDANT]",
+    "message": "We know.",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["PRO"],
+    "tag": "[PRO]",
+    "message": "Your K/D ratio is showing.",
+    "allowed": true,
+    "effect": "none"
+  },
+  {
+    "names": ["GASTER"],
+    "tag": "",
+    "message": "",
+    "allowed": true,
+    "effect": "restart_game"
+  }
+]

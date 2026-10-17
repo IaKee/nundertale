@@ -28,7 +28,18 @@ static char getLetterAt(int row, int col) {
     return static_cast<char>('a' + idx);
 }
 
+static void ensureNamesLoaded() {
+    static bool attempted = false;
+    if (!attempted) {
+        attempted = true;
+        if (!globalNameTable().isLoaded()) {
+            loadGlobalNames("data/names.json");
+        }
+    }
+}
+
 void NameSelectScene::onEnter(GameContext& /*context*/) {
+    ensureNamesLoaded();
     m_state = NameSelectState::Selecting;
     m_currentName.clear();
     m_cursorX = 0;

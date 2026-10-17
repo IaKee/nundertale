@@ -2026,6 +2026,121 @@ int main() {
         std::cout << "[PASS] FUR-002: FUR table parsing, fallbacks, and Barky pattern values verified." << std::endl;
     }
 
-    std::cout << "\nAll 37 test suites passed successfully!" << std::endl;
+    // 38. FRT-008 & NAR-028: data/names.json parsing, inline JSON, and reaction parity
+    {
+        using nundertale::NameTable;
+        using nundertale::NameEffect;
+        using nundertale::NameReaction;
+        using nundertale::reactionFor;
+        using nundertale::lookupBuiltinReaction;
+        using nundertale::builtinTableNames;
+        using nundertale::globalNameTable;
+        using nundertale::loadNamesFromFile;
+        using nundertale::loadGlobalNames;
+        using nundertale::withSameNameReaction;
+
+        // 1. Parse a small inline JSON with 2 entries (escaped quote in a message)
+        const std::string inlineJson = R"json([
+            {
+                "names": ["TESTER", "QA_HERO"],
+                "tag": "[TEST]",
+                "message": "He said: \"Ready to test!\"",
+                "allowed": true,
+                "effect": "gold"
+            },
+            {
+                "names": ["FORBIDDEN"],
+                "tag": "",
+                "message": "Access \"denied\" completely.",
+                "allowed": false,
+                "effect": "restart_game"
+            }
+        ])json";
+
+        NameTable localTable;
+        assert(localTable.parse(inlineJson));
+        assert(localTable.isLoaded());
+        assert(localTable.entries.size() == 2);
+
+        const auto* rTester = localTable.find("tester");
+        assert(rTester != nullptr);
+        assert(rTester->tag == "[TEST]");
+        assert(rTester->message == "He said: \"Ready to test!\"");
+        assert(rTester->allowed);
+        assert(rTester->effect == NameEffect::Gold);
+
+        const auto* rQa = localTable.find("QA_HERO");
+        assert(rQa != nullptr);
+        assert(rQa->tag == "[TEST]");
+
+        const auto* rForbidden = localTable.find("forbidden");
+        assert(rForbidden != nullptr);
+        assert(rForbidden->message == "Access \"denied\" completely.");
+        assert(!rForbidden->allowed);
+        assert(rForbidden->effect == NameEffect::RestartGame);
+
+        assert(localTable.find("unknown_name") == nullptr);
+
+        // 2. Load the real file data/names.json if readable
+        NameTable realTable;
+        const bool loaded = loadNamesFromFile("data/names.json", realTable);
+        if (loaded) {
+            assert(realTable.isLoaded());
+            assert(!realTable.empty());
+
+            // Real file yields the same reaction as the built-in table for every name in the built-in table
+            const auto& names = builtinTableNames();
+            assert(names.size() >= 20);
+
+            for (const auto& name : names) {
+                NameReaction builtinR{};
+                const bool foundBuiltin = lookupBuiltinReaction(name, builtinR);
+                assert(foundBuiltin);
+
+                const auto* jsonR = realTable.find(name);
+                assert(jsonR != nullptr);
+                assert(jsonR->tag == builtinR.tag);
+                assert(jsonR->message == builtinR.message);
+                assert(jsonR->allowed == builtinR.allowed);
+                assert(jsonR->effect == builtinR.effect);
+                assert(*jsonR == builtinR);
+
+                // reactionFor with realTable must match
+                NameReaction reactionWithTable = reactionFor(name, realTable);
+                assert(reactionWithTable == builtinR);
+            }
+
+            // Ensure loadGlobalNames loads it globally
+            assert(loadGlobalNames("data/names.json"));
+            assert(globalNameTable().isLoaded());
+
+            // Test case-insensitivity on global table
+            for (const auto& name : names) {
+                NameReaction builtinR{};
+                lookupBuiltinReaction(name, builtinR);
+                assert(reactionFor(name) == builtinR);
+
+                std::string lower = name;
+                for (char& c : lower) {
+                    if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+                }
+                assert(reactionFor(lower) == builtinR);
+            }
+
+            // Generic rules still work with loaded table
+            assert(reactionFor("AAAA").message == "Not very creative... Did your keyboard jam?");
+            assert(reactionFor("Q").message == "You call that a gamer? Saving characters?");
+            assert(reactionFor("Bob") == NameReaction{});
+
+            // withSameNameReaction helper (MET-004) keeps working
+            assert(withSameNameReaction(reactionFor("Bob"), "Bob", "BOB").message == "Again? You must really love this name.");
+            assert(withSameNameReaction(reactionFor("Bob"), "Bob", "").message.empty());
+            assert(withSameNameReaction(reactionFor("Chad"), "Chad", "CHAD").message == reactionFor("Chad").message);
+        }
+
+        std::cout << "[PASS] FRT-008 & NAR-028: names.json parser, quotes, and parity with built-in table verified." << std::endl;
+    }
+
+    std::cout << "\nAll 38 test suites passed successfully!" << std::endl;
     return 0;
 }
