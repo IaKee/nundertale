@@ -463,6 +463,8 @@ void BattleSystem::handleItemInput(GameContext& context) {
 
     if (context.input.isConfirmPressed()) {
         std::string item = context.player.inventory[m_subOptionIndex];
+        const ItemDef* itemDef = context.itemDatabase.findItemByName(item);
+        bool gainedFurStage = false;
 
         m_lastPlayerAction = PlayerTurnAction::Item;
         m_lastActionDetail = item;
@@ -477,18 +479,31 @@ void BattleSystem::handleItemInput(GameContext& context) {
         context.player.inventory.erase(context.player.inventory.begin() + m_subOptionIndex);
 
         // PRG-002: Equip weapon/armor or consume item
-        if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
+        if ((itemDef != nullptr && itemDef->type == "weapon") ||
+            (itemDef == nullptr && (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos))) {
             std::string oldWeapon = context.player.weapon;
             context.player.weapon = item;
-            context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
+            context.player.weaponAt = (itemDef != nullptr) ? itemDef->at : ((item.find("Keyboard") != std::string::npos) ? 4 : 2);
             context.player.inventory.push_back(oldWeapon);
             m_narratorText = "* You equipped the " + item + "!\n* Attack power updated!";
-        } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
+        } else if ((itemDef != nullptr && itemDef->type == "armor") ||
+                   (itemDef == nullptr && (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos))) {
             std::string oldArmor = context.player.armor;
             context.player.armor = item;
-            context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
+            context.player.armorDf = (itemDef != nullptr) ? itemDef->df : ((item.find("Hoodie") != std::string::npos) ? 3 : 1);
             context.player.inventory.push_back(oldArmor);
             m_narratorText = "* You equipped the " + item + "!\n* Defense updated!";
+            if (itemDef != nullptr && itemDef->furry > 0 && !itemDef->id.empty()) {
+                const std::string flag = "fur_on_equip." + itemDef->id;
+                if (!context.state.hasFlag(flag)) {
+                    const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, itemDef->furry);
+                    context.state.setFlag(flag, 1);
+                    gainedFurStage = furChange.stageUp;
+                    if (furChange.reachedMirror) {
+                        context.state.setFlag("fur_mirror_pending", 1);
+                    }
+                }
+            }
         } else if (item.find("Dew") != std::string::npos) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
             m_soulSpeedBuffTurns = 2; // ITM-005: +35% speed buff for 2 enemy turns
@@ -506,6 +521,9 @@ void BattleSystem::handleItemInput(GameContext& context) {
 
         if (context.player.hp >= context.player.maxHp && item.find("Tape") == std::string::npos && item.find("Mouse") == std::string::npos && item.find("Headset") == std::string::npos) {
             m_narratorText += "\n* Your HP was maxed out.";
+        }
+        if (gainedFurStage) {
+            m_narratorText += "\n* You feel... fluffier.";
         }
 
         context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
@@ -613,10 +631,16 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
     int finalDamage = std::max(1, reducedDamage);
 
     context.player.hp -= finalDamage;
+    float armorMult = 1.0f;
+    const ItemDef* armorDef = context.itemDatabase.findItemByName(context.player.armor);
+    if (armorDef != nullptr) {
+        armorMult = armorDef->furMult;
+    }
     const FurChange furChange = applyFur(
         context.state.furry.value,
         context.state.furry.stageMax,
-        fur);
+        fur,
+        armorMult);
     context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
     context.shake(6.0f, 0.25f);
     context.flash({ 255, 0, 0, 255 }, 0.15f);

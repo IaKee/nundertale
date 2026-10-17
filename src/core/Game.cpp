@@ -1,6 +1,8 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 namespace nundertale {
@@ -16,6 +18,13 @@ Game::Game() {
 
     // Wire up context dependencies (Dependency Injection)
     m_context = std::make_unique<GameContext>(*m_audioService, *m_resourceService, *m_inputService, *m_sceneManager, *m_saveService);
+
+    std::ifstream itemFile("data/items/items.json");
+    if (itemFile) {
+        std::ostringstream itemJson;
+        itemJson << itemFile.rdbuf();
+        m_context->itemDatabase.parse(itemJson.str());
+    }
 
     // Create virtual render target for pixel-perfect 640x480 retro rendering
     m_virtualTarget = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);

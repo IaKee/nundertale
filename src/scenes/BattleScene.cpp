@@ -64,6 +64,12 @@ void BattleScene::update(float dt, GameContext& context) {
             return;
         }
 
+        // AUD-004: the battle music stops the moment YOU WON shows
+        if (m_battleSystem->isVictory() && !m_victoryMusicStopped) {
+            context.audio.stopMusic();
+            m_victoryMusicStopped = true;
+        }
+
         if (m_battleSystem->isFinished()) {
             if (m_battleSystem->isFled()) {
                 context.scenes.popScene(context);

@@ -18,6 +18,7 @@ public:
 
 private:
     std::unique_ptr<BattleSystem> m_battleSystem;
+    bool m_victoryMusicStopped = false; // AUD-004
 };
 
 } // namespace nundertale

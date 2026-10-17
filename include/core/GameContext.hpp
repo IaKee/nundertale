@@ -9,6 +9,7 @@
 #include "services/IInputService.hpp"
 #include "services/ISaveService.hpp"
 #include "core/Fur.hpp"
+#include "core/ItemDatabase.hpp"
 
 namespace nundertale {
 
@@ -101,6 +102,7 @@ struct GameContext {
     IInputService& input;
     SceneManager& scenes;
     ISaveService& save;
+    ItemDatabase itemDatabase;
     GameState state;
     PlayerData& player;
     bool isRunning = true;
