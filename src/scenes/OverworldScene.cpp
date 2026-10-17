@@ -399,13 +399,18 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 if (itemDef != nullptr && itemDef->furry > 0 && !itemDef->id.empty()) {
                     const std::string flag = "fur_on_equip." + itemDef->id;
                     if (!context.state.hasFlag(flag)) {
-                        const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, itemDef->furry);
+                        const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
+                        const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax, itemDef->furry, isToxic);
                         context.state.setFlag(flag, 1);
                         if (furChange.stageUp) {
                             equipText += "\n* You feel... fluffier.";
                         }
                         if (furChange.reachedMirror) {
                             context.state.setFlag("fur_mirror_pending", 1);
+                        }
+                        if (furChange.capped && !context.state.hasFlag("fur_toxic_cap_msg.ruins")) {
+                            context.state.setFlag("fur_toxic_cap_msg.ruins", 1);
+                            equipText += "\n* Your vitriol burns the fluff right off.";
                         }
                     }
                 }
@@ -418,6 +423,17 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
                 context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
                 m_dialogBox.startDialog({ "* You ate the stale Doritos.\n* You recovered 6 HP!" }, "");
+            } else if (item.find("Duct Tape") != std::string::npos || item.find("Tape") != std::string::npos) {
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                if (context.state.furry.value <= 0) {
+                    m_dialogBox.startDialog({ DUCT_TAPE_EMPTY_TEXT }, "");
+                } else {
+                    applyFur(context.state.furry.value, context.state.furry.stageMax, DUCT_TAPE_FUR_LOSS);
+                    const std::string tapeText = (itemDef != nullptr && !itemDef->useText.empty())
+                        ? itemDef->useText
+                        : DUCT_TAPE_DEFAULT_TEXT;
+                    m_dialogBox.startDialog({ tapeText }, "");
+                }
             } else {
                 context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
                 context.audio.playSound("assets/sfx/heal.ogg", 0.8f);

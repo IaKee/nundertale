@@ -386,7 +386,8 @@ void BattleSystem::handleActInput(GameContext& context) {
             bool wasSpareable = m_enemy->isSpareable();
             if (applies && act.fur != 0) {
                 // ACT-005: Accept Hug adds FUR (FUR-002/FUR-005 feedback)
-                const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, act.fur);
+                const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
+                const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax, act.fur, isToxic);
                 if (furChange.stageUp) {
                     const Color fluffPink{ 255, 170, 220, 255 };
                     spawnDust(m_soulPosition, 18, fluffPink);
@@ -395,6 +396,10 @@ void BattleSystem::handleActInput(GameContext& context) {
                 }
                 if (furChange.reachedMirror) {
                     context.state.setFlag("fur_mirror_pending", 1);
+                }
+                if (furChange.capped && !context.state.hasFlag("fur_toxic_cap_msg.ruins")) {
+                    context.state.setFlag("fur_toxic_cap_msg.ruins", 1);
+                    m_narratorText += "\n* Your vitriol burns the fluff right off.";
                 }
             }
             if (applies && act.spareNow) {
@@ -497,11 +502,16 @@ void BattleSystem::handleItemInput(GameContext& context) {
             if (itemDef != nullptr && itemDef->furry > 0 && !itemDef->id.empty()) {
                 const std::string flag = "fur_on_equip." + itemDef->id;
                 if (!context.state.hasFlag(flag)) {
-                    const FurChange furChange = applyFur(context.state.furry.value, context.state.furry.stageMax, itemDef->furry);
+                    const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
+                    const FurChange furChange = applyFurCapped(context.state.furry.value, context.state.furry.stageMax, itemDef->furry, isToxic);
                     context.state.setFlag(flag, 1);
                     gainedFurStage = furChange.stageUp;
                     if (furChange.reachedMirror) {
                         context.state.setFlag("fur_mirror_pending", 1);
+                    }
+                    if (furChange.capped && !context.state.hasFlag("fur_toxic_cap_msg.ruins")) {
+                        context.state.setFlag("fur_toxic_cap_msg.ruins", 1);
+                        m_narratorText += "\n* Your vitriol burns the fluff right off.";
                     }
                 }
             }
@@ -513,8 +523,15 @@ void BattleSystem::handleItemInput(GameContext& context) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
             m_narratorText = "* You devoured the stale Doritos!\n* Pure nostalgia. You recovered 6 HP!";
         } else if (item.find("Duct Tape") != std::string::npos || item.find("Tape") != std::string::npos) {
-            applyFur(context.state.furry.value, context.state.furry.stageMax, -15);
-            m_narratorText = "* You aggressively taped down your sprouting fur!\n* Ouch! Furry meter reduced by 15%!";
+            if (context.state.furry.value <= 0) {
+                m_narratorText = DUCT_TAPE_EMPTY_TEXT;
+            } else {
+                applyFur(context.state.furry.value, context.state.furry.stageMax, DUCT_TAPE_FUR_LOSS);
+                const std::string tapeText = (itemDef != nullptr && !itemDef->useText.empty())
+                    ? itemDef->useText
+                    : DUCT_TAPE_DEFAULT_TEXT;
+                m_narratorText = tapeText;
+            }
         } else {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
             m_narratorText = "* You used " + item + "!\n* Recovered 8 HP.";
@@ -644,10 +661,12 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
     if (armorDef != nullptr) {
         armorMult = armorDef->furMult;
     }
-    const FurChange furChange = applyFur(
+    const bool isToxic = context.state.getRoute() == GameState::RouteType::ToxicGamer;
+    const FurChange furChange = applyFurCapped(
         context.state.furry.value,
         context.state.furry.stageMax,
         fur,
+        isToxic,
         armorMult);
     context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
     context.shake(6.0f, 0.25f);
@@ -662,12 +681,16 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur)
     if (furChange.reachedMirror) {
         context.state.setFlag("fur_mirror_pending", 1);
     }
+    if (furChange.capped && !context.state.hasFlag("fur_toxic_cap_msg.ruins")) {
+        context.state.setFlag("fur_toxic_cap_pending", 1);
+    }
 
     if (context.player.hp <= 0) {
         context.player.hp = 0;
         m_state = BattleState::Defeat;
         m_residual.clear();
         m_furStageUpPending = false;
+        context.state.setFlag("fur_toxic_cap_pending", 0);
         m_narratorText.clear(); // BUG-21: no narrator line, straight to the FURRY OVER sequence
         context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
         return true;
@@ -693,6 +716,11 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
         } else {
             // BFL-002: Query turn flavor text from enemy pools without repeating
             m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
+        }
+        if (context.state.hasFlag("fur_toxic_cap_pending")) {
+            context.state.setFlag("fur_toxic_cap_pending", 0);
+            context.state.setFlag("fur_toxic_cap_msg.ruins", 1);
+            m_narratorText += "\n* Your vitriol burns the fluff right off.";
         }
         m_state = BattleState::MenuSelect;
         return;
