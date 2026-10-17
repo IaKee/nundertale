@@ -824,7 +824,7 @@ void BattleSystem::spawnBulletWave() {
         b.text = "UWU";
         b.color = Color{ 255, 120, 210, 255 };
         b.damage = 3;
-        b.fur = 6;
+        b.fur = m_enemy->getPatternFur("uwu_rain", globalFurTable().get("bullet_cute", 7));
         m_bullets.push_back(b);
     } else if (m_barkyPattern == BarkyPattern::DewBounce) {
         // Pattern 2: Dew Bounce (BHL-014: Mountain Dew cans bouncing off arena walls & floor)
@@ -837,7 +837,7 @@ void BattleSystem::spawnBulletWave() {
         b.gravity = 140.0f;
         b.bounces = true;
         b.damage = 4;
-        b.fur = 4;
+        b.fur = m_enemy->getPatternFur("dew_bounce", globalFurTable().get("bullet_neutral", 3));
         m_bullets.push_back(b);
     } else {
         // Pattern 3: Howl Wave (BHL-014 tuning). Next wall ready when previous has travelled >= 60% box width and >= 1.4s.
@@ -873,7 +873,7 @@ void BattleSystem::spawnBulletWave() {
             b.arcRadius = arcRadius;
             b.color = Color{ 100, 200, 255, 255 };
             b.damage = 3;
-            b.fur = 5;
+            b.fur = m_enemy->getHowlFur(5);
             m_bullets.push_back(b);
         }
 

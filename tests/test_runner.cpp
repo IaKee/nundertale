@@ -19,6 +19,7 @@
 #include "core/Transition.hpp"
 #include "core/NameRules.hpp"
 #include "core/Fur.hpp"
+#include "core/FurTable.hpp"
 #include "services/MusicTracks.hpp"
 #include "scenes/FrontEndFlow.hpp"
 #include "core/SaveText.hpp"
@@ -1980,6 +1981,51 @@ int main() {
         std::cout << "[PASS] MNU-004 & NAR-004: CELL contacts by flags, Furiell options, and voicemail verified." << std::endl;
     }
 
-    std::cout << "\nAll 36 test suites passed successfully!" << std::endl;
+    // 37. FUR-002: data-driven FUR source table and per-pattern values
+    {
+        nundertale::FurTable table;
+        const bool parsed = table.parse(R"({
+            "bullet_neutral": 3,
+            "bullet_cute": 7,
+            "bullet_very_cute": 10,
+            "floofy_hug_pellet": 20,
+            "accept_hug": 15,
+            "accept_hug_furiell": 30,
+            "furiell_bed": 5,
+            "fursuit_head": 40,
+            "quiz_wrong": 5
+        })");
+        assert(parsed);
+        assert(table.get("bullet_neutral", -1) == 3);
+        assert(table.get("bullet_cute", -1) == 7);
+        assert(table.get("bullet_very_cute", -1) == 10);
+        assert(table.get("floofy_hug_pellet", -1) == 20);
+        assert(table.get("accept_hug", -1) == 15);
+        assert(table.get("accept_hug_furiell", -1) == 30);
+        assert(table.get("furiell_bed", -1) == 5);
+        assert(table.get("fursuit_head", -1) == 40);
+        assert(table.get("quiz_wrong", -1) == 5);
+        assert(table.get("missing_source", 23) == 23);
+
+        std::ifstream barkyFile("data/enemies/barky.json");
+        if (barkyFile) {
+            std::ostringstream barkyJson;
+            barkyJson << barkyFile.rdbuf();
+            const std::string json = barkyJson.str();
+            assert(nundertale::patternFurFromJson(json, "uwu_rain", table.get("bullet_cute", 7)) == 6);
+            assert(nundertale::patternFurFromJson(json, "dew_bounce", table.get("bullet_neutral", 3)) == 4);
+            assert(nundertale::patternFurFromJson(json, "missing_pattern", table.get("bullet_neutral", 3)) == 3);
+            assert(nundertale::howlFurFromJson(json, 5) == 5);
+        }
+
+        assert(nundertale::patternFurFromJson(
+                   R"({"patterns":[{"id":"heart","params":{"fur":9,"furry":8}}]})",
+                   "heart", 7) == 8);
+        assert(nundertale::howlFurFromJson(R"({"howlFur":11})", 5) == 11);
+
+        std::cout << "[PASS] FUR-002: FUR table parsing, fallbacks, and Barky pattern values verified." << std::endl;
+    }
+
+    std::cout << "\nAll 37 test suites passed successfully!" << std::endl;
     return 0;
 }

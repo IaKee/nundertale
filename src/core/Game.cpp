@@ -26,6 +26,13 @@ Game::Game() {
         m_context->itemDatabase.parse(itemJson.str());
     }
 
+    std::ifstream furFile("data/fur.json");
+    if (furFile) {
+        std::ostringstream furJson;
+        furJson << furFile.rdbuf();
+        m_context->furTable.parse(furJson.str());
+    }
+
     // Create virtual render target for pixel-perfect 640x480 retro rendering
     m_virtualTarget = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(m_virtualTarget.texture, TEXTURE_FILTER_POINT);

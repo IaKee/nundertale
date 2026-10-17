@@ -5,10 +5,81 @@
 #include <memory>
 #include <unordered_map>
 #include <algorithm>
+#include <cctype>
 #include <functional>
 #include <raylib.h>
 
 namespace nundertale {
+
+inline bool jsonIntForKey(const std::string& json, const std::string& key, int& value) {
+    const std::string needle = "\"" + key + "\"";
+    std::size_t pos = json.find(needle);
+    if (pos == std::string::npos) return false;
+    pos = json.find(':', pos + needle.size());
+    if (pos == std::string::npos) return false;
+    ++pos;
+    while (pos < json.size() && std::isspace(static_cast<unsigned char>(json[pos])) != 0) ++pos;
+    bool negative = false;
+    if (pos < json.size() && json[pos] == '-') {
+        negative = true;
+        ++pos;
+    }
+    if (pos >= json.size() || std::isdigit(static_cast<unsigned char>(json[pos])) == 0) return false;
+    int parsed = 0;
+    while (pos < json.size() && std::isdigit(static_cast<unsigned char>(json[pos])) != 0) {
+        parsed = parsed * 10 + (json[pos] - '0');
+        ++pos;
+    }
+    value = negative ? -parsed : parsed;
+    return true;
+}
+
+inline std::string jsonObjectAt(const std::string& json, std::size_t openPos) {
+    if (openPos >= json.size() || json[openPos] != '{') return {};
+    int depth = 0;
+    bool inString = false;
+    bool escaped = false;
+    for (std::size_t pos = openPos; pos < json.size(); ++pos) {
+        const char ch = json[pos];
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (ch == '\\') escaped = true;
+            else if (ch == '"') inString = false;
+            continue;
+        }
+        if (ch == '"') inString = true;
+        else if (ch == '{') ++depth;
+        else if (ch == '}' && --depth == 0) return json.substr(openPos, pos - openPos + 1);
+    }
+    return {};
+}
+
+inline int patternFurFromJson(const std::string& json, const std::string& patternId, int fallback) {
+    const std::size_t patternsPos = json.find("\"patterns\"");
+    if (patternsPos == std::string::npos) return fallback;
+    std::size_t searchPos = patternsPos;
+    while ((searchPos = json.find("\"id\"", searchPos)) != std::string::npos) {
+        const std::size_t colon = json.find(':', searchPos + 4);
+        const std::size_t quote = colon == std::string::npos ? std::string::npos : json.find('"', colon + 1);
+        const std::size_t endQuote = quote == std::string::npos ? std::string::npos : json.find('"', quote + 1);
+        if (endQuote == std::string::npos) return fallback;
+        if (json.substr(quote + 1, endQuote - quote - 1) == patternId) {
+            const std::size_t objectStart = json.rfind('{', searchPos);
+            const std::string patternObject = jsonObjectAt(json, objectStart);
+            int value = 0;
+            if (jsonIntForKey(patternObject, "furry", value)) return value;
+            if (jsonIntForKey(patternObject, "fur", value)) return value;
+            return fallback;
+        }
+        searchPos = endQuote + 1;
+    }
+    return fallback;
+}
+
+inline int howlFurFromJson(const std::string& json, int fallback) {
+    int value = 0;
+    return jsonIntForKey(json, "howlFur", value) ? value : fallback;
+}
 
 struct ActDef {
     std::string id;
@@ -88,6 +159,12 @@ public:
     void modifyAtk(int delta);
     void modifyDef(int delta);
 
+    int getPatternFur(const std::string& patternId, int fallback) const {
+        const auto it = m_patternFur.find(patternId);
+        return it != m_patternFur.end() ? it->second : fallback;
+    }
+    int getHowlFur(int fallback) const { return m_howlFur >= 0 ? m_howlFur : fallback; }
+
     const std::vector<ActDef>& getActs() const { return m_acts; }
     void setActs(const std::vector<ActDef>& acts) { m_acts = acts; }
     void addAct(const ActDef& act) { m_acts.push_back(act); }
@@ -137,6 +214,8 @@ private:
     bool m_spareable = false;
 
     std::vector<ActDef> m_acts;
+    std::unordered_map<std::string, int> m_patternFur;
+    int m_howlFur = -1;
 
     // Flavor pools (BFL-002)
     std::vector<std::string> m_defaultFlavor;
