@@ -162,6 +162,7 @@ void GameOverScene::update(float dt, GameContext& context) {
                 } else {
                     context.player.hp = context.player.maxHp;
                 }
+                sessionOnLoad(context.session, true);
 
                 context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
             }

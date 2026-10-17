@@ -138,6 +138,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                         context.state.setFlag("ruins.barky.killed", 1);
                         context.state.setFlag("ruins.barky.state", 2);
                         context.state.killsTotal += 1;
+                        sessionOnKill(context.session);
                         context.state.killsByArea["ruins"] += 1;
                         m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);

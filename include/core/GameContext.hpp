@@ -12,6 +12,7 @@
 #include "core/FurTable.hpp"
 #include "core/ItemDatabase.hpp"
 #include "core/RaidClock.hpp"
+#include "core/SessionMeta.hpp"
 
 namespace nundertale {
 
@@ -109,6 +110,7 @@ struct GameContext {
     ItemDatabase itemDatabase;
     GameState state;
     PlayerData& player;
+    SessionMeta session;
     bool isRunning = true;
     bool debugHitboxes = false; // QA-002: F2 hitbox overlay toggle
     bool raidPaused = false;
