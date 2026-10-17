@@ -260,6 +260,8 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 | **BUG-15** | `ResourceService::getFont` | Fonts are loaded at one size and drawn at another (e.g. load 22 and draw 20), which makes pixels uneven with POINT filtering. | **[x] Fixed:** drawing at the native loaded size (`baseSize`), eliminating distortion with POINT filtering (`GFX-003`). |
 | **BUG-16** | `BattleSystem` | EXP is gained but LV never goes up; the spare (+10) and kill (+15) gold is hardcoded. | **[x] Fixed:** official LV/EXP table added; VITRIOL increase, recalculated HP and heal on level up (`PRG-001`). |
 | **BUG-17** | `BattleSystem::handleFightTargetInput` | The attack cursor always starts on the left. In Undertale, the side is random. | **[x] Fixed:** random entry from the left or right with matching directional speed (`FGT-002`). |
+| **BUG-31** | `src/scenes/OverworldScene.cpp` | Play time was counted twice while walking: `Game.cpp`'s fixed loop and `OverworldScene::update` both added to `state.playTime`. | **[x] Fixed (2026-10-17):** only the fixed loop counts it. |
+| **BUG-32** | `assets/sfx/heal.ogg` | Healing items play `assets/sfx/heal.ogg`, which doesn't exist, so healing is silent. | Add a placeholder heal SFX (AUD-002) or point to an existing one. |
 
 ### 4.1 Divergences between the current code and LORE v2
 
@@ -378,10 +380,11 @@ P1 · S · CORE-001
 P0 · M · CORE-004
 - **What:** `Flags::get/set/inc` with string keys (`"ruins.barky.spared"`, `"ruins.candy.taken"`), used by conditional dialogue, doors, NPCs and routes.
 
-#### CORE-011 — Step-scripted cutscenes `[ ]`
+#### CORE-011 — Step-scripted cutscenes `[~]`
 P1 · L · CORE-010, TXT-001
 - **What:** a sequence runner (`Cutscene { steps: [MoveNpc, Wait, Dialog, PlaySound, SetFlag, CameraPan, FadeOut, StartBattle] }`) loaded from JSON. Blocks player input while it runs. The LORE needs it in R2, R6, R7, R9, S1, S4, W1, H1, N3, the Mirror, the Furry-route scenes and every ending.
 - **Acceptance:** Barky's entrance (the dramatic drop + line, ROTEIRO Scene 3) is done purely with data.
+- **Partly done (2026-10-17):** `include/core/Cutscene.hpp`: a JSON-loaded step runner (`wait`, `dialog` blocking until the box closes, `sound`, `setFlag`, `shake`, `flash`, `startBattle`), and player input is blocked while it runs. Barky's entrance is now `data/cutscenes/barky_entrance.json` (sound → shake → wait → BARKY's 3 lines → battle), with the old hardcoded version as the fallback. `moveNpc`, `cameraPan` and `fadeOut` are parsed but skipped (no NPC movement or camera yet), and `startBattle` only knows `barky` (BFL-004).
 
 #### CORE-012 — Play time clock `[x]`
 P1 · S · CORE-004
@@ -1057,7 +1060,7 @@ P0 · M · MNU-001, PRG-001
 - **LORE rework:** label **`FUR n`** + the stage name (BUG-23, FUR-006); a **`RAID mm:ss`** line (RAD-002); on the Furry route `HP` becomes `FLF` and FUR disappears; weapon/armor with the LORE names (BUG-24).
 - **Progress (2026-10-17):** the STAT box shows `FUR: n (Stage)` (e.g. `FUR: 21 (Ears)`) and the LORE armor name. Pending: `RAID mm:ss` (RAD-002), the FLF swap on the Furry route, the KILLS line.
 
-#### MNU-004 — CELL (phone) `[ ]`
+#### MNU-004 — CELL (phone) `[~]`
 P1 · M · MNU-001, NAR-004
 - **What (LORE §21):** a flip phone with paw stickers (received in R7); the **raid clock** at the top (RAD-002); a visible `Homework` folder (400 GB) that never opens (`* Not here.`). Contacts unlocked by flag:
 
@@ -1068,6 +1071,7 @@ P1 · M · MNU-001, NAR-004
 | Alphys | H2 | quiz hints (`...is typing`) |
 | Guild | R1 | receive-only (MNU-006) |
 | Mom | R1 | receive-only (MNU-006) |
+- **Partly done (2026-10-17):** The CELL lists Guild and Mom (receive-only), Furiell/Papyrus/Alphys when their flags are set (`cell_furiell`, `cell_papyrus`, `cell_alphys`), and `Homework (400 GB)` (`* Not here.`), with the raid clock at the top. Furiell has the 5 LORE §21.2 options verbatim. Pending: the flip-phone art with paw stickers, getting the phone in R7, per-room replies (NAR-004), Papyrus/Alphys calls.
 
 #### MNU-005 — Dimensional box (storage) `[-]`
 - **Not in LORE v2:** no dimensional box in a ~30-minute scope. Reopen only if the 8-slot inventory becomes a problem in playtest (suggested parody: `CLOUD STORAGE - 3 GB FREE`).
@@ -1199,20 +1203,22 @@ P0 · M · FRT-006, CORE-003
 - **What:** "Is this name correct?" (current parody: "Are you sure about that?", fine), the name **slowly grows** from small to large in the center while trembling, `No` / `Yes` underneath; Yes → a **long white fade (~3 s)** with a rising sound (cymbal/"swoosh") straight into the fall room. Forbidden names only show `Go back`.
 - **Done (2026-10-17):** the name grows and trembles toward the center over ~4 s, No / Yes (forbidden names: Go back only), Yes → 3 s white fade (CORE-003 `fadeWhite(out, in)`). The rising cymbal SFX is still missing (AUD-011).
 
-#### FRT-008 — Name easter eggs: review `[~]`
+#### FRT-008 — Name easter eggs: review `[x]`
 P2 · S · FRT-007
 - **What:** keep the ROTEIRO §6 table + LORE §30.2 (`FURIEL`/`FURIELL` `* Furiell is flattered. But no.` · `BARKY` `* AWOO! ...wait. That's MY name.` · `FLOOFY` `* No shame. Respect. ...Not allowed, though.` · `AZZY` screen darkens, `* ...`, allowed · `FROG`/`PEPE` frog soul · `YIFF` `* The narrator refuses.` (not allowed) · `OWO` `* What's this?` · `CHARA` the first-fallen easter egg). Forbidden name `GASTER` → restarts the game (as in Undertale). Move the list to `data/names.json` (NAR-028).
 - **Dropped:** the previously proposed `GABEN` (a real person, LORE §2.2). Replace "Midwest FurFest" with FurNation Con '14 wherever it shows up.
 - **Partly done (2026-10-17):** ROTEIRO §6 + LORE §30.2 table in `include/core/NameRules.hpp` (FURIEL/BARKY/FLOOFY/YIFF forbidden, AZZY darkens, FROG/PEPE frog color, GASTER restarts the game). Pending: move it to `data/names.json` (NAR-028).
+- **Done (2026-10-17):** The table moved to `data/names.json` (same entries, order and texts); `reactionFor` uses it when it's loaded and falls back to the built-in table. A test checks that every built-in name gives the same reaction from the file.
 
 #### FRT-009 — Settings `[~]`
 P2 · M · CORE-007
 - **What:** the "SETTINGS" screen with `EXIT`, music/SFX volume, fullscreen, integer scaling and controls (no language option, D-03). Undertale's background/style (big text, selected option in yellow).
 - **Partly done (2026-10-17):** `SettingsScene` pushed from the start menu and the Continue card: EXIT, music volume, master volume (live, 10% steps), fullscreen, spare ding, a static controls block; saved to the config on exit. Pending: SFX volume and integer scaling (need engine support) and a remapping UI.
 
-#### FRT-010 — Disclaimer `[ ]`
+#### FRT-010 — Disclaimer `[x]`
 P3 · S · BUG-01
 - **What:** already exists; review the opening fade (depends on BUG-01) and make sure Z skips it.
+- **Done (2026-10-17):** Reviewed: the disclaimer fades in (BUG-01 is fixed) and Z/Enter skips it at any moment; the skip can't fire twice because scenes don't update during their exit transition. No change needed.
 
 ---
 
@@ -1242,9 +1248,10 @@ P1 · S · AUD-001
 P1 · S · AUD-001
 - **What:** intro + loop (raylib `Music` with a manual seek to `loopStart` after passing `loopEnd`).
 
-#### AUD-006 — Music fades `[ ]`
+#### AUD-006 — Music fades `[x]`
 P2 · S · AUD-001
 - **What:** `fadeOut(frames)` / `fadeIn(frames)` for cutscenes (Furiell leaving, Senpai Sans showing up, the Mirror).
+- **Done (2026-10-17):** `fadeOutMusic(seconds)` (stops at the end) and `fadeInMusic(path, seconds)` in the audio service; the fade multiplies the configured volume. The title music now fades out during the long white fade after the name is confirmed. Cutscenes will use it when they exist.
 
 #### AUD-007 — Channels and priority `[ ]`
 P2 · S · —
@@ -1310,7 +1317,7 @@ P0 · S · D-04
 P0 · M · D-05
 - **Resolved by LORE §8.4** (gain, loss, stages, HUD) and §8.5 (100% = Mirror). The proposed `docs/furry_meter.md` is no longer needed: the LORE is the reference. Any number tweaks go to `data/fur.json` (FUR-002), not the LORE.
 
-#### FUR-002 — Single state and per-source gain `[~]`
+#### FUR-002 — Single state and per-source gain `[x]`
 P0 · M · FUR-001, BHL-005, BUG-27
 - **Today:** each bullet adds `b.furry` (fixed 6/7/5 in `BattleSystem.cpp`) to a `float furryMeter`, and a second `FurryState::meter` is saved in parallel.
 - **What:** a single **integer `fur.value` 0–100** in `GameState`, with `addFur(n, source)` applying the armor multiplier (FUR-009) and triggering stage changes/the Mirror. Base table in `data/fur.json`:
@@ -1329,6 +1336,7 @@ P0 · M · FUR-001, BHL-005, BUG-27
 
 - **Acceptance:** the per-bullet value comes from the pattern JSON (`params.fur`); unit tests cover the multiplier, the 0–100 clamp and the Mirror trigger; an old save with both fields migrates without loss.
 - **Progress (2026-10-17):** single integer `GameState::furry.value` 0–100 with `stageMax`, `applyFur(value, stageMax, delta, armorMult)` in `include/core/Fur.hpp`; `PlayerData::furryMeter` removed; old saves migrate (max of the two old fields, rounded). Per-bullet values unchanged (6/7/5). Pending: `data/fur.json` and per-pattern `params.fur`.
+- **Done (2026-10-17):** `data/fur.json` holds the per-source table (ranges use the middle value) and is loaded at startup into a `FurTable` (built-in defaults if the file is missing). Bullet FUR comes from the enemy JSON pattern params (`furry`/`fur`; Barky is still 6/4/5, the howl wave via an optional `howlFur`), and Accept Hug reads `accept_hug`.
 
 #### FUR-003 — KR-style HUD display `[~]` (LORE rework)
 P0 · S · BUI-005, FUR-002
@@ -1336,9 +1344,10 @@ P0 · S · BUI-005, FUR-002
 - **Missing (LORE §8.4):** a small **`FUR`** label after the HP bar (a sprite, like "KR"); hidden at 0%; on its **first appearance (R2)** the bar comes in trembling (`GFX-009`). On the Furry route the whole HUD switches to FLUFF (`FLF-004`).
 - **LORE rework done (2026-10-17):** a KR-style `FUR` label after the HP bar (hidden at 0), HP numbers purple while FUR > 0; on its first appearance the label and the purple overlay tremble for 1.5 s (`fur_hud_seen` flag, `include/combat/FurHud.hpp`). Pending: a sprite label instead of text, the FLUFF HUD (FLF-004).
 
-#### FUR-004 — Loss sources `[ ]`
+#### FUR-004 — Loss sources `[~]`
 P0 · S · FUR-002
 - **What (LORE §8.4):** `Duct Tape` −15 · ACT `Touch` on Grasstoid −10 · ACT `Shower` on Washua −10 · Shed Inn (10G) −25 · refusing the Mirror → back to **60** · save points **don't reduce it** (with FUR > 0 the save text gets the extra line `* DETERMINATION can't fix fluff.`) · Furiell zeroes FUR after Floofy's tutorial ("my glitter is hypoallergenic").
+- **Partly done (2026-10-17):** Duct Tape −15 in battle and in the overworld with the items.json text; at FUR 0 it says `* You tape... nothing. There's no fluff to remove.` (still consumed). The save-point line was already in place (SAV-007). Pending: Touch/Shower ACTs, Shed Inn, refusing the Mirror, Furiell's reset (need those enemies/places).
 
 #### FUR-005 — Stages and transitions `[~]`
 P0 · M · FUR-002
@@ -1369,9 +1378,10 @@ P2 · S · GFX-002
 - **What (LORE §25.1):** 2–4 particles per screen in every area (`#FFB3E6`, `#FFD27F`), density proportional to FUR; off on the Toxic route.
 - **Done (2026-10-17):** 2–4 slow 2×2 fluff particles (`#FFB3E6` / `#FFD27F`) drift over the overworld, more with higher FUR, none on the Toxic route (`include/core/FluffParticles.hpp`, deterministic RNG). Real particle sprites come with GFX-002/GFX-013.
 
-#### FUR-011 — Cap at 99 on the Toxic route `[ ]`
+#### FUR-011 — Cap at 99 on the Toxic route `[x]`
 P1 · S · PRG-031
 - **What:** while `route.toxic_active` is true (C7-001), FUR stops at 99 and the Mirror doesn't fire: `* Your vitriol burns the fluff right off.` (once per area).
+- **Done (2026-10-17):** `applyFurCapped`: on the Toxic route every FUR gain stops at 99 and never opens the Mirror; the first clamped gain shows `* Your vitriol burns the fluff right off.` (flag `fur_toxic_cap_msg.ruins`; other areas will need their own id).
 
 #### FUR-012 — FUR balancing `[ ]`
 P1 · M · FUR-002, QA-020
@@ -1443,18 +1453,21 @@ P1 · S · BUI-007
 
 > Source: LORE §8.7, §21.3, §22.4. **Never a game over.**
 
-#### RAD-001 — State and counting `[ ]`
+#### RAD-001 — State and counting `[x]`
 P1 · M · CORE-012, D-12
 - **What:** `raid.time_left` (seconds) starts when Pepe wakes up in R1 (value from `data/raid.json`, D-12); counts real play time; **pauses** in the C menu, the CELL, Settings and while the window is unfocused; keeps running in battles and cutscenes. Goes into the save; a FURRY OVER restores the saved value.
 - **Acceptance:** a pause/resume unit test; the saved time and the one shown in STAT match.
+- **Done (2026-10-17):** `RaidClock` in `GameState` (`include/core/RaidClock.hpp`), started on the first overworld entry from `data/raid.json` `startSeconds` (1320 = 22:00, D-12 option (a), fallback 1320). Pauses in the C menu/CELL, Settings and when the window is unfocused; keeps running in battles. Saved as `raid.started`/`raid.timeLeft`; old saves load without it. Unit tests cover pause/tick/labels.
 
-#### RAD-002 — Display `[ ]`
+#### RAD-002 — Display `[x]`
 P1 · S · RAD-001, MNU-003, MNU-004
 - **What:** `RAID mm:ss` in STAT and at the top of the CELL; once it runs out, `RAID: KICKED`.
+- **Done (2026-10-17):** `RAID mm:ss` (or `RAID: KICKED`) under FUR in STAT and at the top right of the CELL.
 
-#### RAD-003 — Guild messages by threshold `[ ]`
+#### RAD-003 — Guild messages by threshold `[x]`
 P1 · S · RAD-001, MNU-006
 - **What:** R1 `RAID STARTS IN 30:00. BE THERE OR GET KICKED. bring dew -xX_Moderator_Xx` (the phone buzzes) · 15:00 `15 MIN WHERE ARE U` · 5:00 `5 min. ur kicked if ur late. no cap.` · 0:00 `* Your phone buzzes.` / `* "Raid started without you. Kicked."` / `* ...You feel strangely okay with that.` **Deferred** if the threshold lands in a battle/cutscene (it shows up back in the overworld).
+- **Done (2026-10-17):** `raidPendingMessage` (mask in flag `raid_msgs_shown`) shows the start, 15:00, 5:00 and kicked texts as overworld dialog; crossings during a battle show on return. Uses `selection_sound.wav` until AUD-011 has a buzz SFX.
 
 #### RAD-004 — Queries for the endings `[ ]`
 P1 · S · RAD-001
@@ -1567,9 +1580,10 @@ P2 · S · MET-001, NAR-012
 P2 · S · SAV-005
 - **What:** any ending → Senpai Sans in S1 `heh. you look like you've seen this episode before.` · after Toxic → Floofy in R2 `You again? You know what you did. I have screenshots. I have NO shame about showing them.` · after Furry → Furiell in R3 `...Have we met? You smell familiar.` · `meta.resets ≥ 3` → Sans at Grillby's `you ever feel stuck in a loop? like a gacha banner that never ends?`
 
-#### MET-004 — Same name as the previous game `[ ]`
+#### MET-004 — Same name as the previous game `[x]`
 P3 · S · FRT-007
 - **What:** `meta.last_name`; confirming the same name: `* Again? You must really love this name.`
+- **Done (2026-10-17):** `meta.lastName` is saved on confirm; the same name again (case-insensitive) shows `Again? You must really love this name.` on the confirm screen, only when no easter-egg reaction applies (no leading `* `, like the other confirm-screen lines).
 
 #### MET-005 — Title by last ending `[ ]`
 P2 · M · FRT-003, END-001
@@ -1598,10 +1612,11 @@ P0 · S · LOR-001
 P0 · S · LOR-001
 - **What:** an acceptance criterion for every sprite/portrait: adult proportions (LORE §25.1). Monster Kid **has no parody**; no "small" NPC with a childlike look (Uwu-mie and Napstablurk included: stylized adults).
 
-#### LOR-005 — Automatic text lint `[ ]`
+#### LOR-005 — Automatic text lint `[~]`
 P2 · M · TXT-010, QA-012
 - **What:** `tools/content_lint` scans `data/dialogue/**` against a list of blocked terms (kept out of the public repo if needed) and fails the validation build when it finds one.
 - **Language (D-03):** the same lint flags text that isn't English — accented characters (`ã`, `ç`, `é`…) and a short list of common Portuguese words — and player-visible strings hardcoded in C++.
+- **Partly done (2026-10-17):** `lint.bat` builds `tools/content_lint.exe` and scans `data/**/*.json` and `assets/lang/*.json` for accented letters (U+00C0–U+024F), a short Portuguese word list and an optional private `tools/content_lint_blocklist.txt` (gitignored; format in the `.example.txt`). Exit 1 on findings. The first run found only `Piñata` (fixed to `Pinata`). Pending: player-visible strings hardcoded in C++ (most text is still in code, TXT-010) and wiring it into a validation build (QA-012).
 
 #### LOR-006 — Real brand register `[ ]`
 P3 · S · D-14
@@ -1738,9 +1753,10 @@ P2 · M · C7-*
 P2 · M · FUR-008
 - **What:** beyond LORE §8.4's fixed lines, 1–2 reactions per area for each stage (Snowdinha townsfolk, Uwu-mies, Alphys), keeping the rule: nobody comments explicitly on Pepe's secret.
 
-#### NAR-028 — Name easter eggs `[ ]`
+#### NAR-028 — Name easter eggs `[~]`
 P2 · S · FRT-008
 - **What:** merge the ROTEIRO §6 table with LORE §30.2 (`FURIEL`/`FURIELL`, `BARKY`, `FLOOFY`, `AZZY` darkens and allows, `FROG`/`PEPE` frog soul, `YIFF` refused, `OWO`, `CHARA`) into `data/names.json`; `TORIEL` → `Furiell has already trademarked this name.` stays.
+- **Partly done (2026-10-17):** `data/names.json` exists with the ROTEIRO §6 + LORE §30.2 entries already in code (FRT-008). Check `OWO`, `CHARA` and `TORIEL` against the LORE in a writing pass.
 
 #### NAR-029 — Pepe's thoughts and the secret `[ ]`
 P1 · S · —
