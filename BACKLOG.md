@@ -269,7 +269,7 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 | :--- | :--- | :--- | :--- |
 | **BUG-18** | `src/scenes/OverworldScene.cpp:164` | Hardcoded, non-canon encounter text `* Barky the Alpha Furry attacks!` (Barky is "the Alpha Wolf"; his entrance is ROTEIRO Scene 3 / LORE R9). | Move to data and use the LORE scene (`C1-009`, `TXT-010`). **[~] Partly fixed (2026-10-17):** Barky's ROTEIRO/LORE §19.1 entrance lines (speaker BARKY) replace the old text; still hardcoded until C1-009/TXT-010. |
 | **BUG-19** | `src/scenes/OverworldScene.cpp:43` and `data/dialogue/en/ruins.json` (`ruins.sign.notice`) | Two different versions of the Ruins Administration notice, neither matching the canon (LORE R8: `Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.`). | One key only, with the LORE text (`C1-008`). **[~] Partly fixed (2026-10-17):** The overworld sign uses the LORE R8 notice verbatim; `data/dialogue/en/ruins.json` still to align (TXT-010). |
-| **BUG-20** | `src/scenes/GameOverScene.cpp:163-170` | `GAME OVER` logo and a shattering soul. LORE §23.1 calls for **FURRY OVER**: the soul grows ears and a tail, inflates and pops into pink pom-poms; Asgrr's voice. | `BND-010` (rework). |
+| **BUG-20** | `src/scenes/GameOverScene.cpp:163-170` | `GAME OVER` logo and a shattering soul. LORE §23.1 calls for **FURRY OVER**: the soul grows ears and a tail, inflates and pops into pink pom-poms; Asgrr's voice. | `BND-010` (rework). **[x] Fixed (2026-10-17):** BND-010 FURRY OVER sequence. |
 | **BUG-21** | `src/combat/BattleSystem.cpp:531` | The narrator writes `* GAME OVER! You lost all HP and became a furry!` inside the box — Undertale has no such line; the sequence is the game over screen. | Remove; go straight to the sequence (`BND-010`). **[x] Fixed (2026-10-17):** The narrator line is gone; defeat goes straight to the game over scene. |
 | **BUG-22** | `src/combat/BattleSystem.cpp:127` | Level-up says `* Your VITRIOL increased.`; LORE §8.2 fixes it as `* Your LEVEL OF VITRIOL increased.` | `BND-004` (rework). **[x] Fixed (2026-10-17):** `* Your LEVEL OF VITRIOL increased.` |
 | **BUG-23** | `src/scenes/OverworldScene.cpp:403` | STAT shows `FURRY: n%`; the LORE uses the label **`FUR`** (and `FLF` on the Furry route). | `MNU-003`, `FUR-006`. **[x] Fixed (2026-10-17):** STAT shows `FUR: n` (FLF label pending with the Furry route). |
@@ -910,10 +910,12 @@ P0 · L · CORE-003, FUR-004
   5. Text typed in a deep voice (Asgore's in Undertale). Suggested parody: the **Discord raid leader's** voice: "You cannot ragequit just yet... / PEPE! / Stay determined..." (uses the chosen name).
   6. Z → fade to the last save, with full HP.
 - **Acceptance:** recorded and compared against Undertale's game over, every step's timing matches within ±3 frames.
+- **LORE rework done (2026-10-17):** FURRY OVER — the soul sprouts ears and a tail, inflates and pops into pink pom-poms, then the `FURRY` / `OVER` logo and one of King Asgrr's 6 LORE lines with the player's name (`include/scenes/FurryOver.hpp`); continue reloads the save as before. The old crack/shatter is kept aside for GAMER OVER (FLF-007). Pending: Asgrr's voice SFX, game over music, frame-timing comparison.
 
-#### BND-011 — FURRY OVER variants `[ ]`
+#### BND-011 — FURRY OVER variants `[~]`
 P2 · M · BND-010, SAV-005
 - **What (LORE §23.1):** against Barky: `...welcome to the pack? no? ok.` · with 3+ FURRY OVERs (`meta.ever_transformed ≥ 3`): `...Again? Keep the tail, [NAME].` · Toxic route: **no voice**. Every FURRY OVER also takes 100G off the Uwu-mie Armor (SHP-005).
+- **Partly done (2026-10-17):** the Barky line, the 3+ FURRY OVERs line (`meta.timesTransformed`, incremented on each FURRY OVER) and no voice on the Toxic route. Pending: the Uwu-mie Armor 100G penalty (SHP-005).
 
 ---
 
