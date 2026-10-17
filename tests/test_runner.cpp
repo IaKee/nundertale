@@ -36,6 +36,8 @@
 #include "core/Cutscene.hpp"
 #include "core/SessionMeta.hpp"
 #include "core/SpriteSheet.hpp"
+#include "core/TiledMap.hpp"
+#include "core/Camera2DFollow.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -2504,6 +2506,128 @@ int main() {
         std::cout << "[PASS] AUD-001 + AUD-005: Music by context, JSON parsing, fallback chain, and loop points verified." << std::endl;
     }
 
-    std::cout << "\nAll 42 test suites passed successfully!" << std::endl;
+    // 43. OVW-003 + GFX-010 + OVW-002: Tiled map parsing and camera follow
+    {
+        using namespace nundertale;
+
+        const std::string tiledJson = R"json({
+            "orientation": "orthogonal",
+            "tilewidth": 16,
+            "tileheight": 16,
+            "width": 10,
+            "height": 8,
+            "layers": [
+                {
+                    "type": "tilelayer",
+                    "name": "ground",
+                    "width": 10,
+                    "height": 8,
+                    "data": [1, 0, 2]
+                },
+                {
+                    "type": "imagelayer",
+                    "name": "backdrop",
+                    "image": "assets/img/room.png",
+                    "offsetx": 4,
+                    "offsety": -2
+                },
+                {
+                    "type": "objectgroup",
+                    "name": "objects",
+                    "objects": [
+                        {
+                            "id": 7,
+                            "name": "slope",
+                            "class": "collision",
+                            "x": 100,
+                            "y": 50,
+                            "width": 0,
+                            "height": 0,
+                            "polygon": [
+                                {"x": 0, "y": 0},
+                                {"x": 20, "y": 5},
+                                {"x": 10, "y": 30}
+                            ],
+                            "properties": [
+                                {"name": "difficulty", "type": "int", "value": 3}
+                            ]
+                        },
+                        {
+                            "id": 8,
+                            "name": "target",
+                            "type": "interactable",
+                            "x": 12,
+                            "y": 24,
+                            "width": 16,
+                            "height": 20
+                        }
+                    ]
+                }
+            ]
+        })json";
+
+        TiledMap map;
+        assert(parseTiledMapJson(tiledJson, map));
+        assert(map.orientation == "orthogonal");
+        assert(map.tileWidth == 16 && map.tileHeight == 16);
+        assert(map.width == 10 && map.height == 8);
+        assert(map.pixelWidth() == 160.0f && map.pixelHeight() == 128.0f);
+        assert(map.layers.size() == 3);
+
+        const TiledLayer* ground = map.findLayer("ground");
+        assert(ground != nullptr);
+        assert(ground->type == TiledLayerType::Tile);
+        assert(ground->data.size() == 3);
+        assert(ground->data[0] == 1 && ground->data[2] == 2);
+
+        const TiledLayer* backdrop = map.findLayer("backdrop");
+        assert(backdrop != nullptr);
+        assert(backdrop->type == TiledLayerType::Image);
+        assert(backdrop->image == "assets/img/room.png");
+        assert(backdrop->offsetX == 4.0f && backdrop->offsetY == -2.0f);
+
+        const TiledObject* slope = map.findObject("slope");
+        assert(slope != nullptr);
+        assert(slope->id == 7);
+        assert(slope->className == "collision");
+        assert(slope->polygon.size() == 3);
+        const TiledRect slopeBounds = slope->bounds();
+        assert(slopeBounds.x == 100.0f && slopeBounds.y == 50.0f);
+        assert(slopeBounds.width == 20.0f && slopeBounds.height == 30.0f);
+        const TiledProperty* difficulty = slope->findProperty("difficulty");
+        assert(difficulty != nullptr);
+        assert(difficulty->type == "int");
+        assert(std::get<double>(difficulty->value) == 3.0);
+
+        const TiledObject* target = map.findObject("target");
+        assert(target != nullptr);
+        assert(target->type == "interactable");
+        assert(map.findObject("missing") == nullptr);
+
+        CameraTopLeft camera = Camera2DFollow::calculate(0.0f, 0.0f, 1280.0f, 960.0f);
+        assert(camera.x == 0.0f && camera.y == 0.0f);
+        camera = Camera2DFollow::calculate(640.0f, 480.0f, 1280.0f, 960.0f);
+        assert(camera.x == 320.0f && camera.y == 240.0f);
+        camera = Camera2DFollow::calculate(1280.0f, 960.0f, 1280.0f, 960.0f);
+        assert(camera.x == 640.0f && camera.y == 480.0f);
+        camera = Camera2DFollow::calculate(160.0f, 120.0f, 320.0f, 240.0f);
+        assert(camera.x == -160.0f && camera.y == -120.0f);
+
+        TiledMap realMap;
+        if (loadTiledMapFromFile("data/maps/ruins_entrance.json", realMap)) {
+            const TiledLayer* realGround = realMap.findLayer("ground");
+            const TiledLayer* collision = realMap.findLayer("collision");
+            const TiledLayer* objects = realMap.findLayer("objects");
+            assert(realGround != nullptr && realGround->data.size() == 32 * 24);
+            assert(collision != nullptr && collision->objects.size() == 6);
+            assert(objects != nullptr && objects->objects.size() == 7);
+            assert(realMap.findObject("spawn") != nullptr);
+            assert(realMap.findObject("savepoint") != nullptr);
+        }
+
+        std::cout << "[PASS] OVW-003, GFX-010 & OVW-002: Tiled layers, polygons, properties, object lookup, real room, and camera bounds verified." << std::endl;
+    }
+
+    std::cout << "\nAll 43 test suites passed successfully!" << std::endl;
     return 0;
 }
