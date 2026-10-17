@@ -307,8 +307,8 @@ Displayed like Sans's KARMA: a `FUR` label after the HP bar, a `KR_PURPLE` (#FF0
 
 | FUR | Stage | Look | Reactions |
 | :---: | :--- | :--- | :--- |
-| 0–19 | **Frog** | Normal Pepe: eye bags, nacho-stained hoodie, shorts, flip-flops. | — |
-| 20–39 | **Ears** | Little wolf ears poking out of the hood. | `* Nice ears, newcomer!` |
+| 0–19 | **Frog** | Normal Pepe: the classic meme frog, eye bags, nacho-stained blue T-shirt, shorts, flip-flops. | — |
+| 20–39 | **Ears** | Little wolf ears poking out between his eye domes. | `* Nice ears, newcomer!` |
 | 40–59 | **Paws** | Paw hands and feet. | Barky: `Dude. Your paws are SO much better than mine.` |
 | 60–79 | **Tail** | A shiny tail that wags as he walks. | Shopkeepers give a "fandom discount." |
 | 80–99 | **Snout** | A snout, mint-green fur patches, a "squeak" at the end of his lines. | Senpai Sans: `heh. you're one bad day away from a con badge.` |
@@ -384,7 +384,7 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 - **Parody of:** Frisk.
 - **Role:** the 8th fallen; owner of the 7th gamer soul.
 - **Who he is:** 26, lives with his mom, in the basement bedroom. Lives on raids, gacha and Doritos.
-- **Look:** classic green frog, heavy eye bags, gray nacho-stained hoodie, shorts, flip-flops, faintly orange fingertips. Overworld ~20×30 px native (`pepe_char.bmp`).
+- **Look:** the classic Pepe meme frog: a wide, lumpy head with two eye domes on top, heavy droopy eyelids over big white eyes, faint under-eye lines, wide two-part reddish-brown lips with a slight frown. **Plain blue T-shirt with nacho stains**, shorts, flip-flops, plain green frog hands (same skin as the face; no orange fingertips, they read as gloves and pull him away from Pepe). Overworld ~20×30 px native (anchor sprite: `docs/art_prompts/ruins/style/04_pepe_anchor.png`; legacy: `pepe_char.bmp`).
 - **Personality:** sarcastic, lazy, openly hates furries. **Never speaks out loud** (faithful to Frisk): he only thinks, in `* (...)`.
 - **Gamer gross factor:** his inventory starts with a **`Bottle`** he doesn't want to discuss (`* A bottle. It's not Mountain Dew.` / `* (You don't want to talk about it.)`). It can't be used, only thrown away (`* You throw it away. The Underground will remember.`). His phone has a folder called `Homework` (400 GB) that shows up on the CELL and never opens.
 - **Secret (subtle):** he likes furries, but the game **never says so**. There are only hints the player might not even catch — he knows too much:

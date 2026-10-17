@@ -18,6 +18,7 @@ Every non-final file in `assets/` is listed here (ART-000). Replace a placeholde
 | `img/lore1..9.bmp`, `img/lore10/` | Intro cards | Project art (legacy) | Project-owned (confirm) |
 | `img/lore4.bmp` | "BEGONE!" card | Uses a real face | **Redraw (ART-170)** |
 | `img/pepe_char.bmp` | Pepe overworld sheet | Project art (legacy) | Project-owned (confirm) |
+| `sprites/ow/pepe_frog.png`, `sprites/ow/pepe_frog.json` | Pepe overworld sheet (ART-A01) | OpenAI image generation used as directional-pose guide; native 1× sheet redrawn from the project anchor by Codex, 2026-10-17 | Generated/project work; Pepe character © Matt Furie — review before commercial release |
 | `img/whoru.bmp` | SKYRIM easter egg image | Unknown | **Unknown — check** |
 | `img/test.bmp` | Overworld background | Project art (legacy) | Project-owned (confirm) |
 | `fonts/8bitoperator.ttf`, `monster_friend*.otf`, `gomarice_shmup_in_the_zone.ttf` | UI / title / disclaimer fonts | Third-party fonts | **Check each license** |
