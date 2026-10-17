@@ -1074,9 +1074,10 @@ P1 · M · MNU-004, CORE-010
 
 ### SAV — Save point, save/load and meta-persistence
 
-#### SAV-001 — Save point sprite and animation `[ ]`
+#### SAV-001 — Save point sprite and animation `[~]`
 P0 · S · ART-031
 - **What:** the yellow 4-point star as a sprite, with Undertale's 2-frame animation. ROTEIRO parody: the star shining **on top of a vintage soda bottle**. Currently it's 3 `DrawRectangle`s.
+- **Partly done (2026-10-17):** the yellow 4-point star with a 2-frame spin (0.25 s) and a 1 px bob, hovering over a vintage green soda bottle, drawn pixel by pixel with primitives. Pending: the real sprite (ART-031) and the *tssss* SFX.
 
 #### SAV-002 — Save point flow `[x]`
 P0 · M · TXT-007, SAV-003
@@ -1103,10 +1104,11 @@ P2 · M · SAV-003, NAR-012
 P2 · S · SAV-003
 - **What:** if the JSON fails, try `file0.bak`; if that fails too, warn and start fresh without crashing.
 
-#### SAV-007 — LORE save texts and rules `[ ]`
+#### SAV-007 — LORE save texts and rules `[~]`
 P1 · S · SAV-002, FUR-004
 - **What (LORE §8.8):** the formula `* [something about the place] fills you with DETERMINATION.` for all ~14 LORE saves (R1, R3, R13, Snowdinha entrance/town/S6, W1, W6, H3, N3, X2…); can SFX (*tssss*); heals HP (or FLUFF on the Furry route) **without reducing FUR** — with FUR > 0, an extra line `* DETERMINATION can't fix fluff.`; on the Toxic route, `* Determination.`
 - **Save schema (v2):** `fur.value`, `fur.stage_max`, `fur.mirror_refused`, `route.furry`, `fluff.value`, `raid.time_left`, `kills.<area>`, a per-playthrough FURRY OVER counter (SHP-005), with a v1 migration (BUG-27).
+- **Partly done (2026-10-17):** the LORE save line per room (`include/core/SaveText.hpp`, 11 rooms), `* DETERMINATION can't fix fluff.` when FUR > 0, `* Determination.` on the Toxic route; saving heals HP and never touches FUR. Pending: save schema v2 fields beyond FUR, FLUFF heal on the Furry route.
 
 ---
 

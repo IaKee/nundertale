@@ -18,6 +18,7 @@
 #include "core/Fur.hpp"
 #include "services/MusicTracks.hpp"
 #include "scenes/FrontEndFlow.hpp"
+#include "core/SaveText.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1162,6 +1163,51 @@ int main() {
         std::cout << "[PASS] FUR-002 & FUR-005: Integer FUR stages, clamping, armor multiplier, and stage feedback signals verified." << std::endl;
     }
 
-    std::cout << "\nAll 19 test suites passed successfully!" << std::endl;
+    // 20. SAV-001, SAV-007 & FUR-004: Save place lines, room mapping, and route/fur save dialogue
+    {
+        using nundertale::savePlaceLine;
+        using nundertale::saveLines;
+
+        // savePlaceLine for ruins_entrance, snowdin_town, unknown
+        assert(savePlaceLine("ruins_entrance") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(savePlaceLine("") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(savePlaceLine("snowdin_town") == "* The sight of 47 people sharing one Wi-Fi password on a fridge fills you with DETERMINATION.");
+        assert(savePlaceLine("unknown_room_xyz") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+
+        // Check all other rooms from LORE table for thoroughness
+        assert(savePlaceLine("ruins_hall") == "* The distant hum of dial-up internet fills you with DETERMINATION.");
+        assert(savePlaceLine("ruins_exit") == "* The cold air and the faint smell of ozone fill you with DETERMINATION.");
+        assert(savePlaceLine("snowdin_entrance") == "* The crunch of styrofoam snow fills you with DETERMINATION.");
+        assert(savePlaceLine("snowdin_fog") == "* The hum of the town's single shared router fills you with DETERMINATION.");
+        assert(savePlaceLine("waterfall_entrance") == "* The sound of dripping and a distant \"rawr\" fill you with DETERMINATION.");
+        assert(savePlaceLine("waterfall_arena") == "* The humidity of a thousand fursuits fills you with DETERMINATION.");
+        assert(savePlaceLine("hotland_quiz") == "* The sound of 400 server fans fills you with DETERMINATION.");
+        assert(savePlaceLine("newhome_throne") == "* The smell of herbal tea and old carpet fills you with DETERMINATION.");
+        assert(savePlaceLine("con_center_hall") == "* The terrified hugging of a hundred furries fills you with DETERMINATION.");
+
+        // saveLines with fur 0 (1 line)
+        auto linesFur0 = saveLines("ruins_entrance", 0, false);
+        assert(linesFur0.size() == 1);
+        assert(linesFur0[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+
+        // saveLines with fur 15 (2 lines, second is the fluff line)
+        auto linesFur15 = saveLines("ruins_entrance", 15, false);
+        assert(linesFur15.size() == 2);
+        assert(linesFur15[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(linesFur15[1] == "* DETERMINATION can't fix fluff.");
+
+        // saveLines toxic (exactly "* Determination.")
+        auto linesToxic = saveLines("ruins_entrance", 0, true);
+        assert(linesToxic.size() == 1);
+        assert(linesToxic[0] == "* Determination.");
+
+        auto linesToxicFur = saveLines("ruins_entrance", 50, true);
+        assert(linesToxicFur.size() == 1);
+        assert(linesToxicFur[0] == "* Determination.");
+
+        std::cout << "[PASS] SAV-001, SAV-007 & FUR-004: Save place lines, room mapping, and route/fur save dialogue verified." << std::endl;
+    }
+
+    std::cout << "\nAll 20 test suites passed successfully!" << std::endl;
     return 0;
 }
