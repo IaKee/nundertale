@@ -12,6 +12,7 @@
 #include "ResidualDamage.hpp"
 #include "AttackTarget.hpp"
 #include "BarkyPatterns.hpp"
+#include "FurHud.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -100,6 +101,8 @@ public:
     const ResidualMeter& getResidual() const { return m_residual; }
     FightPhase getFightPhase() const { return m_fightPhase; }
     float getFightPhaseTimer() const { return m_fightPhaseTimer; }
+    float getFurTrembleTimer() const { return m_furTrembleTimer; }
+    bool isFurTrembling() const { return furHudShouldTremble(m_furTrembleTimer); }
 
 private:
     void handleMenuInput(GameContext& context);
@@ -225,6 +228,12 @@ private:
 
     // BHL-017: KR-style residual damage
     ResidualMeter m_residual;
+
+    // FUR-003: KR-style FUR HUD state
+    float m_furTrembleTimer = -1.0f;
+    bool m_furTrembleTriggered = false;
+    bool m_furVisibleAtStart = false;
+    bool m_furStartChecked = false;
 };
 
 } // namespace nundertale

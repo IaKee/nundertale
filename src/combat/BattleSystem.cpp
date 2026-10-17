@@ -41,6 +41,26 @@ void BattleSystem::update(float dt, GameContext& context) {
         }
     }
 
+    // FUR-003: First-appearance FUR label tremble logic
+    if (!m_furStartChecked) {
+        m_furStartChecked = true;
+        m_furVisibleAtStart = furHudVisible(context.state.furry.value);
+        if (m_furVisibleAtStart && context.state.getFlag("fur_hud_seen", 0) == 0) {
+            m_furTrembleTimer = 0.0f;
+            m_furTrembleTriggered = true;
+        }
+    } else if (!m_furVisibleAtStart && !m_furTrembleTriggered && furHudVisible(context.state.furry.value)) {
+        m_furTrembleTimer = 0.0f;
+        m_furTrembleTriggered = true;
+    }
+
+    if (m_furTrembleTimer >= 0.0f && m_furTrembleTimer < 1.5f) {
+        m_furTrembleTimer += dt;
+        if (m_furTrembleTimer >= 1.5f) {
+            context.state.setFlag("fur_hud_seen", 1);
+        }
+    }
+
     if (m_enemy && !m_enemy->isDead() && m_enemyShakeTimer <= 0.0f && !m_isSpared) {
         m_enemyIdleTimer += dt;
     }
@@ -152,6 +172,15 @@ void BattleSystem::update(float dt, GameContext& context) {
         case BattleState::Victory:
         case BattleState::Defeat:
             break;
+    }
+
+    // FUR-003: If FUR was gained during this frame and hadn't triggered yet
+    if (m_furStartChecked && !m_furVisibleAtStart && !m_furTrembleTriggered && furHudVisible(context.state.furry.value)) {
+        m_furTrembleTimer = 0.0f;
+        m_furTrembleTriggered = true;
+    }
+    if (isFinished() && m_furTrembleTriggered && context.state.getFlag("fur_hud_seen", 0) == 0) {
+        context.state.setFlag("fur_hud_seen", 1);
     }
 }
 
@@ -849,18 +878,31 @@ void BattleSystem::drawHUD(GameContext& context, Font font) const {
         }
     }
 
+    int jitter = furHudJitter(m_furTrembleTimer);
+
     // Furry Karma overlay (FUR-003) if FUR > 0
-    if (context.state.furry.value > 0) {
+    if (furHudVisible(context.state.furry.value)) {
         float furryPct = std::clamp(static_cast<float>(context.state.furry.value) / static_cast<float>(FUR_MAX), 0.0f, 1.0f);
         int furW = (int)(static_cast<float>(barW) * furryPct);
-        DrawRectangle(HUD_HP_BAR_X + barW - furW, HUD_Y, furW, HUD_HP_BAR_H, KR_PURPLE);
+        DrawRectangle(HUD_HP_BAR_X + barW - furW + jitter, HUD_Y + jitter, furW, HUD_HP_BAR_H, KR_PURPLE);
     }
 
-    // 5. HP Numbers after bar
-    int numX = HUD_HP_BAR_X + barW + 16;
+    // 5. HP Numbers after bar (with FUR label if FUR > 0)
+    int barEnd = HUD_HP_BAR_X + barW;
+    int numX = barEnd + 16;
+
+    if (furHudVisible(context.state.furry.value)) {
+        float furLabelX = static_cast<float>(barEnd + 10);
+        float furLabelY = static_cast<float>(HUD_Y + 4);
+        context.resources.drawText(font, "FUR", { furLabelX + static_cast<float>(jitter), furLabelY + static_cast<float>(jitter) }, 14, KR_PURPLE, 1.0f);
+
+        float furW = context.resources.measureTextWidth(font, "FUR", 14, 1.0f);
+        numX = static_cast<int>(furLabelX + furW + 10.0f);
+    }
+
     std::string hpStr = std::to_string(context.player.hp) + " / " + std::to_string(context.player.maxHp);
-    Color numCol = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
-    context.resources.drawText(font, hpStr, { (float)numX, (float)HUD_Y }, 20, numCol, 1.0f);
+    Color numCol = furHudVisible(context.state.furry.value) ? KR_PURPLE : WHITE;
+    context.resources.drawText(font, hpStr, { static_cast<float>(numX), static_cast<float>(HUD_Y) }, 20, numCol, 1.0f);
 }
 
 void BattleSystem::drawButtons(GameContext& context, Font font) const {
