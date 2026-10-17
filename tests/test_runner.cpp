@@ -15,6 +15,7 @@
 #include "core/AreaPalettes.hpp"
 #include "core/Transition.hpp"
 #include "core/NameRules.hpp"
+#include "core/Fur.hpp"
 #include "services/MusicTracks.hpp"
 #include "scenes/FrontEndFlow.hpp"
 
@@ -663,31 +664,31 @@ int main() {
         const auto hasFlag = [](const std::string& flag) { return flag == "route.ready"; };
 
         ActDef unconditional;
-        assert(actAvailable(unconditional, inventory, 0.0f, hasFlag));
+        assert(actAvailable(unconditional, inventory, 0, hasFlag));
 
         ActDef itemAct;
         itemAct.requiresItem = "Mt. Dew";
-        assert(actAvailable(itemAct, inventory, 0.0f, hasFlag));
+        assert(actAvailable(itemAct, inventory, 0, hasFlag));
         itemAct.requiresItem = "Doritos";
-        assert(!actAvailable(itemAct, inventory, 0.0f, hasFlag));
+        assert(!actAvailable(itemAct, inventory, 0, hasFlag));
 
         ActDef furAct;
         furAct.requiresFurMin = 40;
-        assert(actAvailable(furAct, inventory, 40.0f, hasFlag));
-        assert(!actAvailable(furAct, inventory, 39.9f, hasFlag));
+        assert(actAvailable(furAct, inventory, 40, hasFlag));
+        assert(!actAvailable(furAct, inventory, 39, hasFlag));
 
         ActDef flagAct;
         flagAct.requiresFlag = "route.ready";
-        assert(actAvailable(flagAct, inventory, 0.0f, hasFlag));
+        assert(actAvailable(flagAct, inventory, 0, hasFlag));
         flagAct.requiresFlag = "route.missing";
-        assert(!actAvailable(flagAct, inventory, 0.0f, hasFlag));
+        assert(!actAvailable(flagAct, inventory, 0, hasFlag));
 
         ActDef combinedAct;
         combinedAct.requiresItem = "Bottle";
         combinedAct.requiresFurMin = 25;
         combinedAct.requiresFlag = "route.ready";
-        assert(actAvailable(combinedAct, inventory, 25.0f, hasFlag));
-        assert(!actAvailable(combinedAct, inventory, 24.0f, hasFlag));
+        assert(actAvailable(combinedAct, inventory, 25, hasFlag));
+        assert(!actAvailable(combinedAct, inventory, 24, hasFlag));
 
         assert(actEffectApplies(1, 0));
         assert(actEffectApplies(1, 1));
@@ -1077,6 +1078,90 @@ int main() {
         std::cout << "[PASS] FGT-001 & FGT-002: Undertale attack target, bar speed, blink, squish, and miss conditions verified." << std::endl;
     }
 
-    std::cout << "\nAll 18 test suites passed successfully!" << std::endl;
+    // 19. FUR-002 & FUR-005: Integer FUR state, stages, clamping, and change feedback
+    {
+        using nundertale::applyFur;
+        using nundertale::furStageFor;
+        using nundertale::furStageName;
+        using nundertale::FurStage;
+
+        assert(furStageFor(0) == FurStage::Frog);
+        assert(furStageFor(19) == FurStage::Frog);
+        assert(furStageFor(20) == FurStage::Ears);
+        assert(furStageFor(39) == FurStage::Ears);
+        assert(furStageFor(40) == FurStage::Paws);
+        assert(furStageFor(59) == FurStage::Paws);
+        assert(furStageFor(60) == FurStage::Tail);
+        assert(furStageFor(79) == FurStage::Tail);
+        assert(furStageFor(80) == FurStage::Snout);
+        assert(furStageFor(99) == FurStage::Snout);
+        assert(furStageFor(100) == FurStage::Mirror);
+        assert(furStageFor(150) == FurStage::Mirror);
+        assert(furStageFor(-5) == FurStage::Frog);
+
+        assert(std::string(furStageName(FurStage::Frog)) == "Frog");
+        assert(std::string(furStageName(FurStage::Ears)) == "Ears");
+        assert(std::string(furStageName(FurStage::Paws)) == "Paws");
+        assert(std::string(furStageName(FurStage::Tail)) == "Tail");
+        assert(std::string(furStageName(FurStage::Snout)) == "Snout");
+        assert(std::string(furStageName(FurStage::Mirror)) == "Mirror");
+
+        int value = 15;
+        int stageMax = 0;
+        auto earsChange = applyFur(value, stageMax, 6);
+        assert(earsChange.before == 15);
+        assert(earsChange.after == 21);
+        assert(earsChange.oldStage == FurStage::Frog);
+        assert(earsChange.newStage == FurStage::Ears);
+        assert(earsChange.stageUp);
+        assert(!earsChange.reachedMirror);
+        assert(stageMax == 1);
+
+        value = 15;
+        stageMax = 0;
+        auto tailChange = applyFur(value, stageMax, 45);
+        assert(tailChange.after == 60);
+        assert(tailChange.oldStage == FurStage::Frog);
+        assert(tailChange.newStage == FurStage::Tail);
+        assert(tailChange.stageUp);
+        assert(stageMax == 3);
+
+        value = 21;
+        stageMax = 1;
+        auto stageDown = applyFur(value, stageMax, -15);
+        assert(stageDown.after == 6);
+        assert(!stageDown.stageUp);
+        assert(!stageDown.reachedMirror);
+        assert(stageMax == 1);
+
+        value = 95;
+        stageMax = 4;
+        auto mirrorChange = applyFur(value, stageMax, 10);
+        assert(mirrorChange.after == 100);
+        assert(mirrorChange.stageUp);
+        assert(mirrorChange.reachedMirror);
+        assert(stageMax == 5);
+
+        auto cappedChange = applyFur(value, stageMax, 10);
+        assert(cappedChange.before == 100);
+        assert(cappedChange.after == 100);
+        assert(!cappedChange.stageUp);
+        assert(!cappedChange.reachedMirror);
+
+        value = 0;
+        stageMax = 0;
+        auto armoredGain = applyFur(value, stageMax, 6, 1.5f);
+        assert(armoredGain.after == 9);
+
+        value = 20;
+        stageMax = 1;
+        auto armoredLoss = applyFur(value, stageMax, -6, 1.5f);
+        assert(armoredLoss.after == 14);
+        assert(stageMax == 1);
+
+        std::cout << "[PASS] FUR-002 & FUR-005: Integer FUR stages, clamping, armor multiplier, and stage feedback signals verified." << std::endl;
+    }
+
+    std::cout << "\nAll 19 test suites passed successfully!" << std::endl;
     return 0;
 }

@@ -36,7 +36,7 @@ struct Bullet {
     int heal = 0; // used only when attackColor == Green
     std::string text = "";
     int damage = 3;
-    float furry = 6.0f;
+    int fur = 6;
     bool active = true;
     float gravity = 0.0f;
     bool bounces = false;

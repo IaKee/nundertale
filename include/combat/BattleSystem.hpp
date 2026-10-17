@@ -110,7 +110,7 @@ private:
     void startEnemyTurn();
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
-    bool applySoulDamage(GameContext& context, int rawDamage, float fur);
+    bool applySoulDamage(GameContext& context, int rawDamage, int fur);
 
     void drawBackgroundGrid() const;
     void drawSoul(float x, float y, Color color = SOUL_RED) const;
@@ -155,6 +155,7 @@ private:
     std::string m_narratorText;
     std::string m_enemySpeechBubble;
     bool m_dialogReturnsToMenu = false;
+    bool m_furStageUpPending = false;
 
     // Enemy damage feedback (FGT-004, FGT-005, FGT-006, FGT-007)
     float m_enemyShakeTimer = 0.0f;

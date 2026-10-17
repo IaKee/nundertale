@@ -440,8 +440,8 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
         context.resources.drawText(font, "GOLD:   " + std::to_string(context.player.gold), { 210, 272 }, 18, WHITE, 1.0f);
 
         // Furry meter status line (MNU-003 / FUR-006)
-        Color furColor = (context.player.furryMeter > 0.0f) ? KR_PURPLE : WHITE;
-        context.resources.drawText(font, "FURRY:  " + std::to_string((int)context.player.furryMeter) + "%", { 210, 305 }, 18, furColor, 1.0f);
+        Color furColor = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
+        context.resources.drawText(font, "FURRY:  " + std::to_string(context.state.furry.value) + "%", { 210, 305 }, 18, furColor, 1.0f);
     } else if (m_menuState == OverworldMenuState::Item || m_menuState == OverworldMenuState::ItemAction) {
         Rectangle itemBox = { 186, 52, 400, 300 };
         DrawRectangleRec(itemBox, BLACK);

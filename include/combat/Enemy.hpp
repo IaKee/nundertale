@@ -29,13 +29,13 @@ struct ActDef {
 
 inline bool actAvailable(const ActDef& act,
                          const std::vector<std::string>& inventory,
-                         float fur,
+                         int fur,
                          const std::function<bool(const std::string&)>& hasFlag) {
     if (!act.requiresItem.empty() &&
         std::find(inventory.begin(), inventory.end(), act.requiresItem) == inventory.end()) {
         return false;
     }
-    if (fur < static_cast<float>(act.requiresFurMin)) {
+    if (fur < act.requiresFurMin) {
         return false;
     }
     return act.requiresFlag.empty() || hasFlag(act.requiresFlag);

@@ -296,7 +296,7 @@ std::vector<int> BattleSystem::getAvailableActIndices(const GameContext& context
     std::vector<int> indices;
     const auto& acts = m_enemy->getActs();
     for (size_t i = 0; i < acts.size(); ++i) {
-        if (actAvailable(acts[i], context.player.inventory, context.player.furryMeter,
+        if (actAvailable(acts[i], context.player.inventory, context.state.furry.value,
                          [&context](const std::string& flag) { return context.state.hasFlag(flag); })) {
             indices.push_back(static_cast<int>(i));
         }
@@ -450,7 +450,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
             m_narratorText = "* You devoured the stale Doritos!\n* Pure nostalgia. You recovered 6 HP!";
         } else if (item.find("Duct Tape") != std::string::npos || item.find("Tape") != std::string::npos) {
-            context.player.furryMeter = std::max(0.0f, context.player.furryMeter - 15.0f);
+            applyFur(context.state.furry.value, context.state.furry.stageMax, -15);
             m_narratorText = "* You aggressively taped down your sprouting fur!\n* Ouch! Furry meter reduced by 15%!";
         } else {
             context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
@@ -554,20 +554,34 @@ void BattleSystem::startEnemyTurn() {
     m_lastActResponse = "";
 }
 
-bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, float fur) {
+bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, int fur) {
     int reducedDamage = rawDamage + m_enemy->getAtk() - (context.player.df + context.player.armorDf);
     int finalDamage = std::max(1, reducedDamage);
 
     context.player.hp -= finalDamage;
-    context.player.furryMeter += fur;
+    const FurChange furChange = applyFur(
+        context.state.furry.value,
+        context.state.furry.stageMax,
+        fur);
     context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.6f);
     context.shake(6.0f, 0.25f);
     context.flash({ 255, 0, 0, 255 }, 0.15f);
+
+    if (furChange.stageUp) {
+        const Color fluffPink{ 255, 170, 220, 255 };
+        spawnDust(m_soulPosition, 18, fluffPink);
+        context.flash(fluffPink, 0.12f);
+        m_furStageUpPending = true;
+    }
+    if (furChange.reachedMirror) {
+        context.state.setFlag("fur_mirror_pending", 1);
+    }
 
     if (context.player.hp <= 0) {
         context.player.hp = 0;
         m_state = BattleState::Defeat;
         m_residual.clear();
+        m_furStageUpPending = false;
         m_narratorText = "* GAME OVER! You lost all HP and became a furry!";
         context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
         return true;
@@ -586,8 +600,13 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
             m_soulSpeedBuffTurns--;
         }
 
-        // BFL-002: Query turn flavor text from enemy pools without repeating
-        m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
+        if (m_furStageUpPending) {
+            m_narratorText = "* You feel... fluffier.";
+            m_furStageUpPending = false;
+        } else {
+            // BFL-002: Query turn flavor text from enemy pools without repeating
+            m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
+        }
         m_state = BattleState::MenuSelect;
         return;
     }
@@ -651,7 +670,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
                 continue;
             } else if (m_bullets[i].hurtsSoul(soulMoving) && m_invulnTimer <= 0.0f) {
                 m_invulnTimer = 1.0f; // 30 frames of i-frame
-                if (applySoulDamage(context, m_bullets[i].damage, m_bullets[i].furry)) {
+                if (applySoulDamage(context, m_bullets[i].damage, m_bullets[i].fur)) {
                     return;
                 }
             }
@@ -663,7 +682,7 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     for (size_t i = 0; i < m_zones.size(); ) {
         bool soulInside = CheckCollisionRecs(soulHitbox, m_zones[i].area);
         int damage = m_zones[i].update(dt, soulInside);
-        float fur = m_zones[i].furPerTick;
+        int fur = static_cast<int>(std::lround(m_zones[i].furPerTick));
         bool expired = m_zones[i].expired();
 
         if (damage > 0 && applySoulDamage(context, damage, fur)) {
@@ -692,7 +711,7 @@ void BattleSystem::spawnBulletWave() {
         b.text = "UWU";
         b.color = Color{ 255, 120, 210, 255 };
         b.damage = 3;
-        b.furry = 6.0f;
+        b.fur = 6;
         m_bullets.push_back(b);
     } else if (pattern == 1) {
         // Pattern 2: Dew Bounce (BHL-014: Mountain Dew cans bouncing off arena walls & floor)
@@ -705,7 +724,7 @@ void BattleSystem::spawnBulletWave() {
         b.gravity = 140.0f;
         b.bounces = true;
         b.damage = 4;
-        b.furry = 7.0f;
+        b.fur = 7;
         m_bullets.push_back(b);
     } else {
         // Pattern 3: Awoo Howl (BHL-014: sound waves expanding downward from Barky)
@@ -718,7 +737,7 @@ void BattleSystem::spawnBulletWave() {
         b.arcRadius = 14.0f;
         b.color = Color{ 100, 200, 255, 255 };
         b.damage = 3;
-        b.furry = 5.0f;
+        b.fur = 5;
         m_bullets.push_back(b);
     }
 }
@@ -777,9 +796,9 @@ void BattleSystem::drawHUD(GameContext& context, Font font) const {
         }
     }
 
-    // Furry Karma overlay (FUR-003) if furryMeter > 0
-    if (context.player.furryMeter > 0.0f) {
-        float furryPct = std::clamp(context.player.furryMeter / 100.0f, 0.0f, 1.0f);
+    // Furry Karma overlay (FUR-003) if FUR > 0
+    if (context.state.furry.value > 0) {
+        float furryPct = std::clamp(static_cast<float>(context.state.furry.value) / static_cast<float>(FUR_MAX), 0.0f, 1.0f);
         int furW = (int)(static_cast<float>(barW) * furryPct);
         DrawRectangle(HUD_HP_BAR_X + barW - furW, HUD_Y, furW, HUD_HP_BAR_H, KR_PURPLE);
     }
@@ -787,7 +806,7 @@ void BattleSystem::drawHUD(GameContext& context, Font font) const {
     // 5. HP Numbers after bar
     int numX = HUD_HP_BAR_X + barW + 16;
     std::string hpStr = std::to_string(context.player.hp) + " / " + std::to_string(context.player.maxHp);
-    Color numCol = (context.player.furryMeter > 0.0f) ? KR_PURPLE : WHITE;
+    Color numCol = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
     context.resources.drawText(font, hpStr, { (float)numX, (float)HUD_Y }, 20, numCol, 1.0f);
 }
 

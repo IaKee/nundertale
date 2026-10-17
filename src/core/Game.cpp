@@ -150,7 +150,7 @@ void Game::run() {
                 DrawText(TextFormat("Time: %.1fs", m_context->state.playTime), 20, 54, 14, WHITE);
                 DrawText(TextFormat("Player: %s | LV %d", m_context->player.name.c_str(), m_context->player.level), 20, 72, 14, WHITE);
                 DrawText(TextFormat("HP: %d/%d | G: %d", m_context->player.hp, m_context->player.maxHp, m_context->player.gold), 20, 90, 14, WHITE);
-                DrawText(TextFormat("Furry: %.1f%%", m_context->player.furryMeter), 20, 108, 14, WHITE);
+                DrawText(TextFormat("Furry: %d%%", m_context->state.furry.value), 20, 108, 14, WHITE);
                 DrawText(TextFormat("Room: %s", m_context->state.currentRoom.c_str()), 20, 126, 14, WHITE);
             }
 #endif
