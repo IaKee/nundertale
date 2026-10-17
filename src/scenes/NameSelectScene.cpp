@@ -135,7 +135,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 } else if (m_cursorX == 2) {
                     if (!m_currentName.empty()) {
                         m_state = NameSelectState::Confirming;
-                        m_reaction = reactionFor(m_currentName);
+                        m_reaction = withSameNameReaction(reactionFor(m_currentName), m_currentName, context.save.getMeta().lastName);
                         m_confirmTimer = 0.0f;
                         m_confirmChoice = false;
                         context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
@@ -177,6 +177,9 @@ void NameSelectScene::update(float dt, GameContext& context) {
                         context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 1.0f);
                         context.scenes.changeScene(std::make_unique<DisclaimerScene>(), cut());
                     } else {
+                        MetaData meta = context.save.getMeta();
+                        meta.lastName = m_currentName;
+                        context.save.saveMeta(meta);
                         context.audio.playSound("assets/sfx/u_activate.wav", 1.0f);
                         context.scenes.changeScene(std::make_unique<OverworldScene>(), fadeWhite(3.0f, 0.6f));
                     }

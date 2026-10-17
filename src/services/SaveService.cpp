@@ -94,7 +94,8 @@ bool SaveService::saveMeta(const MetaData& meta) {
     ss << "  \"resets\": " << meta.resets << ",\n";
     ss << "  \"everKilled\": " << (meta.everKilled ? "true" : "false") << ",\n";
     ss << "  \"timesTransformed\": " << meta.timesTransformed << ",\n";
-    ss << "  \"lastClearedRoute\": \"" << meta.lastClearedRoute << "\"\n";
+    ss << "  \"lastClearedRoute\": \"" << meta.lastClearedRoute << "\",\n";
+    ss << "  \"lastName\": \"" << meta.lastName << "\"\n";
     ss << "}\n";
 
     std::filesystem::path tempPath = m_saveDir / "meta.tmp";
@@ -125,6 +126,7 @@ MetaData SaveService::getMeta() const {
     meta.timesTransformed = (int)extractJsonNumber(json, "timesTransformed", 0.0);
     std::string route = extractJsonString(json, "lastClearedRoute");
     if (!route.empty()) meta.lastClearedRoute = route;
+    meta.lastName = extractJsonString(json, "lastName");
 
     return meta;
 }

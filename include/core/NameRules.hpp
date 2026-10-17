@@ -110,4 +110,13 @@ inline NameReaction reactionFor(const std::string& rawName) {
     return NameReaction{};
 }
 
+// MET-004: confirming the same name as the previous game. Only replaces the default reaction.
+inline NameReaction withSameNameReaction(NameReaction reaction, const std::string& rawName, const std::string& lastName) {
+    const bool isDefault = reaction.tag.empty() && reaction.message.empty() && reaction.allowed && reaction.effect == NameEffect::None;
+    if (isDefault && !lastName.empty() && normalizeName(rawName) == normalizeName(lastName)) {
+        reaction.message = "Again? You must really love this name.";
+    }
+    return reaction;
+}
+
 } // namespace nundertale
