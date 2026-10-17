@@ -4,6 +4,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "core/Transition.hpp"
 #include <raylib.h>
 #include <algorithm>
 
@@ -175,7 +176,7 @@ void NameSelectScene::update(float dt, GameContext& context) {
                 context.player.isSkyrim = m_isSkyrim;
                 context.player.isWaifuFan = m_isWaifu;
                 context.audio.playSound("assets/sfx/u_activate.wav", 1.0f);
-                context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.8f);
+                context.scenes.changeScene(std::make_unique<OverworldScene>(), fadeWhite(0.8f));
             } else {
                 // Return to editing
                 m_state = NameSelectState::Selecting;

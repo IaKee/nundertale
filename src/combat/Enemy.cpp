@@ -18,6 +18,14 @@ void Enemy::takeDamage(int dmg) {
     if (m_hp < 0) m_hp = 0;
 }
 
+void Enemy::modifyAtk(int delta) {
+    m_atk = clampStat(m_atk, delta);
+}
+
+void Enemy::modifyDef(int delta) {
+    m_def = clampStat(m_def, delta);
+}
+
 void Enemy::addMercy(int amount) {
     m_mercy = std::min(100, m_mercy + amount);
     if (m_mercy >= m_mercyThreshold) {
@@ -36,7 +44,8 @@ std::vector<std::string> Enemy::getActOptions() const {
 void Enemy::setActOptions(const std::vector<std::string>& opts) {
     m_acts.clear();
     for (const auto& opt : opts) {
-        m_acts.push_back({ opt, opt, "* You checked " + opt, "", false, false, 0 });
+        m_acts.push_back({ opt, opt, "* You checked " + opt, "", false, false, 0,
+                           "", 0, "", 1, 0, 0, 0 });
     }
 }
 
@@ -141,16 +150,19 @@ void Enemy::setDialogueTriggers(const std::vector<std::string>& def,
 
 void Enemy::initDefaultActs() {
     m_acts = {
-        { "check", "Check", "", "", false, false, 0 },
+        { "check", "Check", "", "", false, false, 0, "", 0, "", 1, 0, 0, 0 },
         { "cringe_check", "Cringe Check",
           "* You point at the obvious zipper on Barky's fursuit!\n* Barky blushes furiously!",
-          "B-baka! Stop looking at the zipper! It's just a ventilation slot!", false, false, 50 },
+          "B-baka! Stop looking at the zipper! It's just a ventilation slot!", false, false, 50,
+          "", 0, "", 1, 0, 0, 0 },
         { "offer_dew", "Offer Mountain Dew",
           "* You offer Barky a can of warm Mountain Dew.\n* His eyes widen with pure gamer ecstasy! Barky can be SPARED!",
-          "Is that... Citrus Blast 2012 edition?! You're alright, gamer.", true, false, 100 },
+          "Is that... Citrus Blast 2012 edition?! You're alright, gamer.", true, false, 100,
+          "", 0, "", 1, 0, 0, 0 },
         { "debate_lore", "Debate Anime Lore",
           "* You challenge Barky on obscure anime filler arcs.\n* He gets overwhelmed thinking about it!",
-          "Wait, season 4 episode 12 was canon?! That can't be!", false, true, 20 }
+          "Wait, season 4 episode 12 was canon?! That can't be!", false, true, 20,
+          "", 0, "", 1, 0, 0, 0 }
     };
 }
 

@@ -7,9 +7,17 @@
 #include "combat/DamageZone.hpp"
 #include "combat/Enemy.hpp"
 #include "combat/BattleSystem.hpp"
+#include "combat/BattleBackground.hpp"
+#include "combat/ResidualDamage.hpp"
 #include "ui/DialogBox.hpp"
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
+#include "core/Transition.hpp"
+#include "services/MusicTracks.hpp"
+
+// Raylib stub for tests running without libraylib runtime
+extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
+
 
 // Test damage formula from FGT-003
 static int calculateDamage(int baseAtk, int enemyDef, float dist, float maxDist, int randVal) {
@@ -617,6 +625,243 @@ int main() {
         std::cout << "[PASS] BHL-016: DamageZone immediate contact, tick interval, outside behavior, and expiry verified." << std::endl;
     }
 
-    std::cout << "\nAll 10 test suites passed successfully!" << std::endl;
+    // 11. BUI-013: Per-encounter battle background mapping and fallback
+    {
+        using nundertale::BattleBackground;
+        using nundertale::backgroundFromId;
+
+        // Every defined ID mapping
+        assert(backgroundFromId("grid") == BattleBackground::Grid);
+        assert(backgroundFromId("grid_tube") == BattleBackground::GridTube);
+        assert(backgroundFromId("red_grid") == BattleBackground::RedGrid);
+        assert(backgroundFromId("black") == BattleBackground::Black);
+        assert(backgroundFromId("speed_lines") == BattleBackground::SpeedLines);
+        assert(backgroundFromId("trophies") == BattleBackground::Trophies);
+        assert(backgroundFromId("lobby_gold") == BattleBackground::LobbyGold);
+
+        // Unknown and edge cases fall back to Grid
+        assert(backgroundFromId("") == BattleBackground::Grid);
+        assert(backgroundFromId("unknown") == BattleBackground::Grid);
+        assert(backgroundFromId("invalid_id") == BattleBackground::Grid);
+        assert(backgroundFromId("papyrus_chat") == BattleBackground::Grid);
+        assert(backgroundFromId("mettapaw_stage") == BattleBackground::Grid);
+
+        std::cout << "[PASS] BUI-013: BattleBackground IDs, enum mapping, and unknown fallback verified." << std::endl;
+    }
+
+    // 12. ACT-006 & ACT-007: Conditional ACTs and stat-effect helpers
+    {
+        using nundertale::ActDef;
+        using nundertale::actAvailable;
+        using nundertale::actEffectApplies;
+        using nundertale::clampStat;
+
+        const std::vector<std::string> inventory = { "Bottle", "Mt. Dew" };
+        const auto hasFlag = [](const std::string& flag) { return flag == "route.ready"; };
+
+        ActDef unconditional;
+        assert(actAvailable(unconditional, inventory, 0.0f, hasFlag));
+
+        ActDef itemAct;
+        itemAct.requiresItem = "Mt. Dew";
+        assert(actAvailable(itemAct, inventory, 0.0f, hasFlag));
+        itemAct.requiresItem = "Doritos";
+        assert(!actAvailable(itemAct, inventory, 0.0f, hasFlag));
+
+        ActDef furAct;
+        furAct.requiresFurMin = 40;
+        assert(actAvailable(furAct, inventory, 40.0f, hasFlag));
+        assert(!actAvailable(furAct, inventory, 39.9f, hasFlag));
+
+        ActDef flagAct;
+        flagAct.requiresFlag = "route.ready";
+        assert(actAvailable(flagAct, inventory, 0.0f, hasFlag));
+        flagAct.requiresFlag = "route.missing";
+        assert(!actAvailable(flagAct, inventory, 0.0f, hasFlag));
+
+        ActDef combinedAct;
+        combinedAct.requiresItem = "Bottle";
+        combinedAct.requiresFurMin = 25;
+        combinedAct.requiresFlag = "route.ready";
+        assert(actAvailable(combinedAct, inventory, 25.0f, hasFlag));
+        assert(!actAvailable(combinedAct, inventory, 24.0f, hasFlag));
+
+        assert(actEffectApplies(1, 0));
+        assert(actEffectApplies(1, 1));
+        assert(!actEffectApplies(1, 2));
+        assert(actEffectApplies(2, 2));
+        assert(actEffectApplies(3, 2));
+
+        assert(clampStat(5, 3) == 8);
+        assert(clampStat(5, -3) == 2);
+        assert(clampStat(5, -10) == 0);
+        assert(clampStat(0, -1) == 0);
+
+        std::cout << "[PASS] ACT-006 & ACT-007: ACT conditions, minimum uses, and stat clamping verified." << std::endl;
+    }
+
+    // 13. BHL-017: KR-style residual damage meter
+    {
+        using nundertale::ResidualMeter;
+
+        ResidualMeter meter;
+        assert(meter.pending == 0.0f);
+        assert(meter.drainPerSecond == 1.0f);
+        assert(meter.carry == 0.0f);
+
+        // 1. Add ignores non-positive amounts
+        meter.add(0.0f);
+        assert(meter.pending == 0.0f);
+        meter.add(-5.0f);
+        assert(meter.pending == 0.0f);
+
+        // 2. Add increases pending
+        meter.add(5.0f);
+        assert(meter.pending == 5.0f);
+        meter.add(3.5f);
+        assert(meter.pending == 8.5f);
+
+        // 3. Update with non-positive dt returns 0 and does not change state
+        assert(meter.update(0.0f) == 0);
+        assert(meter.pending == 8.5f);
+        assert(meter.update(-1.0f) == 0);
+        assert(meter.pending == 8.5f);
+
+        // 4. Fractional carry across updates
+        meter.clear();
+        assert(meter.pending == 0.0f);
+        assert(meter.carry == 0.0f);
+
+        meter.add(3.0f);
+        // Step 1: 0.4s at 1.0 HP/s -> drains 0.4, carry = 0.4, returns 0, pending = 2.6
+        assert(meter.update(0.4f) == 0);
+        assert(std::abs(meter.pending - 2.6f) < 0.001f);
+        assert(std::abs(meter.carry - 0.4f) < 0.001f);
+
+        // Step 2: 0.4s -> drains 0.4, carry = 0.8, returns 0, pending = 2.2
+        assert(meter.update(0.4f) == 0);
+        assert(std::abs(meter.pending - 2.2f) < 0.001f);
+        assert(std::abs(meter.carry - 0.8f) < 0.001f);
+
+        // Step 3: 0.4s -> drains 0.4, carry = 1.2 -> returns 1, carry = 0.2, pending = 1.8
+        assert(meter.update(0.4f) == 1);
+        assert(std::abs(meter.pending - 1.8f) < 0.001f);
+        assert(std::abs(meter.carry - 0.2f) < 0.001f);
+
+        // 5. Large dt draining multiple HP at once
+        // Step 4: 1.5s -> drains 1.5, carry was 0.2 -> 1.7 -> returns 1, carry = 0.7, pending = 0.3
+        assert(meter.update(1.5f) == 1);
+        assert(std::abs(meter.pending - 0.3f) < 0.001f);
+        assert(std::abs(meter.carry - 0.7f) < 0.001f);
+
+        // Step 5: dt exceeding remaining pending: 2.0s -> drains only remaining 0.3
+        // carry was 0.7 + 0.3 = 1.0 -> returns 1, carry = 0.0, pending = 0.0
+        assert(meter.update(2.0f) == 1);
+        assert(meter.pending == 0.0f);
+        assert(std::abs(meter.carry) < 0.001f);
+
+        // 6. Never negative: further updates when pending is 0 return 0 and pending stays 0
+        assert(meter.update(1.0f) == 0);
+        assert(meter.pending == 0.0f);
+        assert(meter.carry >= 0.0f);
+
+        // 7. Clear resets pending and carry
+        meter.add(10.0f);
+        meter.update(0.5f);
+        assert(meter.pending > 0.0f);
+        assert(meter.carry > 0.0f);
+        meter.clear();
+        assert(meter.pending == 0.0f);
+        assert(meter.carry == 0.0f);
+        assert(meter.update(1.0f) == 0);
+
+        // 8. Custom drainPerSecond rate
+        meter.drainPerSecond = 2.5f;
+        meter.add(5.0f);
+        assert(meter.update(1.0f) == 2);
+        assert(std::abs(meter.pending - 2.5f) < 0.001f);
+        assert(std::abs(meter.carry - 0.5f) < 0.001f);
+        assert(meter.update(1.0f) == 3);
+        assert(meter.pending == 0.0f);
+        assert(std::abs(meter.carry) < 0.001f);
+
+        std::cout << "[PASS] BHL-017: ResidualMeter add, fractional carry, never-negative, and clear verified." << std::endl;
+    }
+
+    // 14. CORE-003: Pluggable transition system (ITransition, FadeTransition, CutTransition)
+    {
+        using nundertale::fadeBlack;
+        using nundertale::fadeWhite;
+        using nundertale::cut;
+        using nundertale::ITransition;
+
+        // 1. fadeBlack duration and coverage
+        auto blackTrans = fadeBlack(0.4f);
+        assert(std::abs(blackTrans->duration() - 0.4f) < 0.0001f);
+
+        // Covering out (covering the old scene): out -> progress
+        assert(std::abs(blackTrans->coverage(0.0f, true) - 0.0f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(0.5f, true) - 0.5f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(1.0f, true) - 1.0f) < 0.0001f);
+
+        // Revealing in (revealing the new scene): in -> 1 - progress
+        assert(std::abs(blackTrans->coverage(0.0f, false) - 1.0f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(0.5f, false) - 0.5f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(1.0f, false) - 0.0f) < 0.0001f);
+
+        // Clamping outside 0..1
+        assert(std::abs(blackTrans->coverage(-0.5f, true) - 0.0f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(1.5f, true) - 1.0f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(-0.5f, false) - 1.0f) < 0.0001f);
+        assert(std::abs(blackTrans->coverage(1.5f, false) - 0.0f) < 0.0001f);
+
+        // render() executes cleanly
+        blackTrans->render(0.5f, true);
+        blackTrans->render(0.5f, false);
+
+        // 2. fadeWhite duration and coverage
+        auto whiteTrans = fadeWhite(0.8f);
+        assert(std::abs(whiteTrans->duration() - 0.8f) < 0.0001f);
+        assert(std::abs(whiteTrans->coverage(0.0f, true) - 0.0f) < 0.0001f);
+        assert(std::abs(whiteTrans->coverage(1.0f, true) - 1.0f) < 0.0001f);
+        assert(std::abs(whiteTrans->coverage(0.0f, false) - 1.0f) < 0.0001f);
+        assert(std::abs(whiteTrans->coverage(1.0f, false) - 0.0f) < 0.0001f);
+        whiteTrans->render(0.8f, false);
+
+        // 3. cut duration 0 and zero coverage
+        auto cutTrans = cut();
+        assert(cutTrans->duration() == 0.0f);
+        assert(cutTrans->coverage(0.0f, true) == 0.0f);
+        assert(cutTrans->coverage(0.5f, true) == 0.0f);
+        assert(cutTrans->coverage(1.0f, true) == 0.0f);
+        assert(cutTrans->coverage(0.0f, false) == 0.0f);
+        assert(cutTrans->coverage(1.0f, false) == 0.0f);
+        cutTrans->render(0.0f, true);
+
+        std::cout << "[PASS] CORE-003: Pluggable transitions (coverage, cut duration 0, clamping) verified." << std::endl;
+    }
+
+    // 15. BFL-007: Per-encounter battle music mapping and asset fallback
+    {
+        using nundertale::DEFAULT_BATTLE_MUSIC;
+        using nundertale::musicPathForId;
+        using nundertale::resolveMusicPath;
+
+        assert(musicPathForId("") == DEFAULT_BATTLE_MUSIC);
+        assert(musicPathForId("battle_default") == DEFAULT_BATTLE_MUSIC);
+        assert(musicPathForId("boss_barky") == "assets/music/boss_barky.ogg");
+
+        const auto bossTrackExists = [](const std::string& path) {
+            return path == "assets/music/boss_barky.ogg";
+        };
+        assert(resolveMusicPath("boss_barky", bossTrackExists) == "assets/music/boss_barky.ogg");
+
+        const auto noTrackExists = [](const std::string& /*path*/) { return false; };
+        assert(resolveMusicPath("boss_barky", noTrackExists) == DEFAULT_BATTLE_MUSIC);
+
+        std::cout << "[PASS] BFL-007: Battle music IDs, convention paths, and missing-asset fallback verified." << std::endl;
+    }
+
+    std::cout << "\nAll 15 test suites passed successfully!" << std::endl;
     return 0;
 }

@@ -2,7 +2,7 @@
   "id": "encounter_barky",
   "enemies": ["barky"],
   "introText": "* Barky blocked your path!",
-  "background": "grid",
+  "background": "grid_tube",
   "music": "boss_barky",
   "canFlee": false
 }

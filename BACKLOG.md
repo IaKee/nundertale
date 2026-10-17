@@ -344,9 +344,10 @@ P0 · M · BUG-01, BUG-04
 - **What:** `SceneManager` with `push(scene, transition)`, `pop(transition)`, `replace(...)`. The battle is **pushed** on top of the overworld (which stays paused and preserved) and popped at the end. `onPause/onResume` in `IScene`.
 - **Acceptance:** after a battle, Pepe is exactly where he was and the defeated/spared NPC already reflects the result.
 
-#### CORE-003 — Pluggable transition system `[ ]`
+#### CORE-003 — Pluggable transition system `[~]`
 P1 · M · CORE-002
 - **What:** an `ITransition` interface with `FadeBlack(frames)`, `FadeWhite(frames)` (used on name confirmation), `Cut`, `EncounterFlash` (ENC-002) and `SoulBreak` (BND-010) implementations. `SceneManager` stops having the black fade built in. Add `PinkMirror` (FLF-001) and `FurryOverPomf` (BND-010).
+- **Partly done (2026-10-17):** `ITransition` (`include/core/Transition.hpp`) with `FadeTransition` (`fadeBlack`, `fadeWhite`) and `CutTransition` (`cut`); `SceneManager::changeScene(scene, transition)` replaces the built-in black fade (the old `changeScene(scene, seconds)` still works and builds a black fade). Name confirmation fades to white. Still to do: `EncounterFlash`, `SoulBreak`, `PinkMirror`, `FurryOverPomf`.
 
 #### CORE-004 — Serializable global `GameState` `[x]`
 P0 · M · —
@@ -577,9 +578,10 @@ P2 · S · BUI-009, AUD-011
 - **What (LORE §8.8):** spare stays 1:1 (yellow name), with an optional notification *ding* (configurable) alongside `spare_poof`.
 - **Done (2026-10-16), pending a real SFX:** the ding plays once, on the ACT that turns the name yellow; toggle `"spareDing"` in `config.json` (default `true`, no in-game options menu yet). It reuses `u_activate.wav` as a placeholder until AUD-011 ships the ding/`spare_poof`.
 
-#### BUI-013 — Per-encounter battle backgrounds `[ ]`
+#### BUI-013 — Per-encounter battle backgrounds `[~]`
 P1 · M · BUI-002, GFX-002
 - **What (LORE §25.3):** commons = green grid · Barky = grid + a fluorescent tube at the top · Furiell = plain black · Papyrus = grid + a scrolling chat panel (3 names) · Sharkdyne = speed lines at the edges + drops · Mettapaw = stage, spotlights, an audience of silhouettes · Asgrr = black + a border of trophies · The Mascot = an endless wall of blinking plastic eyes · Senpai Sans = black with the Last Lobby's gold · gamers (X2) = **red** grid · Moderator = a dark bedroom with pulsing RGB + a green cloud. A `background` field on the encounter.
+- **Partly done (2026-10-16):** `BattleBackground` (`grid`, `grid_tube`, `red_grid`, `black`, `speed_lines`, `trophies`, `lobby_gold`) drawn with primitives; `BattleScene` reads `background` from `data/encounters/barky.json` (Barky now `grid_tube`). Still to do: Papyrus's chat panel, Mettapaw's stage, The Mascot's eyes, the Moderator's bedroom (they need art/content), and loading the encounter by id instead of the hardcoded Barky file (BFL-004).
 
 ---
 
@@ -625,9 +627,10 @@ P0 · M · REPO-007, BFL-004
 P0 · M · BFL-005
 - **What:** `mercy` as a counter (0–100) or a set of flags: `spareWhen: { all: ["act.cringe_check", "act.offer_dew"] }` or `{ mercy: 100 }`. "HP below X%" and "turns survived ≥ N" also count.
 
-#### BFL-007 — Per-encounter battle music `[ ]`
+#### BFL-007 — Per-encounter battle music `[x]`
 P1 · S · AUD-001
 - **What:** common enemies use the default battle theme; bosses use their own; the overworld music **stops** on the transition (ENC-002) and comes back on exit. Track list in AUD-010.
+- **Done (2026-10-17):** the encounter JSON `music` id resolves to `assets/music/<id>.ogg` (`include/services/MusicTracks.hpp`); missing tracks (e.g. `boss_barky`, until AUD-010) fall back to the default battle theme. The overworld music already stops on the encounter transition and restarts on resume.
 
 ---
 
@@ -692,13 +695,15 @@ P1 · M · BFL-004
 P0 · M · ACT-001, FUR-002
 - **What:** an ACT present on every furry the LORE marks (Fursuit Dummy, Froggsona, Shysona, Doge, Barky, Furiell…): **spares on the spot** and adds FUR (+10 to +15; +30 on Furiell, which ends the fight). Squeak SFX; per-enemy text. It's the love-bombing mechanic (LORE §8.4) — it never appears on gamers.
 
-#### ACT-006 — Conditional ACTs `[ ]`
+#### ACT-006 — Conditional ACTs `[x]`
 P1 · S · ACT-001
 - **What:** `requires` by carried item (Laser ↔ Toy Laser Pointer), by FUR (Dogsona & Dogsonissa spare you outright at FUR ≥ 40), by flag/route (furry Pepe's ACTs, FLF-008) and by repetition (Cringe Check's 2nd time; Asgrr's `Talk` ×3; Napstablurk's `Cheer` ×3 in sequence).
+- **Done (2026-10-16), mechanism only:** `ActDef` gained `requiresItem`, `requiresFurMin`, `requiresFlag` (unmet → the ACT is hidden from the menu, like Undertale) and `minUses` (effects only from the Nth use; per-battle counter). Pure helpers `actAvailable` / `actEffectApplies` are unit-tested. The per-enemy content (Laser, Dogsona, Asgrr `Talk` ×3…) comes with each enemy.
 
-#### ACT-007 — ACTs that change stats `[ ]`
+#### ACT-007 — ACTs that change stats `[x]`
 P1 · S · ACT-001
 - **What:** `atk`/`def` effects on the enemy: Asgrr `Talk` (on the 3rd, AT and DF −1), Moderator `Open a Window` (AT −2) and `Ask When He Last Showered` (DF −2); Moderator `Mention His Mom` (freezes him 1 turn).
+- **Done (2026-10-16), mechanism only:** `atkDelta` / `defDelta` (clamped ≥ 0, via `Enemy::modifyAtk/modifyDef`) and `freezeTurns` (the enemy skips that many attacks and play goes back to the menu with flavor text). Combined with `minUses` this covers Asgrr's 3rd `Talk`.
 
 ---
 
@@ -846,9 +851,10 @@ P1 · M · BHL-004
 - **What:** an area (cloud) that stays in the box for N frames and deals damage over time while the soul is inside, with its own i-frames: `musk_cloud` (Musk-ron), `musk_wave` (Sharkdyne, covers the box in green for 1 s), `cologne_cloud` (`Eau de Grr`, Asgrr), `musk_cloud_gamer` (Moderator, with residual SHAME).
 - **Done (2026-10-16), mechanism only:** `DamageZone` (`include/combat/DamageZone.hpp`: area, lifetime, damage per tick, own tick interval, FUR per tick, color) + `BattleSystem::addDamageZone`. Zones tick independently of the bullet i-frames, render as translucent rectangles and are cleared every enemy turn; bullets and zones share `applySoulDamage`. The LORE clouds above get wired up with their patterns (BHL-004); SHAME is still to do.
 
-#### BHL-017 — KR-style residual damage `[ ]`
+#### BHL-017 — KR-style residual damage `[x]`
 P1 · M · BUI-005, BHL-005
 - **What:** the KARMA mechanic: a hit leaves an overlaid portion on the bar that drains slowly. Uses: **residual SHAME** on the Furry route (a gray overlay on the FLUFF bar, FLF-005) and Senpai Sans's `karma_fur` on the Toxic route (uses the FUR bar as temporary KR, reset at the end of the fight, C7-004).
+- **Done (2026-10-16), mechanism only:** `ResidualMeter` (`include/combat/ResidualDamage.hpp`, ~1 HP/s drain with fractional carry) + `BattleSystem::addResidualDamage`. It drains without i-frames or feedback, never takes HP below 1 by itself (confirm against Undertale's KR), shows as magenta on the right end of the yellow fill, and clears at the end of the battle. SHAME on the FLUFF bar and `karma_fur` reuse it later.
 
 #### BHL-018 — Text as bullets `[ ]`
 P1 · M · BHL-004, GFX-003

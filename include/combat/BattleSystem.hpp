@@ -4,9 +4,12 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include "Bullet.hpp"
 #include "DamageZone.hpp"
 #include "Enemy.hpp"
+#include "BattleBackground.hpp"
+#include "ResidualDamage.hpp"
 #include "core/Constants.hpp"
 
 namespace nundertale {
@@ -89,6 +92,10 @@ public:
     Vector2 getSoulPosition() const { return m_soulPosition; }
     const RibbitState& getRibbitState() const { return m_ribbitState; }
     void addDamageZone(const DamageZone& zone) { m_zones.push_back(zone); }
+    void setBackground(BattleBackground bg) { m_background = bg; }
+    BattleBackground getBackground() const { return m_background; }
+    void addResidualDamage(float amount) { m_residual.add(amount); }
+    const ResidualMeter& getResidual() const { return m_residual; }
 
 private:
     void handleMenuInput(GameContext& context);
@@ -96,6 +103,7 @@ private:
     void handleActInput(GameContext& context);
     void handleItemInput(GameContext& context);
     void handleMercyInput(GameContext& context);
+    std::vector<int> getAvailableActIndices(const GameContext& context) const;
     void startEnemyTurn();
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
@@ -179,6 +187,10 @@ private:
     std::string m_lastActionDetail;
     std::string m_lastActResponse;
 
+    // ACT-006/007: Per-battle ACT use counts and queued skipped enemy attacks
+    std::unordered_map<std::string, int> m_actUseCounts;
+    int m_frozenTurns = 0;
+
     // BUI-010: Enemy idle animation
     float m_enemyIdleTimer = 0.0f;
 
@@ -194,6 +206,13 @@ private:
 
     // BHL-015: "thinking" ribbit text over soul
     RibbitState m_ribbitState;
+
+    // BUI-013: Per-encounter battle background
+    BattleBackground m_background = BattleBackground::Grid;
+    float m_backgroundAnimTimer = 0.0f;
+
+    // BHL-017: KR-style residual damage
+    ResidualMeter m_residual;
 };
 
 } // namespace nundertale

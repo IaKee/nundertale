@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <algorithm>
+#include <functional>
 #include <raylib.h>
 
 namespace nundertale {
@@ -16,7 +18,36 @@ struct ActDef {
     bool spareable = false;
     bool skipAttack = false;
     int mercy = 0;
+    std::string requiresItem;
+    int requiresFurMin = 0;
+    std::string requiresFlag;
+    int minUses = 1;
+    int atkDelta = 0;
+    int defDelta = 0;
+    int freezeTurns = 0;
 };
+
+inline bool actAvailable(const ActDef& act,
+                         const std::vector<std::string>& inventory,
+                         float fur,
+                         const std::function<bool(const std::string&)>& hasFlag) {
+    if (!act.requiresItem.empty() &&
+        std::find(inventory.begin(), inventory.end(), act.requiresItem) == inventory.end()) {
+        return false;
+    }
+    if (fur < static_cast<float>(act.requiresFurMin)) {
+        return false;
+    }
+    return act.requiresFlag.empty() || hasFlag(act.requiresFlag);
+}
+
+inline bool actEffectApplies(int useCount, int minUses) {
+    return minUses <= 1 || useCount >= minUses;
+}
+
+inline int clampStat(int value, int delta) {
+    return std::max(0, value + delta);
+}
 
 class Enemy {
 public:
@@ -42,6 +73,8 @@ public:
 
     void addMercy(int amount);
     void takeDamage(int dmg);
+    void modifyAtk(int delta);
+    void modifyDef(int delta);
 
     const std::vector<ActDef>& getActs() const { return m_acts; }
     void setActs(const std::vector<ActDef>& acts) { m_acts = acts; }

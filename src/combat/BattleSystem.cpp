@@ -31,6 +31,15 @@ void BattleSystem::update(float dt, GameContext& context) {
 
     updateDust(dt);
     updateSoulTrails(dt);
+    m_backgroundAnimTimer += dt;
+
+    // BHL-017: KR-style residual damage drain
+    if (!isFinished()) {
+        int residualDmg = m_residual.update(dt);
+        if (residualDmg > 0 && context.player.hp > 1) {
+            context.player.hp = std::max(1, context.player.hp - residualDmg);
+        }
+    }
 
     if (m_enemy && !m_enemy->isDead() && m_enemyShakeTimer <= 0.0f && !m_isSpared) {
         m_enemyIdleTimer += dt;
@@ -82,6 +91,7 @@ void BattleSystem::update(float dt, GameContext& context) {
             }
             if (m_fleeSoulX < -30.0f) {
                 m_state = BattleState::Fled;
+                m_residual.clear();
             }
             break;
         case BattleState::Fled:
@@ -93,6 +103,7 @@ void BattleSystem::update(float dt, GameContext& context) {
                     m_state = BattleState::MenuSelect;
                 } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
                     m_state = BattleState::Victory;
+                    m_residual.clear();
                     if (m_isSpared) {
                         context.player.gold += 10;
                         context.state.setFlag("ruins.barky.spared", 1);
@@ -255,14 +266,28 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
     }
 }
 
+std::vector<int> BattleSystem::getAvailableActIndices(const GameContext& context) const {
+    std::vector<int> indices;
+    const auto& acts = m_enemy->getActs();
+    for (size_t i = 0; i < acts.size(); ++i) {
+        if (actAvailable(acts[i], context.player.inventory, context.player.furryMeter,
+                         [&context](const std::string& flag) { return context.state.hasFlag(flag); })) {
+            indices.push_back(static_cast<int>(i));
+        }
+    }
+    return indices;
+}
+
 void BattleSystem::handleActInput(GameContext& context) {
     const auto& acts = m_enemy->getActs();
-    if (acts.empty()) {
+    const std::vector<int> availableActs = getAvailableActIndices(context);
+    if (availableActs.empty()) {
         m_state = BattleState::MenuSelect;
         return;
     }
 
-    int actCount = (int)acts.size();
+    int actCount = static_cast<int>(availableActs.size());
+    m_subOptionIndex = std::clamp(m_subOptionIndex, 0, actCount - 1);
     if (context.input.isLeftPressed()) {
         if (m_subOptionIndex % 2 == 1) {
             m_subOptionIndex--;
@@ -287,7 +312,9 @@ void BattleSystem::handleActInput(GameContext& context) {
 
     if (context.input.isConfirmPressed()) {
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.8f);
-        const auto& act = acts[m_subOptionIndex];
+        const auto& act = acts[static_cast<size_t>(availableActs[static_cast<size_t>(m_subOptionIndex)])];
+        int useCount = ++m_actUseCounts[act.id];
+        bool applies = actEffectApplies(useCount, act.minUses);
 
         m_lastPlayerAction = PlayerTurnAction::Act;
         m_lastActionDetail = act.id;
@@ -301,9 +328,14 @@ void BattleSystem::handleActInput(GameContext& context) {
             m_narratorText = act.text;
             m_enemySpeechBubble = act.response;
             bool wasSpareable = m_enemy->isSpareable();
-            m_enemy->addMercy(act.mercy);
-            if (act.spareable) {
-                m_enemy->setSpareable(true);
+            if (applies) {
+                m_enemy->addMercy(act.mercy);
+                if (act.spareable) {
+                    m_enemy->setSpareable(true);
+                }
+                m_enemy->modifyAtk(act.atkDelta);
+                m_enemy->modifyDef(act.defDelta);
+                m_frozenTurns += std::max(0, act.freezeTurns);
             }
             // BUI-012: optional ding the moment the name turns yellow (placeholder SFX until AUD-011)
             if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {
@@ -451,6 +483,23 @@ void BattleSystem::handleMercyInput(GameContext& context) {
 
 void BattleSystem::startEnemyTurn() {
     m_turnCount++;
+
+    if (m_frozenTurns > 0) {
+        m_frozenTurns--;
+        m_bullets.clear();
+        m_zones.clear();
+        m_soulTrails.clear();
+        if (m_soulSpeedBuffTurns > 0) {
+            m_soulSpeedBuffTurns--;
+        }
+        m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
+        m_enemySpeechBubble = "";
+        m_lastPlayerAction = PlayerTurnAction::None;
+        m_lastActResponse = "";
+        m_state = BattleState::MenuSelect;
+        return;
+    }
+
     m_state = BattleState::EnemyTurn;
     m_enemyTurnTimer = 0.0f;
     m_spawnTimer = 0.0f;
@@ -492,6 +541,7 @@ bool BattleSystem::applySoulDamage(GameContext& context, int rawDamage, float fu
     if (context.player.hp <= 0) {
         context.player.hp = 0;
         m_state = BattleState::Defeat;
+        m_residual.clear();
         m_narratorText = "* GAME OVER! You lost all HP and became a furry!";
         context.audio.playSound("assets/sfx/areusure.ogg", 1.0f);
         return true;
@@ -690,6 +740,17 @@ void BattleSystem::drawHUD(GameContext& context, Font font) const {
     int fillW = (int)(static_cast<float>(barW) * hpPct);
     DrawRectangle(HUD_HP_BAR_X, HUD_Y, fillW, HUD_HP_BAR_H, HP_YELLOW);
 
+    // BHL-017: Magenta residual overlay on the right end of the yellow fill (the HP that is about to drain, like KR)
+    if (m_residual.pending > 0.0f && context.player.maxHp > 0) {
+        float pendingPct = m_residual.pending / static_cast<float>(context.player.maxHp);
+        int resW = static_cast<int>(static_cast<float>(barW) * pendingPct);
+        int maxAllowedW = fillW;
+        int clampedW = std::clamp(resW, 0, maxAllowedW);
+        if (clampedW > 0) {
+            DrawRectangle(HUD_HP_BAR_X + fillW - clampedW, HUD_Y, clampedW, HUD_HP_BAR_H, Color{ 255, 0, 255, 255 });
+        }
+    }
+
     // Furry Karma overlay (FUR-003) if furryMeter > 0
     if (context.player.furryMeter > 0.0f) {
         float furryPct = std::clamp(context.player.furryMeter / 100.0f, 0.0f, 1.0f);
@@ -785,8 +846,8 @@ void BattleSystem::render(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
     Font fontSmall = context.resources.getFont8Bit(16);
 
-    // 1. Official Green Grid Background (BUI-002)
-    drawBackgroundGrid();
+    // 1. Battle Background (BUI-002, BUI-013)
+    drawBattleBackground(m_background, m_backgroundAnimTimer);
 
     // 2. Enemy Drawing (Feet aligned at baseline y = 241, BUI-003)
     int baselineY = ENEMY_BASELINE_Y;
@@ -983,7 +1044,8 @@ void BattleSystem::render(GameContext& context) {
     } else if (m_state == BattleState::ActSelect) {
         // ACT menu 2-column layout (BUI-008, ACT-001)
         const auto& acts = m_enemy->getActs();
-        for (size_t i = 0; i < acts.size(); ++i) {
+        const std::vector<int> availableActs = getAvailableActIndices(context);
+        for (size_t i = 0; i < availableActs.size(); ++i) {
             int col = (int)(i % 2);
             int row = (int)(i / 2);
             float optX = (col == 0) ? (m_arenaRect.x + 55.0f) : (m_arenaRect.x + 300.0f);
@@ -991,7 +1053,8 @@ void BattleSystem::render(GameContext& context) {
             if (m_subOptionIndex == (int)i) {
                 drawSoul(optX - 20.0f, optY + 10.0f, SOUL_RED);
             }
-            context.resources.drawText(font8Bit, "* " + acts[i].label, { optX, optY }, 20, WHITE, 1.0f);
+            const ActDef& act = acts[static_cast<size_t>(availableActs[i])];
+            context.resources.drawText(font8Bit, "* " + act.label, { optX, optY }, 20, WHITE, 1.0f);
         }
     } else if (m_state == BattleState::ItemSelect) {
         // Item menu 2-column 2-row paginated layout (BUI-008, ITM-002)
