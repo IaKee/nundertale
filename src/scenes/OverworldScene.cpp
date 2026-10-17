@@ -44,7 +44,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                 "* Trespassing gamers will be subjected to mandatory waifu appreciation seminars."
             }, "SIGN");
         },
-        [](GameContext& ctx) {
+        [](GameContext& /*ctx*/) {
             DrawRectangle(105, 80, 30, 20, { 140, 90, 40, 255 });
             DrawRectangleLines(105, 80, 30, 20, BLACK);
             DrawText("?", 115, 82, 16, WHITE);
@@ -70,7 +70,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (A small mound of gray fur and gamer dust.)\n* (It smells faintly of regret and Doritos.)"
                 }, "");
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawEllipse(510, 115, 16, 6, { 150, 150, 150, 220 });
                 DrawCircle(506, 113, 2, { 180, 180, 180, 255 });
                 DrawCircle(514, 114, 2, { 130, 130, 130, 255 });
@@ -88,7 +88,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
                 }, "");
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawRectangleLines(280, 50, 80, 30, GREEN);
                 DrawText("OPEN", 300, 56, 16, GREEN);
             }
@@ -107,7 +107,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* The northern gate is unlocked! Safe travels through the Underground!"
                 }, "BARKY");
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawCircle(510, 95, 16, { 120, 150, 140, 255 });
                 DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 130, 110, 255 });
                 DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 130, 110, 255 });
@@ -126,7 +126,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
                 }, "");
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
                 DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
             }
@@ -145,7 +145,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* Step through the north doorway if you dare face my fursona!"
                 }, "BARKY");
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawCircle(510, 95, 16, { 120, 120, 140, 255 });
                 DrawTriangle({ 498, 85 }, { 506, 85 }, { 502, 70 }, { 90, 90, 110, 255 });
                 DrawTriangle({ 514, 85 }, { 522, 85 }, { 518, 70 }, { 90, 90, 110, 255 });
@@ -167,7 +167,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                     ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
                 });
             },
-            [](GameContext& ctx) {
+            [](GameContext& /*ctx*/) {
                 DrawRectangleLines(280, 50, 80, 30, COLOR_UNDERTALE_YELLOW);
                 DrawText("EXIT", 300, 56, 16, COLOR_UNDERTALE_YELLOW);
             }
@@ -218,7 +218,7 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }
             }
         },
-        [](GameContext& ctx) {
+        [](GameContext& /*ctx*/) {
             DrawRectangle(205, 165, 30, 20, { 50, 120, 50, 255 });
             DrawRectangleLines(205, 165, 30, 20, WHITE);
             DrawText("DEW", 208, 168, 12, COLOR_UNDERTALE_YELLOW);
@@ -293,53 +293,94 @@ void OverworldScene::handleMenuInput(GameContext& context) {
                 context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
             }
             if (context.input.isConfirmPressed()) {
-                std::string item = context.player.inventory[m_itemSubIndex];
-                context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
-
-                if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
-                    // PRG-002: Equip weapon
-                    std::string oldWeapon = context.player.weapon;
-                    context.player.weapon = item;
-                    context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
-                    context.player.inventory.push_back(oldWeapon);
-                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                    m_menuState = OverworldMenuState::Closed;
-                    m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Attack power updated!" }, "");
-                    return;
-                } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
-                    // PRG-002: Equip armor
-                    std::string oldArmor = context.player.armor;
-                    context.player.armor = item;
-                    context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
-                    context.player.inventory.push_back(oldArmor);
-                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                    m_menuState = OverworldMenuState::Closed;
-                    m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Defense updated!" }, "");
-                    return;
-                } else if (item.find("Dew") != std::string::npos) {
-                    context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
-                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                    m_menuState = OverworldMenuState::Closed;
-                    m_dialogBox.startDialog({ "* You drank the warm Mountain Dew.\n* You recovered 10 HP!" }, "");
-                    return;
-                } else if (item.find("Doritos") != std::string::npos) {
-                    context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
-                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                    m_menuState = OverworldMenuState::Closed;
-                    m_dialogBox.startDialog({ "* You ate the stale Doritos.\n* You recovered 6 HP!" }, "");
-                    return;
-                } else {
-                    context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
-                    context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
-                    m_menuState = OverworldMenuState::Closed;
-                    m_dialogBox.startDialog({ "* You used " + item + ".\n* Recovered 8 HP." }, "");
-                    return;
-                }
+                m_itemActionIndex = 0;
+                m_menuState = OverworldMenuState::ItemAction;
+                context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
             }
         }
         if (context.input.isCancelPressed() || IsKeyPressed(KEY_C)) {
             m_menuState = OverworldMenuState::Main;
             context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+    } else if (m_menuState == OverworldMenuState::ItemAction) {
+        if (context.player.inventory.empty()) {
+            m_menuState = OverworldMenuState::Item;
+            m_itemSubIndex = 0;
+            return;
+        }
+
+        if (context.input.isLeftPressed()) {
+            m_itemActionIndex = (m_itemActionIndex - 1 + 3) % 3;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        } else if (context.input.isRightPressed()) {
+            m_itemActionIndex = (m_itemActionIndex + 1) % 3;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+        }
+
+        if (context.input.isCancelPressed() || IsKeyPressed(KEY_C)) {
+            m_menuState = OverworldMenuState::Item;
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+            return;
+        }
+
+        if (context.input.isConfirmPressed()) {
+            const std::string item = context.player.inventory[m_itemSubIndex];
+            m_menuState = OverworldMenuState::Closed;
+
+            if (m_itemActionIndex == 1) {
+                const std::string infoText = (item == "Bottle")
+                    ? "* A bottle. It's not Mountain Dew.\n* (You don't want to talk about it.)"
+                    : "* " + item + ".";
+                m_dialogBox.startDialog({ infoText }, "");
+                return;
+            }
+
+            if (m_itemActionIndex == 2) {
+                context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
+                const std::string dropText = (item == "Bottle")
+                    ? "* You throw it away. The Underground will remember."
+                    : "* The " + item + " was thrown away.";
+                m_itemSubIndex = std::max(0, std::min(m_itemSubIndex, (int)context.player.inventory.size() - 1));
+                m_dialogBox.startDialog({ dropText }, "");
+                return;
+            }
+
+            if (item == "Bottle") {
+                m_dialogBox.startDialog({ "* You consider drinking from the bottle.\n* ...No. Absolutely not." }, "");
+                return;
+            }
+
+            context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
+            if (item.find("Mouse") != std::string::npos || item.find("Keyboard") != std::string::npos || item.find("Weapon") != std::string::npos) {
+                // PRG-002: Equip weapon
+                std::string oldWeapon = context.player.weapon;
+                context.player.weapon = item;
+                context.player.weaponAt = (item.find("Keyboard") != std::string::npos) ? 4 : 2;
+                context.player.inventory.push_back(oldWeapon);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Attack power updated!" }, "");
+            } else if (item.find("Headset") != std::string::npos || item.find("Hoodie") != std::string::npos || item.find("Armor") != std::string::npos) {
+                // PRG-002: Equip armor
+                std::string oldArmor = context.player.armor;
+                context.player.armor = item;
+                context.player.armorDf = (item.find("Hoodie") != std::string::npos) ? 3 : 1;
+                context.player.inventory.push_back(oldArmor);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_dialogBox.startDialog({ "* You equipped the " + item + ".\n* Defense updated!" }, "");
+            } else if (item.find("Dew") != std::string::npos) {
+                context.player.hp = std::min(context.player.maxHp, context.player.hp + 10);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_dialogBox.startDialog({ "* You drank the warm Mountain Dew.\n* You recovered 10 HP!" }, "");
+            } else if (item.find("Doritos") != std::string::npos) {
+                context.player.hp = std::min(context.player.maxHp, context.player.hp + 6);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_dialogBox.startDialog({ "* You ate the stale Doritos.\n* You recovered 6 HP!" }, "");
+            } else {
+                context.player.hp = std::min(context.player.maxHp, context.player.hp + 8);
+                context.audio.playSound("assets/sfx/heal.ogg", 0.8f);
+                m_dialogBox.startDialog({ "* You used " + item + ".\n* Recovered 8 HP." }, "");
+            }
+            return;
         }
     } else if (m_menuState == OverworldMenuState::Cell) {
         if (context.input.isCancelPressed() || context.input.isConfirmPressed() || IsKeyPressed(KEY_C)) {
@@ -401,8 +442,8 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
         // Furry meter status line (MNU-003 / FUR-006)
         Color furColor = (context.player.furryMeter > 0.0f) ? KR_PURPLE : WHITE;
         context.resources.drawText(font, "FURRY:  " + std::to_string((int)context.player.furryMeter) + "%", { 210, 305 }, 18, furColor, 1.0f);
-    } else if (m_menuState == OverworldMenuState::Item) {
-        Rectangle itemBox = { 186, 52, 400, 260 };
+    } else if (m_menuState == OverworldMenuState::Item || m_menuState == OverworldMenuState::ItemAction) {
+        Rectangle itemBox = { 186, 52, 400, 300 };
         DrawRectangleRec(itemBox, BLACK);
         DrawRectangleLinesEx(itemBox, 5.0f, WHITE);
 
@@ -411,10 +452,21 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
         } else {
             for (size_t i = 0; i < context.player.inventory.size(); ++i) {
                 float optY = 75.0f + (float)i * 28.0f;
-                if (m_itemSubIndex == (int)i) {
+                if (m_menuState == OverworldMenuState::Item && m_itemSubIndex == (int)i) {
                     drawSoul(210.0f, optY + 9.0f);
                 }
                 context.resources.drawText(font, "* " + context.player.inventory[i], { 228.0f, optY }, 20, WHITE, 1.0f);
+            }
+
+            if (m_menuState == OverworldMenuState::ItemAction) {
+                const char* actionLabels[3] = { "USE", "INFO", "DROP" };
+                const float actionX[3] = { 245.0f, 365.0f, 485.0f };
+                for (int i = 0; i < 3; ++i) {
+                    if (m_itemActionIndex == i) {
+                        drawSoul(actionX[i] - 20.0f, 326.0f);
+                    }
+                    context.resources.drawText(font, actionLabels[i], { actionX[i], 317.0f }, 18, WHITE, 1.0f);
+                }
             }
         }
     } else if (m_menuState == OverworldMenuState::Cell) {
@@ -629,7 +681,7 @@ void OverworldScene::render(GameContext& context) {
     }
 }
 
-void OverworldScene::onExit(GameContext& context) {
+void OverworldScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

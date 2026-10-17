@@ -22,7 +22,7 @@ goto :BUILD_STANDARD
 echo ========================================================
 echo  Compiling nUndertale DEBUG Mode: -O0 -g -DNUNDERTALE_DEBUG
 echo ========================================================
-set CXXFLAGS=-std=c++20 -O0 -g -DNUNDERTALE_DEBUG -Wall -Wextra -Wno-unused-parameter
+set CXXFLAGS=-std=c++20 -O0 -g -DNUNDERTALE_DEBUG -Wall -Wextra -Wpedantic -Wshadow -Wconversion
 set OUTFILE=nundertale_modern.exe
 goto :DO_COMPILE
 
@@ -30,7 +30,7 @@ goto :DO_COMPILE
 echo ========================================================
 echo  Compiling nUndertale RELEASE Mode: -O2 -s -mwindows
 echo ========================================================
-set CXXFLAGS=-std=c++20 -O2 -s -mwindows -Wall -Wextra -Wno-unused-parameter
+set CXXFLAGS=-std=c++20 -O2 -s -mwindows -Wall -Wextra -Wpedantic -Wshadow -Wconversion
 set OUTFILE=nundertale_modern.exe
 goto :DO_COMPILE
 
@@ -38,7 +38,7 @@ goto :DO_COMPILE
 echo ========================================================
 echo  Compiling nUndertale Standard Mode: C++20 + Raylib
 echo ========================================================
-set CXXFLAGS=-std=c++20 -O2 -DNUNDERTALE_DEBUG -Wall -Wextra -Wno-unused-parameter
+set CXXFLAGS=-std=c++20 -O2 -DNUNDERTALE_DEBUG -Wall -Wextra -Wpedantic -Wshadow -Wconversion
 set OUTFILE=nundertale_modern.exe
 goto :DO_COMPILE
 

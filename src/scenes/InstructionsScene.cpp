@@ -7,10 +7,10 @@
 
 namespace nundertale {
 
-void InstructionsScene::onEnter(GameContext& context) {
+void InstructionsScene::onEnter(GameContext& /*context*/) {
 }
 
-void InstructionsScene::update(float dt, GameContext& context) {
+void InstructionsScene::update(float /*dt*/, GameContext& context) {
     if (context.input.isConfirmPressed() || context.input.isCancelPressed() || context.input.isEscapePressed()) {
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
         context.scenes.changeScene(std::make_unique<TitleScene>(), 0.3f);
@@ -48,7 +48,7 @@ void InstructionsScene::render(GameContext& context) {
     context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to return]", 430, 18, COLOR_UNDERTALE_YELLOW, 1.0f);
 }
 
-void InstructionsScene::onExit(GameContext& context) {
+void InstructionsScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

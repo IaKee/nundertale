@@ -58,17 +58,17 @@ std::string Enemy::getFlavorText(const std::string& lastActionFlag) {
     if (m_spareable && !m_spareableFlavor.empty()) {
         int idx = GetRandomValue(0, (int)m_spareableFlavor.size() - 1);
         if (m_spareableFlavor.size() > 1 && idx == m_lastFlavorIndex) {
-            idx = (idx + 1) % m_spareableFlavor.size();
+            idx = (idx + 1) % static_cast<int>(m_spareableFlavor.size());
         }
         m_lastFlavorIndex = idx;
         return m_spareableFlavor[idx];
     }
 
     // 3. Low HP pool (HP <= 35%)
-    if (m_hp <= static_cast<int>(m_maxHp * 0.35f) && !m_lowHpFlavor.empty()) {
+    if (m_hp <= static_cast<int>(static_cast<float>(m_maxHp) * 0.35f) && !m_lowHpFlavor.empty()) {
         int idx = GetRandomValue(0, (int)m_lowHpFlavor.size() - 1);
         if (m_lowHpFlavor.size() > 1 && idx == m_lastFlavorIndex) {
-            idx = (idx + 1) % m_lowHpFlavor.size();
+            idx = (idx + 1) % static_cast<int>(m_lowHpFlavor.size());
         }
         m_lastFlavorIndex = idx;
         return m_lowHpFlavor[idx];
@@ -78,7 +78,7 @@ std::string Enemy::getFlavorText(const std::string& lastActionFlag) {
     if (!m_defaultFlavor.empty()) {
         int idx = GetRandomValue(0, (int)m_defaultFlavor.size() - 1);
         if (m_defaultFlavor.size() > 1 && idx == m_lastFlavorIndex) {
-            idx = (idx + 1) % m_defaultFlavor.size();
+            idx = (idx + 1) % static_cast<int>(m_defaultFlavor.size());
         }
         m_lastFlavorIndex = idx;
         return m_defaultFlavor[idx];
@@ -273,6 +273,7 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     auto enemy = std::make_unique<Enemy>(name, maxHp, atk, def);
     enemy->m_exp = extractJsonInt(json, "exp", 20);
     enemy->m_gold = extractJsonInt(json, "gold", 10);
+    enemy->setMercyLockedAbovePct(extractJsonInt(json, "mercyLockedAbovePct", 0));
 
     std::string checkStr = extractJsonString(json, "check");
     if (!checkStr.empty()) {

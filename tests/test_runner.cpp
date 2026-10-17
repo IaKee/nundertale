@@ -3,14 +3,20 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include "combat/Bullet.hpp"
+#include "combat/DamageZone.hpp"
+#include "combat/Enemy.hpp"
+#include "combat/BattleSystem.hpp"
+#include "ui/DialogBox.hpp"
+#include "ui/Mosaic.hpp"
+#include "core/AreaPalettes.hpp"
 
 // Test damage formula from FGT-003
 static int calculateDamage(int baseAtk, int enemyDef, float dist, float maxDist, int randVal) {
     float accuracyMult = (dist <= 12.0f) ? 2.2f : std::max(0.5f, (1.0f - dist / maxDist) * 2.0f);
-    int damage = std::max(1, static_cast<int>(std::round((baseAtk - enemyDef + randVal) * accuracyMult)));
+    int damage = std::max(1, static_cast<int>(std::round(static_cast<float>(baseAtk - enemyDef + randVal) * accuracyMult)));
     return damage;
 }
-
 // Test inventory limit from ITM-004
 struct TestPlayerData {
     static constexpr size_t MAX_INVENTORY_SIZE = 8;
@@ -101,6 +107,516 @@ int main() {
         std::cout << "[PASS] BFL-006: Declarative mercy accumulation and spare conditions verified." << std::endl;
     }
 
-    std::cout << "\nAll 3 test suites passed successfully!" << std::endl;
+    // 4. BHL-008 & BHL-009: Attack color rules (hurtsSoul 4 colors x moving/still, healsSoul)
+    {
+        using nundertale::Bullet;
+        using nundertale::AttackColor;
+
+        Bullet bullet;
+        assert(bullet.attackColor == AttackColor::White);
+        assert(bullet.heal == 0);
+
+        // White: hurts whether soul is moving or still
+        bullet.attackColor = AttackColor::White;
+        assert(bullet.hurtsSoul(true) == true);
+        assert(bullet.hurtsSoul(false) == true);
+        assert(bullet.healsSoul() == false);
+
+        // Blue: hurts only if soul is moving (cyan #00A2E8)
+        bullet.attackColor = AttackColor::Blue;
+        assert(bullet.hurtsSoul(true) == true);
+        assert(bullet.hurtsSoul(false) == false);
+        assert(bullet.healsSoul() == false);
+
+        // Orange: hurts only if soul is still (!soulMoving) (#FCA600)
+        bullet.attackColor = AttackColor::Orange;
+        assert(bullet.hurtsSoul(true) == false);
+        assert(bullet.hurtsSoul(false) == true);
+        assert(bullet.healsSoul() == false);
+
+        // Green: heals, never hurts
+        bullet.attackColor = AttackColor::Green;
+        bullet.heal = 5;
+        assert(bullet.hurtsSoul(true) == false);
+        assert(bullet.hurtsSoul(false) == false);
+        assert(bullet.healsSoul() == true);
+        assert(bullet.heal == 5);
+
+        std::cout << "[PASS] BHL-008 & BHL-009: AttackColor hurtsSoul (4 colors x moving/still) and healsSoul verified." << std::endl;
+    }
+
+    // 5. TXT-007: Dialogue choice token parser tests (valid 2 options, 3 options, no token, malformed token)
+    {
+        using nundertale::parseChoiceToken;
+        using nundertale::ParsedChoicePage;
+
+        // 5a. Valid 2 options
+        {
+            auto res = parseChoiceToken("* Will you pet the dog?{choice:Yes|No}");
+            assert(res.text == "* Will you pet the dog?");
+            assert(res.options.size() == 2);
+            assert(res.options[0] == "Yes");
+            assert(res.options[1] == "No");
+        }
+
+        // 5b. Valid 3 options
+        {
+            auto res = parseChoiceToken("* Choose starter:{choice:Grass|Fire|Water}");
+            assert(res.text == "* Choose starter:");
+            assert(res.options.size() == 3);
+            assert(res.options[0] == "Grass");
+            assert(res.options[1] == "Fire");
+            assert(res.options[2] == "Water");
+        }
+
+        // 5c. No token
+        {
+            auto res = parseChoiceToken("* Just a normal dialogue page without choices.");
+            assert(res.text == "* Just a normal dialogue page without choices.");
+            assert(res.options.empty());
+        }
+
+        // 5d. Malformed: no closing brace
+        {
+            auto res = parseChoiceToken("* Broken token{choice:Yes|No");
+            assert(res.text == "* Broken token{choice:Yes|No");
+            assert(res.options.empty());
+        }
+
+        // 5e. Malformed: fewer than 2 options (single option)
+        {
+            auto res = parseChoiceToken("* Only one option{choice:Accept}");
+            assert(res.text == "* Only one option{choice:Accept}");
+            assert(res.options.empty());
+        }
+
+        // 5f. Malformed: empty inside token
+        {
+            auto res = parseChoiceToken("* Empty choice{choice:}");
+            assert(res.text == "* Empty choice{choice:}");
+            assert(res.options.empty());
+        }
+
+        // 5g. Malformed: delimiter with empty options
+        {
+            auto res = parseChoiceToken("* Blank choice{choice:|}");
+            assert(res.text == "* Blank choice{choice:|}");
+            assert(res.options.empty());
+        }
+
+        std::cout << "[PASS] TXT-007: Dialogue choices parseChoiceToken (2 options, 3 options, no token, malformed) verified." << std::endl;
+    }
+
+     // 6. GFX-012: Mosaic censorship component tests
+     {
+         using nundertale::Mosaic;
+
+         // 6a. Ceil tiling columns/rows math
+         {
+             // 20x10 area, block size 8 -> ceil(20/8)=3 columns, ceil(10/8)=2 rows
+             Mosaic m(Rectangle{ 0.0f, 0.0f, 20.0f, 10.0f }, 8, 4, 12345);
+             assert(m.columns() == 3);
+             assert(m.rows() == 2);
+
+             // Exact multiples: 16x8, block size 8 -> 2 columns, 1 row
+             Mosaic mExact(Rectangle{ 0.0f, 0.0f, 16.0f, 8.0f }, 8, 4, 12345);
+             assert(mExact.columns() == 2);
+             assert(mExact.rows() == 1);
+
+             // Zero dimension checks
+             Mosaic mZero(Rectangle{ 0.0f, 0.0f, 0.0f, 0.0f }, 8, 4, 12345);
+             assert(mZero.columns() == 0);
+             assert(mZero.rows() == 0);
+         }
+
+         // 6b. Clipped edge blocks (blockRect)
+         {
+             Mosaic m(Rectangle{ 10.0f, 20.0f, 20.0f, 10.0f }, 8, 4, 12345);
+             assert(m.columns() == 3);
+             assert(m.rows() == 2);
+
+             // Block (0, 0): full size 8x8 at (10, 20)
+             Rectangle r00 = m.blockRect(0, 0);
+             assert(r00.x == 10.0f);
+             assert(r00.y == 20.0f);
+             assert(r00.width == 8.0f);
+             assert(r00.height == 8.0f);
+
+             // Block (1, 0): full size 8x8 at (18, 20)
+             Rectangle r10 = m.blockRect(1, 0);
+             assert(r10.x == 18.0f);
+             assert(r10.y == 20.0f);
+             assert(r10.width == 8.0f);
+             assert(r10.height == 8.0f);
+
+             // Block (2, 0): clipped width 4 (right edge at 10+20=30; start at 10+16=26 -> 30-26=4)
+             Rectangle r20 = m.blockRect(2, 0);
+             assert(r20.x == 26.0f);
+             assert(r20.y == 20.0f);
+             assert(r20.width == 4.0f);
+             assert(r20.height == 8.0f);
+
+             // Block (0, 1): clipped height 2 (bottom edge at 20+10=30; start at 20+8=28 -> 30-28=2)
+             Rectangle r01 = m.blockRect(0, 1);
+             assert(r01.x == 10.0f);
+             assert(r01.y == 28.0f);
+             assert(r01.width == 8.0f);
+             assert(r01.height == 2.0f);
+
+             // Block (2, 1): clipped width 4 and clipped height 2
+             Rectangle r21 = m.blockRect(2, 1);
+             assert(r21.x == 26.0f);
+             assert(r21.y == 28.0f);
+             assert(r21.width == 4.0f);
+             assert(r21.height == 2.0f);
+
+             // Out-of-bounds queries return empty rect
+             Rectangle rOob = m.blockRect(-1, 0);
+             assert(rOob.width == 0.0f && rOob.height == 0.0f);
+             Rectangle rOob2 = m.blockRect(3, 0);
+             assert(rOob2.width == 0.0f && rOob2.height == 0.0f);
+         }
+
+         // 6c. Logic frame accumulation and reshuffle timing (30 Hz, reshuffle every N frames)
+         {
+             Mosaic m(Rectangle{ 0.0f, 0.0f, 24.0f, 24.0f }, 8, 4, 12345);
+             assert(m.shuffleCount() == 0);
+
+             // 1st frame (dt = 1/30)
+             m.update(1.0f / 30.0f);
+             assert(m.shuffleCount() == 0);
+
+             // 2nd frame
+             m.update(1.0f / 30.0f);
+             assert(m.shuffleCount() == 0);
+
+             // 3rd frame
+             m.update(1.0f / 30.0f);
+             assert(m.shuffleCount() == 0);
+
+             // 4th frame -> triggers exactly one reshuffle
+             m.update(1.0f / 30.0f);
+             assert(m.shuffleCount() == 1);
+
+             // Next 4 frames -> triggers second reshuffle
+             for (int i = 0; i < 4; ++i) {
+                 m.update(1.0f / 30.0f);
+             }
+             assert(m.shuffleCount() == 2);
+
+             // Larger dt: dt = 4.0f / 30.0f triggers a reshuffle in a single update
+             m.update(4.0f / 30.0f);
+             assert(m.shuffleCount() == 3);
+         }
+
+         // 6d. Deterministic PRNG: same seed produces identical colors
+         {
+             Mosaic m1(Rectangle{ 0.0f, 0.0f, 32.0f, 32.0f }, 8, 4, 4242);
+             Mosaic m2(Rectangle{ 0.0f, 0.0f, 32.0f, 32.0f }, 8, 4, 4242);
+             assert(m1.columns() == m2.columns());
+             assert(m1.rows() == m2.rows());
+
+             for (int r = 0; r < m1.rows(); ++r) {
+                 for (int c = 0; c < m1.columns(); ++c) {
+                     Color c1 = m1.blockColor(c, r);
+                     Color c2 = m2.blockColor(c, r);
+                     assert(c1.r == c2.r);
+                     assert(c1.g == c2.g);
+                     assert(c1.b == c2.b);
+                     assert(c1.a == 255);
+                     assert(c2.a == 255);
+                 }
+             }
+
+             // Different seed produces different colors
+             Mosaic mDiff(Rectangle{ 0.0f, 0.0f, 32.0f, 32.0f }, 8, 4, 9999);
+             bool anyDifference = false;
+             for (int r = 0; r < m1.rows(); ++r) {
+                 for (int c = 0; c < m1.columns(); ++c) {
+                     Color c1 = m1.blockColor(c, r);
+                     Color cd = mDiff.blockColor(c, r);
+                     if (c1.r != cd.r || c1.g != cd.g || c1.b != cd.b) {
+                         anyDifference = true;
+                         break;
+                     }
+                 }
+                 if (anyDifference) break;
+             }
+             assert(anyDifference);
+         }
+
+         // 6e. setArea re-tiles and keeps colors where possible
+         {
+             Mosaic m(Rectangle{ 0.0f, 0.0f, 16.0f, 16.0f }, 8, 4, 5555);
+             assert(m.columns() == 2 && m.rows() == 2);
+             Color c00 = m.blockColor(0, 0);
+             Color c10 = m.blockColor(1, 0);
+             Color c01 = m.blockColor(0, 1);
+             Color c11 = m.blockColor(1, 1);
+
+             // Expand to 24x24 (3x3 grid)
+             m.setArea(Rectangle{ 0.0f, 0.0f, 24.0f, 24.0f });
+             assert(m.columns() == 3 && m.rows() == 3);
+
+             // Previously existing 2x2 blocks preserve their colors
+             Color nc00 = m.blockColor(0, 0);
+             Color nc10 = m.blockColor(1, 0);
+             Color nc01 = m.blockColor(0, 1);
+             Color nc11 = m.blockColor(1, 1);
+
+             assert(nc00.r == c00.r && nc00.g == c00.g && nc00.b == c00.b);
+             assert(nc10.r == c10.r && nc10.g == c10.g && nc10.b == c10.b);
+             assert(nc01.r == c01.r && nc01.g == c01.g && nc01.b == c01.b);
+             assert(nc11.r == c11.r && nc11.g == c11.g && nc11.b == c11.b);
+         }
+
+         std::cout << "[PASS] GFX-012: Mosaic censorship component (ceil tiling, clipped edge blocks, 30 Hz reshuffle, deterministic PRNG, setArea color preservation) verified." << std::endl;
+     }
+
+     // 7. MRC-004: HP percentage rule for locked MERCY
+     {
+         using nundertale::Enemy;
+
+         assert(Enemy::mercyLockedAt(100, 100, 50) == true);
+         assert(Enemy::mercyLockedAt(50, 100, 50) == false);
+         assert(Enemy::mercyLockedAt(51, 100, 50) == true);
+         assert(Enemy::mercyLockedAt(10, 100, 0) == false);
+         assert(Enemy::mercyLockedAt(10, 0, 50) == false);
+
+        std::cout << "[PASS] MRC-004: MERCY lock HP percentage thresholds verified." << std::endl;
+    }
+
+    // 8. GFX-011: Area palettes data table and helpers (contracts.md §T7)
+    {
+        using namespace nundertale;
+
+        // hexColor basic test
+        Color c = hexColor(0x3B1F5C);
+        assert(c.r == 59);
+        assert(c.g == 31);
+        assert(c.b == 92);
+        assert(c.a == 255);
+
+        // Every Area round-trips through paletteFor(a).id -> areaFromId
+        const Area allAreas[] = {
+            Area::Ruins,
+            Area::Snowdinha,
+            Area::Wetfall,
+            Area::Hotland,
+            Area::ConCenter,
+            Area::Barrier,
+            Area::Surface,
+            Area::FurryHud
+        };
+
+        for (Area a : allAreas) {
+            const AreaPalette& pal = paletteFor(a);
+            assert(pal.id != nullptr);
+            Area outArea;
+            bool found = areaFromId(pal.id, outArea);
+            assert(found);
+            assert(outArea == a);
+        }
+
+        // Unknown id returns false
+        {
+            Area dummy;
+            assert(areaFromId("unknown_area", dummy) == false);
+            assert(areaFromId("", dummy) == false);
+            assert(areaFromId("RUINS", dummy) == false);
+            assert(areaFromId("ruin", dummy) == false);
+        }
+
+        // Snowdinha accentCount == 3
+        {
+            const AreaPalette& snow = paletteFor(Area::Snowdinha);
+            assert(snow.accentCount == 3);
+            assert(snow.accent[0].r == 0xFF && snow.accent[0].g == 0x4F && snow.accent[0].b == 0xD8);
+            assert(snow.accent[1].r == 0x4F && snow.accent[1].g == 0xD8 && snow.accent[1].b == 0xFF);
+            assert(snow.accent[2].r == 0x7C && snow.accent[2].g == 0xFF && snow.accent[2].b == 0x3A);
+            assert(snow.hasHighlight == true);
+            assert(snow.highlight.r == 255 && snow.highlight.g == 255 && snow.highlight.b == 255);
+            assert(snow.extraCount == 2);
+        }
+
+        // ConCenter hasHighlight == false
+        {
+            const AreaPalette& con = paletteFor(Area::ConCenter);
+            assert(con.hasHighlight == false);
+            assert(con.baseCount == 2);
+            assert(con.accentCount == 1);
+            assert(con.extraCount == 0);
+        }
+
+        // Ruins extraCount == 3
+        {
+            const AreaPalette& ruins = paletteFor(Area::Ruins);
+            assert(ruins.extraCount == 3);
+            assert(ruins.extra[0].r == 0xC9 && ruins.extra[0].g == 0xA0 && ruins.extra[0].b == 0xDC);
+            assert(ruins.extra[1].r == 0x11 && ruins.extra[1].g == 0x11 && ruins.extra[1].b == 0x11);
+            assert(ruins.extra[2].r == 0x1E && ruins.extra[2].g == 0x3F && ruins.extra[2].b == 0xBF);
+            assert(ruins.baseCount == 2);
+            assert(ruins.accentCount == 1);
+            assert(ruins.hasHighlight == true);
+        }
+
+        // Barrier, Surface, FurryHud, Wetfall, Hotland verification
+        {
+            const AreaPalette& barrier = paletteFor(Area::Barrier);
+            assert(barrier.baseCount == 1);
+            assert(barrier.accentCount == 1);
+            assert(barrier.hasHighlight == false);
+            assert(barrier.extraCount == 0);
+
+            const AreaPalette& surface = paletteFor(Area::Surface);
+            assert(surface.baseCount == 2);
+            assert(surface.accentCount == 1);
+            assert(surface.hasHighlight == true);
+            assert(surface.extraCount == 0);
+
+            const AreaPalette& furry = paletteFor(Area::FurryHud);
+            assert(furry.baseCount == 2);
+            assert(furry.accentCount == 1);
+            assert(furry.hasHighlight == false);
+            assert(furry.extraCount == 0);
+
+            const AreaPalette& wet = paletteFor(Area::Wetfall);
+            assert(wet.baseCount == 2);
+            assert(wet.accentCount == 2);
+            assert(wet.hasHighlight == true);
+            assert(wet.extraCount == 0);
+
+            const AreaPalette& hot = paletteFor(Area::Hotland);
+            assert(hot.baseCount == 2);
+            assert(hot.accentCount == 1);
+            assert(hot.hasHighlight == true);
+            assert(hot.extraCount == 2);
+        }
+
+        std::cout << "[PASS] GFX-011: Area palettes data table, hex values, and round-trips verified." << std::endl;
+    }
+
+    // 9. BHL-015: "thinking" ribbit text over the soul (RibbitState + updateRibbit + ribbitVisible)
+    {
+        using nundertale::RibbitState;
+        using nundertale::updateRibbit;
+        using nundertale::ribbitVisible;
+
+        // Initial default state
+        RibbitState s;
+        assert(s.stillTime == 0.0f);
+        assert(s.showTime == 0.0f);
+        assert(!s.shownThisTurn);
+        assert(!ribbitVisible(s));
+
+        // Still for 2.9 s -> not shown
+        bool triggered = updateRibbit(s, 2.9f, false);
+        assert(!triggered);
+        assert(!ribbitVisible(s));
+        assert(s.stillTime >= 2.89f && s.stillTime <= 2.91f);
+        assert(!s.shownThisTurn);
+
+        // Crossing 3.0 s -> returns true once, bubble visible
+        triggered = updateRibbit(s, 0.2f, false);
+        assert(triggered);
+        assert(ribbitVisible(s));
+        assert(s.shownThisTurn);
+
+        // Subsequent update while visible does NOT return true again
+        triggered = updateRibbit(s, 0.5f, false);
+        assert(!triggered);
+        assert(ribbitVisible(s));
+
+        // Visible for 1.5 s total then hidden
+        // Already elapsed 0.5 s in showTime, remaining 1.0 s
+        triggered = updateRibbit(s, 1.0f, false);
+        assert(!triggered);
+        assert(!ribbitVisible(s));
+        assert(s.showTime == 0.0f);
+
+        // Never shows twice in one turn
+        triggered = updateRibbit(s, 5.0f, false);
+        assert(!triggered);
+        assert(!ribbitVisible(s));
+
+        // Moving resets stillTime and hides bubble
+        RibbitState s2;
+        updateRibbit(s2, 2.0f, false);
+        assert(s2.stillTime >= 1.99f);
+        updateRibbit(s2, 0.1f, true); // moved!
+        assert(s2.stillTime == 0.0f);
+        assert(!ribbitVisible(s2));
+        assert(!s2.shownThisTurn);
+
+        // Stay still for 3.0s -> shows bubble
+        triggered = updateRibbit(s2, 3.0f, false);
+        assert(triggered);
+        assert(ribbitVisible(s2));
+
+        // Moving while bubble is showing resets stillTime and hides bubble immediately
+        triggered = updateRibbit(s2, 0.1f, true);
+        assert(!triggered);
+        assert(!ribbitVisible(s2));
+        assert(s2.stillTime == 0.0f);
+        assert(s2.showTime == 0.0f);
+
+        // Never shows twice in that turn even after moving and staying still again
+        triggered = updateRibbit(s2, 4.0f, false);
+        assert(!triggered);
+        assert(!ribbitVisible(s2));
+
+        // Reset per enemy turn
+        s2 = RibbitState{};
+        assert(!s2.shownThisTurn);
+        assert(s2.stillTime == 0.0f);
+        assert(s2.showTime == 0.0f);
+        assert(!ribbitVisible(s2));
+        triggered = updateRibbit(s2, 3.0f, false);
+        assert(triggered);
+        assert(ribbitVisible(s2));
+
+        // Custom threshold and duration parameters
+        RibbitState s3;
+        triggered = updateRibbit(s3, 0.4f, false, 0.5f, 0.2f);
+        assert(!triggered);
+        triggered = updateRibbit(s3, 0.2f, false, 0.5f, 0.2f);
+        assert(triggered);
+        assert(ribbitVisible(s3));
+        updateRibbit(s3, 0.2f, false, 0.5f, 0.2f);
+        assert(!ribbitVisible(s3));
+
+        std::cout << "[PASS] BHL-015: RibbitState timing, visibility, movement reset, and single-turn limit verified." << std::endl;
+    }
+
+    // 10. BHL-016: persistent damage zone timing and lifetime
+    {
+        using nundertale::DamageZone;
+
+        DamageZone zone;
+        zone.lifetime = 1.0f;
+        zone.damagePerTick = 2;
+        zone.tickInterval = 0.33f;
+
+        // First contact ticks immediately.
+        assert(zone.update(0.0f, true) == 2);
+
+        // Remaining inside for 0.2 s does not tick a second time.
+        assert(zone.update(0.2f, true) == 0);
+
+        // Total elapsed cooldown reaches 0.34 s, allowing the second tick.
+        assert(zone.update(0.14f, true) == 2);
+
+        // Leaving the zone never deals damage and does not reset its timer.
+        assert(zone.update(0.1f, false) == 0);
+
+        // Lifetime expires at or below zero.
+        assert(!zone.expired());
+        assert(zone.update(0.56f, false) == 0);
+        assert(zone.expired());
+
+        std::cout << "[PASS] BHL-016: DamageZone immediate contact, tick interval, outside behavior, and expiry verified." << std::endl;
+    }
+
+    std::cout << "\nAll 10 test suites passed successfully!" << std::endl;
     return 0;
 }

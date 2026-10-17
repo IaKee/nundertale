@@ -13,6 +13,7 @@ enum class OverworldMenuState {
     Closed,
     Main,
     Item,
+    ItemAction,
     Stat,
     Cell
 };
@@ -47,6 +48,7 @@ private:
     OverworldMenuState m_menuState = OverworldMenuState::Closed;
     int m_menuIndex = 0;       // 0: ITEM, 1: STAT, 2: CELL
     int m_itemSubIndex = 0;
+    int m_itemActionIndex = 0; // 0: USE, 1: INFO, 2: DROP
 
     // Save Point Dialog & Box (SAV-002)
     enum class SaveBoxState {

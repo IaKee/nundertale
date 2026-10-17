@@ -33,6 +33,12 @@ public:
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
     void setSpareable(bool s) { m_spareable = s; }
+    static bool mercyLockedAt(int hp, int maxHp, int lockPct) {
+        if (maxHp <= 0 || lockPct <= 0) return false;
+        return static_cast<long long>(hp) * 100 > static_cast<long long>(maxHp) * lockPct;
+    }
+    bool isMercyLocked() const { return mercyLockedAt(m_hp, m_maxHp, m_mercyLockedAbovePct); }
+    void setMercyLockedAbovePct(int pct) { m_mercyLockedAbovePct = pct; }
 
     void addMercy(int amount);
     void takeDamage(int dmg);
@@ -81,6 +87,7 @@ private:
     int m_gold = 10;
     int m_mercy = 0;
     int m_mercyThreshold = 100;
+    int m_mercyLockedAbovePct = 0;
     std::string m_checkFlavor;
     bool m_spareable = false;
 

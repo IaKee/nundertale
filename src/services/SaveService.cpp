@@ -346,6 +346,7 @@ bool SaveService::saveConfig(const UserConfig& config) {
     ss << "  \"masterVolume\": " << config.masterVolume << ",\n";
     ss << "  \"fullscreen\": " << (config.fullscreen ? "true" : "false") << ",\n";
     ss << "  \"integerScale\": " << (config.integerScale ? "true" : "false") << ",\n";
+    ss << "  \"spareDing\": " << (config.spareDing ? "true" : "false") << ",\n";
     ss << "  \"lang\": \"" << config.lang << "\"\n";
     ss << "}\n";
 
@@ -413,6 +414,7 @@ bool SaveService::loadConfig(UserConfig& config) {
     config.masterVolume = extractFloat("masterVolume", 1.0f);
     config.fullscreen = extractBool("fullscreen", false);
     config.integerScale = extractBool("integerScale", true);
+    config.spareDing = extractBool("spareDing", true);
     config.lang = extractString("lang", "en");
 
     m_userConfig = config;

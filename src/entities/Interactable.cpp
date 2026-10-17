@@ -24,9 +24,9 @@ void SavePoint::interact(GameContext& context) {
     context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
 }
 
-void SavePoint::render(GameContext& context) {
+void SavePoint::render(GameContext& /*context*/) {
     // Undertale save star: 4-pointed star
-    Color starColor = m_frame ? (Color){ 255, 255, 0, 255 } : (Color){ 255, 255, 180, 255 };
+    Color starColor = m_frame ? Color{ 255, 255, 0, 255 } : Color{ 255, 255, 180, 255 };
     float s = m_frame ? 9.0f : 7.0f;
 
     DrawRectangle((int)(m_position.x - s / 2), (int)(m_position.y - s / 2), (int)s, (int)s, starColor);

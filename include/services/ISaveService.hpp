@@ -12,6 +12,7 @@ struct UserConfig {
     float masterVolume = 1.0f;
     bool fullscreen = false;
     bool integerScale = true;
+    bool spareDing = true; // BUI-012: notification ding when an enemy becomes spareable
     std::string lang = "en";
 };
 

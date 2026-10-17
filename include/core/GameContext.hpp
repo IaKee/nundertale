@@ -31,7 +31,7 @@ struct PlayerData {
     bool isSkyrim = false;
     bool isWaifuFan = false;
     static constexpr size_t MAX_INVENTORY_SIZE = 8; // ITM-004: Undertale 8-slot limit
-    std::vector<std::string> inventory = { "Mt. Dew", "Doritos" };
+    std::vector<std::string> inventory = { "Bottle", "Mt. Dew", "Doritos" };
 
     bool canAddItem() const { return inventory.size() < MAX_INVENTORY_SIZE; }
     bool addItem(const std::string& item) {

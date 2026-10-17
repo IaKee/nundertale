@@ -54,7 +54,7 @@ void BattleScene::render(GameContext& context) {
     }
 }
 
-void BattleScene::onExit(GameContext& context) {
+void BattleScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

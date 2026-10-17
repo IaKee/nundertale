@@ -164,7 +164,7 @@ void TitleScene::render(GameContext& context) {
     context.resources.drawCenteredText(font8Bit, footer, 445, 16, { 128, 128, 128, 255 }, 1.0f);
 }
 
-void TitleScene::onExit(GameContext& context) {
+void TitleScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale

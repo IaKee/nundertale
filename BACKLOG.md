@@ -319,9 +319,10 @@ P1 · M · REPO-001
 - **What:** `tools/setup_vendor.ps1`, which downloads w64devkit and raylib 6.2 (win64 mingw-w64) with checksums and extracts them into `vendor/`. Document it in the README.
 - **Acceptance:** fresh clone + `tools/setup_vendor.ps1` + `build.bat` = the game runs.
 
-#### REPO-006 — Zero warnings `[ ]`
+#### REPO-006 — Zero warnings `[x]`
 P2 · S · REPO-003
 - **What:** compile with `-Wall -Wextra -Wpedantic -Wshadow -Wconversion` and fix what comes up (e.g. the unused `context` parameters in `OverworldScene`'s lambdas).
+- **Done (2026-10-16):** all three `build.bat` targets now use `-Wall -Wextra -Wpedantic -Wshadow -Wconversion` (dropped `-Wno-unused-parameter`) and print zero warnings; so does `tests/test_runner.cpp` under the same flags. Fixes: unused parameters commented out, `(Color){…}` compound literals → `Color{…}`, explicit int→float casts.
 
 #### REPO-007 — A `data/` folder for content `[x]`
 P0 · S · —
@@ -436,13 +437,15 @@ P2 · S · TXT-001
 P0 · M · OVW-003
 - **What:** the camera follows the player, centered and clamped to the room bounds; supports scripted pans (cutscenes) and rooms smaller than the screen (centered with black borders).
 
-#### GFX-011 — Per-area palettes `[ ]`
+#### GFX-011 — Per-area palettes `[x]`
 P1 · S · GFX-001
 - **What:** LORE §25.2's palettes as constants/a data table (Ruins, Snowdinha, Wetfall, Hotland, desaturated Con Center, Barrier, Surface, Furry HUD), used by tilesets, background effects and the Continue screen.
+- **Done (2026-10-16):** `include/core/AreaPalettes.hpp` — `Area` enum, `paletteFor(area)` / `areaFromId("ruins")`, every hex from LORE §25.2 (base, accent stops, highlight, and the hexes from the Notes column as `extra`). Unit-tested; not wired into rendering yet (tilesets/backgrounds pick it up with OVW/ART items).
 
-#### GFX-012 — Mosaic censorship `[ ]`
+#### GFX-012 — Mosaic censorship `[x]`
 P1 · S · D-13
 - **What:** a reusable component that draws 8×8 blocks of random colors (reshuffled every N frames) over a rectangle; used as a bullet (`mosaic_block` from `homework_folder`), as a joke overlay and in `excuse_text`. It's the **only** allowed visual for anything "explicit" (LORE §2.2).
+- **Done (2026-10-16):** `Mosaic` (`include/ui/Mosaic.hpp`, `src/ui/Mosaic.cpp`): tiles a rectangle in N×N blocks (edge blocks clipped), reshuffles every N logic frames at 30 Hz, and takes a seed for deterministic colors (tests). Only `render()` touches raylib. Not used yet — `mosaic_block`/`excuse_text` come with BHL-004/BHL-018.
 
 #### GFX-013 — LORE particle effects `[ ]`
 P1 · M · GFX-008, ART-025
@@ -489,9 +492,10 @@ P0 · M · TXT-001
 P0 · M · TXT-001, AUD-002
 - **What:** a `voices.json` registry: `{ "narrator": "snd_txt1", "furiell": "...", "sans": "...", "barky": "..." }` with optional pitch/variation. The narrator (`* ...`) uses the default beep. Full cast in AUD-012.
 
-#### TXT-007 — Dialogue choices `[ ]`
+#### TXT-007 — Dialogue choices `[x]`
 P0 · M · TXT-001
 - **What:** a `{choice:Yes|No}` token shows the options with the red soul as the cursor (left/right); the result goes to a flag/callback. Used for: the save point, NPCs, Furiell ("Do you want to... ?"), shops, the **Mirror** (`Accept` / `Refuse`, FLF-001), the Repost Flower (whisper), the mod rock (ask permission).
+- **Done (2026-10-16), ahead of TXT-001:** `DialogBox` strips a trailing `{choice:A|B[|C]}` token from a page (`parseChoiceToken`, unit-tested; malformed tokens stay plain text). Once the page is typed, the options show under the text with the red soul; left/right move, Z confirms and calls `setOnChoice(cb)` (set it *after* `startDialog`), X does nothing. `lastChoice()` keeps the result. No call site uses it yet; TXT-001's parser should absorb this token when it lands.
 
 #### TXT-008 — Enemy speech bubble `[x]`
 P0 · M · TXT-001
@@ -568,9 +572,10 @@ P1 · M · GFX-002
 P1 · S · BND-002
 - **What:** once spared, the sprite goes ~50% transparent and stops animating until the battle ends (in multi-enemy fights, the others keep going).
 
-#### BUI-012 — Yellow name and notification sound on spare `[ ]`
+#### BUI-012 — Yellow name and notification sound on spare `[~]`
 P2 · S · BUI-009, AUD-011
 - **What (LORE §8.8):** spare stays 1:1 (yellow name), with an optional notification *ding* (configurable) alongside `spare_poof`.
+- **Done (2026-10-16), pending a real SFX:** the ding plays once, on the ACT that turns the name yellow; toggle `"spareDing"` in `config.json` (default `true`, no in-game options menu yet). It reuses `u_activate.wav` as a placeholder until AUD-011 ships the ding/`spare_poof`.
 
 #### BUI-013 — Per-encounter battle backgrounds `[ ]`
 P1 · M · BUI-002, GFX-002
@@ -721,11 +726,12 @@ P0 · S · CORE-004
 P2 · S · ITM-001, BHL-006
 - **What:** a soul speed buff for N turns (a direct ROTEIRO parody), with a subtle visual cue (a trail).
 
-#### ITM-006 — Starting `Bottle` item `[ ]`
+#### ITM-006 — Starting `Bottle` item `[x]`
 P1 · S · ITM-001, MNU-002
 - **What (LORE §10.1, §20.4):** the inventory starts with `Bottle`: INFO `* A bottle. It's not Mountain Dew.` / `* (You don't want to talk about it.)`; USE does nothing (a refusal line); DROP: `* You throw it away. The Underground will remember.` Paid off by Bottle Guy (C6-020). It takes 1 of the 8 slots on purpose.
+- **Done (2026-10-16):** `bottle` in `data/items/items.json`; first slot of the starting inventory; USE (overworld and battle) shows the refusal and keeps the item (the battle turn still passes). The overworld item menu gained a minimal `USE / INFO / DROP` row (soul cursor, left/right) for every item. The Bottle strings are still hardcoded in the scenes, matching the rest of the item code — TXT-010/ITM-007 move them to data.
 
-#### ITM-007 — LORE item catalog `[ ]`
+#### ITM-007 — LORE item catalog `[~]`
 P1 · M · ITM-001, FUR-009
 - **What:** `data/items/items.json` with every item from LORE §20 (and the starting names aligned, BUG-24):
   - **Consumables:** `mtn_dew_warm`, `stale_doritos`, `duct_tape`, `glitter_poptart` (full HP), `commission_donut` (+12), `commission_cider` (+24), `snow_pao` (+14), `gamer_fuel` (+30, FUR +3), `uwumie_flakes` (+2), `cold_water` (+16; the key to Sharkdyne's friendship), `instant_noodles` (+4), `herbal_tea` (+99), `hug_coupon` (+10 FLUFF, Furry route only).
@@ -733,6 +739,7 @@ P1 · M · ITM-001, FUR-009
   - **Armor:** `broken_headset` (1), `faux_fur_bandana` (3, ×1.25), `fursuit_head` (4, +40 / ×1.5), `tryhard_headband` (5), `pillowcase_cape` (6, ×1.25), `uwumie_armor` (20, ×2), `blue_light_glasses` (4, ×0.75).
   - **Key:** `bottle`, `cell`, `old_soul_jar`.
   - INFO/USE text exactly as in the LORE.
+- **Data done (2026-10-16):** all 29 ids are in `data/items/items.json` (types, HP, AT/DF, FUR, `furMult`, `route`, `unlocks`, LORE text). Lines/prices the LORE doesn't define are flagged `textTodo`/`priceTodo` for a writing pass. Still open: the code doesn't read `items.json` yet (items are still matched by name in the scenes) — that's ITM-001's loader + BUG-24.
 
 ---
 
@@ -751,9 +758,10 @@ P0 · M · ART-024
 P0 · S · PRG-001
 - **What:** spare: 0 EXP and the enemy's gold. Flee: "* Escaped..." with no reward (in Undertale, fleeing after dealing damage gives partial EXP/gold, confirm).
 
-#### MRC-004 — Unavailable MERCY (Asgrr) `[ ]`
+#### MRC-004 — Unavailable MERCY (Asgrr) `[x]`
 P1 · S · BUI-006
 - **What (LORE §10.9, §19.6):** at the start of Asgrr's fight, the MERCY button is grayed out and, if chosen, shows `This feature is not available in your region.`; it goes back to normal when he kneels (low HP). A 1:1 parody of Asgore's destroyed MERCY, without breaking the button.
+- **Done (2026-10-16):** optional enemy JSON field `mercyLockedAbovePct` (0 = off). While HP% is above it, MERCY is drawn gray; picking it shows the region line and goes back to the menu **without** passing the turn. Asgrr's data (with e.g. `"mercyLockedAbovePct": 30`) comes with his enemy item.
 
 #### MRC-005 — Scripted Flee (Sharkdyne) `[ ]`
 P1 · M · MRC-002, BHL-011, CORE-011
@@ -792,14 +800,16 @@ P0 · S · CORE-001
 P0 · S · BUI-007
 - **What:** after damage, the soul flashes (visible/invisible every 2 frames) for ~30 frames; "hurt" sound; light screen shake (GFX-006). Armor can extend the duration.
 
-#### BHL-008 — White/blue/orange bullets `[ ]`
+#### BHL-008 — White/blue/orange bullets `[x]`
 P1 · M · BHL-004
 - **What:** besides normal white ones: **blue** bullets only hurt if the soul is moving; **orange** only if it's still.
 - **LORE uses:** Doge's blue words (`doge_words`: stand still), Papyrus's blue bones (`blue_bones`), Asgrr's blue/orange lanyard trident (`lanyard_trident_sweep`).
+- **Done (2026-10-16):** `AttackColor` + `Bullet::hurtsSoul(soulMoving)` in `Bullet.hpp`; "moving" = the soul's position changed this frame (holding into a wall counts as still). Unit-tested. No pattern uses it yet — the LORE patterns above wire it up with BHL-004.
 
-#### BHL-009 — Green healing bullets `[ ]`
+#### BHL-009 — Green healing bullets `[x]`
 P1 · S · BHL-004
 - **What:** a bullet that heals on contact (Vegetoid-style). **LORE uses:** Grasstoid's `grass_blades` (Ruins, which is why it went up to P1) and Washua's `soap_bubbles`.
+- **Done (2026-10-16):** `AttackColor::Green` + `Bullet::heal`; touching it heals (clamped to max HP), plays `heal.ogg`, removes the bullet and grants no i-frames.
 
 #### BHL-010 — Blue soul mode (gravity) `[ ]`
 P1 · L · D-01, BHL-004
@@ -826,13 +836,15 @@ P0 · M · BHL-004, ART-012
   4. **Tail Swipe** (when HP < 50%) — a tail sweeps the box horizontally; jump over it with timing (no blue mode, just dodging up/down).
 - **Acceptance:** "first Undertale boss" difficulty: beatable without taking damage after 2–3 tries.
 
-#### BHL-015 — "Thinking" text over the soul `[ ]`
+#### BHL-015 — "Thinking" text over the soul `[x]`
 P3 · S · —
 - **What:** an easter egg (e.g. a tiny "ribbit" bubble when the soul stays still for a long time).
+- **Done (2026-10-16):** after 3 s with the soul still during an enemy turn, a tiny `ribbit` bubble shows for 1.5 s with a soft click (at most once per turn; moving cancels it). The logic is `updateRibbit`/`RibbitState` in `BattleSystem.hpp` (unit-tested).
 
-#### BHL-016 — Persistent damage zones `[ ]`
+#### BHL-016 — Persistent damage zones `[x]`
 P1 · M · BHL-004
 - **What:** an area (cloud) that stays in the box for N frames and deals damage over time while the soul is inside, with its own i-frames: `musk_cloud` (Musk-ron), `musk_wave` (Sharkdyne, covers the box in green for 1 s), `cologne_cloud` (`Eau de Grr`, Asgrr), `musk_cloud_gamer` (Moderator, with residual SHAME).
+- **Done (2026-10-16), mechanism only:** `DamageZone` (`include/combat/DamageZone.hpp`: area, lifetime, damage per tick, own tick interval, FUR per tick, color) + `BattleSystem::addDamageZone`. Zones tick independently of the bullet i-frames, render as translucent rectangles and are cleared every enemy turn; bullets and zones share `applySoulDamage`. The LORE clouds above get wired up with their patterns (BHL-004); SHAME is still to do.
 
 #### BHL-017 — KR-style residual damage `[ ]`
 P1 · M · BUI-005, BHL-005

@@ -114,7 +114,7 @@ void EncounterTransitionScene::render(GameContext& context) {
     }
 }
 
-void EncounterTransitionScene::onExit(GameContext& context) {
+void EncounterTransitionScene::onExit(GameContext& /*context*/) {
 }
 
 } // namespace nundertale
