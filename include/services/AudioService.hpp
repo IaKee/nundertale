@@ -4,6 +4,8 @@
 #include "MusicFade.hpp"
 #include <raylib.h>
 #include <unordered_map>
+#include <vector>
+#include <cstddef>
 #include <string>
 
 namespace nundertale {
@@ -23,6 +25,7 @@ public:
     void setMusicVolume(float volume) override;
     void fadeOutMusic(float seconds) override;
     void fadeInMusic(const std::string& path, float seconds, bool loop = true) override;
+    void setMusicPitch(float pitch) override;
 
     void playSound(const std::string& path, float volume = 1.0f) override;
     void stopAllSounds() override;
@@ -31,6 +34,10 @@ public:
 
 private:
     std::unordered_map<std::string, Sound> m_soundCache;
+    // AUD-007: aliases so the same sound can overlap (up to MAX_SOUND_ALIASES extra voices per file)
+    static constexpr std::size_t MAX_SOUND_ALIASES = 3;
+    std::unordered_map<std::string, std::vector<Sound>> m_soundAliases;
+    std::unordered_map<std::string, std::size_t> m_nextAlias;
     Music m_currentMusic{};
     std::string m_currentMusicPath;
     bool m_hasActiveMusic = false;
