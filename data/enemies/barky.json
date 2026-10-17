@@ -8,44 +8,69 @@
   "exp": 20,
   "gold": 10,
   "sprite": "barky",
-  "offset": [0, 0],
+  "offset": [
+    0,
+    0
+  ],
   "voice": "barky",
-  "check": "* BARKY - ATK 4 DEF 2\n* The self-proclaimed Alpha Wolf of the Ruins.",
+  "check": "Alpha Wolf of the Ruins. The zipper says otherwise.",
   "acts": [
     {
       "id": "check",
       "label": "Check",
-      "text": "* BARKY - ATK 4 DEF 2\n* The self-proclaimed Alpha Wolf of the Ruins.",
+      "text": "",
       "effects": {}
     },
     {
       "id": "cringe_check",
       "label": "Cringe Check",
-      "text": "* You point at the obvious zipper on Barky's fursuit.\n* Barky blushes furiously!",
+      "text": "* You stare directly at the zipper on Barky's back.",
+      "repeatText": "* You stare again. Barky is out of blush.",
       "effects": {
         "mercy": 50,
         "setFlag": "battle.barky.blushed"
       },
-      "response": "B-baka! Stop looking at the zipper! It's just a costume flaw!"
+      "response": "H-hey! It's an artisanal design feature, b-baka!",
+      "repeatResponse": "...I KNOW, okay? I KNOW."
     },
     {
       "id": "offer_dew",
       "label": "Offer Dew",
-      "text": "* You offer Barky a can of warm Mountain Dew.\n* His eyes widen with pure gamer ecstasy!",
+      "text": "* You crack open an ice-cold can.",
       "effects": {
-        "mercy": 100,
         "spareable": true
       },
-      "response": "Is that... Citrus Blast 2012 edition?! You're alright, gamer."
+      "response": "Citrus Blast 2012?! ...wait, how do I know that flavor?"
     },
     {
       "id": "debate_lore",
       "label": "Debate Lore",
-      "text": "* You challenge Barky on obscure anime filler arcs.\n* He gets overwhelmed thinking about it!",
+      "text": "* You recite incoherent mecha lore. Barky is bewildered.",
       "effects": {
         "skipAttack": true
       },
-      "response": "Wait, season 4 episode 12 was canon?! That can't be!"
+      "response": "Season 4 episode 12 was CANON?!"
+    },
+    {
+      "id": "laser",
+      "label": "Laser",
+      "requiresItem": "Toy Laser Pointer",
+      "text": "* You shine a red dot on the floor.",
+      "effects": {
+        "spareable": true,
+        "skipAttack": true
+      },
+      "response": "NO-- I'M NOT-- WHERE DID IT GO--"
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* Barky hugs you. He smells like a gym bag. You hug back anyway.",
+      "effects": {
+        "fur": 15,
+        "spareNow": true
+      },
+      "response": "...this is the best day of my life. Don't tell anyone."
     }
   ],
   "spareWhen": {
@@ -82,7 +107,7 @@
       "id": "uwu_rain",
       "weight": 2,
       "params": {
-        "speed": 3.0,
+        "speed": 3,
         "damage": 3,
         "furry": 6
       }
@@ -98,5 +123,7 @@
     }
   ],
   "canFlee": false,
-  "music": "boss_barky"
+  "music": "boss_barky",
+  "spareText": "You can tell no one about the zipper. Pack secret.",
+  "deathText": "* Only a pile of synthetic wolf fur remains."
 }

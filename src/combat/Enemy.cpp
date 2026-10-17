@@ -7,7 +7,7 @@ namespace nundertale {
 
 Enemy::Enemy(const std::string& name, int maxHp, int atk, int def)
     : m_name(name), m_maxHp(maxHp), m_hp(maxHp), m_atk(atk), m_def(def),
-      m_checkFlavor("The self-proclaimed Alpha Wolf of the Ruins.") {
+      m_checkFlavor("Alpha Wolf of the Ruins. The zipper says otherwise.") {
     initDefaultActs();
     initDefaultFlavors();
     initDefaultDialogues();
@@ -44,13 +44,20 @@ std::vector<std::string> Enemy::getActOptions() const {
 void Enemy::setActOptions(const std::vector<std::string>& opts) {
     m_acts.clear();
     for (const auto& opt : opts) {
-        m_acts.push_back({ opt, opt, "* You checked " + opt, "", false, false, 0,
-                           "", 0, "", 1, 0, 0, 0 });
+        ActDef a;
+        a.id = opt;
+        a.label = opt;
+        a.text = "* You checked " + opt;
+        m_acts.push_back(a);
     }
 }
 
 std::string Enemy::getCheckText() const {
-    return "* " + m_name + " - ATK " + std::to_string(m_atk) + " DEF " + std::to_string(m_def) + "\n* " + m_checkFlavor;
+    std::string upper = m_name;
+    for (char& ch : upper) {
+        if (ch >= 'a' && ch <= 'z') ch = static_cast<char>(ch - 'a' + 'A');
+    }
+    return "* " + upper + " - ATK " + std::to_string(m_atk) + " DEF " + std::to_string(m_def) + "\n* " + m_checkFlavor;
 }
 
 // BFL-002: Turn flavor text based on status & player actions
@@ -149,21 +156,49 @@ void Enemy::setDialogueTriggers(const std::vector<std::string>& def,
 }
 
 void Enemy::initDefaultActs() {
-    m_acts = {
-        { "check", "Check", "", "", false, false, 0, "", 0, "", 1, 0, 0, 0 },
-        { "cringe_check", "Cringe Check",
-          "* You point at the obvious zipper on Barky's fursuit!\n* Barky blushes furiously!",
-          "B-baka! Stop looking at the zipper! It's just a ventilation slot!", false, false, 50,
-          "", 0, "", 1, 0, 0, 0 },
-        { "offer_dew", "Offer Mountain Dew",
-          "* You offer Barky a can of warm Mountain Dew.\n* His eyes widen with pure gamer ecstasy! Barky can be SPARED!",
-          "Is that... Citrus Blast 2012 edition?! You're alright, gamer.", true, false, 100,
-          "", 0, "", 1, 0, 0, 0 },
-        { "debate_lore", "Debate Anime Lore",
-          "* You challenge Barky on obscure anime filler arcs.\n* He gets overwhelmed thinking about it!",
-          "Wait, season 4 episode 12 was canon?! That can't be!", false, true, 20,
-          "", 0, "", 1, 0, 0, 0 }
+    // Barky's ACTs, verbatim from LORE §19.1 (ACT-001, ACT-005, ACT-006)
+    auto act = [](const char* id, const char* label, const char* text, const char* response) {
+        ActDef a;
+        a.id = id;
+        a.label = label;
+        a.text = text;
+        a.response = response;
+        return a;
     };
+
+    ActDef check = act("check", "Check", "", "");
+
+    ActDef cringe = act("cringe_check", "Cringe Check",
+        "* You stare directly at the zipper on Barky's back.",
+        "H-hey! It's an artisanal design feature, b-baka!");
+    cringe.mercy = 50;
+    cringe.repeatText = "* You stare again. Barky is out of blush.";
+    cringe.repeatResponse = "...I KNOW, okay? I KNOW.";
+
+    ActDef dew = act("offer_dew", "Offer Dew",
+        "* You crack open an ice-cold can.",
+        "Citrus Blast 2012?! ...wait, how do I know that flavor?");
+    dew.spareable = true;
+
+    ActDef lore = act("debate_lore", "Debate Lore",
+        "* You recite incoherent mecha lore. Barky is bewildered.",
+        "Season 4 episode 12 was CANON?!");
+    lore.skipAttack = true;
+
+    ActDef laser = act("laser", "Laser",
+        "* You shine a red dot on the floor.",
+        "NO-- I'M NOT-- WHERE DID IT GO--");
+    laser.requiresItem = "Toy Laser Pointer";
+    laser.spareable = true;
+    laser.skipAttack = true;
+
+    ActDef hug = act("accept_hug", "Accept Hug",
+        "* Barky hugs you. He smells like a gym bag. You hug back anyway.",
+        "...this is the best day of my life. Don't tell anyone.");
+    hug.fur = 15;
+    hug.spareNow = true;
+
+    m_acts = { check, cringe, dew, lore, laser, hug };
 }
 
 void Enemy::initDefaultFlavors() {
@@ -212,6 +247,20 @@ void Enemy::initDefaultDialogues() {
 }
 
 // Helper functions for lightweight JSON parsing
+static std::string unescapeJson(const std::string& raw) {
+    std::string out;
+    out.reserve(raw.size());
+    for (size_t i = 0; i < raw.size(); ++i) {
+        if (raw[i] == '\\' && i + 1 < raw.size()) {
+            char n = raw[++i];
+            out += (n == 'n') ? '\n' : n;
+        } else {
+            out += raw[i];
+        }
+    }
+    return out;
+}
+
 static std::string extractJsonString(const std::string& json, const std::string& key) {
     std::string needle = "\"" + key + "\":";
     size_t pos = json.find(needle);
@@ -220,9 +269,10 @@ static std::string extractJsonString(const std::string& json, const std::string&
     while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
     if (pos >= json.size() || json[pos] != '\"') return "";
     pos++;
-    size_t end = json.find('\"', pos);
-    if (end == std::string::npos) return "";
-    return json.substr(pos, end - pos);
+    size_t end = pos;
+    while (end < json.size() && !(json[end] == '\"' && json[end - 1] != '\\')) end++;
+    if (end >= json.size()) return "";
+    return unescapeJson(json.substr(pos, end - pos));
 }
 
 static int extractJsonInt(const std::string& json, const std::string& key, int defaultVal = 0) {
@@ -258,7 +308,7 @@ static std::vector<std::string> extractStringArray(const std::string& json, cons
         if (q1 == std::string::npos) break;
         size_t q2 = slice.find('\"', q1 + 1);
         if (q2 == std::string::npos) break;
-        result.push_back(slice.substr(q1 + 1, q2 - q1 - 1));
+        result.push_back(unescapeJson(slice.substr(q1 + 1, q2 - q1 - 1)));
         cur = q2 + 1;
     }
     return result;

@@ -41,8 +41,8 @@ void OverworldScene::initInteractables(GameContext& context) {
         [this](GameContext& ctx) {
             ctx.audio.playSound("assets/sfx/selection_sound.wav", 0.6f);
             m_dialogBox.startDialog({
-                "NOTICE FROM THE RUINS ADMINISTRATION:\n* Please refrain from shedding faux-fur in the air ducts.",
-                "* Trespassing gamers will be subjected to mandatory waifu appreciation seminars."
+                // BUG-19: LORE R8 notice
+                "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
             }, "SIGN");
         },
         [](GameContext& /*ctx*/) {
@@ -160,10 +160,12 @@ void OverworldScene::initInteractables(GameContext& context) {
             doorBounds,
             [this](GameContext& ctx) {
                 ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.8f);
+                // BUG-18: Barky's entrance (ROTEIRO Scene 3 / LORE §19.1)
                 m_dialogBox.startDialog({
-                    "* An intense aura of cringe and determination blocks your path!",
-                    "* Barky the Alpha Furry attacks!"
-                }, "", [this, &ctx]() {
+                    "Halt, hairless intruder! *[awkward howling]*",
+                    "You have stepped into the domain of the Shadow Fang Pack!",
+                    "Prepare to face my fursona!"
+                }, "BARKY", [this, &ctx]() {
                     Vector2 pPos = m_player.getPosition();
                     ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
                 });
@@ -442,7 +444,7 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
 
         // Furry meter status line (MNU-003 / FUR-006)
         Color furColor = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
-        context.resources.drawText(font, "FURRY:  " + std::to_string(context.state.furry.value) + "%", { 210, 305 }, 18, furColor, 1.0f);
+        context.resources.drawText(font, "FUR:    " + std::to_string(context.state.furry.value), { 210, 305 }, 18, furColor, 1.0f);
     } else if (m_menuState == OverworldMenuState::Item || m_menuState == OverworldMenuState::ItemAction) {
         Rectangle itemBox = { 186, 52, 400, 300 };
         DrawRectangleRec(itemBox, BLACK);

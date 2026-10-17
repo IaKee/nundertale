@@ -25,7 +25,19 @@ struct ActDef {
     int atkDelta = 0;
     int defDelta = 0;
     int freezeTurns = 0;
+    std::string repeatText;     // shown from the 2nd use on (e.g. Cringe Check), "" = reuse text
+    std::string repeatResponse; // enemy line from the 2nd use on, "" = reuse response
+    int fur = 0;                // FUR added when the effect applies (ACT-005 Accept Hug)
+    bool spareNow = false;      // spares on the spot, without MERCY (ACT-005)
 };
+
+// Text and enemy line for the Nth use of an ACT (1-based).
+inline const std::string& actTextForUse(const ActDef& act, int useCount) {
+    return (useCount >= 2 && !act.repeatText.empty()) ? act.repeatText : act.text;
+}
+inline const std::string& actResponseForUse(const ActDef& act, int useCount) {
+    return (useCount >= 2 && !act.repeatResponse.empty()) ? act.repeatResponse : act.response;
+}
 
 inline bool actAvailable(const ActDef& act,
                          const std::vector<std::string>& inventory,

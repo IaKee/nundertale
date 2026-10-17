@@ -26,7 +26,7 @@ struct PlayerData {
     int weaponAt = 2;
     int armorDf = 1;
     std::string weapon = "Frayed USB Mouse";
-    std::string armor = "Broken Headset";
+    std::string armor = "One-Sided Broken Headset";
     bool isChad = false;
     bool isSkyrim = false;
     bool isWaifuFan = false;
