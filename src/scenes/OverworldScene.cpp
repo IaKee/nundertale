@@ -169,8 +169,19 @@ void OverworldScene::initInteractables(GameContext& context) {
         auto door = std::make_unique<GenericInteractable>(
             doorBounds,
             [this](GameContext& ctx) {
+                std::ifstream file("data/cutscenes/barky_entrance.json");
+                if (file) {
+                    std::ostringstream json;
+                    json << file.rdbuf();
+                    Cutscene cutscene;
+                    if (parseCutsceneJson(json.str(), cutscene) && !cutscene.steps.empty()) {
+                        m_cutscene.start(std::move(cutscene));
+                        return;
+                    }
+                }
+
+                // Missing or invalid data falls back to the original hardcoded entrance.
                 ctx.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.8f);
-                // BUG-18: Barky's entrance (ROTEIRO Scene 3 / LORE §19.1)
                 m_dialogBox.startDialog({
                     "Halt, hairless intruder! *[awkward howling]*",
                     "You have stepped into the domain of the Shadow Fang Pack!",
@@ -728,6 +739,62 @@ void OverworldScene::update(float dt, GameContext& context) {
     // Ambient fluff particles (FUR-010)
     int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);
     updateFluff(m_fluffParticles, dt, targetFluff, m_fluffRng);
+
+    if (m_cutscene.running()) {
+        class OverworldCutsceneHost final : public CutsceneHost {
+        public:
+            OverworldCutsceneHost(DialogBox& dialogBox, Player& player, GameContext& context)
+                : m_dialogBox(dialogBox), m_player(player), m_context(context) {}
+
+            void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
+                m_dialogBox.startDialog(lines, speaker);
+            }
+
+            bool dialogOpen() const override {
+                return m_dialogBox.isActive();
+            }
+
+            void sound(const std::string& path, float volume) override {
+                m_context.audio.playSound(path, volume);
+            }
+
+            void setFlag(const std::string& key, int value) override {
+                m_context.state.setFlag(key, value);
+            }
+
+            void shake(float intensity, float seconds) override {
+                m_context.shake(intensity, seconds);
+            }
+
+            void flash(int r, int g, int b, float seconds) override {
+                m_context.flash({
+                    static_cast<unsigned char>(r),
+                    static_cast<unsigned char>(g),
+                    static_cast<unsigned char>(b),
+                    255
+                }, seconds);
+            }
+
+            void startBattle(const std::string& encounter) override {
+                if (encounter != "barky") return;
+                const Vector2 playerPos = m_player.getPosition();
+                m_context.scenes.pushScene(
+                    std::make_unique<EncounterTransitionScene>(playerPos, std::make_unique<BattleScene>()),
+                    m_context);
+            }
+
+        private:
+            DialogBox& m_dialogBox;
+            Player& m_player;
+            GameContext& m_context;
+        } host(m_dialogBox, m_player, context);
+
+        m_cutscene.update(dt, host);
+        if (m_dialogBox.isActive()) {
+            m_dialogBox.update(dt, context);
+        }
+        return;
+    }
 
     // If dialog is active, dialog gets all input
     if (m_dialogBox.isActive()) {
