@@ -94,12 +94,29 @@ std::string displayPath(const fs::path& root, const fs::path& path) {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    if (argc > 2) {
-        std::cerr << "Usage: content_lint [repository-root]" << std::endl;
-        return 2;
+    bool checkJson = true;
+    fs::path root = ".";
+    bool rootSet = false;
+
+    for (int i = 1; i < argc; ++i) {
+        const std::string arg = argv[i];
+        if (arg == "--json") {
+            checkJson = true;
+        } else if (arg == "--no-json") {
+            checkJson = false;
+        } else if (arg.rfind("--", 0) == 0) {
+            std::cerr << "Usage: content_lint [--json] [repository-root]" << std::endl;
+            return 2;
+        } else {
+            if (rootSet) {
+                std::cerr << "Usage: content_lint [--json] [repository-root]" << std::endl;
+                return 2;
+            }
+            root = fs::path(arg);
+            rootSet = true;
+        }
     }
 
-    const fs::path root = argc == 2 ? fs::path(argv[1]) : fs::path(".");
     std::error_code error;
     if (!fs::is_directory(root, error) || error) {
         std::cerr << "Content lint error: repository root is not a readable directory." << std::endl;
@@ -128,8 +145,24 @@ int main(int argc, char* argv[]) {
                       << std::endl;
             return 2;
         }
-        const std::vector<nundertale::LintFinding> findings =
+        std::vector<nundertale::LintFinding> findings =
             nundertale::lintText(contents, blocked);
+        if (checkJson) {
+            nundertale::LintFinding jsonFinding;
+            if (!nundertale::validateJson(contents, &jsonFinding)) {
+                findings.push_back(jsonFinding);
+            }
+        }
+        std::sort(findings.begin(), findings.end(), [](const nundertale::LintFinding& left,
+                                                      const nundertale::LintFinding& right) {
+            if (left.line != right.line) {
+                return left.line < right.line;
+            }
+            if (left.col != right.col) {
+                return left.col < right.col;
+            }
+            return left.rule < right.rule;
+        });
         for (const nundertale::LintFinding& finding : findings) {
             std::cout << displayPath(root, path) << ':' << finding.line << ':' << finding.col
                       << ": " << finding.rule << ": " << finding.snippet << std::endl;

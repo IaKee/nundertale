@@ -2628,6 +2628,94 @@ int main() {
         std::cout << "[PASS] OVW-003, GFX-010 & OVW-002: Tiled layers, polygons, properties, object lookup, real room, and camera bounds verified." << std::endl;
     }
 
-    std::cout << "\nAll 43 test suites passed successfully!" << std::endl;
+    // 44. QA-012: Strict JSON well-formedness validation
+    {
+        using namespace nundertale;
+
+        // Valid JSON passes
+        LintFinding finding;
+        const std::string validJson = R"json({
+            "name": "Pepe",
+            "hp": 20,
+            "speed": 120.5,
+            "negative": -42,
+            "scientific": 1.25e+3,
+            "valid": true,
+            "fluffy": false,
+            "empty_val": null,
+            "items": [1, 2, "stick", null, false],
+            "nested": {
+                "x": 0.5,
+                "escapes": "line\n\t\"quote\"\\\/form\ffeed\bback\rcarriage\u0041"
+            }
+        })json";
+        assert(validateJson(validJson, &finding));
+        assert(lintJson(validJson).empty());
+
+        // Trailing comma in object fails with the right line
+        const std::string trailingCommaObj = "{\n  \"a\": 1,\n}";
+        assert(!validateJson(trailingCommaObj, &finding));
+        assert(finding.rule == "invalid-json");
+        assert(finding.line == 2);
+        const auto objFindings = lintJson(trailingCommaObj);
+        assert(objFindings.size() == 1);
+        assert(objFindings[0].rule == "invalid-json");
+        assert(objFindings[0].line == 2);
+
+        // Trailing comma in array fails with the right line
+        const std::string trailingCommaArr = "[\n  1,\n  2,\n]";
+        assert(!validateJson(trailingCommaArr, &finding));
+        assert(finding.rule == "invalid-json");
+        assert(finding.line == 3);
+
+        // Single-line trailing comma
+        assert(!validateJson("{\"a\": 1,}", &finding));
+        assert(finding.line == 1);
+
+        // Unclosed string fails with the right line
+        const std::string unclosedStr = "{\n  \"unclosed\n}";
+        assert(!validateJson(unclosedStr, &finding));
+        assert(finding.rule == "invalid-json");
+        assert(finding.line == 2);
+
+        assert(!validateJson("\"unclosed at eof", &finding));
+        assert(finding.line == 1);
+
+        // Bad escape fails with the right line
+        const std::string badEscape = "{\n  \"bad\": \"\\x\"\n}";
+        assert(!validateJson(badEscape, &finding));
+        assert(finding.rule == "invalid-json");
+        assert(finding.line == 2);
+
+        const std::string badUnicode = "{\n  \"bad\": \"\\u12G4\"\n}";
+        assert(!validateJson(badUnicode, &finding));
+        assert(finding.rule == "invalid-json");
+        assert(finding.line == 2);
+
+        // Number format errors
+        assert(!validateJson("{\"a\": 01}", &finding));
+        assert(finding.rule == "invalid-json");
+        assert(!validateJson("{\"a\": 1.}", &finding));
+        assert(finding.rule == "invalid-json");
+        assert(!validateJson("{\"a\": -}", &finding));
+        assert(finding.rule == "invalid-json");
+
+        // Trailing characters after root
+        assert(!validateJson("{} extra", &finding));
+        assert(finding.rule == "invalid-json");
+
+        // Overload with LintFinding reference
+        LintFinding refFinding;
+        assert(!validateJson(trailingCommaObj, refFinding));
+        assert(refFinding.line == 2);
+
+        // Default argument overload without pointer
+        assert(validateJson("{}"));
+        assert(!validateJson("{"));
+
+        std::cout << "[PASS] QA-012: Strict JSON validation (valid, trailing comma, unclosed string, bad escape, numbers) verified." << std::endl;
+    }
+
+    std::cout << "\nAll 44 test suites passed successfully!" << std::endl;
     return 0;
 }
