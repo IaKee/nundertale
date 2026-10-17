@@ -13,7 +13,9 @@
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
 #include "core/Transition.hpp"
+#include "core/NameRules.hpp"
 #include "services/MusicTracks.hpp"
+#include "scenes/FrontEndFlow.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -862,6 +864,157 @@ int main() {
         std::cout << "[PASS] BFL-007: Battle music IDs, convention paths, and missing-asset fallback verified." << std::endl;
     }
 
-    std::cout << "\nAll 15 test suites passed successfully!" << std::endl;
+    // 16. FRT-006, FRT-007, FRT-008: Name rules, normalization, reactions, and asymmetric transitions
+    {
+        using nundertale::normalizeName;
+        using nundertale::reactionFor;
+        using nundertale::NameEffect;
+        using nundertale::NAME_MAX_LEN;
+        using nundertale::fadeWhite;
+        using nundertale::fadeBlack;
+
+        // normalizeName & length limit
+        assert(normalizeName("Pepe") == "PEPE");
+        assert(normalizeName("chad") == "CHAD");
+        assert(normalizeName("BARKY") == "BARKY");
+        assert(normalizeName("123!a") == "123!A");
+        assert(NAME_MAX_LEN == 6);
+
+        // reactionFor table tests
+        // CHAD: Gold + allowed
+        auto rChadLower = reactionFor("chad");
+        assert(rChadLower.effect == NameEffect::Gold);
+        assert(rChadLower.allowed);
+        assert(rChadLower.tag == "[GOLD]");
+        assert(rChadLower.message == "Gold plated. You are the ultimate gamer.");
+
+        auto rChadUpper = reactionFor("Chad");
+        assert(rChadUpper.effect == NameEffect::Gold);
+        assert(rChadUpper.allowed);
+
+        // PEPE & FROG: FrogSoul
+        auto rPepe = reactionFor("Pepe");
+        assert(rPepe.effect == NameEffect::FrogSoul);
+        assert(rPepe.allowed);
+        assert(rPepe.tag == "[THE PROTAGONIST]");
+
+        auto rFrog = reactionFor("frog");
+        assert(rFrog.effect == NameEffect::FrogSoul);
+        assert(rFrog.allowed);
+        assert(rFrog.tag == "[RIBBIT]");
+
+        // SKYRIM: Skyrim
+        auto rSkyrim = reactionFor("skyrim");
+        assert(rSkyrim.effect == NameEffect::Skyrim);
+        assert(rSkyrim.allowed);
+        assert(rSkyrim.tag == "[TAMRIEL]");
+
+        // SANS, FRISK, CHARA, FLOWEY, TORIEL, ASGORE
+        assert(reactionFor("sans").tag == "[COMEDIAN]");
+        assert(reactionFor("frisk").tag == "[FALLEN CHILD]");
+        assert(reactionFor("chara").effect == NameEffect::CrimsonShake);
+        assert(reactionFor("chara").tag == "[THE FIRST]");
+        assert(reactionFor("flowey").tag == "[WEED]");
+        assert(reactionFor("toriel").tag == "[MOM]");
+        assert(reactionFor("asgore").tag == "[KING]");
+
+        // WAIFU list
+        assert(reactionFor("RUIVA").effect == NameEffect::Waifu);
+        assert(reactionFor("loira").effect == NameEffect::Waifu);
+        assert(reactionFor("otome").effect == NameEffect::Waifu);
+        assert(reactionFor("gotica").effect == NameEffect::Waifu);
+        assert(reactionFor("morena").effect == NameEffect::Waifu);
+        assert(reactionFor("yander").effect == NameEffect::Waifu);
+        assert(reactionFor("yander").tag == "[WAIFU CONFIRMED]");
+
+        // Disallowed names
+        auto rBarky = reactionFor("BARKY");
+        assert(!rBarky.allowed);
+        assert(rBarky.message == "AWOO! ...wait. That's MY name.");
+
+        auto rYiff = reactionFor("yiff");
+        assert(!rYiff.allowed);
+        assert(rYiff.message == "The narrator refuses.");
+
+        assert(!reactionFor("furiel").allowed);
+        assert(!reactionFor("furiell").allowed);
+        assert(!reactionFor("floofy").allowed);
+
+        // AZZY, OWO, GAMER, PRO
+        auto rAzzy = reactionFor("azzy");
+        assert(rAzzy.allowed);
+        assert(rAzzy.effect == NameEffect::Darken);
+        assert(rAzzy.message == "...");
+
+        assert(reactionFor("owo").message == "What's this?");
+        assert(reactionFor("gamer").tag == "[REDUNDANT]");
+        assert(reactionFor("pro").tag == "[PRO]");
+
+        // GASTER: RestartGame
+        auto rGaster = reactionFor("GASTER");
+        assert(rGaster.effect == NameEffect::RestartGame);
+        assert(rGaster.allowed);
+        assert(rGaster.message.empty());
+
+        // Generic rules after table:
+        // "AAAA" -> keyboard jam message
+        auto rJam = reactionFor("AAAA");
+        assert(rJam.allowed);
+        assert(rJam.message == "Not very creative... Did your keyboard jam?");
+
+        auto rJamLower = reactionFor("zzzz");
+        assert(rJamLower.allowed);
+        assert(rJamLower.message == "Not very creative... Did your keyboard jam?");
+
+        // "Q" -> 1-char message
+        auto rOne = reactionFor("Q");
+        assert(rOne.allowed);
+        assert(rOne.message == "You call that a gamer? Saving characters?");
+
+        // "Bob" -> empty reaction, allowed
+        auto rBob = reactionFor("Bob");
+        assert(rBob.allowed);
+        assert(rBob.tag.empty());
+        assert(rBob.message.empty());
+        assert(rBob.effect == NameEffect::None);
+
+        // Asymmetric transition durations
+        auto w = fadeWhite(3.0f, 0.6f);
+        assert(std::abs(w->duration() - 3.0f) < 0.0001f);
+        assert(std::abs(w->durationIn() - 0.6f) < 0.0001f);
+
+        auto b = fadeBlack(0.4f);
+        assert(std::abs(b->duration() - 0.4f) < 0.0001f);
+        assert(std::abs(b->durationIn() - 0.4f) < 0.0001f);
+
+        auto bAsym = fadeBlack(0.5f, 0.2f);
+        assert(std::abs(bAsym->duration() - 0.5f) < 0.0001f);
+        assert(std::abs(bAsym->durationIn() - 0.2f) < 0.0001f);
+
+        std::cout << "[PASS] FRT-006, FRT-007 & FRT-008: NameRules, easter eggs, normalization, and transition durations verified." << std::endl;
+    }
+
+    // 17. FRT-001, FRT-003, FRT-004, FRT-005: Front-end title routing and prompt timing
+    {
+        using nundertale::pressPromptVisible;
+        using nundertale::titleNext;
+        using nundertale::TitleNext;
+
+        assert(titleNext(true, false, 0.0f) == TitleNext::Instructions);
+        assert(titleNext(true, true, 0.0f) == TitleNext::ContinueCard);
+        assert(titleNext(false, false, 19.9f) == TitleNext::Stay);
+        assert(titleNext(false, true, 20.0f) == TitleNext::Intro);
+
+        // Confirm takes priority over the idle timeout.
+        assert(titleNext(true, false, 20.0f) == TitleNext::Instructions);
+        assert(titleNext(true, true, 20.0f) == TitleNext::ContinueCard);
+
+        assert(!pressPromptVisible(0.99f));
+        assert(pressPromptVisible(1.0f));
+
+        std::cout << "[PASS] FRT-001, FRT-003, FRT-004 & FRT-005: Front-end routing, idle replay, and prompt timing verified." << std::endl;
+    }
+
+    std::cout << "\nAll 17 test suites passed successfully!" << std::endl;
     return 0;
 }

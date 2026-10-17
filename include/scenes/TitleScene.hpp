@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/IScene.hpp"
-#include <vector>
 #include <string>
 
 namespace nundertale {
@@ -17,11 +16,24 @@ public:
     void onExit(GameContext& context) override;
 
 private:
-    void drawSoul(float x, float y) const;
+    enum class Screen {
+        Splash,
+        ContinueCard
+    };
 
-    std::vector<std::string> m_options;
+    void resetSplash();
+    void updateSplash(float dt, GameContext& context);
+    void updateContinueCard(float dt, GameContext& context);
+    void showSettingsPlaceholder(GameContext& context);
+    void renderSplash(GameContext& context);
+    void renderContinueCard(GameContext& context);
+
+    Screen m_screen = Screen::Splash;
     int m_selectedIndex = 0;
     float m_animTimer = 0.0f;
+    float m_idleTimer = 0.0f;
+    float m_settingsMessageTimer = 0.0f;
+    bool m_promptSoundPlayed = false;
     bool m_hasSave = false;
     std::string m_savedName = "PEPE";
     int m_savedLevel = 1;

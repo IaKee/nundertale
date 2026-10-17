@@ -13,6 +13,10 @@ public:
     void update(float dt, GameContext& context) override;
     void render(GameContext& context) override;
     void onExit(GameContext& context) override;
+
+private:
+    int m_selectedIndex = 0;
+    float m_settingsMessageTimer = 0.0f;
 };
 
 } // namespace nundertale

@@ -1,5 +1,7 @@
 #include "scenes/TitleScene.hpp"
+#include "scenes/FrontEndFlow.hpp"
 #include "scenes/InstructionsScene.hpp"
+#include "scenes/LoreScene.hpp"
 #include "scenes/NameSelectScene.hpp"
 #include "scenes/OverworldScene.hpp"
 #include "core/GameContext.hpp"
@@ -23,19 +25,18 @@ static const char* RANDOM_QUOTES[9] = {
     "so it begins"
 };
 
-void TitleScene::drawSoul(float x, float y) const {
-    DrawRectangle((int)x + 2, (int)y, 4, 3, SOUL_RED);
-    DrawRectangle((int)x + 8, (int)y, 4, 3, SOUL_RED);
-    DrawRectangle((int)x + 1, (int)y + 3, 12, 4, SOUL_RED);
-    DrawRectangle((int)x + 2, (int)y + 7, 10, 3, SOUL_RED);
-    DrawRectangle((int)x + 4, (int)y + 10, 6, 2, SOUL_RED);
-    DrawRectangle((int)x + 6, (int)y + 12, 2, 2, SOUL_RED);
+void TitleScene::resetSplash() {
+    m_screen = Screen::Splash;
+    m_selectedIndex = 0;
+    m_animTimer = 0.0f;
+    m_idleTimer = 0.0f;
+    m_settingsMessageTimer = 0.0f;
+    m_promptSoundPlayed = false;
 }
 
 void TitleScene::onEnter(GameContext& context) {
-    context.audio.playMusic("assets/music/epic_background_loop.ogg", true);
-    m_selectedIndex = 0;
-    m_animTimer = 0.0f;
+    context.audio.playMusic("assets/music/main_menu_loop.ogg", true);
+    resetSplash();
 
     m_hasSave = context.save.hasSaveGame();
     if (m_hasSave) {
@@ -46,56 +47,109 @@ void TitleScene::onEnter(GameContext& context) {
             m_savedPlayTime = preview.playTime;
             m_savedRoom = context.save.getRoomDisplayName(preview.currentRoom);
         }
-        m_options = { "Continue", "Reset", "Instructions", "Exit" };
-    } else {
-        m_options = { "New Game", "Instructions", "Exit" };
     }
 }
 
 void TitleScene::update(float dt, GameContext& context) {
     m_animTimer += dt;
 
-    if (context.input.isUpPressed()) {
-        m_selectedIndex = (m_selectedIndex + (int)m_options.size() - 1) % (int)m_options.size();
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
-    } else if (context.input.isDownPressed()) {
-        m_selectedIndex = (m_selectedIndex + 1) % (int)m_options.size();
+    if (m_screen == Screen::Splash) {
+        updateSplash(dt, context);
+    } else {
+        updateContinueCard(dt, context);
+    }
+}
+
+void TitleScene::updateSplash(float dt, GameContext& context) {
+    if (!m_promptSoundPlayed && pressPromptVisible(m_animTimer)) {
+        context.audio.playSound("assets/sfx/n.ogg", 0.8f);
+        m_promptSoundPlayed = true;
+    }
+
+    const bool confirmPressed = context.input.isConfirmPressed();
+    const bool anyInput = confirmPressed
+        || context.input.isCancelPressed()
+        || context.input.isEscapePressed()
+        || context.input.isMenuPressed()
+        || context.input.isBackspacePressed()
+        || context.input.isUpPressed()
+        || context.input.isDownPressed()
+        || context.input.isLeftPressed()
+        || context.input.isRightPressed();
+
+    if (anyInput) {
+        m_idleTimer = 0.0f;
+    } else {
+        m_idleTimer += dt;
+    }
+
+    const bool acceptedConfirm = confirmPressed && pressPromptVisible(m_animTimer);
+    switch (titleNext(acceptedConfirm, m_hasSave, m_idleTimer)) {
+        case TitleNext::Instructions:
+            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.scenes.changeScene(std::make_unique<InstructionsScene>(), 0.5f);
+            break;
+        case TitleNext::ContinueCard:
+            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            m_screen = Screen::ContinueCard;
+            m_selectedIndex = 0;
+            m_settingsMessageTimer = 0.0f;
+            break;
+        case TitleNext::Intro:
+            context.scenes.changeScene(std::make_unique<LoreScene>(), 0.5f);
+            break;
+        case TitleNext::Stay:
+            break;
+    }
+}
+
+void TitleScene::showSettingsPlaceholder(GameContext& context) {
+    m_settingsMessageTimer = 2.0f;
+    context.audio.playSound("assets/sfx/areusure.ogg", 0.8f);
+}
+
+void TitleScene::updateContinueCard(float dt, GameContext& context) {
+    if (m_settingsMessageTimer > 0.0f) {
+        m_settingsMessageTimer -= dt;
+        if (m_settingsMessageTimer < 0.0f) {
+            m_settingsMessageTimer = 0.0f;
+        }
+    }
+
+    int nextSelection = m_selectedIndex;
+    if (context.input.isLeftPressed()) {
+        nextSelection = 0;
+    } else if (context.input.isRightPressed()) {
+        nextSelection = 1;
+    } else if (context.input.isDownPressed() && m_selectedIndex != 2) {
+        nextSelection = 2;
+    } else if (context.input.isUpPressed() && m_selectedIndex == 2) {
+        nextSelection = 0;
+    }
+
+    if (nextSelection != m_selectedIndex) {
+        m_selectedIndex = nextSelection;
         context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
     }
 
-    if (context.input.isConfirmPressed()) {
-        context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+    if (context.input.isCancelPressed()) {
+        context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+        resetSplash();
+        return;
+    }
 
-        if (m_hasSave) {
-            switch (m_selectedIndex) {
-                case 0: // Continue
-                    context.save.loadGame(context.state);
-                    context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
-                    break;
-                case 1: // Reset
-                    context.save.deleteSaveGame();
-                    context.state = GameState();
-                    context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
-                    break;
-                case 2: // Instructions
-                    context.scenes.changeScene(std::make_unique<InstructionsScene>(), 0.4f);
-                    break;
-                case 3: // Exit
-                    context.isRunning = false;
-                    break;
-            }
+    if (context.input.isConfirmPressed()) {
+        if (m_selectedIndex == 0) {
+            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.save.loadGame(context.state);
+            context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
+        } else if (m_selectedIndex == 1) {
+            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.save.deleteSaveGame();
+            context.state = GameState();
+            context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
         } else {
-            switch (m_selectedIndex) {
-                case 0: // New Game
-                    context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
-                    break;
-                case 1: // Instructions
-                    context.scenes.changeScene(std::make_unique<InstructionsScene>(), 0.4f);
-                    break;
-                case 2: // Exit
-                    context.isRunning = false;
-                    break;
-            }
+            showSettingsPlaceholder(context);
         }
     }
 }
@@ -103,65 +157,60 @@ void TitleScene::update(float dt, GameContext& context) {
 void TitleScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
+    if (m_screen == Screen::Splash) {
+        renderSplash(context);
+    } else {
+        renderContinueCard(context);
+    }
+}
+
+void TitleScene::renderSplash(GameContext& context) {
     Font fontTitle = context.resources.getFontTitleFore(48);
-    Font font8Bit  = context.resources.getFont8Bit(22);
     Font fontShmup = context.resources.getFontShmup(18);
 
-    // Floating title animation
-    float floatOffset = std::sin(m_animTimer * 2.5f) * 5.0f;
-    float titleY = 75.0f + floatOffset;
+    const float floatOffset = std::sin(m_animTimer * 2.5f) * 3.0f;
+    const float titleY = 200.0f + floatOffset;
+    const float fontSize = 48.0f;
+    const float spacing = 3.0f;
+    const float nWidth = context.resources.measureTextWidth(fontTitle, "n", fontSize, spacing);
+    const float undertaleWidth = context.resources.measureTextWidth(fontTitle, "UNDERTALE", fontSize, spacing);
+    const float titleX = (static_cast<float>(VIRTUAL_WIDTH) - nWidth - undertaleWidth) * 0.5f;
+    const float jitterX = (std::sin(m_animTimer * 29.0f) >= 0.0f) ? 1.0f : -1.0f;
+    const float jitterY = (std::sin(m_animTimer * 37.0f) >= 0.0f) ? 1.0f : -1.0f;
 
-    // "Not Undertale" in authentic Undertale title font
-    context.resources.drawCenteredText(fontTitle, "Not Undertale", titleY, 48, WHITE, 3.0f);
+    context.resources.drawText(fontTitle, "n", { titleX + jitterX, titleY + jitterY }, fontSize, SOUL_RED, spacing);
+    context.resources.drawText(fontTitle, "UNDERTALE", { titleX + nWidth, titleY }, fontSize, WHITE, spacing);
 
-    // Red "#" emblem next to title (faithful to nundertale.c)
-    float titleW = context.resources.measureTextWidth(fontTitle, "Not Undertale", 48, 3.0f);
-    float hashX = (VIRTUAL_WIDTH + titleW) * 0.5f + 8.0f;
-    context.resources.drawText(fontTitle, "#", { hashX, titleY + 4 }, 32, SOUL_RED);
+    const int quoteIndex = static_cast<int>(m_animTimer * 0.15f) % 9;
+    context.resources.drawCenteredText(fontShmup, RANDOM_QUOTES[quoteIndex], 250.0f, 18.0f, { 140, 140, 140, 255 }, 1.0f);
 
-    // Random quote in gray
-    int quoteIndex = ((int)(m_animTimer * 0.15f)) % 9;
-    context.resources.drawCenteredText(fontShmup, RANDOM_QUOTES[quoteIndex], titleY + 60, 18, { 140, 140, 140, 255 }, 1.0f);
-
-    int startY = 220;
-
-    // If save exists, render Undertale Continue card (SAV-004, FRT-005)
-    if (m_hasSave) {
-        int totalSec = (int)m_savedPlayTime;
-        int mins = totalSec / 60;
-        int secs = totalSec % 60;
-        char timeBuf[16];
-        std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d", mins, secs);
-
-        float cardY = 175.0f;
-        context.resources.drawText(font8Bit, m_savedName, { 170.0f, cardY }, 20, WHITE, 1.0f);
-        context.resources.drawText(font8Bit, "LV " + std::to_string(m_savedLevel), { 300.0f, cardY }, 20, WHITE, 1.0f);
-        context.resources.drawText(font8Bit, timeBuf, { 420.0f, cardY }, 20, WHITE, 1.0f);
-        context.resources.drawText(font8Bit, m_savedRoom, { 170.0f, cardY + 26.0f }, 20, WHITE, 1.0f);
-
-        startY = 245;
+    if (pressPromptVisible(m_animTimer)) {
+        context.resources.drawCenteredText(fontShmup, "[PRESS Z OR ENTER]", 360.0f, 16.0f, COLOR_UNDERTALE_GRAY, 1.0f);
     }
+}
 
-    // Menu options with 1:1 Undertale style
-    for (size_t i = 0; i < m_options.size(); ++i) {
-        bool selected = (m_selectedIndex == (int)i);
-        Color col = selected ? UI_YELLOW : WHITE;
+void TitleScene::renderContinueCard(GameContext& context) {
+    Font font8Bit = context.resources.getFont8Bit(22);
+    Font fontShmup = context.resources.getFontShmup(16);
 
-        float optW = context.resources.measureTextWidth(font8Bit, m_options[i], 22, 1.0f);
-        float optX = (VIRTUAL_WIDTH - optW) * 0.5f;
-        float optY = (float)(startY + (int)i * 38);
+    const int totalSeconds = static_cast<int>(m_savedPlayTime);
+    const int minutes = totalSeconds / 60;
+    const int seconds = totalSeconds % 60;
+    char timeBuffer[16];
+    std::snprintf(timeBuffer, sizeof(timeBuffer), "%d:%02d", minutes, seconds);
 
-        context.resources.drawText(font8Bit, m_options[i], { optX, optY }, 22, col, 1.0f);
+    context.resources.drawText(font8Bit, m_savedName, { 140.0f, 120.0f }, 22.0f, WHITE, 1.0f);
+    context.resources.drawText(font8Bit, "LV " + std::to_string(m_savedLevel), { 300.0f, 120.0f }, 22.0f, WHITE, 1.0f);
+    context.resources.drawText(font8Bit, timeBuffer, { 440.0f, 120.0f }, 22.0f, WHITE, 1.0f);
+    context.resources.drawText(font8Bit, m_savedRoom, { 140.0f, 160.0f }, 22.0f, WHITE, 1.0f);
 
-        if (selected) {
-            // Authentic 16x16 red soul cursor (BUI-007)
-            drawSoul(optX - 25, optY + 5);
-        }
+    context.resources.drawText(font8Bit, "Continue", { 170.0f, 210.0f }, 22.0f, m_selectedIndex == 0 ? UI_YELLOW : WHITE, 1.0f);
+    context.resources.drawText(font8Bit, "Reset", { 390.0f, 210.0f }, 22.0f, m_selectedIndex == 1 ? UI_YELLOW : WHITE, 1.0f);
+    context.resources.drawCenteredText(font8Bit, "Settings", 260.0f, 22.0f, m_selectedIndex == 2 ? UI_YELLOW : WHITE, 1.0f);
+
+    if (m_settingsMessageTimer > 0.0f) {
+        context.resources.drawCenteredText(fontShmup, "* Settings are still being installed. (F4 works.)", 310.0f, 16.0f, COLOR_UNDERTALE_GRAY, 1.0f);
     }
-
-    // Version footer
-    const char* footer = "nUndertale v2.0 - Parody Project";
-    context.resources.drawCenteredText(font8Bit, footer, 445, 16, { 128, 128, 128, 255 }, 1.0f);
 }
 
 void TitleScene::onExit(GameContext& /*context*/) {

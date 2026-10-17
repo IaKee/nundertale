@@ -11,6 +11,7 @@ class ITransition {
 public:
     virtual ~ITransition() = default;
     virtual float duration() const = 0;            // seconds for ONE half (out or in); Cut => 0
+    virtual float durationIn() const { return duration(); }
     // progress 0..1 of the current half; coveringOut=true while covering the old scene, false while revealing the new one
     virtual void render(float progress, bool coveringOut) const = 0;
     // pure helper for tests: how covered the screen is (0 = clear, 1 = fully covered)
@@ -20,10 +21,17 @@ public:
 class FadeTransition : public ITransition {
 public:
     FadeTransition(Color color, float seconds)
-        : m_color(color), m_duration(std::max(0.0f, seconds)) {}
+        : m_color(color), m_durationOut(std::max(0.0f, seconds)), m_durationIn(std::max(0.0f, seconds)) {}
+
+    FadeTransition(Color color, float outSeconds, float inSeconds)
+        : m_color(color), m_durationOut(std::max(0.0f, outSeconds)), m_durationIn(std::max(0.0f, inSeconds)) {}
 
     float duration() const override {
-        return m_duration;
+        return m_durationOut;
+    }
+
+    float durationIn() const override {
+        return m_durationIn;
     }
 
     float coverage(float progress, bool coveringOut) const override {
@@ -40,7 +48,8 @@ public:
 
 private:
     Color m_color;
-    float m_duration = 0.0f;
+    float m_durationOut = 0.0f;
+    float m_durationIn = 0.0f;
 };
 
 class CutTransition : public ITransition {
@@ -62,8 +71,16 @@ inline std::unique_ptr<ITransition> fadeBlack(float seconds) {
     return std::make_unique<FadeTransition>(Color{ 0, 0, 0, 255 }, seconds);
 }
 
+inline std::unique_ptr<ITransition> fadeBlack(float outSeconds, float inSeconds) {
+    return std::make_unique<FadeTransition>(Color{ 0, 0, 0, 255 }, outSeconds, inSeconds);
+}
+
 inline std::unique_ptr<ITransition> fadeWhite(float seconds) {
     return std::make_unique<FadeTransition>(Color{ 255, 255, 255, 255 }, seconds);
+}
+
+inline std::unique_ptr<ITransition> fadeWhite(float outSeconds, float inSeconds) {
+    return std::make_unique<FadeTransition>(Color{ 255, 255, 255, 255 }, outSeconds, inSeconds);
 }
 
 inline std::unique_ptr<ITransition> cut() {

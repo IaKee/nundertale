@@ -1148,44 +1148,51 @@ P1 · M · PRG-030, D-07, D-11
 
 ### FRT — Front-end (disclaimer, intro, title, name, settings)
 
-#### FRT-001 — Undertale's boot order `[ ]`
+#### FRT-001 — Undertale's boot order `[x]`
 P1 · S · SAV-004
 - **What:** first boot: Disclaimer (nUndertale-only, fine) → Intro → "nUNDERTALE" title → **instructions screen with "Begin Game / Settings"** → name → white fade → the fall room. With a save: Intro (if idle) → title → Continue/Reset.
 - **Before:** a title with "New Game / Instructions / Exit" and the instructions on a separate screen.
 - **LORE §11.2:** the whole front-end (disclaimer → intro → title → instructions → name) fits in **~2:30** on first boot.
+- **Done (2026-10-17):** Disclaimer → intro → press-Z title → start menu (no save) or Continue card (save) → name → white fade. ~20 s idle on the title replays the intro (`include/scenes/FrontEndFlow.hpp`).
 
 #### FRT-002 — 1:1 intro (lore) `[ ]`
 P1 · M · TXT-001
 - **What:** 400×220 images (the current ones are 398×214 → fix the art canvas) at x = 120, with the text typed below (main font, 2×), a black fade between cards, the intro music, and Z speeds it up. **The last image is tall and scrolls vertically** (the fall) before the title — today it's a 187-BMP animation (`assets/img/lore10/`); replace it with one tall image + scroll, or a PNG spritesheet.
 - **Text (LORE §9, BUG-29):** the **10** canonical cards — the intro is **gamer propaganda** (a biased narrator; the furry version comes in the Hall of Posts): 1 `Long ago, two races ruled / over the internet: / GAMERS and FURRIES.` · 2 `One day, the FURRIES tried / to turn every GAMER / into a FURRY.` · 3 `The GAMERS fought back with / copypastas, raids, and a / total lack of shame.` · 4 `After a decisive ratio, / the GAMERS were victorious.` (`lore4` art **redrawn without a real face**, ART-170) · 5 `Seven GAMERS sealed the / degenerates underground / with a magic BARRIER.` · 6 `Many years later...` / `MT. DEW, 202X` · 7 `Legend says that those who / keep on yiffin' / may never game again...` · 8–10 no text (Pepe looking at the Rift; a foot slipping on a Dorito next to a tail; the fall + cut to the title).
 
-#### FRT-003 — 1:1 title `[ ]`
+#### FRT-003 — 1:1 title `[~]`
 P1 · S · GFX-004
 - **What:** the "nUNDERTALE" logo (Monster Friend font, white) centered, a small gray "[PRESS Z OR ENTER]" that appears after ~1 s, an "intronoise" sound when it shows up. The random lines (`RANDOM_QUOTES`) can stay as a gray parody splash underneath.
 - **LORE §9, §24:** after card 10, black screen → the logo with the **lowercase `n` in red, trembling slightly**. The floating logo is the **LORE's style choice** for the "no ending yet" state (floating logo on black); the other 4 variants come from the last ending (MET-005).
 - **Idle:** ~20 s idle on the title → the intro plays again.
+- **Partly done (2026-10-17):** "nUNDERTALE" logo with a red trembling `n`, `[PRESS Z OR ENTER]` after 1 s with the `n.ogg` sting, quotes as a gray splash, menu music. Pending: Monster Friend-style font (GFX-004) and the ending-based variants (MET-005).
 
-#### FRT-004 — Instructions/start menu screen `[ ]`
+#### FRT-004 — Instructions/start menu screen `[x]`
 P1 · S · FRT-001
 - **What:** Undertale's layout: `--- Instruction ---` in gray, the list `[Z or ENTER] - Confirm`, `[X or SHIFT] - Cancel`, `[C or CTRL] - Menu (In-game)`, `[F4] - Fullscreen`, `[Hold ESC] - Quit`, `When HP is 0, you become a furry.` (already there, keep it), and below `Begin Game` / `Settings` with a yellow selection.
+- **Done (2026-10-17):** Undertale layout with `Begin Game` / `Settings` (Settings shows a placeholder line until FRT-009).
 
-#### FRT-005 — Continue screen `[ ]`
+#### FRT-005 — Continue screen `[~]`
 P1 · M · SAV-004
 - **What:** NAME, LV, time and save location; `Continue` / `Reset`; `Settings` underneath. **Background art from the last area** and music that changes with progress (like Undertale's menu).
+- **Partly done (2026-10-17):** Undertale layout (NAME, LV, time, room; Continue / Reset; Settings). Pending: background art from the last area and progress-based music.
 
-#### FRT-006 — 1:1 name screen `[ ]`
+#### FRT-006 — 1:1 name screen `[x]`
 P0 · M · GFX-009
 - **What:** "Name the fallen gamer." (already there); a grid of **uppercase A–Z (7 columns) and lowercase a–z (7 columns)** as in Undertale; `Quit`, `Backspace`, `Done` buttons at the bottom; slightly trembling letters; a 6-character limit.
 - **Parody:** keep the special `[PRO]` and `[GAMER]` buttons only if they fit without breaking the layout (suggestion: make them name easter eggs, not buttons).
+- **Done (2026-10-17):** A–Z / a–z 7-column grids with trembling letters, Quit / Backspace / Done, 6-letter limit; the PRO/GAMER buttons became name easter eggs.
 
-#### FRT-007 — 1:1 name confirmation `[ ]`
+#### FRT-007 — 1:1 name confirmation `[x]`
 P0 · M · FRT-006, CORE-003
 - **What:** "Is this name correct?" (current parody: "Are you sure about that?", fine), the name **slowly grows** from small to large in the center while trembling, `No` / `Yes` underneath; Yes → a **long white fade (~3 s)** with a rising sound (cymbal/"swoosh") straight into the fall room. Forbidden names only show `Go back`.
+- **Done (2026-10-17):** the name grows and trembles toward the center over ~4 s, No / Yes (forbidden names: Go back only), Yes → 3 s white fade (CORE-003 `fadeWhite(out, in)`). The rising cymbal SFX is still missing (AUD-011).
 
-#### FRT-008 — Name easter eggs: review `[ ]`
+#### FRT-008 — Name easter eggs: review `[~]`
 P2 · S · FRT-007
 - **What:** keep the ROTEIRO §6 table + LORE §30.2 (`FURIEL`/`FURIELL` `* Furiell is flattered. But no.` · `BARKY` `* AWOO! ...wait. That's MY name.` · `FLOOFY` `* No shame. Respect. ...Not allowed, though.` · `AZZY` screen darkens, `* ...`, allowed · `FROG`/`PEPE` frog soul · `YIFF` `* The narrator refuses.` (not allowed) · `OWO` `* What's this?` · `CHARA` the first-fallen easter egg). Forbidden name `GASTER` → restarts the game (as in Undertale). Move the list to `data/names.json` (NAR-028).
 - **Dropped:** the previously proposed `GABEN` (a real person, LORE §2.2). Replace "Midwest FurFest" with FurNation Con '14 wherever it shows up.
+- **Partly done (2026-10-17):** ROTEIRO §6 + LORE §30.2 table in `include/core/NameRules.hpp` (FURIEL/BARKY/FLOOFY/YIFF forbidden, AZZY darkens, FROG/PEPE frog color, GASTER restarts the game). Pending: move it to `data/names.json` (NAR-028).
 
 #### FRT-009 — Settings `[ ]`
 P2 · M · CORE-007
