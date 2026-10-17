@@ -28,6 +28,7 @@
 #include "core/ItemDatabase.hpp"
 #include "core/FluffParticles.hpp"
 #include "core/FurReactions.hpp"
+#include "core/RaidClock.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1626,6 +1627,48 @@ int main() {
         std::cout << "[PASS] BHL-014: howl_wave wall cadence and howlNextWallReady helper verified." << std::endl;
     }
 
-    std::cout << "\nAll 29 test suites passed successfully!" << std::endl;
+    // 30. RAD-001 & RAD-002: raid clock state, pause rules, labels, and JSON config
+    {
+        using nundertale::RaidClock;
+        using nundertale::raidKicked;
+        using nundertale::raidLabel;
+        using nundertale::raidStart;
+        using nundertale::raidStartSecondsFromJson;
+        using nundertale::raidTick;
+
+        RaidClock clock;
+        assert(raidLabel(clock).empty());
+        assert(!raidKicked(clock));
+
+        raidStart(clock, 1320.0f);
+        assert(clock.started);
+        assert(raidLabel(clock) == "RAID 22:00");
+
+        clock.timeLeft = 59.2f;
+        assert(raidLabel(clock) == "RAID 01:00");
+
+        raidTick(clock, 10.0f, true);
+        assert(std::abs(clock.timeLeft - 59.2f) < 0.0001f);
+        raidTick(clock, 9.2f, false);
+        assert(std::abs(clock.timeLeft - 50.0f) < 0.0001f);
+
+        raidTick(clock, 100.0f, false);
+        assert(clock.timeLeft == 0.0f);
+        assert(raidKicked(clock));
+        assert(raidLabel(clock) == "RAID: KICKED");
+
+        RaidClock dormant;
+        raidTick(dormant, 5.0f, false);
+        assert(!dormant.started);
+        assert(dormant.timeLeft == 0.0f);
+
+        assert(raidStartSecondsFromJson(R"({"startSeconds": 1320})", 60) == 1320);
+        assert(raidStartSecondsFromJson(R"({"comment": "missing"})", 1320) == 1320);
+        assert(raidStartSecondsFromJson(R"({"startSeconds": "soon"})", 1320) == 1320);
+
+        std::cout << "[PASS] RAD-001 & RAD-002: raid clock labels, ticking, pausing, kick state, and config parsing verified." << std::endl;
+    }
+
+    std::cout << "\nAll 30 test suites passed successfully!" << std::endl;
     return 0;
 }

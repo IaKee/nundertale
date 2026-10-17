@@ -10,6 +10,7 @@
 namespace nundertale {
 
 void SettingsScene::onEnter(GameContext& context) {
+    context.raidPaused = true;
     m_initialConfig = context.save.getConfig();
     m_config = m_initialConfig;
     m_selectedIndex = 0;
@@ -23,6 +24,7 @@ bool SettingsScene::isConfigChanged() const {
 }
 
 void SettingsScene::onExit(GameContext& context) {
+    context.raidPaused = false;
     if (isConfigChanged()) {
         context.save.saveConfig(m_config);
         m_initialConfig = m_config;

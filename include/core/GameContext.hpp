@@ -10,6 +10,7 @@
 #include "services/ISaveService.hpp"
 #include "core/Fur.hpp"
 #include "core/ItemDatabase.hpp"
+#include "core/RaidClock.hpp"
 
 namespace nundertale {
 
@@ -51,6 +52,7 @@ struct FurryState {
 struct GameState {
     PlayerData player;
     FurryState furry;
+    RaidClock raid;
     std::unordered_map<std::string, int> flags;
     std::string currentRoom = "ruins_entrance";
     Vector2 playerPos = { 320.0f, 240.0f };
@@ -107,6 +109,7 @@ struct GameContext {
     PlayerData& player;
     bool isRunning = true;
     bool debugHitboxes = false; // QA-002: F2 hitbox overlay toggle
+    bool raidPaused = false;
 
     // GFX-006: Screen Shake
     float shakeIntensity = 0.0f;
