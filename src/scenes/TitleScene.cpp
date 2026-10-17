@@ -4,6 +4,7 @@
 #include "scenes/LoreScene.hpp"
 #include "scenes/NameSelectScene.hpp"
 #include "scenes/OverworldScene.hpp"
+#include "scenes/SettingsScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
@@ -30,7 +31,6 @@ void TitleScene::resetSplash() {
     m_selectedIndex = 0;
     m_animTimer = 0.0f;
     m_idleTimer = 0.0f;
-    m_settingsMessageTimer = 0.0f;
     m_promptSoundPlayed = false;
 }
 
@@ -93,7 +93,6 @@ void TitleScene::updateSplash(float dt, GameContext& context) {
             context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
             m_screen = Screen::ContinueCard;
             m_selectedIndex = 0;
-            m_settingsMessageTimer = 0.0f;
             break;
         case TitleNext::Intro:
             context.scenes.changeScene(std::make_unique<LoreScene>(), 0.5f);
@@ -103,19 +102,7 @@ void TitleScene::updateSplash(float dt, GameContext& context) {
     }
 }
 
-void TitleScene::showSettingsPlaceholder(GameContext& context) {
-    m_settingsMessageTimer = 2.0f;
-    context.audio.playSound("assets/sfx/areusure.ogg", 0.8f);
-}
-
-void TitleScene::updateContinueCard(float dt, GameContext& context) {
-    if (m_settingsMessageTimer > 0.0f) {
-        m_settingsMessageTimer -= dt;
-        if (m_settingsMessageTimer < 0.0f) {
-            m_settingsMessageTimer = 0.0f;
-        }
-    }
-
+void TitleScene::updateContinueCard(float /*dt*/, GameContext& context) {
     int nextSelection = m_selectedIndex;
     if (context.input.isLeftPressed()) {
         nextSelection = 0;
@@ -149,7 +136,8 @@ void TitleScene::updateContinueCard(float dt, GameContext& context) {
             context.state = GameState();
             context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
         } else {
-            showSettingsPlaceholder(context);
+            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.scenes.pushScene(std::make_unique<SettingsScene>(), context);
         }
     }
 }
@@ -191,7 +179,6 @@ void TitleScene::renderSplash(GameContext& context) {
 
 void TitleScene::renderContinueCard(GameContext& context) {
     Font font8Bit = context.resources.getFont8Bit(22);
-    Font fontShmup = context.resources.getFontShmup(16);
 
     const int totalSeconds = static_cast<int>(m_savedPlayTime);
     const int minutes = totalSeconds / 60;
@@ -207,10 +194,6 @@ void TitleScene::renderContinueCard(GameContext& context) {
     context.resources.drawText(font8Bit, "Continue", { 170.0f, 210.0f }, 22.0f, m_selectedIndex == 0 ? UI_YELLOW : WHITE, 1.0f);
     context.resources.drawText(font8Bit, "Reset", { 390.0f, 210.0f }, 22.0f, m_selectedIndex == 1 ? UI_YELLOW : WHITE, 1.0f);
     context.resources.drawCenteredText(font8Bit, "Settings", 260.0f, 22.0f, m_selectedIndex == 2 ? UI_YELLOW : WHITE, 1.0f);
-
-    if (m_settingsMessageTimer > 0.0f) {
-        context.resources.drawCenteredText(fontShmup, "* Settings are still being installed. (F4 works.)", 310.0f, 16.0f, COLOR_UNDERTALE_GRAY, 1.0f);
-    }
 }
 
 void TitleScene::onExit(GameContext& /*context*/) {
