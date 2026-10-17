@@ -1363,9 +1363,10 @@ P1 · S · ITM-001, FUR-002
 - **What:** `furMult` and `furOnEquip` fields on items: Faux-Fur Bandana ×1.25 · Fursuit Head +40 on equip and ×1.5 · Pillowcase Cape ×1.25 · Uwu-mie Armor ×2 · Blue-Light Glasses ×0.75. `furOnEquip` applies once per item instance (unequip/re-equip can't farm FUR).
 - **Done (2026-10-17):** `data/items/items.json` is now actually loaded (`include/core/ItemDatabase.hpp`, at startup); weapons/armor equip from data (AT/DF) in both menus with the old name-based fallback; armor `furMult` multiplies bullet FUR; armor `furry` (e.g. Fursuit Head +40) applies once per item per playthrough (`fur_on_equip.<id>` flag).
 
-#### FUR-010 — Fluff particles in the air `[ ]`
+#### FUR-010 — Fluff particles in the air `[x]`
 P2 · S · GFX-002
 - **What (LORE §25.1):** 2–4 particles per screen in every area (`#FFB3E6`, `#FFD27F`), density proportional to FUR; off on the Toxic route.
+- **Done (2026-10-17):** 2–4 slow 2×2 fluff particles (`#FFB3E6` / `#FFD27F`) drift over the overworld, more with higher FUR, none on the Toxic route (`include/core/FluffParticles.hpp`, deterministic RNG). Real particle sprites come with GFX-002/GFX-013.
 
 #### FUR-011 — Cap at 99 on the Toxic route `[ ]`
 P1 · S · PRG-031

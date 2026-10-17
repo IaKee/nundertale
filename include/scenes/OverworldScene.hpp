@@ -4,6 +4,7 @@
 #include "entities/Player.hpp"
 #include "entities/Interactable.hpp"
 #include "ui/DialogBox.hpp"
+#include "core/FluffParticles.hpp"
 #include <vector>
 #include <memory>
 
@@ -61,6 +62,10 @@ private:
 
     void handleSaveBoxInput(GameContext& context);
     void renderSaveBox(GameContext& context, Font font);
+
+    // Ambient fluff particles (FUR-010)
+    std::vector<FluffParticle> m_fluffParticles;
+    std::uint32_t m_fluffRng = 0x5F100Fu;
 };
 
 } // namespace nundertale
