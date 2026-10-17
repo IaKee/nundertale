@@ -604,7 +604,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
     m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
     m_howlUnlocked = howlUnlocked;
-    m_howlWallTimer = 1.4f;
+    m_howlWallTimer = 1000.0f; // first wall of a turn spawns immediately (BHL-014 tuning)
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
 
@@ -812,18 +812,16 @@ void BattleSystem::spawnBulletWave() {
         b.fur = 4;
         m_bullets.push_back(b);
     } else {
-        // Pattern 3: Howl Wave. Keep one readable wall in flight at a time.
-        const bool wallActive = std::any_of(m_bullets.begin(), m_bullets.end(), [](const Bullet& bullet) {
-            return bullet.type == BulletType::Awoo;
-        });
-        if (wallActive || m_howlWallTimer < 1.4f) {
+        // Pattern 3: Howl Wave (BHL-014 tuning). Next wall ready when previous has travelled >= 60% box width and >= 1.4s.
+        constexpr float wallSpeed = 130.0f;
+        const float travelled = m_howlWallTimer * wallSpeed;
+        if (!howlNextWallReady(travelled, m_arenaRect.width, m_howlWallTimer)) {
             return;
         }
 
         constexpr float arcRadius = 10.0f;
         constexpr float gapHeight = 48.0f;
         constexpr float rowStep = 18.0f;
-        constexpr float wallSpeed = 110.0f;
         const float innerTop = m_arenaRect.y + 10.0f;
         const float innerBottom = m_arenaRect.y + m_arenaRect.height - 10.0f;
         const int gapMin = static_cast<int>(innerTop);

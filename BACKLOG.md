@@ -843,7 +843,7 @@ P0 · M · BHL-004, ART-012
   3. **Awoo Howl** — sound waves (arcs) coming from the sides with a gap to slip through.
   4. **Tail Swipe** (when HP < 50%) — a tail sweeps the box horizontally; jump over it with timing (no blue mode, just dodging up/down).
 - **Acceptance:** "first Undertale boss" difficulty: beatable without taking damage after 2–3 tries.
-- **LORE rework done (2026-10-17):** the pattern is chosen once per enemy turn (`include/combat/BarkyPatterns.hpp`): uwu_rain / dew_bounce alternate; Cringe Check unlocks howl_wave (immediately on the next turn, then in the 3-pattern cycle); howl_wave is a wall of arcs crossing the box with a 48 px gap; dew_bounce is now FUR +4. Pending: real sprites (ART-012), tuning (a howl turn shows ~1 wall).
+- **LORE rework done (2026-10-17):** the pattern is chosen once per enemy turn (`include/combat/BarkyPatterns.hpp`): uwu_rain / dew_bounce alternate; Cringe Check unlocks howl_wave (immediately on the next turn, then in the 3-pattern cycle); howl_wave is a wall of arcs crossing the box with a 48 px gap; dew_bounce is now FUR +4. Tuned (2026-10-17): the first wall spawns at once, the next after the previous crossed 60% of the box (≥ 1.4 s), 130 px/s, so 2–3 walls per howl turn. Pending: real sprites (ART-012).
 
 #### BHL-015 — "Thinking" text over the soul `[x]`
 P3 · S · —
