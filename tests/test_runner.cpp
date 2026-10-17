@@ -29,6 +29,7 @@
 #include "core/FluffParticles.hpp"
 #include "core/FurReactions.hpp"
 #include "core/RaidClock.hpp"
+#include "tools/ContentLint.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1850,6 +1851,37 @@ int main() {
         std::cout << "[PASS] RAD-003: guild phone message threshold detection, masks, and texts verified." << std::endl;
     }
 
-    std::cout << "\nAll 33 test suites passed successfully!" << std::endl;
+    // 34. LOR-005: Automatic content lint rules
+    {
+        using nundertale::LintFinding;
+        using nundertale::lintText;
+
+        const auto accented = lintText("First line\nNão, thanks.", {});
+        const auto hasFinding = [](const std::vector<LintFinding>& findings,
+                                   int line,
+                                   int col,
+                                   const std::string& rule) {
+            return std::any_of(findings.begin(), findings.end(),
+                               [line, col, &rule](const LintFinding& finding) {
+                                   return finding.line == line && finding.col == col &&
+                                          finding.rule == rule;
+                               });
+        };
+        assert(hasFinding(accented, 2, 2, "non-english-char"));
+        assert(hasFinding(accented, 2, 1, "portuguese-word"));
+
+        const auto english = lintText("“Clean English” — still clean… ♥", {});
+        assert(english.empty());
+
+        const auto blocked = lintText("A forbidden phrase appears here.", {"forbidden phrase"});
+        assert(hasFinding(blocked, 1, 3, "blocked-term"));
+
+        const auto substring = lintText("Missouri is an English place name.", {});
+        assert(substring.empty());
+
+        std::cout << "[PASS] LOR-005: UTF-8, Portuguese word, allowed punctuation, and blocklist lint rules verified." << std::endl;
+    }
+
+    std::cout << "\nAll 34 test suites passed successfully!" << std::endl;
     return 0;
 }
