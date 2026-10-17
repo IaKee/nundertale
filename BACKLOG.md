@@ -1354,9 +1354,10 @@ P1 · S · MNU-003, BUG-23
 P1 · L · ART-101, FUR-005, D-15
 - **What:** 5 overworld spritesheets (`pepe_frog`, `pepe_ears`, `pepe_paws`, `pepe_tail` with a tail that wags as he walks, `pepe_snout` with mint-green patches) swapped by stage; an accessory on the soul in battle per D-15.
 
-#### FUR-008 — Stage reactions `[ ]`
+#### FUR-008 — Stage reactions `[~]`
 P2 · M · FUR-005, NAR-027
 - **What (LORE §8.4):** `* Nice ears, newcomer!` (≥ 20, generic NPCs) · Barky `Dude. Your paws are SO much better than mine.` (≥ 40) · the shops' "fandom discount" (≥ 60, SHP-008) · Senpai Sans `heh. you're one bad day away from a con badge.` (≥ 80) · a "squeak" at the end of Pepe's thoughts (≥ 80) · the mirror in Furiell's house `* It's... still you. With ears.` (≥ 20) · Dogsona & Dogsonissa spare you outright (≥ 40). Conditions on `fur.value` in the conditional dialogue system (CORE-010).
+- **Partly done (2026-10-17):** `furReactionLine(fur, who)` (`include/core/FurReactions.hpp`); Barky says `Dude. Your paws are SO much better than mine.` once per battle at FUR ≥ 40 and as the spared NPC's first line. Pending: generic NPCs, Senpai Sans, shop discount, Pepe's squeak, the mirror, Dogsona & Dogsonissa.
 
 #### FUR-009 — Armor multiplier and FUR on equip `[x]`
 P1 · S · ITM-001, FUR-002

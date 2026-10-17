@@ -27,6 +27,7 @@
 #include "combat/FurHud.hpp"
 #include "core/ItemDatabase.hpp"
 #include "core/FluffParticles.hpp"
+#include "core/FurReactions.hpp"
 
 // Raylib stub for tests running without libraylib runtime
 extern "C" void DrawRectangle(int /*posX*/, int /*posY*/, int /*width*/, int /*height*/, Color /*color*/) {}
@@ -1576,6 +1577,25 @@ int main() {
         std::cout << "[PASS] FUR-010: Ambient fluff particles target count, convergence, canvas bounds, and deterministic RNG verified." << std::endl;
     }
 
-    std::cout << "\nAll 27 test suites passed successfully!" << std::endl;
+    // 28. FUR-008: FUR stage reaction thresholds by speaker
+    {
+        using nundertale::furReactionLine;
+
+        assert(furReactionLine(19, "generic").empty());
+        assert(furReactionLine(20, "generic") == "* Nice ears, newcomer!");
+        assert(furReactionLine(39, "generic") == "* Nice ears, newcomer!");
+        assert(furReactionLine(40, "generic") == "* Nice ears, newcomer!");
+
+        assert(furReactionLine(19, "barky").empty());
+        assert(furReactionLine(20, "barky").empty());
+        assert(furReactionLine(39, "barky").empty());
+        assert(furReactionLine(40, "barky") == "Dude. Your paws are SO much better than mine.");
+
+        assert(furReactionLine(100, "unknown").empty());
+
+        std::cout << "[PASS] FUR-008: FUR stage reaction speaker thresholds verified." << std::endl;
+    }
+
+    std::cout << "\nAll 28 test suites passed successfully!" << std::endl;
     return 0;
 }
