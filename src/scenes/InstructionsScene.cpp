@@ -17,11 +17,11 @@ void InstructionsScene::onEnter(GameContext& context) {
 void InstructionsScene::update(float /*dt*/, GameContext& context) {
     if (context.input.isUpPressed() || context.input.isDownPressed()) {
         m_selectedIndex = 1 - m_selectedIndex;
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+        context.audio.playSound("assets/sfx/menu_move.wav", 0.5f);
     }
 
     if (context.input.isCancelPressed() || context.input.isEscapePressed()) {
-        context.audio.playSound("assets/sfx/selection_sound.wav", 0.7f);
+        context.audio.playSound("assets/sfx/menu_select.wav", 0.7f);
         context.scenes.changeScene(std::make_unique<TitleScene>(), 0.3f);
         return;
     }
@@ -31,7 +31,7 @@ void InstructionsScene::update(float /*dt*/, GameContext& context) {
             context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
             context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);
         } else {
-            context.audio.playSound("assets/sfx/selection_sound.wav", 0.5f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.5f);
             context.scenes.pushScene(std::make_unique<SettingsScene>(), context);
         }
     }

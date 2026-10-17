@@ -101,12 +101,12 @@ void DialogBox::update(float dt, GameContext& context) {
             if (context.input.isLeftPressed()) {
                 if (m_selectedChoice > 0) {
                     m_selectedChoice--;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 }
             } else if (context.input.isRightPressed()) {
                 if (m_selectedChoice + 1 < numOpts) {
                     m_selectedChoice++;
-                    context.audio.playSound("assets/sfx/selection_sound.wav", 0.4f);
+                    context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
                 }
             }
 
