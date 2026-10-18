@@ -227,11 +227,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate stands open.)\n* (Cold air drifts in from the corridor beyond.)"
                 }, "");
             },
-            [doorBounds](GameContext& /*ctx*/) {
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height), GREEN);
-                DrawText("OPEN", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, GREEN);
+            [](GameContext& /*ctx*/) {
+                // The archway is drawn by the map tiles.
             }
         );
         const TiledObject* doorObject = m_tiledMap.findObject("door");
@@ -297,12 +294,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* (The northern gate is unlocked.)\n* (Barky waved cheerfully at you.)"
                 }, "");
             },
-            [doorBounds](GameContext& /*ctx*/) {
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
-                                   COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
+            [](GameContext& /*ctx*/) {
+                // The archway is drawn by the map tiles.
             }
         );
         const TiledObject* doorObject = m_tiledMap.findObject("door");
@@ -378,12 +371,8 @@ void OverworldScene::initInteractables(GameContext& context) {
                     ctx.scenes.pushScene(std::make_unique<EncounterTransitionScene>(pPos, std::make_unique<BattleScene>()), ctx);
                 });
             },
-            [doorBounds](GameContext& /*ctx*/) {
-                DrawRectangleLines(static_cast<int>(doorBounds.x), static_cast<int>(doorBounds.y),
-                                   static_cast<int>(doorBounds.width), static_cast<int>(doorBounds.height),
-                                   COLOR_UNDERTALE_YELLOW);
-                DrawText("EXIT", static_cast<int>(doorBounds.x) + 20,
-                         static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
+            [](GameContext& /*ctx*/) {
+                // The archway is drawn by the map tiles.
             }
         );
         const TiledObject* doorObject = m_tiledMap.findObject("door");

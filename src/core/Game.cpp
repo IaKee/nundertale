@@ -1,7 +1,9 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
+#include "scenes/OverworldScene.hpp"
 #include "services/MusicTracks.hpp"
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -41,6 +43,15 @@ Game::Game() {
     SetTextureFilter(m_virtualTarget.texture, TEXTURE_FILTER_POINT);
 
     // Initial scene: pushScene with context properly executes onEnter (BUG-01)
+#ifdef NUNDERTALE_DEBUG
+    // QA-002: NUNDERTALE_ROOM=<roomId> boots a debug build straight into that room.
+    const char* debugRoom = std::getenv("NUNDERTALE_ROOM");
+    if (debugRoom != nullptr && debugRoom[0] != '\0') {
+        m_context->state.currentRoom = debugRoom;
+        m_sceneManager->pushScene(std::make_unique<OverworldScene>(), *m_context);
+        return;
+    }
+#endif
     m_sceneManager->pushScene(std::make_unique<DisclaimerScene>(), *m_context);
 }
 
@@ -177,6 +188,22 @@ void Game::run() {
             }
 #endif
         EndTextureMode();
+
+#ifdef NUNDERTALE_DEBUG
+        // QA-002: NUNDERTALE_SHOT=<file.png> saves the virtual canvas after
+        // NUNDERTALE_SHOT_FRAME frames (default 45, ~1.5 s) and quits.
+        static int s_shotFrames = 0;
+        const char* shotPath = std::getenv("NUNDERTALE_SHOT");
+        const char* shotFrameText = std::getenv("NUNDERTALE_SHOT_FRAME");
+        const int shotFrame = shotFrameText != nullptr ? std::max(1, std::atoi(shotFrameText)) : 45;
+        if (shotPath != nullptr && shotPath[0] != '\0' && ++s_shotFrames == shotFrame) {
+            Image shot = LoadImageFromTexture(m_virtualTarget.texture);
+            ImageFlipVertical(&shot);
+            ExportImage(shot, shotPath);
+            UnloadImage(shot);
+            m_context->isRunning = false;
+        }
+#endif
 
         // 4. Draw virtual canvas scaled & letterboxed into window
         BeginDrawing();

@@ -1191,13 +1191,14 @@ int main() {
         using nundertale::saveLines;
 
         // savePlaceLine for ruins_entrance, snowdin_town, unknown
-        assert(savePlaceLine("ruins_entrance") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
+        assert(savePlaceLine("ruins_fall") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
         assert(savePlaceLine("") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
         assert(savePlaceLine("snowdin_town") == "* The sight of 47 people sharing one Wi-Fi password on a fridge fills you with DETERMINATION.");
         assert(savePlaceLine("unknown_room_xyz") == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
 
         // Check all other rooms from LORE table for thoroughness
         assert(savePlaceLine("ruins_hall") == "* The distant hum of dial-up internet fills you with DETERMINATION.");
+        assert(savePlaceLine("ruins_entrance") == "* The distant hum of dial-up internet fills you with DETERMINATION.");
         assert(savePlaceLine("ruins_exit") == "* The cold air and the faint smell of ozone fill you with DETERMINATION.");
         assert(savePlaceLine("snowdin_entrance") == "* The crunch of styrofoam snow fills you with DETERMINATION.");
         assert(savePlaceLine("snowdin_fog") == "* The hum of the town's single shared router fills you with DETERMINATION.");
@@ -1208,12 +1209,12 @@ int main() {
         assert(savePlaceLine("con_center_hall") == "* The terrified hugging of a hundred furries fills you with DETERMINATION.");
 
         // saveLines with fur 0 (1 line)
-        auto linesFur0 = saveLines("ruins_entrance", 0, false);
+        auto linesFur0 = saveLines("ruins_fall", 0, false);
         assert(linesFur0.size() == 1);
         assert(linesFur0[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
 
         // saveLines with fur 15 (2 lines, second is the fluff line)
-        auto linesFur15 = saveLines("ruins_entrance", 15, false);
+        auto linesFur15 = saveLines("ruins_fall", 15, false);
         assert(linesFur15.size() == 2);
         assert(linesFur15[0] == "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.");
         assert(linesFur15[1] == "* DETERMINATION can't fix fluff.");
@@ -2616,16 +2617,27 @@ int main() {
         camera = Camera2DFollow::calculate(160.0f, 120.0f, 320.0f, 240.0f);
         assert(camera.x == -160.0f && camera.y == -120.0f);
 
-        TiledMap realMap;
-        if (loadTiledMapFromFile("data/maps/ruins_entrance.json", realMap)) {
+        // OVW-020: the first Ruins rooms are real tiled maps chained by doors.
+        const char* ruinsRooms[] = { "ruins_fall", "ruins_entrance", "ruins_notices", "ruins_arena" };
+        for (const char* roomId : ruinsRooms) {
+            TiledMap realMap;
+            assert(loadTiledMapFromFile(std::string("data/maps/") + roomId + ".json", realMap));
+            assert(realMap.tileWidth == 40 && !realMap.tilesets.empty());
             const TiledLayer* realGround = realMap.findLayer("ground");
             const TiledLayer* collision = realMap.findLayer("collision");
             const TiledLayer* objects = realMap.findLayer("objects");
-            assert(realGround != nullptr && realGround->data.size() == 32 * 24);
-            assert(collision != nullptr && collision->objects.size() == 6);
-            assert(objects != nullptr && objects->objects.size() == 7);
-            assert(realMap.findObject("spawn") != nullptr);
-            assert(realMap.findObject("savepoint") != nullptr);
+            assert(realGround != nullptr && realGround->data.size() == static_cast<std::size_t>(realMap.width * realMap.height));
+            assert(collision != nullptr && !collision->objects.empty());
+            assert(objects != nullptr);
+            for (const TiledObject& object : objects->objects) {
+                if (object.type != "door") continue;
+                const TiledProperty* targetRoom = object.findProperty("targetRoom");
+                const TiledProperty* targetSpawn = object.findProperty("targetSpawn");
+                assert(targetRoom != nullptr && targetSpawn != nullptr);
+                TiledMap targetMap;
+                assert(loadTiledMapFromFile("data/maps/" + std::get<std::string>(targetRoom->value) + ".json", targetMap));
+                assert(targetMap.findObject(std::get<std::string>(targetSpawn->value)) != nullptr);
+            }
         }
 
         std::cout << "[PASS] OVW-003, GFX-010 & OVW-002: Tiled layers, polygons, properties, object lookup, real room, and camera bounds verified." << std::endl;
