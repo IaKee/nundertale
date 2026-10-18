@@ -1989,6 +1989,29 @@ def build_ruins_barky():
                 "lines": "* Barky's natural enemy. Or his moon. He hasn't decided.",
             },
         },
+        # Door north forward to ruins_bakesale (revealed once Barky is resolved)
+        {
+            "name": "to_bakesale",
+            "type": "door",
+            "x": 280,
+            "y": 70,
+            "w": 80,
+            "h": 20,
+            "properties": {
+                "targetRoom": "ruins_bakesale",
+                "targetSpawn": "from_barky",
+                "showIf": "ruins.barky.state >= 1",
+            },
+        },
+        # Spawn returning from ruins_bakesale
+        {
+            "name": "from_bakesale",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 100,
+            "properties": {"facing": "down"},
+        },
     ]
 
     return make_tiled_map(
@@ -2002,6 +2025,242 @@ def build_ruins_barky():
         objects=objects,
         legacy_barky=True,
         tile_size=40,
+    )
+
+
+# =============================================================================
+# Room R10: Bowl, Commission Bake Sale and Mod Rock (ruins_bakesale)
+# Size: 20x12 tiles (800x480 px).
+# Dorito bowl, Commission Bake Sale booth with sample donut, mod rock,
+# Furiell forced call trigger, save point, and dark doorway north to R11.
+# =============================================================================
+def build_ruins_bakesale():
+    width = 20
+    height = 12
+
+    ground = [
+        "#[================]#",
+        "#{---v----k---}  {}#",
+        "#.,;,..;,..,;,....;#",
+        "#;.,..,.c..,;,..;,.#",
+        "#.,;,..;.7889.,;,..#",
+        "#;.,..,..4556;.,..;#",
+        "#.,;,....1223.,;,..#",
+        "#;.,..:B:.,;,..,;,.#",
+        "#.,;...*..,;,....,;#",
+        "#;.,...,;,..,;,..,;#",
+        "#______  __________#",
+        "#######..###########",
+    ]
+
+    above = [
+        "....................",
+        "...............LR...",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 800, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_left"},
+        {"x": 360, "y": 440, "w": 440, "h": 40, "name": "bottom_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 760, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 280, "y": 280, "w": 40, "h": 40, "name": "col_modrock"},
+    ]
+
+    objects = [
+        # South spawn (from Barky's Arena) & default spawn
+        {
+            "name": "from_barky",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        # Door south back to ruins_barky
+        {
+            "name": "door_to_barky",
+            "type": "door",
+            "x": 280,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_barky",
+                "targetSpawn": "from_bakesale",
+            },
+        },
+        # Save point
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 180,
+            "y": 340,
+            "properties": {
+                "lines": "* The smell of baked goods and spider-art fills you with DETERMINATION.",
+            },
+        },
+        # Trigger partway through the room for Furiell's forced phone call
+        {
+            "name": "trigger_call",
+            "type": "trigger",
+            "x": 40,
+            "y": 320,
+            "w": 720,
+            "h": 40,
+            "properties": {
+                "cutscene": "r10_call",
+                "once": "ruins.r10.call",
+            },
+        },
+        # Dorito Bowl: itemPickup listed first so Z interaction is handled before prop
+        {
+            "name": "dorito_bowl_pickup",
+            "type": "itemPickup",
+            "x": 120,
+            "y": 140,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "item": "Stale Doritos",
+                "flag": "ruins.bowl.taken",
+                "lines": "* \"Take one Dorito.\"\n* (You take one stale Dorito. Vintage cheese dust coats your fingers.)",
+                "emptyLines": "* \"Take one Dorito.\"\n* (The bowl is empty. You already took your one.)",
+                "fullLines": "* \"Take one Dorito.\"\n* (You try to take one, but you're carrying too much.)",
+            },
+        },
+        {
+            "name": "dorito_bowl_full",
+            "type": "prop",
+            "x": 120,
+            "y": 140,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_dorito_bowl.png",
+                "anim": "full",
+                "hideIf": "ruins.bowl.taken >= 1",
+                "solid": True,
+            },
+        },
+        {
+            "name": "dorito_bowl_empty",
+            "type": "prop",
+            "x": 120,
+            "y": 140,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_dorito_bowl.png",
+                "anim": "empty",
+                "showIf": "ruins.bowl.taken >= 1",
+                "solid": True,
+            },
+        },
+        # Sign above the bowl
+        {
+            "name": "dorito_sign",
+            "type": "sign",
+            "x": 120,
+            "y": 90,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* \"Take one Dorito.\"",
+            },
+        },
+        # The Mod Rock
+        {
+            "name": "mod_rock",
+            "type": "examine",
+            "x": 280,
+            "y": 280,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "speaker": "MOD ROCK",
+                "counter": "ruins.modrock.talks",
+                "lines": "Hey. No pushing without permission.",
+                "lines2": "...Permission granted.",
+                "lines3": "Don't push your luck.",
+            },
+        },
+        # Commission Bake Sale sample donut pickup
+        {
+            "name": "sample_donut",
+            "type": "itemPickup",
+            "x": 330,
+            "y": 170,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "item": "Commissioned Donut",
+                "flag": "ruins.bakesale.sample",
+                "lines": "* (You take the free sample.)\n* ETA: 6-8 weeks. ...It's here already. Somehow.",
+                "emptyLines": "* (The sample plate is empty. A business card reads: 'Slots closed.')",
+                "fullLines": "* (You try to take the free sample, but you're carrying too much.)",
+            },
+        },
+        # Commission Bake Sale Booth
+        {
+            "name": "bakesale_booth",
+            "type": "prop",
+            "x": 380,
+            "y": 150,
+            "w": 120,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_booth.png",
+                "solid": True,
+                "lines": "* \"All proceeds go to spider artists. Slots open. ETA: yes.\"",
+            },
+        },
+        # North dark doorway leading towards R11 (not accessible yet)
+        {
+            "name": "north_doorway",
+            "type": "examine",
+            "x": 600,
+            "y": 60,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* (The hallway beyond smells like lavender and printer toner. Not yet.)",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_bakesale",
+        display_name="Ruins - Bake Sale",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+        save_place="* The smell of baked goods and spider-art fills you with DETERMINATION.",
+        encounters="froggsona:2,shysona:1,modsmal:1",
+        encounter_budget=1,
     )
 
 
@@ -2019,6 +2278,7 @@ def main():
         "ruins_hallway.json": build_ruins_hallway,
         "ruins_notices.json": build_ruins_notices,
         "ruins_barky.json": build_ruins_barky,
+        "ruins_bakesale.json": build_ruins_bakesale,
     }
 
     print("Building Ruins maps...")
@@ -2034,3 +2294,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

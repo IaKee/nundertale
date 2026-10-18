@@ -116,6 +116,11 @@ void OverworldScene::initRoomObjects(GameContext& context) {
     m_savePoint.reset();
     m_triggerOverlaps.clear();
     m_loggedConditions.clear();
+    m_hazardLinesShown.clear();
+    m_hiddenRoomObjects.clear();
+    m_roomObjectAnimations.clear();
+    m_hazardCooldown = 0;
+    m_lastHazardSafePosition = m_player.getPosition();
 
     for (const TiledLayer& layer : m_tiledMap.layers) {
         if (layer.type != TiledLayerType::Objects || layer.name != "objects") continue;
@@ -132,6 +137,9 @@ void OverworldScene::initRoomObjects(GameContext& context) {
 }
 
 bool OverworldScene::roomObjectVisible(const TiledObject& object, GameContext& context) {
+    if (!object.name.empty() && m_hiddenRoomObjects.find(object.name) != m_hiddenRoomObjects.end()) {
+        return false;
+    }
     const auto lookup = [&context](const std::string& key) {
         if (key == "fur") return context.state.furry.value;
         if (key == "hp") return context.player.hp;
@@ -208,8 +216,9 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
     if (type != "sign" && type != "examine" && type != "prop" && type != "npc") return;
     std::vector<std::string> variants;
     const std::string first = tiledStringProperty(object.properties, "lines");
-    if (first.empty()) return;
-    variants.push_back(first);
+    const std::string cutsceneId = tiledStringProperty(object.properties, "cutscene");
+    if (first.empty() && cutsceneId.empty()) return;
+    if (!first.empty()) variants.push_back(first);
     for (int index = 2; index < 100; ++index) {
         const std::string value = tiledStringProperty(object.properties, "lines" + std::to_string(index));
         if (value.empty()) break;
@@ -218,9 +227,6 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
     const std::string counterKey = tiledStringProperty(object.properties, "counter");
     const int counter = counterKey.empty() ? 0 : context.state.getFlag(counterKey, 0);
     const int furMin = tiledIntProperty(object.properties, "furMin", 101);
-    const std::string selected = selectRoomVariant(
-        variants, counter, context.state.furry.value, furMin,
-        tiledStringProperty(object.properties, "furLines"));
     if (!counterKey.empty()) context.state.incFlag(counterKey);
     if (type == "npc" && !tiledBoolProperty(object.properties, "noTurn", false)) {
         const TiledRect npcBounds = object.bounds();
@@ -231,8 +237,47 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
             playerBox.x + playerBox.width * 0.5f, playerBox.y + playerBox.height * 0.5f);
     }
     context.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
+    if (!cutsceneId.empty()) {
+        startCutscene(cutsceneId);
+        return;
+    }
+    const std::string selected = selectRoomVariant(
+        variants, counter, context.state.furry.value, furMin,
+        tiledStringProperty(object.properties, "furLines"));
     m_dialogBox.startDialog(
         splitRoomPages(selected), tiledStringProperty(object.properties, "speaker"));
+}
+
+void OverworldScene::updateHazards(GameContext& context) {
+    if (m_hazardCooldown > 0) --m_hazardCooldown;
+    const Rectangle playerBounds = m_player.getCollisionBox();
+    const TiledObject* hit = nullptr;
+    for (const TiledObject& object : m_roomObjects) {
+        if (tiledObjectType(object) != "hazard" || !roomObjectVisible(object, context)) continue;
+        const TiledRect tiledBounds = object.bounds();
+        const Rectangle bounds = { tiledBounds.x, tiledBounds.y, tiledBounds.width, tiledBounds.height };
+        if (CheckCollisionRecs(playerBounds, bounds)) {
+            hit = &object;
+            break;
+        }
+    }
+    if (hit == nullptr) {
+        m_lastHazardSafePosition = m_player.getPosition();
+        return;
+    }
+    if (m_hazardCooldown > 0) return;
+
+    context.player.hp = applyHazardDamage(
+        context.player.hp, tiledIntProperty(hit->properties, "damage", 2));
+    context.flash({ 255, 48, 48, 255 }, 0.12f);
+    context.shake(2.0f, 0.12f);
+    m_player.setPosition(m_lastHazardSafePosition);
+    context.state.playerPos = m_lastHazardSafePosition;
+    m_hazardCooldown = 20;
+    const std::string lines = tiledStringProperty(hit->properties, "lines");
+    if (!lines.empty() && m_hazardLinesShown.insert(hit->id).second) {
+        m_dialogBox.startDialog(splitRoomPages(lines), "");
+    }
 }
 
 void OverworldScene::beginDoorTransition(const TiledObject& door) {
@@ -260,6 +305,7 @@ void OverworldScene::swapDoorRoom(GameContext& context) {
             : m_targetFacing;
         m_player.setDirection(roomDirection(facing));
     }
+    m_lastHazardSafePosition = m_player.getPosition();
     context.state.playerPos = m_player.getPosition();
     const MusicEntry track = musicFor(roomMusicKey(context.state.currentRoom));
     context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
@@ -1150,8 +1196,12 @@ void OverworldScene::update(float dt, GameContext& context) {
     if (m_cutscene.running()) {
         class OverworldCutsceneHost final : public CutsceneHost {
         public:
-            OverworldCutsceneHost(DialogBox& dialogBox, Player& player, GameContext& context)
-                : m_dialogBox(dialogBox), m_player(player), m_context(context) {}
+            OverworldCutsceneHost(DialogBox& dialogBox, Player& player, GameContext& context,
+                                  std::unordered_set<std::string>& hidden,
+                                  std::unordered_map<std::string, std::string>& animations,
+                                  std::unordered_set<std::string>& logged)
+                : m_dialogBox(dialogBox), m_player(player), m_context(context),
+                  m_hidden(hidden), m_animations(animations), m_logged(logged) {}
 
             void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
                 m_dialogBox.startDialog(lines, speaker);
@@ -1209,11 +1259,62 @@ void OverworldScene::update(float dt, GameContext& context) {
                 m_player.setOverrideAnimation(path, key, seconds);
             }
 
+            bool condition(const std::string& text) override {
+                bool parsed = false;
+                const bool result = evaluateRoomCondition(text, [this](const std::string& key) {
+                    if (key == "fur") return m_context.state.furry.value;
+                    if (key == "hp") return m_context.player.hp;
+                    return m_context.state.getFlag(key, 0);
+                }, &parsed);
+                if (!parsed && m_logged.insert("cutscene:" + text).second) {
+                    std::clog << "Invalid cutscene condition '" << text
+                              << "'; treating it as true.\n";
+                }
+                return result;
+            }
+
+            void giveItem(const std::string& item, const std::vector<std::string>& lines,
+                          const std::vector<std::string>& fullLines) override {
+                if (m_context.itemDatabase.findItemByName(item) == nullptr) return;
+                if (!m_context.player.canAddItem()) {
+                    m_dialogBox.startDialog(fullLines.empty()
+                        ? std::vector<std::string>{ "* You're carrying too much." } : fullLines, "");
+                    return;
+                }
+                m_context.player.addItem(item);
+                if (!lines.empty()) m_dialogBox.startDialog(lines, "");
+            }
+
+            void addFlag(const std::string& key, int value) override {
+                if (!key.empty()) m_context.state.incFlag(key, value);
+            }
+
+            void addFur(int value) override {
+                m_context.state.furry.value = std::clamp(m_context.state.furry.value + value, 0, 100);
+            }
+
+            void npcFace(const std::string& npc, const std::string& key) override {
+                if (!npc.empty()) m_animations[npc] = "stand_" + key;
+            }
+
+            void npcAnim(const std::string& npc, const std::string& key, float) override {
+                if (!npc.empty()) m_animations[npc] = key;
+            }
+
+            void setNpcVisible(const std::string& npc, bool visible) override {
+                if (visible) m_hidden.erase(npc);
+                else if (!npc.empty()) m_hidden.insert(npc);
+            }
+
         private:
             DialogBox& m_dialogBox;
             Player& m_player;
             GameContext& m_context;
-        } host(m_dialogBox, m_player, context);
+            std::unordered_set<std::string>& m_hidden;
+            std::unordered_map<std::string, std::string>& m_animations;
+            std::unordered_set<std::string>& m_logged;
+        } host(m_dialogBox, m_player, context, m_hiddenRoomObjects,
+               m_roomObjectAnimations, m_loggedConditions);
 
         m_cutscene.update(dt, host);
         if (m_dialogBox.isActive()) {
@@ -1288,6 +1389,9 @@ void OverworldScene::update(float dt, GameContext& context) {
 
     // Keep GameState synchronized (CORE-004)
     context.state.playerPos = m_player.getPosition();
+
+    updateHazards(context);
+    if (m_dialogBox.isActive()) return;
 
     updateDoorsAndTriggers(context);
     if (m_doorFadeState != DoorFadeState::None || m_cutscene.running()) return;
@@ -1416,6 +1520,31 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
         const Vector2 pivot = { bounds.x + bounds.width * 0.5f, bounds.y + bounds.height };
         if (sheet != nullptr) {
             std::string animation = tiledStringProperty(object.properties, "anim");
+            const std::string baseAnimation = animation;
+            const auto overrideIt = m_roomObjectAnimations.find(object.name);
+            if (overrideIt != m_roomObjectAnimations.end() &&
+                sheet->anims.find(overrideIt->second) != sheet->anims.end()) {
+                animation = overrideIt->second;
+            }
+            const std::string altAnim = tiledStringProperty(object.properties, "altAnim");
+            const std::string altAnimIf = tiledStringProperty(object.properties, "altAnimIf");
+            bool altParsed = true;
+            animation = selectRoomAnimation(animation, altAnim, altAnimIf,
+                [&context](const std::string& key) {
+                    if (key == "fur") return context.state.furry.value;
+                    if (key == "hp") return context.player.hp;
+                    return context.state.getFlag(key, 0);
+                }, &altParsed);
+            if (!altParsed) {
+                const std::string logKey = std::to_string(object.id) + ":altAnimIf:" + altAnimIf;
+                if (m_loggedConditions.insert(logKey).second) {
+                    std::clog << "Invalid room condition '" << altAnimIf
+                              << "'; treating it as true.\n";
+                }
+            }
+            if (!animation.empty() && sheet->anims.find(animation) == sheet->anims.end()) {
+                animation = baseAnimation;
+            }
             if (animation.empty() && type == "npc" && sheet->anims.find("stand_down") != sheet->anims.end()) {
                 animation = "stand_down";
             }

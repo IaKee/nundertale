@@ -444,6 +444,53 @@
               "value": "* Barky's natural enemy. Or his moon. He hasn't decided."
             }
           ]
+        },
+        {
+          "height": 20,
+          "id": 17,
+          "name": "to_bakesale",
+          "rotation": 0,
+          "type": "door",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 70,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_bakesale"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_barky"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.barky.state >= 1"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 18,
+          "name": "from_bakesale",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 300,
+          "y": 100,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -666,7 +713,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 17,
+  "nextobjectid": 19,
   "orientation": "orthogonal",
   "properties": [
     {

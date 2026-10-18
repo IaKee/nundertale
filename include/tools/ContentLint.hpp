@@ -598,7 +598,48 @@ private:
 
 inline bool validateJson(const std::string& text, LintFinding* errorOut = nullptr) {
     content_lint_detail::StrictJsonValidator validator(text);
-    return validator.validate(errorOut);
+    if (!validator.validate(errorOut)) return false;
+
+    // Cutscene files are the only content documents with a top-level "steps" array.
+    // Keep this deliberately small and header-only so both the lint executable and tests
+    // enforce the same allow-list while the strict validator handles JSON structure.
+    if (text.find("\"steps\"") == std::string::npos) return true;
+    std::size_t position = 0U;
+    while ((position = text.find("\"type\"", position)) != std::string::npos) {
+        const std::size_t colon = text.find(':', position + 6U);
+        const std::size_t quote = colon == std::string::npos
+            ? std::string::npos : text.find('"', colon + 1U);
+        const std::size_t end = quote == std::string::npos
+            ? std::string::npos : text.find('"', quote + 1U);
+        if (end == std::string::npos) break;
+        const std::string type = text.substr(quote + 1U, end - quote - 1U);
+        const bool known = type == "wait" || type == "dialog" || type == "sound" ||
+            type == "setFlag" || type == "shake" || type == "flash" ||
+            type == "startBattle" || type == "setFur" || type == "healFull" ||
+            type == "facePlayer" || type == "playerAnim" || type == "giveItem" ||
+            type == "addFlag" || type == "addFur" || type == "npcFace" ||
+            type == "npcAnim" || type == "hideNpc" || type == "showNpc";
+        if (!known) {
+            if (errorOut != nullptr) {
+                *errorOut = {1, 1, "unknown-cutscene-step", type};
+            }
+            return false;
+        }
+        position = end + 1U;
+    }
+    return true;
+}
+
+inline bool isKnownRoomObjectType(const std::string& type) {
+    return type == "spawn" || type == "door" || type == "sign" || type == "examine" ||
+        type == "prop" || type == "npc" || type == "itemPickup" || type == "savepoint" ||
+        type == "trigger" || type == "interactable" || type == "hazard";
+}
+
+inline bool isKnownRoomObjectProperty(const std::string& property) {
+    return property == "showIf" || property == "hideIf" || property == "cutscene" ||
+        property == "altAnim" || property == "altAnimIf" || property == "damage" ||
+        property == "lines" || property == "sound";
 }
 
 inline bool validateJson(const std::string& text, LintFinding& errorOut) {
