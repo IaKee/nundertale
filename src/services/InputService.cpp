@@ -1,114 +1,121 @@
 #include "services/InputService.hpp"
+#include <initializer_list>
 
 namespace nundertale {
 
+namespace {
+
+bool anyKeyDown(std::initializer_list<int> keys) {
+    for (int key : keys) {
+        if (IsKeyDown(key)) return true;
+    }
+    return false;
+}
+
+bool anyKeyPressed(std::initializer_list<int> keys) {
+    for (int key : keys) {
+        if (IsKeyPressed(key)) return true;
+    }
+    return false;
+}
+
+bool padDown(std::initializer_list<int> buttons) {
+    if (!IsGamepadAvailable(0)) return false;
+    for (int button : buttons) {
+        if (IsGamepadButtonDown(0, button)) return true;
+    }
+    return false;
+}
+
+bool padPressed(std::initializer_list<int> buttons) {
+    if (!IsGamepadAvailable(0)) return false;
+    for (int button : buttons) {
+        if (IsGamepadButtonPressed(0, button)) return true;
+    }
+    return false;
+}
+
+float padAxis(int axis) {
+    return IsGamepadAvailable(0) ? GetGamepadAxisMovement(0, axis) : 0.0f;
+}
+
+} // namespace
+
 void InputService::update() {
-    m_lastCharPressed = GetCharPressed();
-
-    bool gpUpPressed = false, gpDownPressed = false, gpLeftPressed = false, gpRightPressed = false;
-    bool gpConfirmPressed = false, gpCancelPressed = false, gpMenuPressed = false, gpEscapePressed = false;
-
-    if (IsGamepadAvailable(0)) {
-        float stickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
-        float stickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y);
-
-        gpUpPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP) || (stickY < -0.6f && !IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP));
-        gpDownPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) || (stickY > 0.6f && !IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN));
-        gpLeftPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || (stickX < -0.6f && !IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT));
-        gpRightPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT) || (stickX > 0.6f && !IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT));
-
-        gpConfirmPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN); // A
-        gpCancelPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT); // B or X
-        gpMenuPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_LEFT); // Y or Select
-        gpEscapePressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT); // Start
+    // Typed letters (name screen): ignore the OS key repeat, so holding a letter types it once
+    const bool newKeyThisFrame = GetKeyPressed() != 0;
+    while (GetKeyPressed() != 0) {}
+    m_lastCharPressed = 0;
+    for (int c = GetCharPressed(); c != 0; c = GetCharPressed()) {
+        if (newKeyThisFrame && m_lastCharPressed == 0) {
+            m_lastCharPressed = c;
+        }
     }
 
-    // Accumulate presses between logic ticks (CORE-009)
-    m_upPressed |= IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) || gpUpPressed;
-    m_downPressed |= IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S) || gpDownPressed;
-    m_leftPressed |= IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A) || gpLeftPressed;
-    m_rightPressed |= IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D) || gpRightPressed;
+    // Every action is edge-triggered through a PressLatch (BUG-33); the stick counts as a held
+    // d-pad direction, so pushing and holding it moves the cursor once.
+    const float stickX = padAxis(GAMEPAD_AXIS_LEFT_X);
+    const float stickY = padAxis(GAMEPAD_AXIS_LEFT_Y);
 
-    m_confirmPressed |= IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_ENTER) || gpConfirmPressed;
-    m_cancelPressed |= IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT_SHIFT) || IsKeyPressed(KEY_RIGHT_SHIFT) || gpCancelPressed;
-    m_menuPressed |= IsKeyPressed(KEY_C) || IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL) || gpMenuPressed;
-    m_escapePressed |= IsKeyPressed(KEY_ESCAPE) || gpEscapePressed;
-    m_backspacePressed |= IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_X) || gpCancelPressed;
+    m_up.feed(anyKeyDown({ KEY_UP, KEY_W }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_UP }) || stickY < -0.6f,
+              anyKeyPressed({ KEY_UP, KEY_W }) || padPressed({ GAMEPAD_BUTTON_LEFT_FACE_UP }));
+    m_down.feed(anyKeyDown({ KEY_DOWN, KEY_S }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_DOWN }) || stickY > 0.6f,
+                anyKeyPressed({ KEY_DOWN, KEY_S }) || padPressed({ GAMEPAD_BUTTON_LEFT_FACE_DOWN }));
+    m_left.feed(anyKeyDown({ KEY_LEFT, KEY_A }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_LEFT }) || stickX < -0.6f,
+                anyKeyPressed({ KEY_LEFT, KEY_A }) || padPressed({ GAMEPAD_BUTTON_LEFT_FACE_LEFT }));
+    m_right.feed(anyKeyDown({ KEY_RIGHT, KEY_D }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_RIGHT }) || stickX > 0.6f,
+                 anyKeyPressed({ KEY_RIGHT, KEY_D }) || padPressed({ GAMEPAD_BUTTON_LEFT_FACE_RIGHT }));
+
+    const std::initializer_list<int> cancelPad = { GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_BUTTON_RIGHT_FACE_LEFT }; // B or X
+    m_confirm.feed(anyKeyDown({ KEY_Z, KEY_ENTER }) || padDown({ GAMEPAD_BUTTON_RIGHT_FACE_DOWN }),
+                   anyKeyPressed({ KEY_Z, KEY_ENTER }) || padPressed({ GAMEPAD_BUTTON_RIGHT_FACE_DOWN }));
+    m_cancel.feed(anyKeyDown({ KEY_X, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT }) || padDown(cancelPad),
+                  anyKeyPressed({ KEY_X, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT }) || padPressed(cancelPad));
+    m_menu.feed(anyKeyDown({ KEY_C, KEY_LEFT_CONTROL, KEY_RIGHT_CONTROL }) || padDown({ GAMEPAD_BUTTON_RIGHT_FACE_UP, GAMEPAD_BUTTON_MIDDLE_LEFT }),
+                anyKeyPressed({ KEY_C, KEY_LEFT_CONTROL, KEY_RIGHT_CONTROL }) || padPressed({ GAMEPAD_BUTTON_RIGHT_FACE_UP, GAMEPAD_BUTTON_MIDDLE_LEFT }));
+    m_escape.feed(anyKeyDown({ KEY_ESCAPE }) || padDown({ GAMEPAD_BUTTON_MIDDLE_RIGHT }),
+                  anyKeyPressed({ KEY_ESCAPE }) || padPressed({ GAMEPAD_BUTTON_MIDDLE_RIGHT }));
+    m_backspace.feed(anyKeyDown({ KEY_BACKSPACE, KEY_X }) || padDown(cancelPad),
+                     anyKeyPressed({ KEY_BACKSPACE, KEY_X }) || padPressed(cancelPad));
+}
+
+void InputService::endTick() {
+    m_up.endTick();
+    m_down.endTick();
+    m_left.endTick();
+    m_right.endTick();
+    m_confirm.endTick();
+    m_cancel.endTick();
+    m_menu.endTick();
+    m_escape.endTick();
+    m_backspace.endTick();
 }
 
 bool InputService::isUp() const {
-    bool gp = IsGamepadAvailable(0) && (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) < -0.4f);
-    return IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) || gp;
+    return anyKeyDown({ KEY_UP, KEY_W }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_UP }) || padAxis(GAMEPAD_AXIS_LEFT_Y) < -0.4f;
 }
 
 bool InputService::isDown() const {
-    bool gp = IsGamepadAvailable(0) && (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) > 0.4f);
-    return IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S) || gp;
+    return anyKeyDown({ KEY_DOWN, KEY_S }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_DOWN }) || padAxis(GAMEPAD_AXIS_LEFT_Y) > 0.4f;
 }
 
 bool InputService::isLeft() const {
-    bool gp = IsGamepadAvailable(0) && (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) < -0.4f);
-    return IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A) || gp;
+    return anyKeyDown({ KEY_LEFT, KEY_A }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_LEFT }) || padAxis(GAMEPAD_AXIS_LEFT_X) < -0.4f;
 }
 
 bool InputService::isRight() const {
-    bool gp = IsGamepadAvailable(0) && (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) > 0.4f);
-    return IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D) || gp;
+    return anyKeyDown({ KEY_RIGHT, KEY_D }) || padDown({ GAMEPAD_BUTTON_LEFT_FACE_RIGHT }) || padAxis(GAMEPAD_AXIS_LEFT_X) > 0.4f;
 }
 
-bool InputService::isUpPressed() const {
-    bool r = m_upPressed;
-    m_upPressed = false;
-    return r;
-}
-
-bool InputService::isDownPressed() const {
-    bool r = m_downPressed;
-    m_downPressed = false;
-    return r;
-}
-
-bool InputService::isLeftPressed() const {
-    bool r = m_leftPressed;
-    m_leftPressed = false;
-    return r;
-}
-
-bool InputService::isRightPressed() const {
-    bool r = m_rightPressed;
-    m_rightPressed = false;
-    return r;
-}
-
-bool InputService::isConfirmPressed() const {
-    bool r = m_confirmPressed;
-    m_confirmPressed = false;
-    return r;
-}
-
-bool InputService::isCancelPressed() const {
-    bool r = m_cancelPressed;
-    m_cancelPressed = false;
-    return r;
-}
-
-bool InputService::isMenuPressed() const {
-    bool r = m_menuPressed;
-    m_menuPressed = false;
-    return r;
-}
-
-bool InputService::isEscapePressed() const {
-    bool r = m_escapePressed;
-    m_escapePressed = false;
-    return r;
-}
-
-bool InputService::isBackspacePressed() const {
-    bool r = m_backspacePressed;
-    m_backspacePressed = false;
-    return r;
-}
+bool InputService::isUpPressed() const { return m_up.consume(); }
+bool InputService::isDownPressed() const { return m_down.consume(); }
+bool InputService::isLeftPressed() const { return m_left.consume(); }
+bool InputService::isRightPressed() const { return m_right.consume(); }
+bool InputService::isConfirmPressed() const { return m_confirm.consume(); }
+bool InputService::isCancelPressed() const { return m_cancel.consume(); }
+bool InputService::isMenuPressed() const { return m_menu.consume(); }
+bool InputService::isEscapePressed() const { return m_escape.consume(); }
+bool InputService::isBackspacePressed() const { return m_backspace.consume(); }
 
 bool InputService::isQuitRequested() const {
     return WindowShouldClose();

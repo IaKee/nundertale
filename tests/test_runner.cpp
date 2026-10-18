@@ -18,6 +18,7 @@
 #include "core/AreaPalettes.hpp"
 #include "core/Transition.hpp"
 #include "core/NameRules.hpp"
+#include "core/PressLatch.hpp"
 #include "core/Fur.hpp"
 #include "core/FurTable.hpp"
 #include "services/MusicTracks.hpp"
@@ -2716,6 +2717,49 @@ int main() {
         std::cout << "[PASS] QA-012: Strict JSON validation (valid, trailing comma, unclosed string, bad escape, numbers) verified." << std::endl;
     }
 
-    std::cout << "\nAll 44 test suites passed successfully!" << std::endl;
+    // 45. BUG-33: a held key counts once, and an unread press doesn't fire later
+    {
+        using namespace nundertale;
+        PressLatch z;
+
+        // Held Z for 10 frames across 5 logic ticks: exactly one press
+        int presses = 0;
+        for (int frame = 0; frame < 10; ++frame) {
+            z.feed(true);
+            if (frame % 2 == 1) {
+                if (z.consume()) presses++;
+                z.endTick();
+            }
+        }
+        assert(presses == 1);
+
+        // Released, pressed again: a new press
+        z.feed(false);
+        z.feed(true);
+        assert(z.consume());
+        assert(!z.consume());
+
+        // A press nobody reads in its tick is dropped (it can't confirm the next menu later)
+        z.feed(false);
+        z.feed(true);
+        z.endTick();
+        z.feed(true);
+        assert(!z.consume());
+
+        // Press and release between two frames still counts
+        z.feed(false);
+        z.feed(false, true);
+        assert(z.consume());
+
+        // A press in a frame without a logic tick waits for the next tick
+        z.feed(false);
+        z.feed(true);
+        z.feed(true);
+        assert(z.consume());
+
+        std::cout << "[PASS] BUG-33: held keys press once; unread presses are dropped at the end of the tick." << std::endl;
+    }
+
+    std::cout << "\nAll 45 test suites passed successfully!" << std::endl;
     return 0;
 }

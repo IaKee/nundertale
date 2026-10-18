@@ -2,6 +2,7 @@
 
 #include "core/IScene.hpp"
 #include "core/NameRules.hpp"
+#include <raylib.h>
 #include <string>
 
 namespace nundertale {
@@ -22,6 +23,7 @@ public:
     void onExit(GameContext& context) override;
 
 private:
+    void drawGridLetter(GameContext& context, Font font, const std::string& letter, Vector2 pos, Color color, bool selected);
     NameSelectState m_state = NameSelectState::Selecting;
     std::string m_currentName = "";
     int m_cursorX = 0;

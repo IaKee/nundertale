@@ -32,6 +32,7 @@ public:
     void clearCache() override;
 
 private:
+    static void hardenGlyphEdges(Font& font);
     std::unordered_map<std::string, Texture2D> m_textures;
     std::unordered_map<std::string, Font> m_fonts;
     std::unordered_map<std::string, Sound> m_sounds;

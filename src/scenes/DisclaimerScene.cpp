@@ -36,45 +36,29 @@ void DisclaimerScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
     unsigned char a = static_cast<unsigned char>(m_alpha * 255.0f);
-    Color textColor = { 255, 255, 255, a };
-    Color redColor   = { 255, 60, 60, a };
-    Color dimColor   = { 220, 220, 220, a };
+    Color white = { 255, 255, 255, a };
+    Color gray  = { 160, 160, 160, a };
+    Color red   = { 255, 60, 60, a };
 
-    Font fontTitle = context.resources.getFontTitle(44);
-    Font fontShmup = context.resources.getFontShmup(20);
-    Font font8Bit  = context.resources.getFont8Bit(18);
+    // FRT-011: a few big lines a player will actually read. 8bitoperator only at 16/32/48 px,
+    // the sizes where it lands on whole pixels (BUG-34).
+    Font big   = context.resources.getFont8Bit(48);
+    Font body  = context.resources.getFont8Bit(32);
+    Font small = context.resources.getFont8Bit(16);
 
-    // Title: Not Undertale in monster_friend font
-    context.resources.drawCenteredText(fontTitle, "Not Undertale", 40, 44, textColor, 2.0f);
+    context.resources.drawCenteredText(big, "WARNING", 56.0f, 48.0f, red, 1.0f);
 
-    // Warning
-    context.resources.drawCenteredText(fontShmup, "Trigger Warning", 100, 30, redColor, 1.0f);
-    context.resources.drawCenteredText(fontShmup, "This is", 135, 22, redColor, 1.0f);
+    context.resources.drawCenteredText(body, "A fan-made PARODY of UNDERTALE.", 140.0f, 32.0f, white, 1.0f);
+    context.resources.drawCenteredText(small, "Not affiliated with UNDERTALE or its creator.", 182.0f, 16.0f, gray, 1.0f);
 
-    // Disclaimer Body (Faithful to original C implementation, strictly personal project reference)
-    const char* lines[] = {
-        "- This game may and probably will be offensive to some people -",
-        "",
-        "It was made this way to be a comical parody of the UNDERTALE title,",
-        "however it is not supposed to be associated with the original game",
-        "or creator, as we don't want to deprecate their public image.",
-        "",
-        "This piece of content was developed solely as an indie passion project",
-        "and personal comedy experiment in C++ game architecture.",
-        "",
-        "Enjoy the journey down Mt. Dew with an open mind and a sense of humor."
-    };
+    context.resources.drawCenteredText(body, "For ADULTS only (18+).", 236.0f, 32.0f, red, 1.0f);
 
-    int startY = 175;
-    for (int i = 0; i < 10; ++i) {
-        if (lines[i][0] != '\0') {
-            context.resources.drawCenteredText(fontShmup, lines[i], static_cast<float>(startY + i * 20), 14, dimColor, 1.0f);
-        }
-    }
+    context.resources.drawCenteredText(body, "Crude internet humor about", 290.0f, 32.0f, white, 1.0f);
+    context.resources.drawCenteredText(body, "gamers and furries.", 326.0f, 32.0f, white, 1.0f);
+    context.resources.drawCenteredText(body, "Nothing explicit, lots of cringe.", 362.0f, 32.0f, white, 1.0f);
 
-    // Prompt
-    if ((int)(m_timer * 2.5f) % 2 == 0) {
-        context.resources.drawCenteredText(font8Bit, "[Press Z or ENTER to continue]", 425, 18, COLOR_UNDERTALE_YELLOW, 1.0f);
+    if (static_cast<int>(m_timer * 2.5f) % 2 == 0) {
+        context.resources.drawCenteredText(small, "[Press Z or ENTER]", 432.0f, 16.0f, Color{ COLOR_UNDERTALE_YELLOW.r, COLOR_UNDERTALE_YELLOW.g, COLOR_UNDERTALE_YELLOW.b, a }, 1.0f);
     }
 }
 

@@ -201,6 +201,15 @@ void NameSelectScene::update(float dt, GameContext& context) {
     }
 }
 
+// BUG-35: the letters tremble, but the one under the cursor holds still so it reads clearly
+void NameSelectScene::drawGridLetter(GameContext& context, Font font, const std::string& letter, Vector2 pos, Color color, bool selected) {
+    if (selected) {
+        context.resources.drawText(font, letter, pos, 24.0f, color, 1.0f);
+    } else {
+        context.resources.drawShakyText(font, letter, pos, 24.0f, color, 0.8f, 1.0f);
+    }
+}
+
 void NameSelectScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
@@ -216,18 +225,20 @@ void NameSelectScene::render(GameContext& context) {
         // Title "Name the fallen gamer." centered near y=58
         context.resources.drawCenteredText(font8Bit, "Name the fallen gamer.", 58.0f, 24.0f, WHITE, 2.0f);
 
-        // Typed name (as typed, case preserved) drawn at x≈280,y≈110 (2x main font)
+        // Typed name (as typed, case preserved) at x≈280, y≈96, in the 32 px font
+        // (a 24 px font scaled up to 32 draws uneven pixels, BUG-34)
         if (!m_currentName.empty()) {
-            DrawTextEx(font8Bit, m_currentName.c_str(), { 280.0f, 110.0f }, 32.0f, 2.0f, WHITE);
+            context.resources.drawText(context.resources.getFont8Bit(32), m_currentName, { 280.0f, 96.0f }, 32.0f, WHITE, 2.0f);
         }
 
-        // Extra attempts warning
+        // Extra attempts warning, in the gap between the name and the grid (BUG-36: it used to
+        // be drawn 24 px tall at y=140, over the first letter row)
         if (m_tooManyAttempts > 0) {
             const char* msg = (m_tooManyAttempts > 4) ? "Stop it... Get some help..." : "You only need 6 characters...";
-            context.resources.drawCenteredText(font8Bit, msg, 140.0f, 16.0f, COLOR_UNDERTALE_RED, 1.0f);
+            context.resources.drawCenteredText(context.resources.getFont8Bit(16), msg, 134.0f, 16.0f, COLOR_UNDERTALE_RED, 1.0f);
         }
 
-        // Uppercase A-Z in rows of 7 starting x=120, y=152, step x=64, step y=28
+        // Uppercase A-Z in rows of 7 starting x=120, y=160, step x=64, step y=28
         for (int r = 0; r < 4; ++r) {
             int cols = (r == 3) ? 5 : 7;
             for (int c = 0; c < cols; ++c) {
@@ -235,12 +246,12 @@ void NameSelectScene::render(GameContext& context) {
                 std::string s(1, ch);
                 bool isSel = (m_cursorY == r && m_cursorX == c);
                 Color col = isSel ? COLOR_UNDERTALE_YELLOW : WHITE;
-                Vector2 pos = { 120.0f + static_cast<float>(c) * 64.0f, 152.0f + static_cast<float>(r) * 28.0f };
-                context.resources.drawShakyText(font8Bit, s, pos, 24.0f, col, 0.8f, 1.0f);
+                Vector2 pos = { 120.0f + static_cast<float>(c) * 64.0f, 160.0f + static_cast<float>(r) * 28.0f };
+                drawGridLetter(context, font8Bit, s, pos, col, isSel);
             }
         }
 
-        // Lowercase a-z in rows of 7 starting y=272
+        // Lowercase a-z in rows of 7 starting y=276
         for (int r = 0; r < 4; ++r) {
             int cols = (r == 3) ? 5 : 7;
             for (int c = 0; c < cols; ++c) {
@@ -248,8 +259,8 @@ void NameSelectScene::render(GameContext& context) {
                 std::string s(1, ch);
                 bool isSel = (m_cursorY == (r + 4) && m_cursorX == c);
                 Color col = isSel ? COLOR_UNDERTALE_YELLOW : WHITE;
-                Vector2 pos = { 120.0f + static_cast<float>(c) * 64.0f, 272.0f + static_cast<float>(r) * 28.0f };
-                context.resources.drawShakyText(font8Bit, s, pos, 24.0f, col, 0.8f, 1.0f);
+                Vector2 pos = { 120.0f + static_cast<float>(c) * 64.0f, 276.0f + static_cast<float>(r) * 28.0f };
+                drawGridLetter(context, font8Bit, s, pos, col, isSel);
             }
         }
 

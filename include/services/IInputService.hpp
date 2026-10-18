@@ -9,6 +9,8 @@ public:
     virtual ~IInputService() = default;
 
     virtual void update() = 0;
+    // Called after every logic tick: presses that no scene read in that tick are dropped (BUG-33)
+    virtual void endTick() {}
 
     // Movement
     virtual bool isUp() const = 0;
