@@ -44,6 +44,10 @@ private:
     // True when every card has its new panel: the legacy lore10 frames would clash with it,
     // so the intro cuts to the title after card 10 instead
     bool m_usePanels = false;
+
+    // Card 10 tall scroll (T2)
+    bool m_hasTallCard10 = false;
+    float m_tallScrollTimer = 0.0f;
 };
 
 } // namespace nundertale

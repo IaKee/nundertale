@@ -1,4 +1,5 @@
 #include "scenes/LoreScene.hpp"
+#include "scenes/LoreScroll.hpp"
 #include "scenes/TitleScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
@@ -38,6 +39,7 @@ void LoreScene::onEnter(GameContext& context) {
             m_usePanels = false;
         }
     }
+    m_hasTallCard10 = m_usePanels && FileExists("assets/img/lore/card10_tall.png");
 
     m_currentCard = 0;
     m_currentLine = 0;
@@ -50,6 +52,7 @@ void LoreScene::onEnter(GameContext& context) {
     m_isPlayingCard10Anim = false;
     m_card10Frame = 0;
     m_card10Timer = 0.0f;
+    m_tallScrollTimer = 0.0f;
 }
 
 void LoreScene::update(float dt, GameContext& context) {
@@ -94,6 +97,25 @@ void LoreScene::update(float dt, GameContext& context) {
 
     // If card has no text lines (cards 7, 8, 9), wait short timer or confirm to advance
     if (card.lines.empty()) {
+        // T2: Last card tall scroll rise when panels are enabled and card10_tall.png exists
+        if (m_usePanels && m_hasTallCard10 && m_currentCard + 1 == m_cards.size()) {
+            if (context.input.isConfirmPressed()) {
+                if (m_tallScrollTimer < 6.0f) {
+                    m_tallScrollTimer = 6.0f;
+                } else {
+                    context.scenes.changeScene(std::make_unique<TitleScene>(), 0.6f);
+                    return;
+                }
+            }
+
+            m_tallScrollTimer += dt;
+            if (m_tallScrollTimer >= 7.5f) {
+                context.scenes.changeScene(std::make_unique<TitleScene>(), 0.6f);
+                return;
+            }
+            return;
+        }
+
         m_cardTimer += dt;
         float delay = (m_currentCard == SLIP_CARD) ? 2.0f : 1.5f; // the slip card has a slightly longer pause
         if (m_usePanels && m_currentCard + 1 == m_cards.size()) {
@@ -108,6 +130,7 @@ void LoreScene::update(float dt, GameContext& context) {
                 m_currentLine = 0;
                 m_charIndex = 0;
                 m_cardTextDone = false;
+                m_tallScrollTimer = 0.0f;
             } else if (m_usePanels) {
                 context.scenes.changeScene(std::make_unique<TitleScene>(), 0.6f);
             } else {
@@ -161,6 +184,7 @@ void LoreScene::update(float dt, GameContext& context) {
                 m_cardAlpha = 0.0f;
                 m_cardFadingIn = true;
                 m_cardTextDone = false;
+                m_tallScrollTimer = 0.0f;
             } else {
                 // Begin Card 10 animation
                 m_isPlayingCard10Anim = true;
@@ -174,7 +198,7 @@ void LoreScene::update(float dt, GameContext& context) {
 void LoreScene::render(GameContext& context) {
     ClearBackground(BLACK);
 
-    Font font8Bit = context.resources.getFont8Bit(24);
+    Font font8Bit = context.resources.getFont8Bit(32);
 
     if (m_isPlayingCard10Anim) {
         // Draw Card 10 animation frame
@@ -184,7 +208,6 @@ void LoreScene::render(GameContext& context) {
 
         Texture2D animTex = context.resources.getTexture(pathBuf);
         DrawTexture(animTex, 121, 62, WHITE);
-        context.resources.drawCenteredText(font8Bit, "[Press Z or X to Skip]", 440.0f, 14.0f, COLOR_UNDERTALE_GRAY, 1.0f);
         return;
     }
 
@@ -194,31 +217,38 @@ void LoreScene::render(GameContext& context) {
     unsigned char alphaByte = static_cast<unsigned char>(m_cardAlpha * 255.0f);
     Color tint = { 255, 255, 255, alphaByte };
     if (m_usePanels) {
-        // ART-041: 200x110 native panel at 2x (400x220), like Undertale's intro panels
-        Texture2D panel = context.resources.getTexture(card.panelPath);
-        SetTextureFilter(panel, TEXTURE_FILTER_POINT);
-        DrawTextureEx(panel, { 120.0f, 62.0f }, 0.0f, 2.0f, tint);
+        if (m_hasTallCard10 && m_currentCard + 1 == m_cards.size()) {
+            Texture2D panel = context.resources.getTexture("assets/img/lore/card10_tall.png");
+            SetTextureFilter(panel, TEXTURE_FILTER_POINT);
+            const int imageH = (panel.height > 0) ? panel.height : 320;
+            const int imageW = (panel.width > 0) ? panel.width : 200;
+            const int scrollY = loreScrollOffset(m_tallScrollTimer, 6.0f, imageH, 110);
+            Rectangle srcRec = { 0.0f, static_cast<float>(scrollY), static_cast<float>(imageW), 110.0f };
+            Rectangle dstRec = { 120.0f, 62.0f, static_cast<float>(imageW * 2), 220.0f };
+            DrawTexturePro(panel, srcRec, dstRec, { 0.0f, 0.0f }, 0.0f, tint);
+        } else {
+            // ART-041: 200x110 native panel at 2x (400x220), like Undertale's intro panels
+            Texture2D panel = context.resources.getTexture(card.panelPath);
+            SetTextureFilter(panel, TEXTURE_FILTER_POINT);
+            DrawTextureEx(panel, { 120.0f, 62.0f }, 0.0f, 2.0f, tint);
+        }
     } else {
         // Exact original coordinates: lore_img_posx = 121, lore_img_posy = 62
         Texture2D tex = context.resources.getTexture(card.imagePath);
         DrawTexture(tex, 121, 62, tint);
     }
 
-    // Exact original text coordinates: textx = 125, text1y = 310, text2y = 350, text3y = 390
-    int textX = 125;
-    int textYs[3] = { 310, 350, 390 };
+    int textX = 120;
+    int textYs[3] = { 320, 356, 392 };
 
     for (size_t i = 0; i < card.lines.size() && i < 3; ++i) {
         if (i < m_currentLine) {
-            context.resources.drawText(font8Bit, card.lines[i], { (float)textX, (float)textYs[i] }, 24, WHITE, 1.0f);
+            context.resources.drawText(font8Bit, card.lines[i], { (float)textX, (float)textYs[i] }, 32, WHITE, 1.0f);
         } else if (i == m_currentLine) {
             std::string sub = card.lines[i].substr(0, m_charIndex);
-            context.resources.drawText(font8Bit, sub, { (float)textX, (float)textYs[i] }, 24, WHITE, 1.0f);
+            context.resources.drawText(font8Bit, sub, { (float)textX, (float)textYs[i] }, 32, WHITE, 1.0f);
         }
     }
-
-    // Skip helper
-    context.resources.drawCenteredText(font8Bit, "[Z: Next / X: Skip to Menu]", 445.0f, 14.0f, COLOR_UNDERTALE_GRAY, 1.0f);
 }
 
 void LoreScene::onExit(GameContext& /*context*/) {
