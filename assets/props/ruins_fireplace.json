@@ -1,0 +1,8 @@
+{
+  "image": "ruins_fireplace.png",
+  "cell": [40, 40],
+  "origin": [20, 39],
+  "anims": {
+    "burn": { "row": 0, "frames": 3, "fps": 6 }
+  }
+}

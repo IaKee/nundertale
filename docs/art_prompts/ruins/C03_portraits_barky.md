@@ -25,8 +25,9 @@ Barky (ver A4/B1): edgy, dramático, inseguro. *Embarrassed* = depois do Cringe 
 - **Pivô (`origin`):** o mesmo ponto (pé / base central) em todas as células.
 - **Conteúdo:** nada explícito; proporções **adultas**; nenhum rosto real; nenhuma marca real (nada de logo Doritos / Mountain Dew; use "CITRUS BLAST", chips sem marca); todo texto dentro da arte em **inglês**.
 - **Undertale:** pode servir de referência de tamanho/estilo, mas nada copiado vai para o repositório.
-- Batalha é **branco sobre preto**: traço e detalhes `#FFFFFF`, interior da silhueta **preto opaco** `#000000`.
-- Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser preto opaco.
+- Batalha é **só branco `#FFFFFF` e preto `#000000`**, como a Toriel e o Flowey do Undertale: traço branco; materiais claros (pelo, rosto, cabeça de fantasia) preenchidos de branco, materiais escuros (roupa) de preto.
+- **Contorno branco fechado em volta da silhueta inteira**, também em volta da roupa preta, do cabelo, das orelhas e do rabo: nenhum preto do personagem encosta no fundo (guia de estilo §3.1). A keyline preta de 2 px por fora é aplicada depois por `tools/art_prompts/battle_outline.py`.
+- Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser todo opaco (branco ou preto).
 - Nada de cinza: "meio-tom" se faz com pixels brancos espaçados.
 - Cor só em momentos especiais, e só onde esta ficha disser.
 
@@ -91,7 +92,7 @@ Attached: the spec file C03_portraits_barky.md (full details) and these images, 
 - image 4: reference for framing only
 Draw a new image; never copy the reference images.
 
-Undertale battle sprite, pure white 1-pixel line art on a solid black fill, monochrome (only #FFFFFF and #000000), bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark. Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a man in a cheap wolf fursuit head with huge pointy ears, an emo fringe over one eye, a studded jacket collar. Expressions: edgy brooding side glance, embarrassed blushing with ears pinned back, genuinely happy wide grin with ears up. No text.
+Undertale battle sprite, monochrome white and black pixel art (only #FFFFFF and #000000): white 1-pixel line art, light materials such as fur, faces and costume heads filled solid white, dark materials such as clothes filled solid black, a continuous unbroken white 1-pixel outline around the ENTIRE outer edge of the silhouette (also around black clothes, hair, ears and tail, so no black part of the figure ever touches the background), a few long continuous white lines for folds and seams instead of scattered dots, the whole silhouette fully opaque, bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark. Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a man in a cheap wolf fursuit head with huge pointy ears, an emo fringe over one eye, a studded jacket collar. Expressions: edgy brooding side glance, embarrassed blushing with ears pinned back, genuinely happy wide grin with ears up. No text.
 
 Use only these colors: #FFFFFF (Traço), #000000 (Preenchimento interno).
 Output: one image with 3 portraits side by side, framed like image 1, on a flat, exact #FF00FF magenta background with no noise.

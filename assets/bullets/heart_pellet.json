@@ -1,0 +1,8 @@
+{
+  "image": "heart_pellet.png",
+  "cell": [8, 8],
+  "origin": [4, 4],
+  "anims": {
+    "spin": { "row": 0, "frames": 2, "fps": 6 }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "image": "buttons.png",
+  "cell": [55, 21],
+  "origin": [0, 0],
+  "anims": {
+    "fight": { "row": 0, "frames": 1 },
+    "fight_selected": { "row": 1, "frames": 1 },
+    "act": { "row": 2, "frames": 1 },
+    "act_selected": { "row": 3, "frames": 1 },
+    "item": { "row": 4, "frames": 1 },
+    "item_selected": { "row": 5, "frames": 1 },
+    "mercy": { "row": 6, "frames": 1 },
+    "mercy_selected": { "row": 7, "frames": 1 },
+    "mercy_locked": { "row": 8, "frames": 1 }
+  }
+}

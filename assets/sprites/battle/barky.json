@@ -1,0 +1,11 @@
+{
+  "image": "barky.png",
+  "cell": [60, 80],
+  "origin": [30, 80],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "hurt": { "row": 1, "frames": 1 },
+    "blush": { "row": 2, "frames": 1 },
+    "spared": { "row": 3, "frames": 1 }
+  }
+}

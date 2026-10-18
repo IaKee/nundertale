@@ -1,0 +1,13 @@
+{
+  "image": "souls.png",
+  "cell": [12, 12],
+  "origin": [6, 6],
+  "anims": {
+    "red": { "row": 0, "frames": 1 },
+    "blue": { "row": 1, "frames": 1 },
+    "green": { "row": 2, "frames": 1 },
+    "yellow": { "row": 3, "frames": 1 },
+    "plush": { "row": 4, "frames": 1 },
+    "frog": { "row": 5, "frames": 1 }
+  }
+}

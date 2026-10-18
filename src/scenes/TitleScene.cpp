@@ -161,16 +161,30 @@ void TitleScene::renderSplash(GameContext& context) {
 
     const float floatOffset = std::sin(m_animTimer * 2.5f) * 3.0f;
     const float titleY = 200.0f + floatOffset;
-    const float fontSize = 48.0f;
-    const float spacing = 3.0f;
-    const float nWidth = context.resources.measureTextWidth(fontTitle, "n", fontSize, spacing);
-    const float undertaleWidth = context.resources.measureTextWidth(fontTitle, "UNDERTALE", fontSize, spacing);
-    const float titleX = (static_cast<float>(VIRTUAL_WIDTH) - nWidth - undertaleWidth) * 0.5f;
     const float jitterX = (std::sin(m_animTimer * 29.0f) >= 0.0f) ? 1.0f : -1.0f;
     const float jitterY = (std::sin(m_animTimer * 37.0f) >= 0.0f) ? 1.0f : -1.0f;
 
-    context.resources.drawText(fontTitle, "n", { titleX + jitterX, titleY + jitterY }, fontSize, SOUL_RED, spacing);
-    context.resources.drawText(fontTitle, "UNDERTALE", { titleX + nWidth, titleY }, fontSize, WHITE, spacing);
+    // ART-E08/E09: drawn logo at 2x; the red "n" sits in the 16 px gap on the left of logo.png
+    if (FileExists("assets/ui/logo.png") && FileExists("assets/ui/logo_n.png")) {
+        Texture2D logoTex = context.resources.getTexture("assets/ui/logo.png");
+        Texture2D logoNTex = context.resources.getTexture("assets/ui/logo_n.png");
+        SetTextureFilter(logoTex, TEXTURE_FILTER_POINT);
+        SetTextureFilter(logoNTex, TEXTURE_FILTER_POINT);
+        const float logoX = std::round((static_cast<float>(VIRTUAL_WIDTH) - static_cast<float>(logoTex.width) * 2.0f) * 0.5f);
+        const float logoY = std::round(titleY) - 12.0f;
+        DrawTextureEx(logoTex, { logoX, logoY }, 0.0f, 2.0f, WHITE);
+        // n baseline (row 17 of logo_n) matches the UNDERTALE baseline (row 27 of logo)
+        DrawTextureEx(logoNTex, { logoX + 2.0f + jitterX, logoY + 20.0f + jitterY }, 0.0f, 2.0f, WHITE);
+    } else {
+        const float fontSize = 48.0f;
+        const float spacing = 3.0f;
+        const float nWidth = context.resources.measureTextWidth(fontTitle, "n", fontSize, spacing);
+        const float undertaleWidth = context.resources.measureTextWidth(fontTitle, "UNDERTALE", fontSize, spacing);
+        const float titleX = (static_cast<float>(VIRTUAL_WIDTH) - nWidth - undertaleWidth) * 0.5f;
+
+        context.resources.drawText(fontTitle, "n", { titleX + jitterX, titleY + jitterY }, fontSize, SOUL_RED, spacing);
+        context.resources.drawText(fontTitle, "UNDERTALE", { titleX + nWidth, titleY }, fontSize, WHITE, spacing);
+    }
 
     const int quoteIndex = static_cast<int>(m_animTimer * 0.15f) % 9;
     context.resources.drawCenteredText(fontShmup, RANDOM_QUOTES[quoteIndex], 250.0f, 18.0f, { 140, 140, 140, 255 }, 1.0f);

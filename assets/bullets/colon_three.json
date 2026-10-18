@@ -1,0 +1,8 @@
+{
+  "image": "colon_three.png",
+  "cell": [12, 12],
+  "origin": [6, 6],
+  "anims": {
+    "hop": { "row": 0, "frames": 2, "fps": 6 }
+  }
+}

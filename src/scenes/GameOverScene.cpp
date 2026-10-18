@@ -310,8 +310,16 @@ void GameOverScene::render(GameContext& context) {
     } else {
         // "FURRY OVER" title (BND-010)
         Color titleColor = { 255, 255, 255, static_cast<unsigned char>(std::clamp(m_titleAlpha * 255.0f, 0.0f, 255.0f)) };
-        context.resources.drawCenteredText(fontTitle, "FURRY", 120.0f, 52, titleColor, 4.0f);
-        context.resources.drawCenteredText(fontTitle, "OVER", 190.0f, 52, titleColor, 4.0f);
+        // ART-E07: drawn fluffy title at 2x (420x180), same fade
+        if (FileExists("assets/ui/furry_over.png")) {
+            Texture2D furryOverTex = context.resources.getTexture("assets/ui/furry_over.png");
+            SetTextureFilter(furryOverTex, TEXTURE_FILTER_POINT);
+            const float overX = std::round((static_cast<float>(VIRTUAL_WIDTH) - static_cast<float>(furryOverTex.width) * 2.0f) * 0.5f);
+            DrawTextureEx(furryOverTex, { overX, 70.0f }, 0.0f, 2.0f, titleColor);
+        } else {
+            context.resources.drawCenteredText(fontTitle, "FURRY", 120.0f, 52, titleColor, 4.0f);
+            context.resources.drawCenteredText(fontTitle, "OVER", 190.0f, 52, titleColor, 4.0f);
+        }
 
         // Render typewriter text lines
         float textY = 270.0f;

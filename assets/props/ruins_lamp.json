@@ -1,0 +1,9 @@
+{
+  "image": "ruins_lamp.png",
+  "cell": [20, 40],
+  "origin": [10, 39],
+  "anims": {
+    "lit": { "row": 0, "frames": 1 },
+    "flicker": { "row": 0, "frames": 2, "fps": 6 }
+  }
+}

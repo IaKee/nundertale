@@ -1,0 +1,8 @@
+{
+  "image": "moth.png",
+  "cell": [12, 10],
+  "origin": [6, 5],
+  "anims": {
+    "flap": { "row": 0, "frames": 2, "fps": 8 }
+  }
+}

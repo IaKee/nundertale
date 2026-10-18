@@ -1,0 +1,9 @@
+{
+  "image": "grasstoid.png",
+  "cell": [50, 60],
+  "origin": [25, 60],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "hurt": { "row": 1, "frames": 1 }
+  }
+}

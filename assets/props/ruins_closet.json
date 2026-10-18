@@ -1,0 +1,9 @@
+{
+  "image": "ruins_closet.png",
+  "cell": [30, 40],
+  "origin": [15, 39],
+  "anims": {
+    "closed": { "row": 0, "frames": 1 },
+    "open": { "row": 1, "frames": 1 }
+  }
+}

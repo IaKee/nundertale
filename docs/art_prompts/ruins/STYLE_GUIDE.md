@@ -19,9 +19,9 @@ nUndertale é uma paródia de Undertale: **a mesma linguagem de pixel art do Und
 | Modo | Onde | Regras |
 | :--- | :--- | :--- |
 | Overworld | personagens andando, tiles, props | colorido, vista 3/4 de cima, contorno escuro de 1 px, 1 tom de sombra por cor |
-| Batalha | inimigos, bosses, retratos | traço `#FFFFFF`, interior **preto opaco** `#000000`, fora transparente; nada de cinza; cor só onde a ficha mandar |
+| Batalha | inimigos, bosses, retratos | traço `#FFFFFF`, interior **preto opaco** `#000000`, fora transparente; **contorno branco fechado em volta da silhueta inteira** + keyline preta de 2 px por fora (§3.1); nada de cinza; cor só onde a ficha mandar |
 | Interface / projéteis | botões, almas, bullets, logos | formas sólidas e legíveis a 2×; projéteis brancos (verde `#00FF00` = cura) |
-| Cards de intro | `img/lore*` | monocromático sépia/laranja, imagem única |
+| Cards de intro | `img/lore/*.png` | painel 200×110 desenhado a 2×, 6 tons de sépia, silhuetas chapadas (§3.2) |
 
 ## 3. Escala e densidade
 
@@ -29,6 +29,21 @@ nUndertale é uma paródia de Undertale: **a mesma linguagem de pixel art do Und
 - Overworld: Pepe 20×30 (célula 24×32), Barky 22×32, Furiell 26×40, Floofy 20×20, tile 20×20, save point 20×28.
 - Batalha: Barky 60×80, Furiell 80×110, Floofy 40×40, Dummy 40×60, comuns 30–60. A caixa de batalha tem 287 px de largura.
 - Ver `style/03_scale_lineup.png` e o sprite-âncora `style/04_pepe_anchor.png` (a densidade de referência).
+
+### 3.1 Batalha: como o Undertale fecha a silhueta
+
+Medido em 2026-10-18 nos sprites de batalha originais (Toriel, Papyrus, Sans, Loox, Migosp, Whimsun, Vegetoid), em resolução nativa. O fundo da batalha é preto com uma grade verde, então um personagem de roupa preta só aparece se a borda for desenhada:
+
+1. **Contorno branco fechado.** A borda externa de toda a silhueta é uma linha branca contínua de 1 px, inclusive onde o material é escuro (o manto da Toriel, a jaqueta do Sans). Nenhum preto do interior encosta no fundo.
+2. **Keyline preta de 2 px por fora.** Em volta do contorno branco há 2 px de preto opaco antes do transparente (na Toriel, o branco encosta no transparente em 0 pixels). A grade verde para antes do personagem e nunca toca o branco.
+3. **Interior preto com poucas linhas longas.** Dobras, costuras e bolsos são traços brancos contínuos de 1 px; nada de pontilhado nem pixels soltos. Materiais claros (pelo, crânio, cabeça de fantasia) são massas brancas com os detalhes em preto.
+4. **Silhueta simples.** Poucas reentrâncias de 1 px; detalhe que não fecha em linha some a 2×.
+
+O Barky v1 tinha 1374 pixels pretos na borda e 2 brancos: a jaqueta sumia no fundo. `tools/art_prompts/battle_outline.py` confere (`--check`: vazamentos e branco encostando no fundo) e corrige (contorno + keyline + limpeza) qualquer sheet de batalha; rode-o em toda saída do gerador.
+
+### 3.2 Cards de intro: o painel do Undertale
+
+Os painéis da intro do Undertale têm **200×110 pixels nativos desenhados a 2×** (400×220 na tela) e só **4–5 cores** de sépia. A cena é contada por **silhuetas chapadas**: fundo claro, figuras e primeiro plano escuros, sem contorno, sem gradiente, pouquíssimo detalhe. Nos nossos cards: PNG 200×110 em `assets/img/lore/`, paleta de 6 tons (Sépia 1–6; com só 5 o brilho do céu some na quantização), vermelho só no "BEGONE!". O jogo desenha o painel a 2× em (120, 62) e o texto embaixo.
 
 ## 4. Paletas
 
@@ -89,6 +104,7 @@ Os salões da **FurNation Con '14**, afundados há 12 anos: "uma convenção fur
 | mesma densidade do sprite-âncora | personagens com 40+ px de altura no overworld |
 | preto opaco dentro dos sprites de batalha | interior transparente / cinza |
 | bordas 100% opacas | halo branco ou semitransparente |
+| batalha: contorno branco fechado + 2 px de keyline preta | roupa preta encostando no fundo; contorno pontilhado |
 | texto em inglês, escrito à mão depois | texto inventado pela IA, marcas reais |
 | proporções adultas | rostos de bebê / chibi |
 | Pepe com os traços do meme (pálpebras, dois lábios, camiseta azul) | lábio laranja chato, olheira roxa |

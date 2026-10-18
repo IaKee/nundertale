@@ -1,0 +1,9 @@
+{
+  "image": "attack_bar.png",
+  "cell": [7, 65],
+  "origin": [3, 32],
+  "anims": {
+    "idle": { "row": 0, "frames": 1 },
+    "flash": { "row": 0, "frames": 2, "fps": 10 }
+  }
+}

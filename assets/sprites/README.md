@@ -24,3 +24,18 @@ Expected assets and animation names:
 - `ow/pepe_frog.png` and `ow/pepe_frog.json`: `walk_down`, `walk_up`, `walk_left`, `walk_right`, plus `stand_down`, `stand_up`, `stand_left`, `stand_right`. A cell near 20 x 30 pixels is appropriate.
 
 Keep every frame for a sheet the same size, preserve transparent pixels around the character, and place the pivot consistently across all rows. Until both the PNG and JSON exist and the JSON is valid, the game keeps using its current fallback art.
+
+## What the game loads today
+
+Each of these falls back to the old primitive drawing when its file is missing or invalid.
+
+| Where | Files |
+| :--- | :--- |
+| Battle buttons, SOUL, FIGHT target, attack bar, hit effect | `ui/buttons.*`, `ui/souls.*`, `ui/target.png`, `ui/attack_bar.*`, `ui/slash.*` |
+| Barky's bullets (`uwu_rain`, `dew_bounce`, `howl_wave`) | `bullets/uwu_letters.*`, `bullets/can.*`, `bullets/sound_ring.*` |
+| Barky in battle and in the overworld | `sprites/battle/barky.*`, `sprites/ow/barky.*` (`stand_down`) |
+| Pepe in the overworld and the encounter "!" | `sprites/ow/pepe_frog.*`, `ui/exclaim.png` |
+| Save point, snack bowl | `props/save_point.*` (`spin`), `props/ruins_dorito_bowl.*` (`full`, `knocked`) |
+| Title logo, FURRY OVER | `ui/logo.png` + `ui/logo_n.png` (the "n" trembles), `ui/furry_over.png` |
+
+The other sheets in `assets/` (Furiell, Floofy, the other enemies, portraits, the remaining bullets and props, the Ruins tileset) wait for the rooms, encounters or loaders that use them. `docs/art_prompts/ruins/*.md` says where each one goes.

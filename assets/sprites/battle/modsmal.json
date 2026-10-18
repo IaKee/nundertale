@@ -1,0 +1,9 @@
+{
+  "image": "modsmal.png",
+  "cell": [40, 30],
+  "origin": [20, 30],
+  "anims": {
+    "idle": { "row": 0, "frames": 2, "fps": 2 },
+    "hurt": { "row": 1, "frames": 1 }
+  }
+}

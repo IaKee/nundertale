@@ -1,0 +1,8 @@
+{
+  "image": "can.png",
+  "cell": [14, 14],
+  "origin": [7, 7],
+  "anims": {
+    "spin": { "row": 0, "frames": 4, "fps": 8 }
+  }
+}

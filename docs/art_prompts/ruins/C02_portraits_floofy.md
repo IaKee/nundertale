@@ -25,8 +25,9 @@ Floofy (ver A5/B3): flor com cabeça de fursuit de cabritinho e zíper no meio d
 - **Pivô (`origin`):** o mesmo ponto (pé / base central) em todas as células.
 - **Conteúdo:** nada explícito; proporções **adultas**; nenhum rosto real; nenhuma marca real (nada de logo Doritos / Mountain Dew; use "CITRUS BLAST", chips sem marca); todo texto dentro da arte em **inglês**.
 - **Undertale:** pode servir de referência de tamanho/estilo, mas nada copiado vai para o repositório.
-- Batalha é **branco sobre preto**: traço e detalhes `#FFFFFF`, interior da silhueta **preto opaco** `#000000`.
-- Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser preto opaco.
+- Batalha é **só branco `#FFFFFF` e preto `#000000`**, como a Toriel e o Flowey do Undertale: traço branco; materiais claros (pelo, rosto, cabeça de fantasia) preenchidos de branco, materiais escuros (roupa) de preto.
+- **Contorno branco fechado em volta da silhueta inteira**, também em volta da roupa preta, do cabelo, das orelhas e do rabo: nenhum preto do personagem encosta no fundo (guia de estilo §3.1). A keyline preta de 2 px por fora é aplicada depois por `tools/art_prompts/battle_outline.py`.
+- Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser todo opaco (branco ou preto).
 - Nada de cinza: "meio-tom" se faz com pixels brancos espaçados.
 - Cor só em momentos especiais, e só onde esta ficha disser.
 
@@ -38,8 +39,8 @@ Floofy (ver A5/B3): flor com cabeça de fursuit de cabritinho e zíper no meio d
 
 | Arquivo | Expressão |
 | :--- | :--- |
-| `assets/portraits/floofy_cute.png` | sorriso fofo de mascote |
-| `assets/portraits/floofy_smug.png` | olhos semicerrados, sorriso torto |
+| `assets/portraits/floofy_cute.png` | olhos grandes e brilhantes de mascote, sem boca |
+| `assets/portraits/floofy_smug.png` | olhos semicerrados + um sorriso torto de 1 linha: a única boca do Floofy, só porque o deboche não lê sem ela |
 | `assets/portraits/floofy_sinister.png` | zíper aberto: só escuridão + dois olhos brancos |
 
 - **Um PNG por expressão**, 50×50 cada, nomes exatamente como na tabela.
@@ -87,7 +88,7 @@ Attached: the spec file C02_portraits_floofy.md (full details) and these images,
 - image 4: reference for framing and expressions only
 Draw a new image; never copy the reference images.
 
-Undertale battle sprite, pure white 1-pixel line art on a solid black fill, monochrome (only #FFFFFF and #000000), bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark. Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a flower whose face is a baby-goat mascot costume head with plastic eyes and a vertical zipper down the middle. Expressions: cute innocent smile, smug half-lidded grin, sinister with the zipper pulled open showing only darkness and two white dot eyes. No text.
+Undertale battle sprite, monochrome white and black pixel art (only #FFFFFF and #000000): white 1-pixel line art, light materials such as fur, faces and costume heads filled solid white, dark materials such as clothes filled solid black, a continuous unbroken white 1-pixel outline around the ENTIRE outer edge of the silhouette (also around black clothes, hair, ears and tail, so no black part of the figure ever touches the background), a few long continuous white lines for folds and seams instead of scattered dots, the whole silhouette fully opaque, bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark. Dialogue portrait sheet, 3 portraits in one row, identical framing (50x50 pixels each): a flower whose face is a baby-goat mascot costume head with plastic eyes and a silver zipper running down the middle of the face from the top of the head to the chin, with the pull tab at the chin; the costume has no mouth. Expressions: cute (big shiny innocent eyes, no mouth), smug (half-lidded eyes and one thin crooked grin line, the only mouth this character ever shows), sinister with the zipper pulled open showing only darkness and two white dot eyes. No text.
 
 Use only these colors: #FFFFFF (Traço), #000000 (Preenchimento interno).
 Output: one image with 3 portraits side by side, framed like image 1, on a flat, exact #FF00FF magenta background with no noise.

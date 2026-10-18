@@ -1,0 +1,9 @@
+{
+  "image": "ruins_cables.png",
+  "cell": [20, 20],
+  "origin": [10, 19],
+  "anims": {
+    "on": { "row": 0, "frames": 2, "fps": 8 },
+    "off": { "row": 1, "frames": 1 }
+  }
+}

@@ -9,6 +9,8 @@ namespace nundertale {
 struct LoreCard {
     std::string imagePath;
     std::vector<std::string> lines;
+    // ART-041: 200x110 panel drawn at 2x; the legacy 1x BMP above is the fallback
+    std::string panelPath;
 };
 
 class LoreScene : public IScene {
@@ -38,6 +40,10 @@ private:
     int m_card10Frame = 0;
     float m_card10Timer = 0.0f;
     static constexpr int CARD10_TOTAL_FRAMES = 271;
+
+    // True when every card has its new panel: the legacy lore10 frames would clash with it,
+    // so the intro cuts to the title after card 10 instead
+    bool m_usePanels = false;
 };
 
 } // namespace nundertale

@@ -118,12 +118,15 @@ private:
 
     void drawBackgroundGrid() const;
     void drawSoul(float x, float y, Color color = SOUL_RED) const;
+    void drawSoul(GameContext& context, float x, float y, Color color = SOUL_RED) const;
     void drawHUD(GameContext& context, Font font) const;
     void drawButtons(GameContext& context, Font font) const;
     void spawnDust(Vector2 center, int count, Color col);
     void updateDust(float dt);
     void drawDust() const;
     void drawAttackTarget() const;
+    void drawAttackTarget(GameContext& context) const;
+    void drawBullet(GameContext& context, const Bullet& b) const;
 
     std::unique_ptr<Enemy> m_enemy;
     BattleState m_state = BattleState::MenuSelect;
@@ -235,6 +238,9 @@ private:
     bool m_furTrembleTriggered = false;
     bool m_furVisibleAtStart = false;
     bool m_furStartChecked = false;
+
+    // Context reference during render for sub-draw helpers
+    mutable GameContext* m_currentContext = nullptr;
 };
 
 } // namespace nundertale

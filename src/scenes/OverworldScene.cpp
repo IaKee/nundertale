@@ -174,13 +174,29 @@ void OverworldScene::initInteractables(GameContext& context) {
                 });
                 m_dialogBox.startDialog(lines, "BARKY");
             },
-            [npcBounds](GameContext& /*ctx*/) {
-                const float x = npcBounds.x;
-                const float y = npcBounds.y;
-                DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 150, 140, 255 });
-                DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 130, 110, 255 });
-                DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 130, 110, 255 });
-                DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 80, 70, 255 });
+            [npcBounds](GameContext& ctx) {
+                const SpriteSheetDef* barkySheet = spriteSheetCache().load(
+                    "assets/sprites/ow/barky.png",
+                    "assets/sprites/ow/barky.json"
+                );
+                if (barkySheet != nullptr) {
+                    Texture2D barkyTexture = ctx.resources.getTexture("assets/sprites/ow/barky.png");
+                    SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
+                    drawSprite(
+                        barkyTexture,
+                        *barkySheet,
+                        "stand_down",
+                        0.0f,
+                        { npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height }
+                    );
+                } else {
+                    const float x = npcBounds.x;
+                    const float y = npcBounds.y;
+                    DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 150, 140, 255 });
+                    DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 130, 110, 255 });
+                    DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 130, 110, 255 });
+                    DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 80, 70, 255 });
+                }
             }
         );
         m_interactables.push_back(std::move(npc));
@@ -217,13 +233,29 @@ void OverworldScene::initInteractables(GameContext& context) {
                     "* Step through the north doorway if you dare face my fursona!"
                 }, "BARKY");
             },
-            [npcBounds](GameContext& /*ctx*/) {
-                const float x = npcBounds.x;
-                const float y = npcBounds.y;
-                DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 120, 140, 255 });
-                DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 90, 110, 255 });
-                DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 90, 110, 255 });
-                DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 50, 70, 255 });
+            [npcBounds](GameContext& ctx) {
+                const SpriteSheetDef* barkySheet = spriteSheetCache().load(
+                    "assets/sprites/ow/barky.png",
+                    "assets/sprites/ow/barky.json"
+                );
+                if (barkySheet != nullptr) {
+                    Texture2D barkyTexture = ctx.resources.getTexture("assets/sprites/ow/barky.png");
+                    SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
+                    drawSprite(
+                        barkyTexture,
+                        *barkySheet,
+                        "stand_down",
+                        0.0f,
+                        { npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height }
+                    );
+                } else {
+                    const float x = npcBounds.x;
+                    const float y = npcBounds.y;
+                    DrawCircle(static_cast<int>(x) + 20, static_cast<int>(y) + 15, 16, { 120, 120, 140, 255 });
+                    DrawTriangle({ x + 8.0f, y + 5.0f }, { x + 16.0f, y + 5.0f }, { x + 12.0f, y - 10.0f }, { 90, 90, 110, 255 });
+                    DrawTriangle({ x + 24.0f, y + 5.0f }, { x + 32.0f, y + 5.0f }, { x + 28.0f, y - 10.0f }, { 90, 90, 110, 255 });
+                    DrawRectangle(static_cast<int>(x) + 6, static_cast<int>(y) + 30, 28, 25, { 50, 50, 70, 255 });
+                }
             }
         );
         m_interactables.push_back(std::move(npc));
@@ -308,14 +340,32 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }
             }
         },
-        [bowlBounds](GameContext& /*ctx*/) {
-            const int x = static_cast<int>(bowlBounds.x);
-            const int y = static_cast<int>(bowlBounds.y);
-            const int width = static_cast<int>(bowlBounds.width);
-            const int height = static_cast<int>(bowlBounds.height);
-            DrawRectangle(x + 5, y + 5, width - 10, height - 10, { 50, 120, 50, 255 });
-            DrawRectangleLines(x + 5, y + 5, width - 10, height - 10, WHITE);
-            DrawText("DEW", x + 8, y + 8, 12, COLOR_UNDERTALE_YELLOW);
+        [bowlBounds](GameContext& ctx) {
+            const SpriteSheetDef* bowlSheet = spriteSheetCache().load(
+                "assets/props/ruins_dorito_bowl.png",
+                "assets/props/ruins_dorito_bowl.json"
+            );
+            if (bowlSheet != nullptr) {
+                const int takenCount = ctx.state.getFlag("ruins.dew.taken", 0);
+                const std::string animation = takenCount >= 4 ? "knocked" : "full";
+                Texture2D bowlTexture = ctx.resources.getTexture("assets/props/ruins_dorito_bowl.png");
+                SetTextureFilter(bowlTexture, TEXTURE_FILTER_POINT);
+                drawSprite(
+                    bowlTexture,
+                    *bowlSheet,
+                    animation,
+                    0.0f,
+                    { bowlBounds.x + bowlBounds.width * 0.5f, bowlBounds.y + bowlBounds.height }
+                );
+            } else {
+                const int x = static_cast<int>(bowlBounds.x);
+                const int y = static_cast<int>(bowlBounds.y);
+                const int width = static_cast<int>(bowlBounds.width);
+                const int height = static_cast<int>(bowlBounds.height);
+                DrawRectangle(x + 5, y + 5, width - 10, height - 10, { 50, 120, 50, 255 });
+                DrawRectangleLines(x + 5, y + 5, width - 10, height - 10, WHITE);
+                DrawText("DEW", x + 8, y + 8, 12, COLOR_UNDERTALE_YELLOW);
+            }
         }
     );
     m_interactables.push_back(std::move(snackBowl));

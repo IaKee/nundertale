@@ -42,6 +42,9 @@ Barra de HP (amarelo `#FFFF00` sobre vermelho `#FF0000`), overlay roxo do FUR e 
 | :--- | :--- |
 | Branco | `#FFFFFF` |
 | Preto | `#000000` |
+| HP | `#FFFF00` |
+| HP perdido | `#FF0000` |
+| Overlay FUR | `#B04CFF` |
 
 ## 5. Referência atual
 
@@ -73,9 +76,9 @@ Attached: the spec file E11_ui_hud.md (full details) and these images, in order:
 - image 3: reference for HP bar size only
 Draw a new image; never copy the reference images.
 
-Tiny pixel art game element in the style of Undertale, crisp hard pixels, no anti-aliasing, no gradients, flat colors, high contrast, isolated on a solid flat #FF00FF magenta background, no watermark. Pixel art HUD pieces on black: a short horizontal HP bar segment in yellow #FFFF00, the same segment in red #FF0000, a purple overlay segment, and the small label "FUR" in chunky white pixel letters.
+Tiny pixel art game element in the style of Undertale, crisp hard pixels, no anti-aliasing, no gradients, flat colors, high contrast, isolated on a solid flat #FF00FF magenta background, no watermark. Pixel art HUD pieces on black: a short horizontal HP bar segment in yellow #FFFF00, the same segment in red #FF0000, a purple #B04CFF overlay segment, and the small label "FUR" in chunky white pixel letters.
 
-Use only these colors: #FFFFFF (Branco), #000000 (Preto).
+Use only these colors: #FFFFFF (Branco), #000000 (Preto), #FFFF00 (HP), #FF0000 (HP perdido), #B04CFF (Overlay FUR).
 Output: one image with aspect ratio 60:10, on a flat, exact #FF00FF magenta background with no noise.
 Avoid: blurry, anti-aliased, soft shading, smooth gradient, 3D render, realistic, photo, painterly, noisy texture, random dithering, jpeg artifacts, watermark, signature, brand logo, real person, real face, child proportions, baby face, nsfw, suggestive, cropped, cut off, inconsistent sizes between frames.
 ```
