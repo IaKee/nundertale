@@ -8,6 +8,7 @@
 #include <cctype>
 #include <functional>
 #include <raylib.h>
+#include "EnemyPatterns.hpp"
 
 namespace nundertale {
 
@@ -88,6 +89,7 @@ struct ActDef {
     std::string response;
     bool spareable = false;
     bool skipAttack = false;
+    bool flees = false;
     int mercy = 0;
     std::string requiresItem;
     int requiresFurMin = 0;
@@ -100,6 +102,7 @@ struct ActDef {
     std::string repeatResponse; // enemy line from the 2nd use on, "" = reuse response
     int fur = 0;                // FUR added when the effect applies (ACT-005 Accept Hug)
     bool spareNow = false;      // spares on the spot, without MERCY (ACT-005)
+    std::string setFlag;
 };
 
 // Text and enemy line for the Nth use of an ACT (1-based).
@@ -137,12 +140,16 @@ public:
     Enemy(const std::string& name, int maxHp, int atk, int def);
 
     std::string getName() const { return m_name; }
+    const std::string& getId() const { return m_id; }
+    const std::string& getSprite() const { return m_sprite; }
     int getHp() const { return m_hp; }
     int getMaxHp() const { return m_maxHp; }
     int getAtk() const { return m_atk; }
     int getDef() const { return m_def; }
     int getExp() const { return m_exp; }
     int getGold() const { return m_gold; }
+    const std::string& getSpareText() const { return m_spareText; }
+    const std::string& getDeathText() const { return m_deathText; }
     int getMercy() const { return m_mercy; }
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
@@ -164,6 +171,7 @@ public:
         return it != m_patternFur.end() ? it->second : fallback;
     }
     int getHowlFur(int fallback) const { return m_howlFur >= 0 ? m_howlFur : fallback; }
+    const std::vector<EnemyPatternDef>& getPatterns() const { return m_patterns; }
 
     const std::vector<ActDef>& getActs() const { return m_acts; }
     void setActs(const std::vector<ActDef>& acts) { m_acts = acts; }
@@ -201,6 +209,8 @@ private:
     void initDefaultDialogues();
 
     std::string m_name;
+    std::string m_id = "barky";
+    std::string m_sprite = "barky";
     int m_maxHp;
     int m_hp;
     int m_atk;
@@ -216,6 +226,9 @@ private:
     std::vector<ActDef> m_acts;
     std::unordered_map<std::string, int> m_patternFur;
     int m_howlFur = -1;
+    std::vector<EnemyPatternDef> m_patterns;
+    std::string m_spareText = "You can tell no one about the zipper. Pack secret.";
+    std::string m_deathText = "* Only a pile of synthetic wolf fur remains.";
 
     // Flavor pools (BFL-002)
     std::vector<std::string> m_defaultFlavor;

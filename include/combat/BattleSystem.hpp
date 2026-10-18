@@ -82,7 +82,9 @@ inline bool ribbitVisible(const RibbitState& s) {
 
 class BattleSystem {
 public:
-    explicit BattleSystem(std::unique_ptr<Enemy> enemy);
+    explicit BattleSystem(std::unique_ptr<Enemy> enemy,
+                          std::string introText = {},
+                          bool canFlee = false);
 
     void update(float dt, GameContext& context);
     void render(GameContext& context);
@@ -114,6 +116,7 @@ private:
     void startEnemyTurn(GameContext& context);
     void updateEnemyTurn(float dt, GameContext& context);
     void spawnBulletWave();
+    void spawnGenericBulletWave(const EnemyPatternDef& pattern);
     bool applySoulDamage(GameContext& context, int rawDamage, int fur);
 
     void drawBackgroundGrid() const;
@@ -133,6 +136,9 @@ private:
     MainButton m_selectedButton = MainButton::Fight;
     int m_subOptionIndex = 0;
     bool m_isSpared = false;
+    bool m_enemyFledPending = false;
+    bool m_isBarky = true;
+    bool m_canFlee = false;
     int m_turnCount = 0;
 
     // Heart inside dodge box
@@ -161,6 +167,8 @@ private:
     bool m_howlUnlocked = false;
     bool m_howlFromLeft = true;
     float m_howlWallTimer = 0.0f;
+    std::size_t m_genericPatternIndex = 0;
+    int m_patternSpawnCount = 0;
 
     // Messages
     std::string m_narratorText;

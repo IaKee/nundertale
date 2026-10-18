@@ -1,0 +1,8 @@
+{
+  "id": "froggsona",
+  "enemies": ["froggsona"],
+  "introText": "* Froggsona hopped close!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

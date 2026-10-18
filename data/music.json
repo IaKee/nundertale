@@ -14,6 +14,12 @@
   "overworld.ruins_entrance": {
     "path": "assets/music/epic_background_loop.ogg"
   },
+  "overworld.ruins_fall": {
+    "path": "assets/music/epic_background_loop.ogg"
+  },
+  "overworld.ruins_barky": {
+    "path": "assets/music/epic_background_loop.ogg"
+  },
   "battle.default": {
     "path": "assets/music/epic_background_loop.ogg"
   },

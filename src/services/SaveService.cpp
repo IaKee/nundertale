@@ -132,8 +132,16 @@ MetaData SaveService::getMeta() const {
 }
 
 std::string SaveService::getRoomDisplayName(const std::string& roomId) const {
-    if (roomId == "ruins_entrance" || roomId.empty()) {
+    if (roomId == "ruins_fall" || roomId.empty()) {
+        return "Ruins - Fall Room";
+    } else if (roomId == "ruins_floofy") {
+        return "Ruins - Flower Bed";
+    } else if (roomId == "ruins_entrance") {
         return "Ruins - Entrance";
+    } else if (roomId == "ruins_notices") {
+        return "Ruins - Notice Hall";
+    } else if (roomId == "ruins_barky") {
+        return "Ruins - Barky's Arena";
     } else if (roomId == "ruins_hall") {
         return "Ruins - Leaf Pile";
     } else if (roomId == "ruins_furiell") {

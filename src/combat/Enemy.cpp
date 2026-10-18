@@ -1,8 +1,10 @@
 #include "combat/Enemy.hpp"
 #include "core/FurTable.hpp"
+#include "core/TiledMap.hpp"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 namespace nundertale {
 
@@ -247,134 +249,168 @@ void Enemy::initDefaultDialogues() {
     };
 }
 
-// Helper functions for lightweight JSON parsing
-static std::string unescapeJson(const std::string& raw) {
-    std::string out;
-    out.reserve(raw.size());
-    for (size_t i = 0; i < raw.size(); ++i) {
-        if (raw[i] == '\\' && i + 1 < raw.size()) {
-            char n = raw[++i];
-            out += (n == 'n') ? '\n' : n;
-        } else {
-            out += raw[i];
-        }
-    }
-    return out;
+namespace {
+
+using JsonValue = tiled_detail::JsonValue;
+
+const JsonValue* objectField(const JsonValue& object, const char* key, JsonValue::Kind kind) {
+    const JsonValue* value = object.field(key);
+    return value != nullptr && value->kind == kind ? value : nullptr;
 }
 
-static std::string extractJsonString(const std::string& json, const std::string& key) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return "";
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    if (pos >= json.size() || json[pos] != '\"') return "";
-    pos++;
-    size_t end = pos;
-    while (end < json.size() && !(json[end] == '\"' && json[end - 1] != '\\')) end++;
-    if (end >= json.size()) return "";
-    return unescapeJson(json.substr(pos, end - pos));
+std::string stringValue(const JsonValue& object, const char* key, const std::string& fallback = {}) {
+    const JsonValue* value = objectField(object, key, JsonValue::Kind::String);
+    return value == nullptr ? fallback : value->string;
 }
 
-static int extractJsonInt(const std::string& json, const std::string& key, int defaultVal = 0) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return defaultVal;
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    size_t end = pos;
-    while (end < json.size() && (std::isdigit(json[end]) || json[end] == '-')) end++;
-    if (end > pos) {
-        try {
-            return std::stoi(json.substr(pos, end - pos));
-        } catch (...) {}
-    }
-    return defaultVal;
+int intValue(const JsonValue& object, const char* key, int fallback) {
+    const JsonValue* value = objectField(object, key, JsonValue::Kind::Number);
+    int parsed = fallback;
+    return value != nullptr && tiled_detail::toInt(value->number, parsed) ? parsed : fallback;
 }
 
-static std::vector<std::string> extractStringArray(const std::string& json, const std::string& key) {
+float floatValue(const JsonValue& object, const char* key, float fallback) {
+    const JsonValue* value = objectField(object, key, JsonValue::Kind::Number);
+    return value == nullptr ? fallback : static_cast<float>(value->number);
+}
+
+bool boolValue(const JsonValue& object, const char* key, bool fallback = false) {
+    const JsonValue* value = objectField(object, key, JsonValue::Kind::Boolean);
+    return value == nullptr ? fallback : value->boolean;
+}
+
+std::vector<std::string> stringArray(const JsonValue& object, const char* key) {
     std::vector<std::string> result;
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return result;
-    size_t openBracket = json.find('[', pos);
-    if (openBracket == std::string::npos) return result;
-    size_t closeBracket = json.find(']', openBracket);
-    if (closeBracket == std::string::npos) return result;
-
-    std::string slice = json.substr(openBracket + 1, closeBracket - openBracket - 1);
-    size_t cur = 0;
-    while (cur < slice.size()) {
-        size_t q1 = slice.find('\"', cur);
-        if (q1 == std::string::npos) break;
-        size_t q2 = slice.find('\"', q1 + 1);
-        if (q2 == std::string::npos) break;
-        result.push_back(unescapeJson(slice.substr(q1 + 1, q2 - q1 - 1)));
-        cur = q2 + 1;
+    const JsonValue* values = objectField(object, key, JsonValue::Kind::Array);
+    if (values == nullptr) return result;
+    for (const JsonValue& value : values->array) {
+        if (value.kind == JsonValue::Kind::String) result.push_back(value.string);
     }
     return result;
 }
 
+ActDef parseAct(const JsonValue& value) {
+    ActDef act;
+    act.id = stringValue(value, "id");
+    act.label = stringValue(value, "label", act.id);
+    act.text = stringValue(value, "text");
+    act.response = stringValue(value, "response");
+    act.repeatText = stringValue(value, "repeatText");
+    act.repeatResponse = stringValue(value, "repeatResponse");
+    act.requiresItem = stringValue(value, "requiresItem");
+    act.requiresFlag = stringValue(value, "requiresFlag");
+    act.requiresFurMin = intValue(value, "requiresFurMin", 0);
+    act.minUses = intValue(value, "minUses", 1);
+
+    const JsonValue* effects = objectField(value, "effects", JsonValue::Kind::Object);
+    if (effects != nullptr) {
+        act.spareable = boolValue(*effects, "spareable");
+        act.skipAttack = boolValue(*effects, "skipAttack");
+        act.flees = boolValue(*effects, "flees");
+        act.spareNow = boolValue(*effects, "spareNow");
+        act.mercy = intValue(*effects, "mercy", 0);
+        act.fur = intValue(*effects, "fur", 0);
+        act.atkDelta = intValue(*effects, "atkDelta", 0);
+        act.defDelta = intValue(*effects, "defDelta", 0);
+        act.freezeTurns = intValue(*effects, "freezeTurns", 0);
+        act.setFlag = stringValue(*effects, "setFlag");
+    }
+    return act;
+}
+
+EnemyPatternDef parsePattern(const JsonValue& value) {
+    EnemyPatternDef pattern;
+    pattern.id = stringValue(value, "id");
+    pattern.kind = enemyPatternKindFromString(stringValue(value, "kind"));
+    pattern.weight = intValue(value, "weight", 1);
+    const JsonValue* params = objectField(value, "params", JsonValue::Kind::Object);
+    if (params != nullptr) {
+        pattern.count = intValue(*params, "count", 1);
+        pattern.speed = floatValue(*params, "speed", 100.0f);
+        pattern.damage = intValue(*params, "damage", 1);
+        pattern.furry = intValue(*params, "furry", intValue(*params, "fur", 0));
+        pattern.text = stringValue(*params, "text");
+    }
+    return pattern;
+}
+
+} // namespace
+
 std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
-        // Fallback to default Barky
+        std::clog << "Could not load enemy JSON '" << filepath << "'; using Barky fallback.\n";
         return std::make_unique<Enemy>("Barky", 30, 4, 2);
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-    std::string json = buffer.str();
+    JsonValue root;
+    if (!tiled_detail::JsonParser(buffer.str()).parse(root) || root.kind != JsonValue::Kind::Object) {
+        std::clog << "Invalid enemy JSON '" << filepath << "'; using Barky fallback.\n";
+        return std::make_unique<Enemy>("Barky", 30, 4, 2);
+    }
 
-    std::string name = extractJsonString(json, "name");
-    if (name.empty()) name = "Barky";
-    int hp = extractJsonInt(json, "hp", 30);
-    int maxHp = extractJsonInt(json, "maxHp", hp);
-    int atk = extractJsonInt(json, "atk", 4);
-    int def = extractJsonInt(json, "def", 2);
+    const std::string name = stringValue(root, "name", "Barky");
+    const int hp = intValue(root, "hp", 30);
+    const int maxHp = intValue(root, "maxHp", hp);
+    const int atk = intValue(root, "atk", 4);
+    const int def = intValue(root, "def", 2);
 
     auto enemy = std::make_unique<Enemy>(name, maxHp, atk, def);
-    enemy->m_exp = extractJsonInt(json, "exp", 20);
-    enemy->m_gold = extractJsonInt(json, "gold", 10);
-    enemy->setMercyLockedAbovePct(extractJsonInt(json, "mercyLockedAbovePct", 0));
-    const int missingPatternFur = -1;
-    const int uwuFur = patternFurFromJson(json, "uwu_rain", missingPatternFur);
-    const int dewFur = patternFurFromJson(json, "dew_bounce", missingPatternFur);
-    if (uwuFur >= 0) enemy->m_patternFur["uwu_rain"] = uwuFur;
-    if (dewFur >= 0) enemy->m_patternFur["dew_bounce"] = dewFur;
-    enemy->m_howlFur = howlFurFromJson(json, missingPatternFur);
+    enemy->m_id = stringValue(root, "id", "barky");
+    enemy->m_sprite = stringValue(root, "sprite", enemy->m_id);
+    enemy->m_exp = intValue(root, "exp", 20);
+    enemy->m_gold = intValue(root, "gold", 10);
+    enemy->m_spareText = stringValue(root, "spareText", enemy->m_spareText);
+    enemy->m_deathText = stringValue(root, "deathText", enemy->m_deathText);
+    enemy->setMercyLockedAbovePct(intValue(root, "mercyLockedAbovePct", 0));
+    enemy->m_howlFur = intValue(root, "howlFur", -1);
 
-    std::string checkStr = extractJsonString(json, "check");
-    if (!checkStr.empty()) {
-        enemy->setCheckFlavor(checkStr);
-    }
+    const std::string check = stringValue(root, "check");
+    if (!check.empty()) enemy->m_checkFlavor = check;
 
-    // Extract flavor pools (BFL-002)
-    size_t flavorPos = json.find("\"flavor\":");
-    if (flavorPos != std::string::npos) {
-        size_t flavorEnd = json.find('}', json.find('{', flavorPos));
-        if (flavorEnd != std::string::npos) {
-            std::string flavorSlice = json.substr(flavorPos, flavorEnd - flavorPos + 1);
-            std::vector<std::string> defFlavors = extractStringArray(flavorSlice, "default");
-            std::vector<std::string> lowHpFlavors = extractStringArray(flavorSlice, "lowHp");
-            std::vector<std::string> spareFlavors = extractStringArray(flavorSlice, "spareable");
-            if (!defFlavors.empty()) enemy->m_defaultFlavor = defFlavors;
-            if (!lowHpFlavors.empty()) enemy->m_lowHpFlavor = lowHpFlavors;
-            if (!spareFlavors.empty()) enemy->m_spareableFlavor = spareFlavors;
+    if (const JsonValue* acts = objectField(root, "acts", JsonValue::Kind::Array)) {
+        enemy->m_acts.clear();
+        for (const JsonValue& rawAct : acts->array) {
+            if (rawAct.kind != JsonValue::Kind::Object) continue;
+            ActDef act = parseAct(rawAct);
+            if (!act.id.empty()) enemy->m_acts.push_back(std::move(act));
         }
     }
 
-    // Extract dialogue pools (BFL-003)
-    size_t diagPos = json.find("\"dialogue\":");
-    if (diagPos != std::string::npos) {
-        size_t diagEnd = json.find('}', json.find('{', diagPos));
-        if (diagEnd != std::string::npos) {
-            std::string diagSlice = json.substr(diagPos, diagEnd - diagPos + 1);
-            std::vector<std::string> defDiags = extractStringArray(diagSlice, "default");
-            std::vector<std::string> hitDiags = extractStringArray(diagSlice, "afterHit");
-            if (!defDiags.empty()) enemy->m_dialoguesDefault = defDiags;
-            if (!hitDiags.empty()) enemy->m_dialoguesAfterHit = hitDiags;
+    if (const JsonValue* patterns = objectField(root, "patterns", JsonValue::Kind::Array)) {
+        enemy->m_patterns.clear();
+        enemy->m_patternFur.clear();
+        for (const JsonValue& rawPattern : patterns->array) {
+            if (rawPattern.kind != JsonValue::Kind::Object) continue;
+            EnemyPatternDef pattern = parsePattern(rawPattern);
+            if (pattern.id.empty()) continue;
+            enemy->m_patternFur[pattern.id] = pattern.furry;
+            enemy->m_patterns.push_back(std::move(pattern));
         }
+    }
+
+    if (const JsonValue* flavor = objectField(root, "flavor", JsonValue::Kind::Object)) {
+        const std::vector<std::string> defaults = stringArray(*flavor, "default");
+        const std::vector<std::string> lowHp = stringArray(*flavor, "lowHp");
+        const std::vector<std::string> spareable = stringArray(*flavor, "spareable");
+        if (!defaults.empty()) enemy->m_defaultFlavor = defaults;
+        if (!lowHp.empty()) enemy->m_lowHpFlavor = lowHp;
+        if (!spareable.empty()) enemy->m_spareableFlavor = spareable;
+    }
+
+    if (const JsonValue* dialogue = objectField(root, "dialogue", JsonValue::Kind::Object)) {
+        const std::vector<std::string> defaults = stringArray(*dialogue, "default");
+        const std::vector<std::string> afterHit = stringArray(*dialogue, "afterHit");
+        const std::vector<std::string> crit = stringArray(*dialogue, "crit");
+        const std::vector<std::string> miss = stringArray(*dialogue, "miss");
+        const std::vector<std::string> item = stringArray(*dialogue, "item");
+        if (!defaults.empty()) enemy->m_dialoguesDefault = defaults;
+        if (!afterHit.empty()) enemy->m_dialoguesAfterHit = afterHit;
+        if (!crit.empty()) enemy->m_dialoguesCrit = crit;
+        if (!miss.empty()) enemy->m_dialoguesMiss = miss;
+        if (!item.empty()) enemy->m_dialoguesItem = item;
     }
 
     return enemy;

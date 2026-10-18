@@ -1,0 +1,43 @@
+{
+  "steps": [
+    {
+      "type": "playerAnim",
+      "path": "assets/sprites/ow/pepe_wakeup.png",
+      "key": "lying",
+      "seconds": 1.2
+    },
+    {
+      "type": "playerAnim",
+      "path": "assets/sprites/ow/pepe_wakeup.png",
+      "key": "get_up",
+      "seconds": 0.75
+    },
+    {
+      "type": "playerAnim",
+      "path": "",
+      "key": "",
+      "seconds": 0.0
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* (Ugh... where's my wireless mouse? And why does it smell like body spray and wet dog?)"
+      ]
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/type_long.ogg",
+      "volume": 0.8
+    },
+    {
+      "type": "shake",
+      "intensity": 3.0,
+      "seconds": 0.35
+    },
+    {
+      "type": "wait",
+      "seconds": 0.2
+    }
+  ]
+}

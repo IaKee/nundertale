@@ -6,8 +6,11 @@
 namespace nundertale {
 
 inline std::string savePlaceLine(const std::string& roomId) {
-    if (roomId == "ruins_entrance" || roomId.empty()) {
+    if (roomId == "ruins_fall" || roomId.empty()) {
         return "* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.";
+    }
+    if (roomId == "ruins_entrance") {
+        return "* The distant hum of dial-up internet fills you with DETERMINATION.";
     }
     if (roomId == "ruins_hall") {
         return "* The distant hum of dial-up internet fills you with DETERMINATION.";

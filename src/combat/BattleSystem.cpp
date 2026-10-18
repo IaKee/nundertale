@@ -6,13 +6,19 @@
 #include <cmath>
 #include <algorithm>
 #include <sstream>
+#include <cstdint>
 
 namespace nundertale {
 
-BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy)
+BattleSystem::BattleSystem(std::unique_ptr<Enemy> enemy, std::string introText, bool canFlee)
     : m_enemy(std::move(enemy)) {
-    m_narratorText = "* " + m_enemy->getName() + " blocked your path!";
     if (m_enemy) {
+        m_isBarky = m_enemy->getId() == "barky";
+        // Barky's pre-existing battle allowed Flee despite its encounter data saying false.
+        m_canFlee = canFlee || m_isBarky;
+        m_narratorText = introText.empty()
+            ? "* " + m_enemy->getName() + " blocked your path!"
+            : std::move(introText);
         m_enemyVisualHp = static_cast<float>(m_enemy->getHp());
     }
 }
@@ -123,25 +129,43 @@ void BattleSystem::update(float dt, GameContext& context) {
                 if (m_dialogReturnsToMenu) {
                     m_dialogReturnsToMenu = false;
                     m_state = BattleState::MenuSelect;
+                } else if (m_enemyFledPending) {
+                    m_enemyFledPending = false;
+                    m_state = BattleState::Fled;
+                    m_residual.clear();
                 } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
                     m_state = BattleState::Victory;
                     m_residual.clear();
                     if (m_isSpared) {
-                        context.player.gold += 10;
-                        context.state.setFlag("ruins.barky.spared", 1);
-                        context.state.setFlag("ruins.barky.state", 1);
+                        const int gold = m_isBarky ? 10 : m_enemy->getGold();
+                        context.player.gold += gold;
+                        if (m_isBarky) {
+                            context.state.setFlag("ruins.barky.spared", 1);
+                            context.state.setFlag("ruins.barky.state", 1);
+                        } else {
+                            context.state.incFlag("battle." + m_enemy->getId() + ".spared");
+                        }
                         context.state.sparesTotal += 1;
-                        m_narratorText = "* YOU WON!\n* You earned 0 EXP and 10 gold.";
+                        m_narratorText = "* YOU WON!\n* You earned 0 EXP and " +
+                            std::to_string(gold) + " gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
                     } else {
-                        context.player.exp += 20;
-                        context.player.gold += 15;
-                        context.state.setFlag("ruins.barky.killed", 1);
-                        context.state.setFlag("ruins.barky.state", 2);
+                        const int exp = m_isBarky ? 20 : m_enemy->getExp();
+                        const int gold = m_isBarky ? 15 : m_enemy->getGold();
+                        context.player.exp += exp;
+                        context.player.gold += gold;
+                        if (m_isBarky) {
+                            context.state.setFlag("ruins.barky.killed", 1);
+                            context.state.setFlag("ruins.barky.state", 2);
+                        } else {
+                            context.state.incFlag("battle." + m_enemy->getId() + ".killed");
+                            context.state.incFlag("kills.ruins");
+                        }
                         context.state.killsTotal += 1;
                         sessionOnKill(context.session);
                         context.state.killsByArea["ruins"] += 1;
-                        m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";
+                        m_narratorText = "* YOU WON!\n* You earned " + std::to_string(exp) +
+                            " EXP and " + std::to_string(gold) + " gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
 
                         // Check level up (PRG-001, BUG-16)
@@ -300,7 +324,7 @@ void BattleSystem::handleFightTargetInput(float dt, GameContext& context) {
                 }
 
                 if (m_enemy->isDead()) {
-                    m_narratorText += "\n* Only a pile of synthetic wolf fur remains."; // LORE §19.1
+                    m_narratorText += "\n" + m_enemy->getDeathText();
                     spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, WHITE);
                 }
 
@@ -409,6 +433,10 @@ void BattleSystem::handleActInput(GameContext& context) {
                 m_isSpared = true;
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
             }
+            if (applies && act.flees) {
+                m_enemyFledPending = true;
+                m_enemySpeechBubble.clear();
+            }
             if (applies) {
                 m_enemy->addMercy(act.mercy);
                 if (act.spareable) {
@@ -416,7 +444,8 @@ void BattleSystem::handleActInput(GameContext& context) {
                 }
                 m_enemy->modifyAtk(act.atkDelta);
                 m_enemy->modifyDef(act.defDelta);
-                m_frozenTurns += std::max(0, act.freezeTurns);
+                m_frozenTurns += std::max(0, act.freezeTurns) + (act.skipAttack ? 1 : 0);
+                if (!act.setFlag.empty()) context.state.setFlag(act.setFlag, 1);
             }
             // BUI-012: optional ding the moment the name turns yellow (placeholder SFX until AUD-011)
             if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {
@@ -554,7 +583,7 @@ void BattleSystem::handleItemInput(GameContext& context) {
 }
 
 void BattleSystem::handleMercyInput(GameContext& context) {
-    if (context.input.isUpPressed() || context.input.isDownPressed()) {
+    if (m_canFlee && (context.input.isUpPressed() || context.input.isDownPressed())) {
         m_subOptionIndex = 1 - m_subOptionIndex;
         context.audio.playSound("assets/sfx/menu_move.wav", 0.4f);
     }
@@ -565,7 +594,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
             if (m_enemy->isSpareable()) {
                 m_isSpared = true;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".";
-                m_enemySpeechBubble = "You can tell no one about the zipper. Pack secret."; // LORE §19.1
+                m_enemySpeechBubble = m_enemy->getSpareText();
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/menu_select.wav", 1.0f);
             } else {
@@ -573,7 +602,7 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_narratorText = "* You spared " + m_enemy->getName() + ".\n* But their name wasn't yellow...";
             }
             m_state = BattleState::DialogMessage;
-        } else { // Flee (MRC-002)
+        } else if (m_canFlee) { // Flee (MRC-002)
             float fleeChance = 0.5f + 0.1f * static_cast<float>(m_turnCount);
             bool success = (GetRandomValue(1, 100) <= static_cast<int>(fleeChance * 100.0f));
             if (success) {
@@ -584,7 +613,9 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_fleeTimer = 0.0f;
                 context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
             } else {
-                m_narratorText = "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!";
+                m_narratorText = m_isBarky
+                    ? "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!"
+                    : "* Couldn't run away!\n* " + m_enemy->getName() + " blocked your escape!";
                 m_state = BattleState::DialogMessage;
             }
         }
@@ -618,12 +649,28 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     m_bullets.clear();
     m_zones.clear();
     m_ribbitState = RibbitState{};
-    const auto cringeUses = m_actUseCounts.find("cringe_check");
-    const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
-    const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
-    m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
-    m_howlUnlocked = howlUnlocked;
-    m_howlWallTimer = 1000.0f; // first wall of a turn spawns immediately (BHL-014 tuning)
+    m_patternSpawnCount = 0;
+    if (m_isBarky) {
+        const auto cringeUses = m_actUseCounts.find("cringe_check");
+        const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
+        const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
+        m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
+        m_howlUnlocked = howlUnlocked;
+        m_howlWallTimer = 1000.0f; // first wall of a turn spawns immediately (BHL-014 tuning)
+    } else {
+        const auto& patterns = m_enemy->getPatterns();
+        if (patterns.empty()) {
+            m_narratorText = m_enemy->getFlavorText(m_lastActionDetail);
+            m_enemySpeechBubble.clear();
+            m_lastPlayerAction = PlayerTurnAction::None;
+            m_lastActResponse.clear();
+            m_state = BattleState::MenuSelect;
+            return;
+        }
+        const std::uint32_t randomValue = static_cast<std::uint32_t>(GetRandomValue(0, 1000000));
+        m_genericPatternIndex = pickWeightedPatternIndex(patterns, randomValue);
+        if (m_genericPatternIndex >= patterns.size()) m_genericPatternIndex = 0;
+    }
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
 
@@ -640,7 +687,7 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     }
 
     const bool hasQueuedActResponse = !m_lastActResponse.empty();
-    const std::string furReaction = furReactionLine(context.state.furry.value, "barky");
+    const std::string furReaction = furReactionLine(context.state.furry.value, m_enemy->getId());
     if (!m_furReactionSaid && !hasQueuedActResponse && !furReaction.empty()) {
         m_enemySpeechBubble = furReaction;
         m_furReactionSaid = true;
@@ -763,7 +810,8 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 
     // Spawn bullets
     m_spawnTimer += dt;
-    if (m_spawnTimer >= 0.38f) {
+    const float spawnInterval = m_isBarky ? 0.38f : 0.72f;
+    if (m_spawnTimer >= spawnInterval) {
         m_spawnTimer = 0.0f;
         spawnBulletWave();
     }
@@ -772,6 +820,20 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
     Rectangle soulHitbox = { m_soulPosition.x - 4, m_soulPosition.y - 4, 8, 8 };
 
     for (size_t i = 0; i < m_bullets.size(); ) {
+        if (m_bullets[i].homes) {
+            const float dx = m_soulPosition.x - m_bullets[i].position.x;
+            const float dy = m_soulPosition.y - m_bullets[i].position.y;
+            const float length = std::sqrt(dx * dx + dy * dy);
+            if (length > 0.01f) {
+                const float nx = dx / length;
+                const float ny = dy / length;
+                const float wobble = std::sin((m_bullets[i].age + dt) * 8.0f) * m_bullets[i].jitter;
+                m_bullets[i].velocity = {
+                    nx * m_bullets[i].homingSpeed - ny * wobble,
+                    ny * m_bullets[i].homingSpeed + nx * wobble
+                };
+            }
+        }
         m_bullets[i].update(dt, &m_arenaRect);
 
         if (m_bullets[i].isOutOfBounds(m_arenaRect, 40.0f)) {
@@ -816,6 +878,12 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 }
 
 void BattleSystem::spawnBulletWave() {
+    if (!m_isBarky) {
+        const auto& patterns = m_enemy->getPatterns();
+        if (m_genericPatternIndex < patterns.size()) spawnGenericBulletWave(patterns[m_genericPatternIndex]);
+        return;
+    }
+
     if (m_barkyPattern == BarkyPattern::UwuRain) {
         // Pattern 1: UwU Rain (BHL-014: falling letters with slight zigzag)
         float startX = m_arenaRect.x + (float)GetRandomValue(15, (int)m_arenaRect.width - 25);
@@ -882,6 +950,107 @@ void BattleSystem::spawnBulletWave() {
         m_howlFromLeft = !m_howlFromLeft;
         m_howlWallTimer = 0.0f;
     }
+}
+
+void BattleSystem::spawnGenericBulletWave(const EnemyPatternDef& pattern) {
+    const int maxCount = std::max(1, pattern.count);
+    if (m_patternSpawnCount >= maxCount) return;
+
+    const auto finishBullet = [&pattern](Bullet& bullet) {
+        bullet.damage = std::max(1, pattern.damage);
+        bullet.fur = std::max(0, pattern.furry);
+        if (!pattern.text.empty()) {
+            bullet.type = BulletType::UwU;
+            bullet.text = pattern.text;
+        }
+    };
+
+    if (pattern.kind == EnemyPatternKind::Rain) {
+        Bullet bullet;
+        bullet.position = {
+            m_arenaRect.x + static_cast<float>(GetRandomValue(18, static_cast<int>(m_arenaRect.width) - 18)),
+            m_arenaRect.y - 12.0f
+        };
+        bullet.velocity = {
+            static_cast<float>(GetRandomValue(-12, 12)),
+            std::max(35.0f, pattern.speed)
+        };
+        bullet.color = Color{ 230, 230, 255, 255 };
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.kind == EnemyPatternKind::Hop) {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(45.0f, pattern.speed);
+        Bullet bullet;
+        bullet.position = {
+            fromLeft ? m_arenaRect.x - 14.0f : m_arenaRect.x + m_arenaRect.width + 14.0f,
+            m_arenaRect.y + m_arenaRect.height - 18.0f
+        };
+        bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+        bullet.parabolic = true;
+        bullet.originY = bullet.position.y;
+        bullet.arcHeight = 48.0f;
+        bullet.flightDuration = (m_arenaRect.width + 28.0f) / speed;
+        bullet.color = Color{ 120, 255, 150, 255 };
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.kind == EnemyPatternKind::Swarm) {
+        Bullet bullet;
+        const int side = GetRandomValue(0, 2);
+        if (side == 0) {
+            bullet.position = {
+                m_arenaRect.x + static_cast<float>(GetRandomValue(14, static_cast<int>(m_arenaRect.width) - 14)),
+                m_arenaRect.y - 10.0f
+            };
+        } else {
+            bullet.position = {
+                side == 1 ? m_arenaRect.x - 10.0f : m_arenaRect.x + m_arenaRect.width + 10.0f,
+                m_arenaRect.y + static_cast<float>(GetRandomValue(14, static_cast<int>(m_arenaRect.height) - 14))
+            };
+        }
+        bullet.homes = true;
+        bullet.homingSpeed = std::max(25.0f, pattern.speed);
+        bullet.jitter = 13.0f;
+        bullet.radius = 4.0f;
+        bullet.color = Color{ 225, 225, 150, 255 };
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    } else if (pattern.kind == EnemyPatternKind::Wall) {
+        const bool fromLeft = (m_patternSpawnCount % 2) == 0;
+        const float speed = std::max(55.0f, pattern.speed);
+        const float gapHeight = 58.0f;
+        const float top = m_arenaRect.y + 15.0f;
+        const float bottom = m_arenaRect.y + m_arenaRect.height - 15.0f;
+        const float gapTop = static_cast<float>(GetRandomValue(
+            static_cast<int>(top), static_cast<int>(bottom - gapHeight)));
+        const float startX = fromLeft ? m_arenaRect.x - 8.0f : m_arenaRect.x + m_arenaRect.width + 8.0f;
+        for (float y = top; y <= bottom; y += 16.0f) {
+            if (y >= gapTop && y <= gapTop + gapHeight) continue;
+            Bullet bullet;
+            bullet.position = { startX, y };
+            bullet.velocity = { fromLeft ? speed : -speed, 0.0f };
+            bullet.radius = 5.0f;
+            bullet.color = Color{ 170, 200, 255, 255 };
+            finishBullet(bullet);
+            m_bullets.push_back(std::move(bullet));
+        }
+    } else if (pattern.kind == EnemyPatternKind::Bounce) {
+        Bullet bullet;
+        bullet.position = {
+            m_arenaRect.x + static_cast<float>(GetRandomValue(18, static_cast<int>(m_arenaRect.width) - 18)),
+            m_arenaRect.y - 10.0f
+        };
+        const int horizontal = GetRandomValue(-static_cast<int>(pattern.speed), static_cast<int>(pattern.speed));
+        bullet.velocity = { static_cast<float>(horizontal), 35.0f };
+        bullet.gravity = 125.0f;
+        bullet.bounces = true;
+        bullet.radius = 7.0f;
+        bullet.color = Color{ 180, 120, 230, 255 };
+        finishBullet(bullet);
+        m_bullets.push_back(std::move(bullet));
+    }
+
+    ++m_patternSpawnCount;
 }
 
 void BattleSystem::drawBackgroundGrid() const {
@@ -1317,35 +1486,34 @@ void BattleSystem::render(GameContext& context) {
     }
 
     if (shouldDrawEnemy) {
-        const SpriteSheetDef* barkySheet = nullptr;
-        if (m_enemy->getName() == "Barky") {
-            barkySheet = spriteSheetCache().load(
-                "assets/sprites/battle/barky.png",
-                "assets/sprites/battle/barky.json"
-            );
-        }
+        const std::string spriteBase = "assets/sprites/battle/" + m_enemy->getSprite();
+        const std::string spritePng = spriteBase + ".png";
+        const std::string spriteJson = spriteBase + ".json";
+        const SpriteSheetDef* enemySheet = spriteSheetCache().load(spritePng, spriteJson);
+        Texture2D enemyTexture = { 0, 0, 0, 0, 0 };
+        if (enemySheet != nullptr) enemyTexture = context.resources.getTexture(spritePng);
 
-        if (barkySheet != nullptr) {
+        if (enemySheet != nullptr && enemyTexture.id > 0) {
             std::string animation = "idle";
             Color tint = WHITE;
             if (m_isSpared) {
-                animation = "spared";
+                if (enemySheet->anims.find("spared") != enemySheet->anims.end()) animation = "spared";
                 tint.a = 120;
-            } else if (m_enemyShakeTimer > 0.0f) {
+            } else if (m_enemyShakeTimer > 0.0f &&
+                       enemySheet->anims.find("hurt") != enemySheet->anims.end()) {
                 animation = "hurt";
-            } else {
+            } else if (m_isBarky) {
                 const auto cringeUses = m_actUseCounts.find("cringe_check");
                 if (cringeUses != m_actUseCounts.end() && cringeUses->second > 0 &&
-                    barkySheet->anims.find("blush") != barkySheet->anims.end()) {
+                    enemySheet->anims.find("blush") != enemySheet->anims.end()) {
                     animation = "blush";
                 }
             }
 
-            Texture2D barkyTexture = context.resources.getTexture("assets/sprites/battle/barky.png");
-            SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
+            SetTextureFilter(enemyTexture, TEXTURE_FILTER_POINT);
             drawSprite(
-                barkyTexture,
-                *barkySheet,
+                enemyTexture,
+                *enemySheet,
                 animation,
                 m_enemyIdleTimer,
                 { static_cast<float>(enemyCenterX), static_cast<float>(baselineY) },
@@ -1599,10 +1767,12 @@ void BattleSystem::render(GameContext& context) {
         float fleeY = m_arenaRect.y + 55;
 
         if (m_subOptionIndex == 0) drawSoul(m_arenaRect.x + 35, spareY + 10, SOUL_RED);
-        if (m_subOptionIndex == 1) drawSoul(m_arenaRect.x + 35, fleeY + 10, SOUL_RED);
+        if (m_canFlee && m_subOptionIndex == 1) drawSoul(m_arenaRect.x + 35, fleeY + 10, SOUL_RED);
 
         context.resources.drawText(font8Bit, "* Spare", { m_arenaRect.x + 55, spareY }, 20, spareColor, 1.0f);
-        context.resources.drawText(font8Bit, "* Flee",  { m_arenaRect.x + 55, fleeY },  20, WHITE, 1.0f);
+        if (m_canFlee) {
+            context.resources.drawText(font8Bit, "* Flee", { m_arenaRect.x + 55, fleeY }, 20, WHITE, 1.0f);
+        }
     } else {
         // Narrator message with word wrapping and hanging indent (BUG-09, TXT-002)
         float startX = m_arenaRect.x + 25.0f;

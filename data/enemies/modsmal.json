@@ -1,0 +1,54 @@
+{
+  "id": "modsmal",
+  "name": "Modsmal",
+  "hp": 50,
+  "maxHp": 50,
+  "atk": 1,
+  "def": 0,
+  "exp": 3,
+  "gold": 3,
+  "sprite": "modsmal",
+  "check": "A gelatinous moderator of the NSFW channel. Wobbles. Enforces. Sometimes.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "imitate",
+      "label": "Imitate",
+      "text": "* You wobble with strict but inconsistent authority.",
+      "effects": { "spareable": true }
+    },
+    {
+      "id": "flirt",
+      "label": "Flirt",
+      "text": "* You say \"nice ban hammer\". Rule 7 bends a little.",
+      "effects": { "spareable": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Modsmal wobbles into your personal space.",
+      "* Modsmal checks the pinned rules.",
+      "* Modsmal considers a temporary ban."
+    ],
+    "lowHp": ["* Modsmal is losing moderation cohesion."],
+    "spareable": ["* Modsmal lowers the ban hammer."]
+  },
+  "dialogue": {
+    "default": ["*squorch* (Read the pins.)", "*squelch* (Tag your art.)"]
+  },
+  "patterns": [
+    {
+      "id": "ban_gel",
+      "kind": "bounce",
+      "weight": 1,
+      "params": { "count": 2, "speed": 75, "damage": 1, "furry": 2 }
+    }
+  ],
+  "spareText": "*squorch* (Read the pins.)",
+  "deathText": "* Modsmal dissolves into an unmoderated puddle."
+}

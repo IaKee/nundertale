@@ -8,12 +8,15 @@
 #include "services/InputService.hpp"
 #include "services/SaveService.hpp"
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace nundertale {
 
 class Game {
 public:
-    Game();
+    Game(int argc, char** argv);
     ~Game();
 
     void run();
@@ -30,6 +33,16 @@ private:
 
     RenderTexture2D m_virtualTarget{};
     std::unique_ptr<GameContext> m_context;
+
+#ifdef NUNDERTALE_DEBUG
+    bool m_debugLaunch = false;
+    std::string m_debugRoom;
+    std::string m_debugSpawn;
+    std::vector<std::pair<std::string, int>> m_debugFlags;
+    std::string m_debugShotPath;
+    int m_debugShotFrames = 20;
+    int m_debugTicks = 0;
+#endif
 };
 
 } // namespace nundertale

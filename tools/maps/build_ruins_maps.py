@@ -1,0 +1,1225 @@
+#!/usr/bin/env python3
+"""build_ruins_maps.py - Author the first Ruins rooms for nUndertale (T2).
+
+Generates Tiled JSON maps (40x40 px tiles, 2x from 20x20 ruins tileset):
+  - data/maps/ruins_fall.json     (R1 The Fall Room)
+  - data/maps/ruins_floofy.json   (R2 Floofy)
+  - data/maps/ruins_entrance.json (R3 Ruins Entrance)
+  - data/maps/ruins_notices.json  (R8 Notices, CRT, Art Show)
+  - data/maps/ruins_barky.json    (R9 Barky's Arena, legacyBarky: true)
+"""
+
+import json
+import os
+import sys
+
+# Tileset mapping for assets/tiles/ruins.png (160x160 px, 8 columns x 8 rows, firstgid=1)
+# gid = 1 + row * 8 + col
+TILE_CHARS = {
+    # Void / empty
+    ' ': 8,   # black void
+    '#': 8,   # black void
+    '0': 0,   # transparent / empty
+
+    # Stone floor (row 0)
+    '.': 1,   # stone A
+    ',': 2,   # stone B
+    ';': 3,   # stone C
+    ':': 4,   # cracked floor
+    '*': 5,   # glitter decal
+    'w': 6,   # wrapper decal
+    'c': 7,   # crumbs decal
+
+    # Carpet (rows 1 & 2)
+    '7': 9,   # carpet TL
+    '8': 10,  # carpet top
+    '9': 11,  # carpet TR
+    '4': 12,  # carpet left
+    '5': 13,  # carpet center
+    '6': 14,  # carpet right
+    'z': 15,  # carpet worn
+    'x': 16,  # carpet stain
+    '1': 17,  # carpet BL
+    '2': 18,  # carpet bottom
+    '3': 19,  # carpet BR
+    't': 20,  # tape decal
+    'm': 21,  # welcome mat
+    'p': 22,  # paw print decal
+
+    # Walls (rows 3 & 4)
+    '[': 25,  # wall top L
+    '=': 26,  # wall top M
+    ']': 27,  # wall top R
+    '{': 28,  # wall front L
+    '-': 29,  # wall front M
+    '}': 30,  # wall front R
+    'k': 31,  # cracked front
+    'v': 32,  # front w/ vent
+    '<': 33,  # inner corner L
+    '>': 34,  # inner corner R
+    '(': 35,  # outer corner L
+    ')': 36,  # outer corner R
+    'h': 37,  # banner hook
+    'o': 38,  # outlet+cable
+    '_': 39,  # wall-base shadow
+    '/': 40,  # dark wall
+
+    # Stairs (row 5)
+    'Q': 41,  # stairs top L
+    'W': 42,  # stairs top M
+    'E': 43,  # stairs top R
+    'A': 44,  # stairs mid L
+    'S': 45,  # stairs mid M
+    'D': 46,  # stairs mid R
+    'Z': 47,  # stairs base L
+    'X': 48,  # stairs base R
+
+    # Doors & Arches (row 6)
+    'u': 49,  # door closed top
+    'j': 50,  # door closed bottom
+    'n': 51,  # door open top
+    'N': 52,  # door open bottom
+    'L': 53,  # arch TL
+    'R': 54,  # arch TR
+    'l': 55,  # arch BL
+    'r': 56,  # arch BR
+
+    # Pillars, light beams & details (row 7)
+    'T': 57,  # pillar top
+    'I': 58,  # pillar mid
+    'B': 59,  # pillar base
+    'G': 60,  # neon sign
+    'Y': 61,  # light beam top
+    'y': 62,  # light beam base
+    '~': 63,  # ledge edge
+}
+
+ABOVE_CHARS = {
+    ' ': 0,
+    '.': 0,
+    '0': 0,
+    'Y': 61,  # light beam top
+    'y': 62,  # light beam base
+    'L': 53,  # arch TL
+    'R': 54,  # arch TR
+    'T': 57,  # pillar top
+}
+
+
+def parse_grid(lines, char_map, width, height):
+    """Parse list of string rows into a 1D list of GIDs."""
+    if len(lines) != height:
+        raise ValueError(f"Grid height {len(lines)} != expected {height}")
+    data = []
+    for r, line in enumerate(lines):
+        if len(line) != width:
+            raise ValueError(f"Grid line {r} width {len(line)} != expected {width}: '{line}'")
+        for c, ch in enumerate(line):
+            if ch not in char_map:
+                raise KeyError(f"Unknown tile char '{ch}' at row {r}, col {c}")
+            data.append(char_map[ch])
+    return data
+
+
+def make_tiled_map(
+    room_id,
+    display_name,
+    width,
+    height,
+    ground_grid,
+    collision_boxes,
+    objects,
+    above_grid=None,
+    music="overworld.default",
+    save_place=None,
+    legacy_barky=False,
+    background_image=None,
+    tile_size=40,
+):
+    """Build a complete Tiled JSON map dict."""
+    layers = []
+    layer_id = 1
+    next_obj_id = 1
+
+    # Optional background image layer (legacy barky)
+    if background_image:
+        layers.append({
+            "id": layer_id,
+            "image": background_image,
+            "name": "background",
+            "offsetx": 0,
+            "offsety": 0,
+            "opacity": 1,
+            "type": "imagelayer",
+            "visible": True,
+            "x": 0,
+            "y": 0,
+        })
+        layer_id += 1
+
+    # Ground tile layer
+    ground_data = parse_grid(ground_grid, TILE_CHARS, width, height)
+    layers.append({
+        "data": ground_data,
+        "height": height,
+        "id": layer_id,
+        "name": "ground",
+        "opacity": 1,
+        "type": "tilelayer",
+        "visible": True,
+        "width": width,
+        "x": 0,
+        "y": 0,
+    })
+    layer_id += 1
+
+    # Collision layer
+    collision_objs = []
+    for c in collision_boxes:
+        collision_objs.append({
+            "height": c["h"],
+            "id": next_obj_id,
+            "name": c.get("name", f"col_{next_obj_id}"),
+            "rotation": 0,
+            "type": "collision",
+            "visible": True,
+            "width": c["w"],
+            "x": c["x"],
+            "y": c["y"],
+        })
+        next_obj_id += 1
+
+    layers.append({
+        "draworder": "topdown",
+        "id": layer_id,
+        "name": "collision",
+        "objects": collision_objs,
+        "opacity": 1,
+        "type": "objectgroup",
+        "visible": True,
+        "x": 0,
+        "y": 0,
+    })
+    layer_id += 1
+
+    # Objects layer
+    tiled_objs = []
+    for obj in objects:
+        tiled_obj = {
+            "height": obj.get("h", 0),
+            "id": next_obj_id,
+            "name": obj.get("name", ""),
+            "rotation": 0,
+            "type": obj.get("type", ""),
+            "visible": True,
+            "width": obj.get("w", 0),
+            "x": obj.get("x", 0),
+            "y": obj.get("y", 0),
+        }
+        if obj.get("point", False):
+            tiled_obj["point"] = True
+
+        props = []
+        for prop_name, prop_val in obj.get("properties", {}).items():
+            if isinstance(prop_val, bool):
+                prop_type = "bool"
+            elif isinstance(prop_val, int):
+                prop_type = "int"
+            elif isinstance(prop_val, float):
+                prop_type = "float"
+            else:
+                prop_type = "string"
+            props.append({
+                "name": prop_name,
+                "type": prop_type,
+                "value": prop_val,
+            })
+        if props:
+            tiled_obj["properties"] = props
+
+        tiled_objs.append(tiled_obj)
+        next_obj_id += 1
+
+    layers.append({
+        "draworder": "topdown",
+        "id": layer_id,
+        "name": "objects",
+        "objects": tiled_objs,
+        "opacity": 1,
+        "type": "objectgroup",
+        "visible": True,
+        "x": 0,
+        "y": 0,
+    })
+    layer_id += 1
+
+    # Optional above layer
+    if above_grid:
+        above_data = parse_grid(above_grid, ABOVE_CHARS, width, height)
+        layers.append({
+            "data": above_data,
+            "height": height,
+            "id": layer_id,
+            "name": "above",
+            "opacity": 1,
+            "properties": [
+                {"name": "above", "type": "bool", "value": True}
+            ],
+            "type": "tilelayer",
+            "visible": True,
+            "width": width,
+            "x": 0,
+            "y": 0,
+        })
+        layer_id += 1
+
+    # Map-level properties
+    map_properties = [
+        {"name": "displayName", "type": "string", "value": display_name},
+        {"name": "music", "type": "string", "value": music},
+    ]
+    if save_place:
+        map_properties.append({"name": "savePlace", "type": "string", "value": save_place})
+    if legacy_barky:
+        map_properties.insert(0, {"name": "legacyBarky", "type": "bool", "value": True})
+
+    tilesets = [
+        {
+            "columns": 8,
+            "firstgid": 1,
+            "image": "assets/tiles/ruins.png",
+            "imageheight": 160,
+            "imagewidth": 160,
+            "name": "ruins",
+            "tilecount": 64,
+            "tileheight": 20,
+            "tilewidth": 20,
+        }
+    ]
+
+    tiled_map = {
+        "compressionlevel": -1,
+        "height": height,
+        "infinite": False,
+        "layers": layers,
+        "nextlayerid": layer_id,
+        "nextobjectid": next_obj_id,
+        "orientation": "orthogonal",
+        "properties": map_properties,
+        "renderorder": "right-down",
+        "tiledversion": "1.11.2",
+        "tileheight": tile_size,
+        "tilesets": tilesets,
+        "tilewidth": tile_size,
+        "type": "map",
+        "version": "1.10",
+        "width": width,
+    }
+    return tiled_map
+
+
+# =============================================================================
+# Room R1: The Fall Room (ruins_fall)
+# Size: 16x12 tiles (640x480 px).
+# Dark, small room. Pepe wakes up on a snack wrapper bed under a light beam.
+# Examinable can, save point, door north to Floofy.
+# =============================================================================
+def build_ruins_fall():
+    width = 16
+    height = 12
+
+    ground = [
+        "################",
+        "#[====]  [====]#",
+        "#{-v-k}  {---o}#",
+        "#.,;,..,;,..,;.#",
+        "#;..,*...,;,..;#",
+        "#.,;,....,;,..;#",
+        "#;,..,,.,;,..,.#",
+        "#..;,..,;,..w,;#",
+        "#;,..,.p..,;,..#",
+        "#.,;,..,;,..,;.#",
+        "#______________#",
+        "################",
+    ]
+
+    above = [
+        "................",
+        "................",
+        ".......LR.......",
+        "................",
+        "................",
+        ".......YY.......",
+        ".......yy.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 120, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 0, "y": 420, "w": 640, "h": 60, "name": "bottom_wall"},
+    ]
+
+    objects = [
+        # Default spawn & R1 wake position
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 240,
+            "properties": {"facing": "up"},
+        },
+        # Spawn when coming back from Floofy
+        {
+            "name": "from_floofy",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door north -> ruins_floofy
+        {
+            "name": "door_to_floofy",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_floofy",
+                "targetSpawn": "from_fall",
+            },
+        },
+        # Bed of snack wrappers under the beam
+        {
+            "name": "wrapper_bed",
+            "type": "prop",
+            "x": 280,
+            "y": 230,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_wrapper_pile.png",
+                "anim": "bed",
+                "solid": False,
+                "lines": "* A bed of ancient snack wrappers.\n* History smells like cheese dust.",
+            },
+        },
+        # Save point star
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 180,
+            "y": 320,
+        },
+        # Examinable can decal on floor (col 12, row 7 -> x: 480, y: 280)
+        {
+            "name": "can_decal",
+            "type": "examine",
+            "x": 480,
+            "y": 280,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* Citrus Blast, 2014 edition. A vintage.",
+            },
+        },
+        # Wake-up cutscene trigger (covers spawn on the bed)
+        {
+            "name": "trigger_wake",
+            "type": "trigger",
+            "x": 270,
+            "y": 210,
+            "w": 100,
+            "h": 90,
+            "properties": {
+                "cutscene": "r1_wake",
+                "once": "ruins.r1.woke",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_fall",
+        display_name="Ruins - Fall Room",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+        save_place="* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.",
+    )
+
+
+# =============================================================================
+# Room R2: Floofy (ruins_floofy)
+# Size: 16x18 tiles (640x720 px).
+# Taller corridor with convention carpet. Floofy in the center.
+# Trigger across the path, cutscene r2_floofy, Furiell arrives.
+# =============================================================================
+def build_ruins_floofy():
+    width = 16
+    height = 18
+
+    ground = [
+        "################",
+        "###[==]  [==]###",
+        "###{-v}  {-k}###",
+        "###.;.7889.,.###",
+        "###.,.4556.;.###",
+        "###;.,4556.,.###",
+        "###.,*45z6.;.###",
+        "###;.,4556.w.###",
+        "###.,.4556.,.###",
+        "###;.,4x56.;.###",
+        "###.,t4556.,.###",
+        "###;.,4556.,.###",
+        "###.,.4556.;.###",
+        "###;.,4556.p.###",
+        "###.,.4556.,.###",
+        "###;..1223.;.###",
+        "###___    ___###",
+        "######    ######",
+    ]
+
+    above = [
+        "................",
+        "................",
+        "......LR........",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 280, "h": 120, "name": "top_wall_left"},
+        {"x": 360, "y": 0, "w": 280, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 120, "h": 720, "name": "left_void"},
+        {"x": 520, "y": 0, "w": 120, "h": 720, "name": "right_void"},
+        {"x": 0, "y": 640, "w": 280, "h": 80, "name": "bottom_wall_left"},
+        {"x": 360, "y": 640, "w": 280, "h": 80, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # Default spawn & spawn from fall room
+        {
+            "name": "from_fall",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 620,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 620,
+            "properties": {"facing": "up"},
+        },
+        # Spawn when entering from entrance room (north)
+        {
+            "name": "from_entrance",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_fall
+        {
+            "name": "door_to_fall",
+            "type": "door",
+            "x": 280,
+            "y": 680,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_fall",
+                "targetSpawn": "from_floofy",
+            },
+        },
+        # Door north forward to ruins_entrance
+        {
+            "name": "door_to_entrance",
+            "type": "door",
+            "x": 280,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_entrance",
+                "targetSpawn": "from_floofy",
+            },
+        },
+        # Floofy NPC (disappears when met)
+        {
+            "name": "floofy",
+            "type": "npc",
+            "x": 300,
+            "y": 340,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/sprites/ow/floofy.png",
+                "anim": "idle",
+                "hideIf": "ruins.floofy.met >= 1",
+                "solid": True,
+            },
+        },
+        # Encounter trigger across corridor
+        {
+            "name": "trigger_floofy",
+            "type": "trigger",
+            "x": 120,
+            "y": 420,
+            "w": 400,
+            "h": 40,
+            "properties": {
+                "cutscene": "r2_floofy",
+                "once": "ruins.floofy.met.seen",
+            },
+        },
+        # Furiell NPC after cutscene, stands near north exit
+        {
+            "name": "furiell",
+            "type": "npc",
+            "x": 220,
+            "y": 130,
+            "w": 64,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_down",
+                "showIf": "ruins.floofy.met >= 1",
+                "speaker": "FURIELL",
+                "lines": "Welcome to your new home, my child. ...Do you like blankets? I have forty.",
+                "solid": True,
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_floofy",
+        display_name="Ruins - Flower Bed",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
+# Room R3: Ruins Entrance (ruins_entrance)
+# Size: 22x14 tiles (880x560 px).
+# Iconic double staircase up to a landing doorway. Banners, Dorito pile, savepoint.
+# Furiell intro trigger & cutscene r3_furiell.
+# =============================================================================
+def build_ruins_entrance():
+    width = 22
+    height = 14
+
+    ground = [
+        "######################",
+        "#[=======]  [=======]#",
+        "#{-v---k-}  {---o---}#",
+        "#.,.,.QE......QE.,.,.#",
+        "#;.,..AD[====]AD..;,;#",
+        "#.,;..ZX{-hh-}ZX.,;,;#",
+        "#;.,...,______,..;,..#",
+        "#.,.7888888888889.;..#",
+        "#;.,4555555555556.,;.#",
+        "#.,.1222222222223.;..#",
+        "#;.,...,;,..,;,..;.,.#",
+        "#.,;,..,;,..,;,..,;,;#",
+        "#_________  _________#",
+        "##########  ##########",
+    ]
+
+    above = [
+        "......................",
+        "..........LR..........",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+        "......................",
+    ]
+
+    collision = [
+        # Top walls flanking doorway
+        {"x": 0, "y": 0, "w": 400, "h": 120, "name": "top_wall_left"},
+        {"x": 480, "y": 0, "w": 400, "h": 120, "name": "top_wall_right"},
+        # Side voids
+        {"x": 0, "y": 0, "w": 40, "h": 560, "name": "left_void"},
+        {"x": 840, "y": 0, "w": 40, "h": 560, "name": "right_void"},
+        # Bottom walls flanking doorway south
+        {"x": 0, "y": 480, "w": 400, "h": 80, "name": "bottom_wall_left"},
+        {"x": 480, "y": 480, "w": 400, "h": 80, "name": "bottom_wall_right"},
+        # Central wall between the double stairs
+        {"x": 320, "y": 160, "w": 240, "h": 80, "name": "central_wall"},
+    ]
+
+    objects = [
+        # South spawn (from Floofy) & default
+        {
+            "name": "from_floofy",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
+        # North spawn (from Notices)
+        {
+            "name": "from_notices",
+            "type": "spawn",
+            "point": True,
+            "x": 420,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_floofy
+        {
+            "name": "door_to_floofy",
+            "type": "door",
+            "x": 400,
+            "y": 520,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_floofy",
+                "targetSpawn": "from_entrance",
+            },
+        },
+        # Door north forward to ruins_notices
+        {
+            "name": "door_to_notices",
+            "type": "door",
+            "x": 400,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_notices",
+                "targetSpawn": "from_entrance",
+            },
+        },
+        # Welcome Banner on central wall
+        {
+            "name": "banner_welcome",
+            "type": "prop",
+            "x": 380,
+            "y": 155,
+            "w": 120,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_banner_welcome.png",
+                "solid": False,
+                "lines": "* \"FurNation Con '14 - Welcome!\"",
+            },
+        },
+        # Deodorant Banner below Welcome banner on central wall
+        {
+            "name": "banner_deodorant",
+            "type": "prop",
+            "x": 380,
+            "y": 215,
+            "w": 120,
+            "h": 32,
+            "properties": {
+                "sprite": "assets/props/ruins_banner_deodorant.png",
+                "solid": False,
+                "lines": "* \"Deodorant is NOT optional.\"",
+            },
+        },
+        # Dorito bag pile prop on the lower floor
+        {
+            "name": "dorito_pile",
+            "type": "prop",
+            "x": 220,
+            "y": 380,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_wrapper_pile.png",
+                "anim": "pile",
+                "solid": False,
+                "lines": "* A pile of Dorito bags. *crunch*",
+            },
+        },
+        # Savepoint star
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 300,
+            "y": 380,
+        },
+        # Furiell intro trigger near entrance
+        {
+            "name": "trigger_furiell",
+            "type": "trigger",
+            "x": 360,
+            "y": 440,
+            "w": 160,
+            "h": 40,
+            "properties": {
+                "cutscene": "r3_furiell",
+                "once": "ruins.furiell.r3",
+            },
+        },
+        # Furiell NPC after intro cutscene
+        {
+            "name": "furiell_entrance",
+            "type": "npc",
+            "x": 520,
+            "y": 350,
+            "w": 64,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "anim": "stand_down",
+                "showIf": "ruins.furiell.r3 >= 1",
+                "speaker": "FURIELL",
+                "lines": "The surface is full of cruel people with cameras. Down here, nobody will ever laugh at you.||You can always accept a hug. It is the fastest way to make friends.",
+                "solid": True,
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_entrance",
+        display_name="Ruins - Entrance",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.ruins_entrance",
+        save_place="* The distant hum of dial-up internet fills you with DETERMINATION.",
+    )
+
+
+# =============================================================================
+# Room R8: Notices, CRT and Art Show (ruins_notices)
+# Size: 20x14 tiles (800x560 px).
+# Notice board, flickering CRT with hidden laser pointer, Art Show booth and 18+ curtain.
+# =============================================================================
+def build_ruins_notices():
+    width = 20
+    height = 14
+
+    ground = [
+        "####################",
+        "#[======]  [======]#",
+        "#{--v-k-}  {---o--}#",
+        "#.,;,..,.788889.,;.#",
+        "#;.,..,.c455556.,..#",
+        "#.,;,..,.455556;.w.#",
+        "#;.,..,;.455556.,;.#",
+        "#.,;,..*.455556;.,.#",
+        "#;.,..,.p455556.,;.#",
+        "#.,;,..,.122223;.,.#",
+        "#;.,..,;,..,;,..;.,#",
+        "#.,;,..,;,..,;,..,;#",
+        "#________  ________#",
+        "#########  #########",
+    ]
+
+    above = [
+        "....................",
+        ".........LR.........",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 360, "h": 120, "name": "top_wall_left"},
+        {"x": 440, "y": 0, "w": 360, "h": 120, "name": "top_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 560, "name": "left_void"},
+        {"x": 760, "y": 0, "w": 40, "h": 560, "name": "right_void"},
+        {"x": 0, "y": 480, "w": 360, "h": 80, "name": "bottom_wall_left"},
+        {"x": 440, "y": 480, "w": 360, "h": 80, "name": "bottom_wall_right"},
+    ]
+
+    objects = [
+        # South spawn (from entrance) & default
+        {
+            "name": "from_entrance",
+            "type": "spawn",
+            "point": True,
+            "x": 380,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 380,
+            "y": 460,
+            "properties": {"facing": "up"},
+        },
+        # North spawn (from Barky's arena)
+        {
+            "name": "from_barky",
+            "type": "spawn",
+            "point": True,
+            "x": 380,
+            "y": 140,
+            "properties": {"facing": "down"},
+        },
+        # Door south back to ruins_entrance
+        {
+            "name": "door_to_entrance",
+            "type": "door",
+            "x": 360,
+            "y": 520,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_entrance",
+                "targetSpawn": "from_notices",
+            },
+        },
+        # Door north forward to ruins_barky
+        {
+            "name": "door_to_barky",
+            "type": "door",
+            "x": 360,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_barky",
+                "targetSpawn": "from_notices",
+            },
+        },
+        # Notice board on the west wall
+        {
+            "name": "notice_board",
+            "type": "prop",
+            "x": 140,
+            "y": 90,
+            "w": 80,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_notice_board.png",
+                "solid": True,
+                "lines": "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.",
+            },
+        },
+        # CRT Monitor with BSOD (anim flicker)
+        {
+            "name": "crt_monitor",
+            "type": "prop",
+            "x": 220,
+            "y": 240,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "sprite": "assets/props/ruins_crt.png",
+                "anim": "flicker",
+                "solid": True,
+                "lines": "* A blue screen of death. The error message is in Comic Sans.",
+            },
+        },
+        # Item pickup behind CRT: Toy Laser Pointer
+        {
+            "name": "laser_pickup",
+            "type": "itemPickup",
+            "x": 240,
+            "y": 210,
+            "w": 40,
+            "h": 20,
+            "properties": {
+                "item": "Toy Laser Pointer",
+                "flag": "ruins.laser.taken",
+                "lines": "* You found a Toy Laser Pointer behind the CRT.",
+                "emptyLines": "* Just dust bunnies. Synthetic ones.",
+            },
+        },
+        # Art Show 18+ curtain on the north-east wall
+        {
+            "name": "curtain_18",
+            "type": "prop",
+            "x": 600,
+            "y": 60,
+            "w": 80,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_curtain_18.png",
+                "solid": True,
+                "counter": "ruins.curtain.looks",
+                "lines": "* You decide to respect the curtain.",
+                "lines2": "* You respect the curtain. For a while.",
+                "lines3": "* (...No.)",
+            },
+        },
+        # Art Show booth / bid sheet table
+        {
+            "name": "art_show_booth",
+            "type": "prop",
+            "x": 520,
+            "y": 220,
+            "w": 120,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_booth.png",
+                "solid": True,
+                "lines": "* A bid sheet. Highest bid: 400G. For a drawing of a \"very tired raccoon\". You don't ask.",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_notices",
+        display_name="Ruins - Notice Hall",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
+# =============================================================================
+# Room R9: Barky's Arena (ruins_barky)
+# Size: 16x12 tiles (640x480 px).
+# Keeps legacyBarky: true, preserves all named legacy objects:
+# sign, dust, door, npc_barky, bowl, savepoint, from_notices, to_notices.
+# Adds ruins_lamp prop.
+# =============================================================================
+def build_ruins_barky():
+    # OVW-020: real tiles instead of the old test.bmp; the legacy objects keep their positions.
+    width = 16
+    height = 12
+
+    ground = [
+        "#[=====  =====]#",
+        "#{--v-}  {k--o}#",
+        "#.,;,..,;,..,;.#",
+        "#;..,*...,;,..;#",
+        "#;,I,..,;,..I,.#",
+        "#.,B..,;,..,B;.#",
+        "#;..,....,;,..;#",
+        "#.,;,....,;,..;#",
+        "#;,..,,.,;,..,.#",
+        "#..;,..,;,..c,;#",
+        "#;,..,.p..,;,..#",
+        "#######..#######",
+    ]
+
+    above = [
+        "................",
+        ".......LR.......",
+        "................",
+        "...T........T...",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 640, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 440, "w": 640, "h": 40, "name": "bottom_wall"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 600, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 120, "y": 160, "w": 40, "h": 80, "name": "left_pillar"},
+        {"x": 480, "y": 160, "w": 40, "h": 80, "name": "right_pillar"},
+    ]
+
+    objects = [
+        # Legacy objects
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 320,
+        },
+        {
+            "name": "sign",
+            "type": "interactable",
+            "x": 100,
+            "y": 70,
+            "w": 40,
+            "h": 30,
+        },
+        {
+            "name": "dust",
+            "type": "interactable",
+            "x": 490,
+            "y": 90,
+            "w": 40,
+            "h": 40,
+        },
+        {
+            "name": "door",
+            "type": "interactable",
+            "x": 280,
+            "y": 50,
+            "w": 80,
+            "h": 30,
+        },
+        {
+            "name": "npc_barky",
+            "type": "interactable",
+            "x": 490,
+            "y": 80,
+            "w": 40,
+            "h": 50,
+        },
+        {
+            "name": "bowl",
+            "type": "interactable",
+            "x": 200,
+            "y": 160,
+            "w": 40,
+            "h": 30,
+        },
+        {
+            "name": "savepoint",
+            "type": "savepoint",
+            "point": True,
+            "x": 320,
+            "y": 260,
+        },
+        {
+            "name": "from_notices",
+            "type": "spawn",
+            "point": True,
+            "x": 300,
+            "y": 370,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "to_notices",
+            "type": "door",
+            "x": 280,
+            "y": 410,
+            "w": 80,
+            "h": 30,
+            "properties": {
+                "targetRoom": "ruins_notices",
+                "targetSpawn": "from_barky",
+            },
+        },
+        # T2 addition: Lamp prop (Barky's natural enemy)
+        {
+            "name": "ruins_lamp",
+            "type": "prop",
+            "x": 530,
+            "y": 140,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_lamp.png",
+                "anim": "lit",
+                "solid": True,
+                "lines": "* Barky's natural enemy. Or his moon. He hasn't decided.",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_barky",
+        display_name="Ruins - Barky's Arena",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        above_grid=above,
+        collision_boxes=collision,
+        objects=objects,
+        legacy_barky=True,
+        tile_size=40,
+    )
+
+
+def main():
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    maps_dir = os.path.join(repo_root, "data", "maps")
+    os.makedirs(maps_dir, exist_ok=True)
+
+    builders = {
+        "ruins_fall.json": build_ruins_fall,
+        "ruins_floofy.json": build_ruins_floofy,
+        "ruins_entrance.json": build_ruins_entrance,
+        "ruins_notices.json": build_ruins_notices,
+        "ruins_barky.json": build_ruins_barky,
+    }
+
+    print("Building Ruins maps...")
+    for filename, builder in builders.items():
+        filepath = os.path.join(maps_dir, filename)
+        map_data = builder()
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(map_data, f, indent=2)
+            f.write("\n")
+        print(f"  -> Wrote {filename} ({map_data['width']}x{map_data['height']} tiles)")
+    print("Done!")
+
+
+if __name__ == "__main__":
+    main()

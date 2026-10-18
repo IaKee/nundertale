@@ -6,6 +6,27 @@ namespace nundertale {
 Player::Player(Vector2 startPos)
     : m_position(startPos) {}
 
+void Player::setOverrideAnimation(const std::string& path, const std::string& key, float seconds) {
+    m_overridePath = path;
+    m_overrideKey = key;
+    m_overrideRemaining = seconds;
+    m_overrideAnimTimer = 0.0f;
+}
+
+void Player::updateOverrideAnimation(float dt) {
+    if (m_overridePath.empty()) return;
+    m_overrideAnimTimer += dt;
+    if (m_overrideRemaining > 0.0f) {
+        m_overrideRemaining -= dt;
+        if (m_overrideRemaining <= 0.0f) {
+            m_overridePath.clear();
+            m_overrideKey.clear();
+            m_overrideRemaining = 0.0f;
+            m_overrideAnimTimer = 0.0f;
+        }
+    }
+}
+
 void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& obstacles) {
     m_isMoving = (inputDir.x != 0.0f || inputDir.y != 0.0f);
 

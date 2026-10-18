@@ -56,8 +56,8 @@ struct GameState {
     FurryState furry;
     RaidClock raid;
     std::unordered_map<std::string, int> flags;
-    std::string currentRoom = "ruins_entrance";
-    Vector2 playerPos = { 320.0f, 240.0f };
+    std::string currentRoom = "ruins_fall";
+    Vector2 playerPos = { 0.0f, 0.0f };
     int playerFacing = 0; // 0: Down, 1: Up, 2: Left, 3: Right
     float playTime = 0.0f; // in seconds
     int killsTotal = 0;
@@ -114,6 +114,7 @@ struct GameContext {
     bool isRunning = true;
     bool debugHitboxes = false; // QA-002: F2 hitbox overlay toggle
     bool raidPaused = false;
+    std::string launchSpawn;
 
     // GFX-006: Screen Shake
     float shakeIntensity = 0.0f;
