@@ -8,7 +8,7 @@ Este guia define as diretrizes estritas de escrita e roteirização para o nUnde
 - **Prefixo Obrigatório:** Toda fala descritiva ou narrativa começa com `* ` (asterisco seguido de espaço).
 - **Segunda Pessoa ("You"):** As ações e percepções do jogador são narradas na segunda pessoa do singular:
   - *Correto:* `* You checked your inventory. The scent of citrus comforts you.`
-  - *Incorreto:* `Pepe checks his backpack.`
+  - *Incorreto:* `Grub checks his backpack.`
 - **Concisão e Ritmo:** Frases curtas e rítmicas. Máximo de 3 linhas por página na caixa de diálogo de batalha ou overworld.
 - **Linhas Quebradas e Recuo:** Em falas de múltiplas linhas com `* `, as linhas seguintes devem manter o alinhamento com a primeira letra após o asterisco (hanging indent).
 
@@ -38,7 +38,7 @@ Este guia define as diretrizes estritas de escrita e roteirização para o nUnde
 
 ## 4. Tipografia e Vozes por Personagem
 - **Narrador:** Fonte Main (`8bitoperator` / `Determination Mono`), som de clique suave (`snd_txt1`).
-- **Pepe:** Narrado na segunda pessoa; quando pensa consigo mesmo, texto entre parênteses `* (...)`.
+- **Grub:** Narrado na segunda pessoa; quando pensa consigo mesmo, texto entre parênteses `* (...)`.
 - **Barky:** Fonte Small / 8bit, som de latido/chiado agudo (`pipipipopopo`).
 - **Senpai Sans (Capítulo 2):** Fonte estilo Comic Sans, letras totalmente minúsculas, pausas expressivas.
 - **Papyrus Streamer (Capítulo 2):** Fonte em caixa alta estilo Papyrus, fala pomposa e cheia de maiúsculas.
