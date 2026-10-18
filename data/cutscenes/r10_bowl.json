@@ -1,0 +1,65 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* (The bowl is knocked over. Look at what you've done.)"
+      ],
+      "if": "ruins.bowl.broken >= 1"
+    },
+    {
+      "type": "giveItem",
+      "item": "Stale Doritos",
+      "lines": [
+        "* \"Take one Dorito.\"",
+        "* (You take one stale Dorito. Vintage cheese dust coats your fingers.)"
+      ],
+      "fullLines": [
+        "* \"Take one Dorito.\"",
+        "* (You try to take one, but you're carrying too much.)"
+      ],
+      "if": "ruins.bowl.takes == 1 && ruins.bowl.broken == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.bowl.taken",
+      "value": 1,
+      "if": "ruins.bowl.takes == 1 && ruins.bowl.broken == 0"
+    },
+    {
+      "type": "giveItem",
+      "item": "Stale Doritos",
+      "lines": [
+        "* (You take a second Dorito. How greedy.)"
+      ],
+      "fullLines": [
+        "* (You reach for another Dorito, but your inventory is full.)"
+      ],
+      "if": "ruins.bowl.takes == 2 && ruins.bowl.broken == 0"
+    },
+    {
+      "type": "giveItem",
+      "item": "Stale Doritos",
+      "lines": [
+        "* (You take a third Dorito. You feel like the scum of the earth.)"
+      ],
+      "fullLines": [
+        "* (You reach for another Dorito, but your inventory is full.)"
+      ],
+      "if": "ruins.bowl.takes == 3 && ruins.bowl.broken == 0"
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* You reach for one more. The bowl tips over."
+      ],
+      "if": "ruins.bowl.takes >= 4 && ruins.bowl.broken == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.bowl.broken",
+      "value": 1,
+      "if": "ruins.bowl.takes >= 4 && ruins.bowl.broken == 0"
+    }
+  ]
+}

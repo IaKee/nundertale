@@ -770,7 +770,7 @@
         {
           "height": 0,
           "id": 11,
-          "name": "from_dummy",
+          "name": "from_cables",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -789,7 +789,7 @@
         {
           "height": 0,
           "id": 12,
-          "name": "spawn",
+          "name": "from_dummy",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -808,6 +808,25 @@
         {
           "height": 0,
           "id": 13,
+          "name": "spawn",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 120,
+          "y": 370,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 14,
           "name": "from_notices",
           "rotation": 0,
           "type": "spawn",
@@ -826,8 +845,8 @@
         },
         {
           "height": 40,
-          "id": 14,
-          "name": "door_to_dummy",
+          "id": 15,
+          "name": "door_to_cables",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -838,7 +857,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_dummy"
+              "value": "ruins_cables"
             },
             {
               "name": "targetSpawn",
@@ -849,7 +868,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 16,
           "name": "door_to_notices",
           "rotation": 0,
           "type": "door",
@@ -872,7 +891,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 17,
           "name": "trigger_cell",
           "rotation": 0,
           "type": "trigger",
@@ -895,7 +914,7 @@
         },
         {
           "height": 60,
-          "id": 17,
+          "id": 18,
           "name": "furiell_hiding",
           "rotation": 0,
           "type": "prop",
@@ -923,7 +942,7 @@
         },
         {
           "height": 90,
-          "id": 18,
+          "id": 19,
           "name": "tail_examine",
           "rotation": 0,
           "type": "examine",
@@ -941,7 +960,7 @@
         },
         {
           "height": 240,
-          "id": 19,
+          "id": 20,
           "name": "trigger_call",
           "rotation": 0,
           "type": "trigger",
@@ -1615,7 +1634,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 21,
   "orientation": "orthogonal",
   "properties": [
     {

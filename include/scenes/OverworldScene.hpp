@@ -43,6 +43,7 @@ private:
     void initInteractables(GameContext& context);
     void initRoomObjects(GameContext& context);
     void refreshDynamicObstacles(GameContext& context);
+    void updateBumpCutscenes(float dt, GameContext& context);
     bool roomObjectVisible(const TiledObject& object, GameContext& context);
     void interactWithRoomObject(const TiledObject& object, GameContext& context);
     void updateDoorsAndTriggers(GameContext& context);
@@ -85,8 +86,10 @@ private:
     std::unordered_set<int> m_hazardLinesShown;
     std::unordered_set<std::string> m_hiddenRoomObjects;
     std::unordered_map<std::string, std::string> m_roomObjectAnimations;
+    std::unordered_map<int, BumpTracker> m_bumpTrackers;
     Vector2 m_lastHazardSafePosition = { 0.0f, 0.0f };
     int m_hazardCooldown = 0;
+    float m_controlsLockedRemaining = 0.0f;
     int m_talkingObjectId = -1;     // OVW-007: the NPC turned toward Pepe while talking
     std::string m_talkingFacing;
     std::vector<EncounterEntry> m_roomEncounters;

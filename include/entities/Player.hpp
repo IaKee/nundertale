@@ -19,6 +19,7 @@ public:
     Player(Vector2 startPos = { 320.0f, 240.0f });
 
     void update(float dt, Vector2 inputDir, const std::vector<Rectangle>& obstacles);
+    bool moveToward(Vector2 target, float speed, float dt);
     void render(Texture2D spriteSheet);
 
     Vector2 getPosition() const { return m_position; }
@@ -31,6 +32,7 @@ public:
     void setDirection(Direction dir) { m_direction = dir; }
 
     bool isMoving() const { return m_isMoving; }
+    bool wasBlockedBy(Rectangle obstacle) const;
     void setOverrideAnimation(const std::string& path, const std::string& key, float seconds);
     void updateOverrideAnimation(float dt);
     bool hasOverrideAnimation() const { return !m_overridePath.empty(); }
@@ -49,6 +51,7 @@ private:
     Vector2 m_position;
     Direction m_direction = Direction::Down;
     bool m_isMoving = false;
+    std::vector<Rectangle> m_blockingObstacles;
 
     float m_animTimer = 0.0f;
     float m_spriteAnimTimer = 0.0f;
