@@ -136,7 +136,7 @@ Para regerar fichas, templates e kit depois de mudar algo: `python tools/art_pro
 | F15 | [Armário (com a Fursuit Head)](F15_props_ruins_closet.md) | `assets/props/ruins_closet.png` | 30×80 (célula 30×40) | não |  |
 | F16 | [Espelho do corredor](F16_props_ruins_mirror.md) | `assets/props/ruins_mirror.png` | 20×80 (célula 20×40) | não |  |
 | F17 | [Estante](F17_props_ruins_bookshelf.md) | `assets/props/ruins_bookshelf.png` | 40×40 | não |  |
-| F18 | [Lâmpada fluorescente ("a lua do Barky")](F18_props_ruins_lamp.md) | `assets/props/ruins_lamp.png` | 40×40 (célula 20×40) | não |  |
+| F18 | [Luminária de globo ("a lua do Barky")](F18_props_ruins_lamp.md) | `assets/props/ruins_lamp.png` | 40×40 (célula 20×40) | não |  |
 
 ## G. Card de intro
 

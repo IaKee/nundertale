@@ -465,7 +465,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/sprites/battle/fursuit_dummy.png"
+              "value": "assets/sprites/ow/fursuit_dummy.png"
             },
             {
               "name": "anim",

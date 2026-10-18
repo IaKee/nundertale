@@ -22,11 +22,11 @@ KIT_FILES = [
 
 # ---------------------------------------------------------------- shared blocks
 STYLE = {
-"ow": "Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel dark outline, flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark.",
+"ow": "Pixel art sprite in the style of Undertale and Deltarune overworld sprites, 3/4 top-down RPG view, crisp 1-pixel near-black outline (never dark purple: the Ruins floor is purple), flat cel shading with one shadow tone per color, very limited palette, no anti-aliasing, no gradients, no blur, chunky readable pixels, adult proportions, isolated on a solid flat #FF00FF magenta background, no watermark.",
 "battle": "Undertale battle sprite, monochrome white and black pixel art (only #FFFFFF and #000000): white 1-pixel line art, light materials such as fur, faces and costume heads filled solid white, dark materials such as clothes filled solid black, a continuous unbroken white 1-pixel outline around the ENTIRE outer edge of the silhouette (also around black clothes, hair, ears and tail, so no black part of the figure ever touches the background), a few long continuous white lines for folds and seams instead of scattered dots, the whole silhouette fully opaque, bold readable silhouette, hand-drawn pixel art, no anti-aliasing, no gray, no gradients, front-facing, centered, isolated on a solid flat #FF00FF magenta background, no watermark.",
 "ui": "Tiny pixel art game element in the style of Undertale, crisp hard pixels, no anti-aliasing, no gradients, flat colors, high contrast, isolated on a solid flat #FF00FF magenta background, no watermark.",
 "tile": "Pixel art top-down RPG tileset in the style of Undertale's Ruins, 3/4 top-down view, crisp hard pixels, flat shading, no anti-aliasing, no gradients, no blur, limited palette, no watermark.",
-"prop": "Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, crisp 1-pixel dark outline, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette (#3B1F5C, #5E3A87, #7CFF3A, #F4E3FF, #C9A0DC plus at most three in-between purples), isolated on a solid flat #FF00FF magenta background, no text, no watermark.",
+"prop": "Single pixel art prop for a top-down RPG in the style of Undertale's Ruins, 3/4 top-down view, a continuous 1-pixel near-black #141018 outline closing the whole silhouette, flat cel shading, no anti-aliasing, no gradients, no blur, limited palette; it stands on a purple floor (#3B1F5C, #4A2A70, #5E3A87) against purple walls (#7A55A8, #9C7CC4), so its large areas use light or warm colours that contrast with purple and the Ruins purples appear only in small details, isolated on a solid flat #FF00FF magenta background, no text, no watermark.",
 "card": "Pixel art story card in the style of Undertale's opening cutscene, limited palette, soft vignette, crisp pixels, no anti-aliasing, no gradients beyond the palette steps, no watermark.",
 }
 NEGATIVE = "blurry, anti-aliased, soft shading, smooth gradient, 3D render, realistic, photo, painterly, noisy texture, random dithering, jpeg artifacts, watermark, signature, brand logo, real person, real face, child proportions, baby face, nsfw, suggestive, cropped, cut off, inconsistent sizes between frames"
@@ -34,7 +34,7 @@ NEGATIVE = "blurry, anti-aliased, soft shading, smooth gradient, 3D render, real
 STYLE_RULES = {
 "ow": ["Overworld é **colorido**, com paleta limitada (Ruins: roxo + verde neon).",
        "Vista 3/4 de cima, igual aos sprites de overworld do Undertale.",
-       "Contorno escuro de 1 px; uma sombra por cor; sem anti-aliasing."],
+       "Contorno de 1 px **quase preto `#141018`** fechando a silhueta inteira (nunca roxo escuro: o chão das Ruins é roxo e engole o contorno). O Pepe mantém o contorno próprio `#3D120E`. Uma sombra por cor; sem anti-aliasing."],
 "battle": ["Batalha é **só branco `#FFFFFF` e preto `#000000`**, como a Toriel e o Flowey do Undertale: traço branco; materiais claros (pelo, rosto, cabeça de fantasia) preenchidos de branco, materiais escuros (roupa) de preto.",
            "**Contorno branco fechado em volta da silhueta inteira**, também em volta da roupa preta, do cabelo, das orelhas e do rabo: nenhum preto do personagem encosta no fundo (guia de estilo §3.1). A keyline preta de 2 px por fora é aplicada depois por `tools/art_prompts/battle_outline.py`.",
            "Fora da silhueta = **transparente**. O fundo das batalhas comuns tem uma grade verde que não pode aparecer através do personagem, por isso o interior precisa ser todo opaco (branco ou preto).",
@@ -44,7 +44,7 @@ STYLE_RULES = {
        "Projéteis são brancos `#FFFFFF` (salvo indicação), com o núcleo sólido centralizado na célula (o hitbox será um retângulo menor no centro)."],
 "tile": ["Tiles de **20×20** em grade exata, chão emendando sem costura.",
          "Paleta das Ruins (abaixo), vista 3/4 de cima."],
-"prop": ["Mesma vista 3/4 e mesma paleta do tileset das Ruins.",
+"prop": ["Mesma vista 3/4 do tileset das Ruins. **Legibilidade sobre roxo:** contorno de 1 px **quase preto `#141018`** fechando a silhueta inteira, e massas grandes em cores **claras ou quentes**, fora dos roxos do chão e da parede (`#3B1F5C` `#4A2A70` `#5E3A87` `#7A55A8` `#9C7CC4`), que ficam só para detalhes pequenos. (Regra de 2026-10-18: com a paleta só do tileset, booth, poltrona, interruptor e cabos sumiam no chão.)",
          "Texto em placas/banners: gere **sem texto** e escreva à mão depois em fonte pixel de 5 px (a IA não escreve legível nesse tamanho). Texto sempre em inglês, exatamente como indicado."],
 "card": ["Card de intro: imagem única, sem transparência.",
          "Mesma linguagem visual dos outros cards (`lore1..9`): monocromático sépia/laranja."],
@@ -637,19 +637,19 @@ def prop(id, slug, title, rooms, ctx, size, prompt, grid=None, layout=None, anim
                   fmt_notes=["Estados/variantes em linhas separadas; frames de animação na mesma linha."] + list(notes))
     else:
         kw.update(single=size, fmt_notes=["Imagem única."] + list(notes))
-    kw["prompt"] = prompt + (" Exception to the Ruins palette for this prop only: the %s use %s." % (extra[0].lower(), extra[1].replace(" / ", ", ")) if extra else "")
+    kw["prompt"] = prompt + (" Required colours for this prop: the %s use %s." % (extra[0].lower(), extra[1].replace(" / ", ", ")) if extra else "")
     add(**kw)
 
 prop("F2", "ruins_banner_welcome", "Banner principal da convenção", "R3 — Ruins Entrance (escadaria dupla).",
-     "Banner de pano lilás desbotado, rasgado numa ponta, pendurado por duas cordas, com emblema de patinha.", (60, 40),
-     "Faded lilac cloth convention banner hanging from two ropes, torn at one corner, a paw-print emblem, a blank area for text, 60x40 pixels.",
+     "Banner de pano creme com faixa lilás, rasgado numa ponta, pendurado por duas cordas cinza, com emblema de patinha rosa e uma faixa lisa para o texto.", (60, 40),
+     "Faded cream cloth convention banner (#F4F0EA, folds #D8CDE8) with a lilac #B89AD8 border stripe, hanging from two gray ropes, torn at one corner, a small pink #F07AAE paw-print emblem, a flat blank cream band for text, 60x40 pixels.",
      text="FurNation Con '14 — Welcome!")
 prop("F3", "ruins_banner_deodorant", "Faixa \"Deodorant is NOT optional\"", "R3 — embaixo do banner principal.",
      "Faixa de papel improvisada, presa com fita crepe nas pontas, logo abaixo do banner F2.", (60, 16),
      "Narrow handmade paper sign taped to a wall with masking tape at both ends, blank for text, 60x16 pixels.", text="Deodorant is NOT optional")
 prop("F4", "ruins_booth", "Tenda de vendedor abandonada", "R8 (Art Show) e corredores.",
-     "Mesa com toalha roxa sob uma armação de lona desbotada, pelúcias velhas e prints empoeirados.", (60, 40),
-     "Abandoned convention vendor booth: a table with a purple tablecloth under a faded canvas canopy, a few dusty plushies and art prints on the table, 60x40 pixels.")
+     "Mesa com toalha creme sob um toldo listrado rosa e creme em postes de madeira, pelúcias, prints e doces coloridos.", (60, 40),
+     "Convention vendor booth: a table with a cream tablecloth (#F4F0EA) under a pink #F07AAE and cream striped canvas canopy on two wooden poles, a few colourful plushies, art prints and pastries on the table, 60x40 pixels.")
 prop("F5", "ruins_curtain_18", "Cortina 18+ da Art Show", "R8 — Art Show.",
      "Cortina preta `#111111` pesada, **fechada**, numa barra, com uma plaquinha no meio. Nada visível atrás (regra de conteúdo). Examinar: `* You decide to respect the curtain.`", (40, 40),
      "Heavy closed black velvet curtain #111111 hanging from a rod, a small square sign pinned to the middle, blank for text, nothing visible behind it, 40x40 pixels.", text="18+")
@@ -662,12 +662,12 @@ prop("F7", "ruins_notice_board", "Mural de avisos", "R8.",
      "Cork notice board with a wooden frame, several pinned papers and one large official-looking notice, 40x30 pixels.", text="RUINS ADMINISTRATION (opcional, no aviso grande)")
 prop("F8", "ruins_rgb_switch", "Interruptor RGB", "R4 — puzzle dos interruptores.",
      "Interruptor gamer de parede com fita LED RGB. Os corretos estão **marcados com glitter**. Bilhete: `Not this one. — Ruins Administration (not Furiell)`.", (20, 20),
-     "Wall-mounted gaming light switch with an RGB LED strip, three states stacked vertically in equal 20x20 cells: off and dark; on glowing red-green-blue; off but sprinkled with sparkling glitter.",
+     "Wall-mounted gaming light switch: a light gray-white plate (#E8E0F0) with a toggle lever and a short RGB LED strip, three states stacked vertically in equal 20x20 cells: off, lever down, LEDs dark; on, lever up, LEDs glowing red #E83A3A, green #3FE05A, blue #3A7AF0; off but sprinkled with bright yellow #FFE14A and pink #FF77C8 glitter sparkles, obvious from afar.",
      grid=(1, 3), layout="| Linha | Animação | Estado |\n| :---: | :--- | :--- |\n| 0 | `off` | desligado |\n| 1 | `on` | ligado, RGB |\n| 2 | `marked` | desligado + glitter (o certo) |\n",
      anims=[anim("off", 0, 1), anim("on", 1, 1), anim("marked", 2, 1)])
 prop("F9", "ruins_dorito_bowl", "Tigela de chips", "R10.",
      "Tigela num pedestal com chips triangulares laranja `#F0A03A`, **sem marca**. Placa: `* \"Take one Dorito.\"` — pegar 4 derruba a tigela.", (20, 20),
-     "Small pedestal bowl of orange triangular tortilla chips (no brand), three states stacked vertically in equal 20x20 cells: full; empty; knocked over with chips scattered on the floor.",
+     "Small white ceramic pedestal bowl (#F4F0EA) of orange triangular tortilla chips (no brand), three states stacked vertically in equal 20x20 cells: full; empty; knocked over with chips scattered on the floor.",
      grid=(1, 3), layout="| Linha | Animação | Estado |\n| :---: | :--- | :--- |\n| 0 | `full` | cheia |\n| 1 | `empty` | vazia |\n| 2 | `knocked` | derrubada, chips espalhados |\n",
      anims=[anim("full", 0, 1), anim("empty", 1, 1), anim("knocked", 2, 1)], text="Take one (opcional, numa plaquinha)",
      extra=("Chips", "#F0A03A / #C0701E"))
@@ -677,8 +677,8 @@ prop("F10", "ruins_wrapper_pile", "Pilha de embalagens de salgadinho", "R1 (cama
      grid=(1, 2), layout="| Linha | Animação | Variante |\n| :---: | :--- | :--- |\n| 0 | `pile` | pilha pequena |\n| 1 | `bed` | cama larga (R1) |\n",
      anims=[anim("pile", 0, 1), anim("bed", 1, 1)])
 prop("F11", "ruins_cables", "Cabos que dão choque (os \"espinhos\")", "R6 — Cable Maze (Furiell guia o Pepe pela mão).",
-     "Cabos de rede emaranhados no chão. Ligados = faíscas verdes; desligados = achatados e escuros (passáveis).", (20, 20),
-     "Floor tile covered in tangled ethernet cables; top row: active with sparking neon green electricity #7CFF3A in two animation frames; bottom row: inactive with the cables lying flat and dark. Equal 20x20 cells.",
+     "Feixe vertical de cabos de rede (azul, branco e verde) que atravessa o tile de cima a baixo, para os tiles empilhados formarem uma barreira contínua. Ligados = faíscas amarelas e verdes; desligados = cabos cinza apagados (passáveis).", (20, 20),
+     "Hazard barrier tile: a vertical bundle of three thick ethernet cables (blue #2F62D6, white #E8E8F0, green #3FA34D) running straight from the top edge to the bottom edge so stacked tiles form one continuous column, near-black outline on the left and right sides only; top row: live, with yellow #FFE14A and neon #7CFF3A sparks in two animation frames; bottom row: off, the same cables in dull gray. Equal 20x20 cells.",
      grid=(2, 2), layout="| Linha | Animação | Frames |\n| :---: | :--- | :--- |\n| 0 | `on` | 2: faíscas alternando |\n| 1 | `off` | 1: apagado |\n",
      anims=[anim("on", 0, 2, 8), anim("off", 1, 1)], notes=["Pivô ignorado (é tile de chão de 20×20)."])
 prop("F12", "ruins_fireplace", "Lareira", "R11 — sala da casa da Furiell.",
@@ -687,8 +687,8 @@ prop("F12", "ruins_fireplace", "Lareira", "R11 — sala da casa da Furiell.",
      grid=(3, 1), layout=strip_layout("burn", "3: fogo"), anims=[anim("burn", 0, 3, 6)],
      extra=("Flames", "#FFD24A / #F0A03A / #E0602A"))
 prop("F13", "ruins_armchair", "Poltrona felpuda", "R11.",
-     "Poltrona grande coberta por uma manta de pelo falso, de frente.", (30, 30),
-     "Big comfy armchair covered with a fluffy faux-fur throw blanket, front view, 30x30 pixels.")
+     "Poltrona grande de estofado vermelho quente, de frente, com uma manta de pelo falso creme dobrada sobre um dos braços.", (30, 30),
+     "Big comfy armchair in warm red upholstery (#B0383E), front 3/4 view, short dark wooden legs, a folded cream faux-fur throw draped over one armrest, 30x30 pixels.")
 prop("F14", "ruins_bed", "Cama do quarto do Pepe", "R11 — quarto do Pepe.",
      "Cama de solteiro, cobertor de pelo falso lilás, travesseiro com estampa de patinha. Examinar: `* You nap under the faux-fur blanket. HP fully restored. FUR +5.`", (40, 30),
      "Single bed seen from a 3/4 top-down view with a lilac faux-fur blanket and a pillow with a paw print, 40x30 pixels.")
@@ -705,9 +705,9 @@ prop("F16", "ruins_mirror", "Espelho do corredor", "R11 — corredor.",
 prop("F17", "ruins_bookshelf", "Estante", "R11.",
      "Livros coloridos desbotados, um volume grosso saindo um pouco (\"Fanfics of Questionable Quality, Vol. 7\" — só a lombada, sem texto legível).", (40, 40),
      "Wooden bookshelf full of faded colorful books, one thick volume sticking out slightly, 40x40 pixels.")
-prop("F18", "ruins_lamp", "Lâmpada fluorescente (\"a lua do Barky\")", "R9 — Barky's Arena (também no fundo da batalha dele).",
-     "Luminária de teto com um tubo fluorescente longo pendurado por correntes, luz fria. Examinar: `* Barky's natural enemy. Or his moon. He hasn't decided.`", (20, 40),
-     "Hanging ceiling fixture with a single long fluorescent tube on two chains, cold pale light #F4E3FF, two frames in equal 20x40 cells in one row: lit, and flickering dim.",
+prop("F18", "ruins_lamp", "Luminária de globo (\"a lua do Barky\")", "R9 — Barky's Arena (também no fundo da batalha dele).",
+     "Luminária de chão alta com um globo redondo amarelo-pálido que parece uma lua cheia. Examinar: `* Barky's natural enemy. Or his moon. He hasn't decided.`", (20, 40),
+     "Tall standing floor lamp with a big round glowing globe shade like a full moon (pale yellow #FFF2B8, crescent shading #F2D06A, white highlight) on a thin gray pole with a small round base, two frames in equal 20x40 cells in one row: lit, and flickering dim.",
      grid=(2, 1), layout=strip_layout("flicker", "2: acesa / fraca (`lit` usa só a col 0)"), anims=[anim("lit", 0, 1), anim("flicker", 0, 2, 6)])
 
 # ---------------------------------------------------------------- G. intro card
