@@ -1,6 +1,7 @@
 #include "services/SaveService.hpp"
 #include "core/GameContext.hpp"
 #include "core/Fur.hpp"
+#include "core/TiledMap.hpp"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -132,8 +133,19 @@ MetaData SaveService::getMeta() const {
 }
 
 std::string SaveService::getRoomDisplayName(const std::string& roomId) const {
+    TiledMap map;
+    if (!roomId.empty() && loadTiledMapFromFile("data/maps/" + roomId + ".json", map)) {
+        const std::string displayName = stringProperty(map, "displayName");
+        if (!displayName.empty()) return displayName;
+    }
     if (roomId == "ruins_entrance" || roomId.empty()) {
         return "Ruins - Entrance";
+    } else if (roomId == "ruins_fall") {
+        return "Ruins - Fall Room";
+    } else if (roomId == "ruins_notices") {
+        return "Ruins - Notice Hall";
+    } else if (roomId == "ruins_arena") {
+        return "Ruins - Barky's Arena";
     } else if (roomId == "ruins_hall") {
         return "Ruins - Leaf Pile";
     } else if (roomId == "ruins_furiell") {

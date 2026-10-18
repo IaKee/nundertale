@@ -7,6 +7,8 @@
 #include "core/FluffParticles.hpp"
 #include "core/Cutscene.hpp"
 #include "core/TiledMap.hpp"
+#include "core/RoomTransition.hpp"
+#include <cstddef>
 #include <vector>
 #include <memory>
 #include <string>
@@ -34,11 +36,32 @@ public:
     void onExit(GameContext& context) override;
 
 private:
+    struct DoorDef {
+        Rectangle bounds{};
+        std::string targetRoom;
+        std::string targetSpawn = "default";
+        std::string facing;
+    };
+
+    struct PropDef {
+        Rectangle bounds{};
+        std::string sprite;
+        int frames = 1;
+        float fps = 4.0f;
+        float animationTime = 0.0f;
+    };
+
     void initObstacles();
     void loadRoomMap(const std::string& roomId);
     void initInteractables(GameContext& context);
+    void initDataObjects(GameContext& context);
+    void swapRoom(GameContext& context);
+    const TiledObject* findSpawn(const std::string& spawnId) const;
+    bool hasMapObject(const std::string& name) const;
     Rectangle objectBounds(const std::string& name, Rectangle fallback) const;
-    Vector2 objectPosition(const std::string& name, Vector2 fallback) const;
+    void drawMapLayers(GameContext& context, bool above) const;
+    void drawProp(GameContext& context, const PropDef& prop) const;
+    void drawPlayer(GameContext& context) const;
 
     void handleMenuInput(GameContext& context);
     void renderMenu(GameContext& context, Font font);
@@ -48,9 +71,14 @@ private:
     DialogBox m_dialogBox;
 
     std::vector<Rectangle> m_obstacles;
+    std::size_t m_baseObstacleCount = 0;
     std::vector<std::unique_ptr<IInteractable>> m_interactables;
+    std::vector<DoorDef> m_doors;
+    std::vector<PropDef> m_props;
     std::unique_ptr<SavePoint> m_savePoint;
     TiledMap m_tiledMap;
+    RoomTransition m_roomTransition;
+    bool m_mapLoaded = false;
     float m_roomWidth = 640.0f;
     float m_roomHeight = 480.0f;
     std::string m_backgroundImage = "assets/img/test.bmp";

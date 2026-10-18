@@ -18,7 +18,7 @@ public:
     Player(Vector2 startPos = { 320.0f, 240.0f });
 
     void update(float dt, Vector2 inputDir, const std::vector<Rectangle>& obstacles);
-    void render(Texture2D spriteSheet);
+    void render(Texture2D spriteSheet) const;
 
     Vector2 getPosition() const { return m_position; }
     void setPosition(Vector2 pos) { m_position = pos; }

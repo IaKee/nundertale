@@ -102,7 +102,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
     }
 }
 
-void Player::render(Texture2D spriteSheet) {
+void Player::render(Texture2D spriteSheet) const {
     Rectangle sourceRec = {
         static_cast<float>(m_clipX),
         static_cast<float>(m_clipY),
@@ -127,13 +127,13 @@ Rectangle Player::getCollisionBox() const {
 Rectangle Player::getInteractionBox() const {
     switch (m_direction) {
         case Direction::Up:
-            return { m_position.x + 5, m_position.y + 10, 28, 28 };
+            return { m_position.x + 5, m_position.y + 18, 28, 20 };
         case Direction::Down:
-            return { m_position.x + 5, m_position.y + 50, 28, 28 };
+            return { m_position.x + 5, m_position.y + 56, 28, 20 };
         case Direction::Left:
-            return { m_position.x - 20, m_position.y + 30, 28, 28 };
+            return { m_position.x - 15, m_position.y + 38, 20, 18 };
         case Direction::Right:
-            return { m_position.x + 30, m_position.y + 30, 28, 28 };
+            return { m_position.x + 33, m_position.y + 38, 20, 18 };
     }
     return getCollisionBox();
 }

@@ -39,6 +39,7 @@
 #include "core/SpriteSheet.hpp"
 #include "core/TiledMap.hpp"
 #include "core/Camera2DFollow.hpp"
+#include "core/RoomTransition.hpp"
 #include "scenes/LoreScroll.hpp"
 
 // Raylib stub for tests running without libraylib runtime
@@ -2801,6 +2802,104 @@ int main() {
         std::cout << "[PASS] T2 & LOR-006: Tall intro card scroll math (starts at bottom, ends at top, clamps, monotonic, whole pixels) verified." << std::endl;
     }
 
-    std::cout << "\nAll 46 test suites passed successfully!" << std::endl;
+    // 47. C-T1: tilesets, multiple firstgid ranges, and Tiled flip bits
+    {
+        using namespace nundertale;
+        const std::string json = R"json({
+            "orientation": "orthogonal",
+            "tilewidth": 40,
+            "tileheight": 40,
+            "width": 2,
+            "height": 1,
+            "tilesets": [
+                {"firstgid": 1, "image": "assets/tiles/a.png", "tilewidth": 20, "tileheight": 20, "columns": 4, "tilecount": 8, "name": "a"},
+                {"firstgid": 20, "image": "assets/tiles/b.png", "tilewidth": 10, "tileheight": 10, "columns": 2, "tilecount": 6, "name": "b"}
+            ],
+            "layers": [
+                {"type": "tilelayer", "name": "ground", "width": 2, "height": 1,
+                 "data": [2147483654, 3221225493]}
+            ]
+        })json";
+
+        TiledMap map;
+        assert(parseTiledMapJson(json, map));
+        assert(map.tilesets.size() == 2);
+        assert(map.findLayer("ground")->data[0] == (0x80000000u | 6u));
+
+        TiledTileSource source;
+        assert(tileSource(map, 0x80000000u | 6u, source));
+        assert(source.tileset == &map.tilesets[0]);
+        assert(source.tileId == 5);
+        assert(source.source.x == 20.0f && source.source.y == 20.0f);
+        assert(source.source.width == 20.0f && source.source.height == 20.0f);
+
+        assert(tileSource(map, 0xC0000000u | 21u, source));
+        assert(source.tileset == &map.tilesets[1]);
+        assert(source.tileId == 1);
+        assert(source.source.x == 10.0f && source.source.y == 0.0f);
+        assert(!tileSource(map, 0u, source));
+        assert(!tileSource(map, 100u, source));
+        std::cout << "[PASS] C-T1: tileset gid lookup strips flip flags and selects the greatest firstgid." << std::endl;
+    }
+
+    // 48. C-T1: typed object/map property helpers and defaults
+    {
+        using namespace nundertale;
+        TiledObject object;
+        object.properties = {
+            {"label", "string", std::string("hello")},
+            {"solid", "bool", true},
+            {"frames", "int", 3.0}
+        };
+        assert(stringProperty(object, "label", "fallback") == "hello");
+        assert(stringProperty(object, "missing", "fallback") == "fallback");
+        assert(boolProperty(object, "solid", false));
+        assert(!boolProperty(object, "missing", false));
+        assert(intProperty(object, "frames", 1) == 3);
+        assert(intProperty(object, "label", 9) == 9);
+
+        TiledMap map;
+        map.properties = {{"displayName", "string", std::string("Tiny Room")}};
+        assert(stringProperty(map, "displayName") == "Tiny Room");
+        std::cout << "[PASS] C-T1: string, bool, and int property helpers honor typed values and defaults." << std::endl;
+    }
+
+    // 49. C-T1: eight-frame room fade emits one swap and one completion
+    {
+        using namespace nundertale;
+        RoomTransition transition;
+        transition.start("ruins_notices", "south", "up");
+        assert(transition.active());
+        assert(transition.targetRoom() == "ruins_notices");
+        assert(transition.targetSpawn() == "south");
+        assert(transition.facing() == "up");
+        for (int frame = 0; frame < RoomTransition::FADE_FRAMES - 1; ++frame) {
+            assert(transition.update() == RoomTransitionEvent::None);
+        }
+        assert(transition.update() == RoomTransitionEvent::SwapNow);
+        assert(transition.alpha() == 1.0f);
+        for (int frame = 0; frame < RoomTransition::FADE_FRAMES - 1; ++frame) {
+            assert(transition.update() == RoomTransitionEvent::None);
+        }
+        assert(transition.update() == RoomTransitionEvent::Done);
+        assert(!transition.active());
+        assert(transition.alpha() == 0.0f);
+        std::cout << "[PASS] C-T1: room transition fades out, swaps once at black, and fades in." << std::endl;
+    }
+
+    // 50. C-T1: data-driven dialog page splitting
+    {
+        using namespace nundertale;
+        const auto pages = splitTextPages("page one|page two\nline two|page three");
+        assert(pages.size() == 3);
+        assert(pages[0] == "page one");
+        assert(pages[1] == "page two\nline two");
+        assert(pages[2] == "page three");
+        const auto emptyMiddle = splitTextPages("a||b");
+        assert(emptyMiddle.size() == 3 && emptyMiddle[1].empty());
+        std::cout << "[PASS] C-T1: pipe-separated dialog pages preserve embedded newlines." << std::endl;
+    }
+
+    std::cout << "\nAll 50 test suites passed successfully!" << std::endl;
     return 0;
 }

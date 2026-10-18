@@ -12,10 +12,53 @@
 #include "services/MusicTracks.hpp"
 #include "ui/SpriteDraw.hpp"
 #include <raylib.h>
+#include <algorithm>
+#include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
 namespace nundertale {
+
+namespace {
+
+Direction directionFromName(const std::string& name, Direction fallback) {
+    if (name == "up") return Direction::Up;
+    if (name == "down") return Direction::Down;
+    if (name == "left") return Direction::Left;
+    if (name == "right") return Direction::Right;
+    return fallback;
+}
+
+int facingValue(Direction direction) {
+    switch (direction) {
+        case Direction::Down: return 0;
+        case Direction::Up: return 1;
+        case Direction::Left: return 2;
+        case Direction::Right: return 3;
+    }
+    return 0;
+}
+
+Direction directionFromValue(int value) {
+    switch (value) {
+        case 1: return Direction::Up;
+        case 2: return Direction::Left;
+        case 3: return Direction::Right;
+        default: return Direction::Down;
+    }
+}
+
+Rectangle tiledBounds(const TiledObject& object) {
+    const TiledRect bounds = object.bounds();
+    return { bounds.x, bounds.y, bounds.width, bounds.height };
+}
+
+std::string propertyObjectId(const TiledObject& object) {
+    return object.name.empty() ? std::to_string(object.id) : object.name;
+}
+
+} // namespace
 
 OverworldScene::OverworldScene()
     : m_player(Vector2{ 300.0f, 320.0f }) {
@@ -33,10 +76,12 @@ void OverworldScene::initObstacles() {
     // Room pillars / furniture
     m_obstacles.push_back({ 140, 160, 50, 80 });    // Left pillar
     m_obstacles.push_back({ 450, 160, 50, 80 });    // Right pillar
+    m_baseObstacleCount = m_obstacles.size();
 }
 
 void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_tiledMap = {};
+    m_mapLoaded = false;
     m_roomWidth = 640.0f;
     m_roomHeight = 480.0f;
     m_backgroundImage = "assets/img/test.bmp";
@@ -47,8 +92,10 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     if (!loadTiledMapFromFile("data/maps/" + roomId + ".json", loaded)) return;
 
     m_tiledMap = std::move(loaded);
+    m_mapLoaded = true;
     m_roomWidth = m_tiledMap.pixelWidth();
     m_roomHeight = m_tiledMap.pixelHeight();
+    m_obstacles.clear();
 
     for (const TiledLayer& layer : m_tiledMap.layers) {
         if (layer.type == TiledLayerType::Image && !layer.image.empty()) {
@@ -60,12 +107,28 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
 
     const TiledLayer* collision = m_tiledMap.findLayer("collision");
     if (collision != nullptr && collision->type == TiledLayerType::Objects) {
-        m_obstacles.clear();
         for (const TiledObject& object : collision->objects) {
             const TiledRect bounds = object.bounds();
             m_obstacles.push_back({ bounds.x, bounds.y, bounds.width, bounds.height });
         }
     }
+    m_baseObstacleCount = m_obstacles.size();
+}
+
+bool OverworldScene::hasMapObject(const std::string& name) const {
+    return !m_mapLoaded || m_tiledMap.findObject(name) != nullptr;
+}
+
+const TiledObject* OverworldScene::findSpawn(const std::string& spawnId) const {
+    const TiledLayer* objects = m_tiledMap.findLayer("objects");
+    if (objects == nullptr || objects->type != TiledLayerType::Objects) return nullptr;
+    const std::string wanted = spawnId.empty() ? "default" : spawnId;
+    for (const TiledObject& object : objects->objects) {
+        if (tiledObjectType(object) != "spawn") continue;
+        const std::string id = (object.name.empty() || object.name == "spawn") ? "default" : object.name;
+        if (id == wanted) return &object;
+    }
+    return nullptr;
 }
 
 Rectangle OverworldScene::objectBounds(const std::string& name, Rectangle fallback) const {
@@ -75,39 +138,54 @@ Rectangle OverworldScene::objectBounds(const std::string& name, Rectangle fallba
     return { bounds.x, bounds.y, bounds.width, bounds.height };
 }
 
-Vector2 OverworldScene::objectPosition(const std::string& name, Vector2 fallback) const {
-    const TiledObject* object = m_tiledMap.findObject(name);
-    return object == nullptr ? fallback : Vector2{ object->x, object->y };
-}
-
 void OverworldScene::initInteractables(GameContext& context) {
+    if (m_obstacles.size() > m_baseObstacleCount) {
+        m_obstacles.resize(m_baseObstacleCount);
+    }
     m_interactables.clear();
+    m_doors.clear();
+    m_props.clear();
+    m_savePoint.reset();
 
     // 1. Save Point Star (SAV-001, SAV-002)
-    m_savePoint = std::make_unique<SavePoint>(objectPosition("savepoint", { 320.0f, 260.0f }));
+    if (!m_mapLoaded) {
+        m_savePoint = std::make_unique<SavePoint>(Vector2{ 320.0f, 260.0f });
+    } else if (const TiledLayer* objects = m_tiledMap.findLayer("objects")) {
+        for (const TiledObject& object : objects->objects) {
+            if (tiledObjectType(object) == "savepoint" || object.name == "savepoint") {
+                m_savePoint = std::make_unique<SavePoint>(Vector2{ object.x, object.y });
+                break;
+            }
+        }
+    }
 
     // 2. Signpost on the wall
-    Rectangle signBounds = objectBounds("sign", { 100, 70, 40, 30 });
-    auto sign = std::make_unique<GenericInteractable>(
-        signBounds,
-        [this](GameContext& ctx) {
-            ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
-            m_dialogBox.startDialog({
-                // BUG-19: LORE R8 notice
-                "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
-            }, "SIGN");
-        },
-        [signBounds](GameContext& /*ctx*/) {
-            const int x = static_cast<int>(signBounds.x);
-            const int y = static_cast<int>(signBounds.y);
-            const int width = static_cast<int>(signBounds.width);
-            const int height = static_cast<int>(signBounds.height);
-            DrawRectangle(x + 5, y + 10, width - 10, height - 10, { 140, 90, 40, 255 });
-            DrawRectangleLines(x + 5, y + 10, width - 10, height - 10, BLACK);
-            DrawText("?", x + 15, y + 12, 16, WHITE);
-        }
-    );
-    m_interactables.push_back(std::move(sign));
+    const TiledObject* signObject = m_tiledMap.findObject("sign");
+    const bool useLegacySign = signObject == nullptr ||
+        (tiledObjectType(*signObject) != "sign" && tiledObjectType(*signObject) != "examine");
+    if (hasMapObject("sign") && useLegacySign) {
+        Rectangle signBounds = objectBounds("sign", { 100, 70, 40, 30 });
+        auto sign = std::make_unique<GenericInteractable>(
+            signBounds,
+            [this](GameContext& ctx) {
+                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
+                m_dialogBox.startDialog({
+                    // BUG-19: LORE R8 notice
+                    "* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server."
+                }, "SIGN");
+            },
+            [signBounds](GameContext& /*ctx*/) {
+                const int x = static_cast<int>(signBounds.x);
+                const int y = static_cast<int>(signBounds.y);
+                const int width = static_cast<int>(signBounds.width);
+                const int height = static_cast<int>(signBounds.height);
+                DrawRectangle(x + 5, y + 10, width - 10, height - 10, { 140, 90, 40, 255 });
+                DrawRectangleLines(x + 5, y + 10, width - 10, height - 10, BLACK);
+                DrawText("?", x + 15, y + 12, 16, WHITE);
+            }
+        );
+        m_interactables.push_back(std::move(sign));
+    }
 
     // Check barky state (OVW-010, PRG-020): 0 = none, 1 = spared, 2 = killed
     int barkyState = context.state.getFlag("ruins.barky.state", 0);
@@ -135,7 +213,9 @@ void OverworldScene::initInteractables(GameContext& context) {
                 DrawCircle(x + 24, y + 24, 2, { 130, 130, 130, 255 });
             }
         );
-        m_interactables.push_back(std::move(dust));
+        if (hasMapObject("dust")) {
+            m_interactables.push_back(std::move(dust));
+        }
 
         // North Doorway is open (OVW-008, OVW-010)
         Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
@@ -154,7 +234,11 @@ void OverworldScene::initInteractables(GameContext& context) {
                          static_cast<int>(doorBounds.y) + 6, 16, GREEN);
             }
         );
-        m_interactables.push_back(std::move(door));
+        const TiledObject* doorObject = m_tiledMap.findObject("door");
+        if (hasMapObject("door") &&
+            (doorObject == nullptr || tiledObjectType(*doorObject) != "door")) {
+            m_interactables.push_back(std::move(door));
+        }
     } else if (barkyState == 1) {
         // Barky is standing peacefully in the room (OVW-010, NAR-002)
         Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
@@ -199,7 +283,9 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }
             }
         );
-        m_interactables.push_back(std::move(npc));
+        if (hasMapObject("npc_barky")) {
+            m_interactables.push_back(std::move(npc));
+        }
 
         // North Doorway is open
         Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
@@ -219,7 +305,11 @@ void OverworldScene::initInteractables(GameContext& context) {
                          static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
             }
         );
-        m_interactables.push_back(std::move(door));
+        const TiledObject* doorObject = m_tiledMap.findObject("door");
+        if (hasMapObject("door") &&
+            (doorObject == nullptr || tiledObjectType(*doorObject) != "door")) {
+            m_interactables.push_back(std::move(door));
+        }
     } else {
         // Barky alive, initial encounter waiting (ENC-001, ENC-002)
         Rectangle npcBounds = objectBounds("npc_barky", { 490, 80, 40, 50 });
@@ -258,7 +348,9 @@ void OverworldScene::initInteractables(GameContext& context) {
                 }
             }
         );
-        m_interactables.push_back(std::move(npc));
+        if (hasMapObject("npc_barky")) {
+            m_interactables.push_back(std::move(npc));
+        }
 
         Rectangle doorBounds = objectBounds("door", { 280, 50, 80, 30 });
         auto door = std::make_unique<GenericInteractable>(
@@ -294,7 +386,11 @@ void OverworldScene::initInteractables(GameContext& context) {
                          static_cast<int>(doorBounds.y) + 6, 16, COLOR_UNDERTALE_YELLOW);
             }
         );
-        m_interactables.push_back(std::move(door));
+        const TiledObject* doorObject = m_tiledMap.findObject("door");
+        if (hasMapObject("door") &&
+            (doorObject == nullptr || tiledObjectType(*doorObject) != "door")) {
+            m_interactables.push_back(std::move(door));
+        }
     }
 
     // 5. Snack Bowl with persistent take count tracking (OVW-010, OVW-011, ITM-004)
@@ -368,7 +464,74 @@ void OverworldScene::initInteractables(GameContext& context) {
             }
         }
     );
-    m_interactables.push_back(std::move(snackBowl));
+    if (hasMapObject("bowl")) {
+        m_interactables.push_back(std::move(snackBowl));
+    }
+
+    initDataObjects(context);
+}
+
+void OverworldScene::initDataObjects(GameContext& context) {
+    if (!m_mapLoaded) return;
+    const TiledLayer* objects = m_tiledMap.findLayer("objects");
+    if (objects == nullptr || objects->type != TiledLayerType::Objects) return;
+
+    const std::string roomId = context.state.currentRoom;
+    for (const TiledObject& object : objects->objects) {
+        const std::string type = tiledObjectType(object);
+        const Rectangle bounds = tiledBounds(object);
+
+        if (type == "door") {
+            const std::string targetRoom = stringProperty(object, "targetRoom");
+            if (!targetRoom.empty()) {
+                m_doors.push_back({
+                    bounds,
+                    targetRoom,
+                    stringProperty(object, "targetSpawn", "default"),
+                    stringProperty(object, "facing")
+                });
+            }
+            continue;
+        }
+
+        if (type != "sign" && type != "examine" && type != "prop") continue;
+
+        const bool solid = boolProperty(object, "solid", true);
+        if (solid && bounds.width > 0.0f && bounds.height > 0.0f) {
+            m_obstacles.push_back(bounds);
+        }
+
+        const std::string sprite = stringProperty(object, "sprite");
+        if (!sprite.empty()) {
+            m_props.push_back({
+                bounds,
+                sprite,
+                std::max(1, intProperty(object, "frames", 1)),
+                static_cast<float>(std::max(1, intProperty(object, "fps", 4))),
+                0.0f
+            });
+        }
+
+        const std::string text = stringProperty(object, "text");
+        if (text.empty()) continue;
+        const std::string text2 = stringProperty(object, "text2");
+        const std::string text3 = stringProperty(object, "text3");
+        const std::string speaker = stringProperty(object, "speaker");
+        const std::string talkFlag = "room." + roomId + "." + propertyObjectId(object) + ".talks";
+        auto examinable = std::make_unique<GenericInteractable>(
+            bounds,
+            [this, text, text2, text3, speaker, talkFlag](GameContext& ctx) {
+                const int talks = ctx.state.getFlag(talkFlag, 0);
+                std::string selected = text;
+                if (talks >= 2 && !text3.empty()) selected = text3;
+                else if (talks >= 1 && !text2.empty()) selected = text2;
+                ctx.state.setFlag(talkFlag, talks + 1);
+                ctx.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
+                m_dialogBox.startDialog(splitTextPages(selected), speaker);
+            }
+        );
+        m_interactables.push_back(std::move(examinable));
+    }
 }
 
 static float getRaidStartSeconds() {
@@ -396,12 +559,49 @@ void OverworldScene::onEnter(GameContext& context) {
     context.raidPaused = false;
     const MusicEntry enterTrack = musicFor("overworld." + context.state.currentRoom);
     context.audio.playMusic(enterTrack.path, true, enterTrack.loopStart, enterTrack.loopEnd);
-    if (context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f) {
+    const bool restoreSavedPosition = context.save.hasSaveGame() &&
+        context.state.playerPos.x != 0.0f && context.state.playerPos.y != 0.0f;
+    if (restoreSavedPosition) {
         m_player.setPosition(context.state.playerPos);
+        m_player.setDirection(directionFromValue(context.state.playerFacing));
     } else {
-        m_player.setPosition(objectPosition("spawn", { 300.0f, 320.0f }));
+        const TiledObject* spawn = findSpawn("default");
+        m_player.setPosition(spawn == nullptr ? Vector2{ 300.0f, 320.0f }
+                                              : Vector2{ spawn->x, spawn->y });
+        if (spawn != nullptr) {
+            m_player.setDirection(directionFromName(
+                stringProperty(*spawn, "facing"), m_player.getDirection()));
+        }
     }
     initInteractables(context);
+}
+
+void OverworldScene::swapRoom(GameContext& context) {
+    const std::string oldRoom = context.state.currentRoom;
+    const std::string targetRoom = m_roomTransition.targetRoom();
+    const std::string targetSpawn = m_roomTransition.targetSpawn();
+    const std::string requestedFacing = m_roomTransition.facing();
+    const MusicEntry oldTrack = musicFor("overworld." + oldRoom);
+    const MusicEntry newTrack = musicFor("overworld." + targetRoom);
+
+    context.state.currentRoom = targetRoom;
+    loadRoomMap(targetRoom);
+    const TiledObject* spawn = findSpawn(targetSpawn);
+    if (spawn == nullptr) spawn = findSpawn("default");
+    const Vector2 position = spawn == nullptr ? Vector2{ 300.0f, 320.0f }
+                                              : Vector2{ spawn->x, spawn->y };
+    m_player.setPosition(position);
+
+    std::string facing = requestedFacing;
+    if (facing.empty() && spawn != nullptr) facing = stringProperty(*spawn, "facing");
+    m_player.setDirection(directionFromName(facing, m_player.getDirection()));
+    context.state.playerPos = position;
+    context.state.playerFacing = facingValue(m_player.getDirection());
+    initInteractables(context);
+
+    if (oldTrack.path != newTrack.path) {
+        context.audio.playMusic(newTrack.path, true, newTrack.loopStart, newTrack.loopEnd);
+    }
 }
 
 void OverworldScene::onResume(GameContext& context) {
@@ -866,6 +1066,18 @@ void OverworldScene::update(float dt, GameContext& context) {
     int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);
     updateFluff(m_fluffParticles, dt, targetFluff, m_fluffRng);
 
+    for (PropDef& prop : m_props) {
+        prop.animationTime += std::max(0.0f, dt);
+    }
+
+    if (m_roomTransition.active()) {
+        const RoomTransitionEvent event = m_roomTransition.update(dt);
+        if (event == RoomTransitionEvent::SwapNow) {
+            swapRoom(context);
+        }
+        return;
+    }
+
     if (m_cutscene.running()) {
         class OverworldCutsceneHost final : public CutsceneHost {
         public:
@@ -983,6 +1195,16 @@ void OverworldScene::update(float dt, GameContext& context) {
 
     // Keep GameState synchronized (CORE-004)
     context.state.playerPos = m_player.getPosition();
+    context.state.playerFacing = facingValue(m_player.getDirection());
+
+    // Doors trigger from Pepe's feet and lock input for the complete fade.
+    const Rectangle feet = m_player.getCollisionBox();
+    for (const DoorDef& door : m_doors) {
+        if (CheckCollisionRecs(feet, door.bounds)) {
+            m_roomTransition.start(door.targetRoom, door.targetSpawn, door.facing);
+            return;
+        }
+    }
 
     // Interaction check
     if (context.input.isConfirmPressed()) {
@@ -1020,44 +1242,88 @@ void OverworldScene::update(float dt, GameContext& context) {
 #endif
 }
 
-void OverworldScene::render(GameContext& context) {
-    ClearBackground(BLACK);
-
-    Font font8Bit = context.resources.getFont8Bit(20);
-    const Vector2 playerPosition = m_player.getPosition();
-    const CameraTopLeft cameraTopLeft = Camera2DFollow::calculate(
-        playerPosition.x, playerPosition.y, m_roomWidth, m_roomHeight);
-    Camera2D camera = {};
-    camera.target = { cameraTopLeft.x, cameraTopLeft.y };
-    camera.offset = { 0.0f, 0.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-    BeginMode2D(camera);
-
-    // 1. Draw Background Room Texture
-    Texture2D bgTex = context.resources.getTexture(m_backgroundImage);
-    DrawTexture(bgTex, static_cast<int>(m_backgroundOffset.x),
-                static_cast<int>(m_backgroundOffset.y), WHITE);
-
-    // 2. Draw Pillars / Room Decor
-    const Rectangle leftPillar = objectBounds("left_pillar", { 140, 160, 50, 80 });
-    const Rectangle rightPillar = objectBounds("right_pillar", { 450, 160, 50, 80 });
-    DrawRectangleRec(leftPillar, { 70, 50, 90, 255 });
-    DrawRectangleLines(static_cast<int>(leftPillar.x), static_cast<int>(leftPillar.y),
-                       static_cast<int>(leftPillar.width), static_cast<int>(leftPillar.height), BLACK);
-    DrawRectangleRec(rightPillar, { 70, 50, 90, 255 });
-    DrawRectangleLines(static_cast<int>(rightPillar.x), static_cast<int>(rightPillar.y),
-                       static_cast<int>(rightPillar.width), static_cast<int>(rightPillar.height), BLACK);
-
-    // 3. Render Interactables & SavePoint
-    for (auto& item : m_interactables) {
-        item->render(context);
-    }
-    if (m_savePoint) {
-        m_savePoint->render(context);
+void OverworldScene::drawMapLayers(GameContext& context, bool above) const {
+    if (!m_mapLoaded) {
+        if (!above) {
+            Texture2D background = context.resources.getTexture(m_backgroundImage);
+            DrawTexture(background, static_cast<int>(m_backgroundOffset.x),
+                        static_cast<int>(m_backgroundOffset.y), WHITE);
+        }
+        return;
     }
 
-    // 4. Render Player (optional PNG sheet, otherwise the legacy masked BMP)
+    for (const TiledLayer& layer : m_tiledMap.layers) {
+        if (layer.type == TiledLayerType::Image) {
+            if (!above && !layer.image.empty()) {
+                Texture2D background = context.resources.getTexture(layer.image);
+                SetTextureFilter(background, TEXTURE_FILTER_POINT);
+                DrawTexture(background, static_cast<int>(layer.offsetX),
+                            static_cast<int>(layer.offsetY), WHITE);
+            }
+            continue;
+        }
+        if (layer.type != TiledLayerType::Tile || (layer.name == "above") != above) continue;
+
+        const int layerWidth = layer.width > 0 ? layer.width : m_tiledMap.width;
+        if (layerWidth <= 0) continue;
+        for (std::size_t index = 0; index < layer.data.size(); ++index) {
+            TiledTileSource tile;
+            if (!tileSource(m_tiledMap, layer.data[index], tile) || tile.tileset == nullptr) continue;
+            Texture2D texture = context.resources.getTexture(tile.tileset->image);
+            SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+            const int column = static_cast<int>(index % static_cast<std::size_t>(layerWidth));
+            const int row = static_cast<int>(index / static_cast<std::size_t>(layerWidth));
+            const Rectangle destination = {
+                static_cast<float>(column * m_tiledMap.tileWidth),
+                static_cast<float>(row * m_tiledMap.tileHeight),
+                static_cast<float>(m_tiledMap.tileWidth),
+                static_cast<float>(m_tiledMap.tileHeight)
+            };
+            const Rectangle source = {
+                tile.source.x, tile.source.y, tile.source.width, tile.source.height
+            };
+            DrawTexturePro(texture, source, destination, { 0.0f, 0.0f }, 0.0f, WHITE);
+        }
+    }
+}
+
+void OverworldScene::drawProp(GameContext& context, const PropDef& prop) const {
+    std::filesystem::path definitionPath(prop.sprite);
+    definitionPath.replace_extension(".json");
+    const SpriteSheetDef* sheet = spriteSheetCache().load(prop.sprite, definitionPath.string());
+    Texture2D texture = context.resources.getTexture(prop.sprite);
+    SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+    const Vector2 anchor = {
+        prop.bounds.x + prop.bounds.width * 0.5f,
+        prop.bounds.y + prop.bounds.height
+    };
+    if (sheet != nullptr) {
+        std::string animation = "idle";
+        if (sheet->anims.find(animation) == sheet->anims.end() && !sheet->anims.empty()) {
+            animation = sheet->anims.begin()->first;
+        }
+        drawSprite(texture, *sheet, animation, prop.animationTime, anchor);
+        return;
+    }
+
+    const int frames = std::max(1, prop.frames);
+    const int frameWidth = frames > 0 ? texture.width / frames : texture.width;
+    if (frameWidth <= 0 || texture.height <= 0) return;
+    const int frame = static_cast<int>(std::floor(prop.animationTime * prop.fps)) % frames;
+    const Rectangle source = {
+        static_cast<float>(frame * frameWidth), 0.0f,
+        static_cast<float>(frameWidth), static_cast<float>(texture.height)
+    };
+    const Rectangle destination = {
+        anchor.x - static_cast<float>(frameWidth),
+        anchor.y - static_cast<float>(texture.height * 2),
+        static_cast<float>(frameWidth * 2),
+        static_cast<float>(texture.height * 2)
+    };
+    DrawTexturePro(texture, source, destination, { 0.0f, 0.0f }, 0.0f, WHITE);
+}
+
+void OverworldScene::drawPlayer(GameContext& context) const {
     const SpriteSheetDef* pepeSheet = spriteSheetCache().load(
         "assets/sprites/ow/pepe_frog.png",
         "assets/sprites/ow/pepe_frog.json"
@@ -1084,6 +1350,64 @@ void OverworldScene::render(GameContext& context) {
         Texture2D pepeTex = context.resources.getMaskedTexture("assets/img/pepe_char.bmp", { 255, 0, 255, 255 });
         m_player.render(pepeTex);
     }
+}
+
+void OverworldScene::render(GameContext& context) {
+    ClearBackground(BLACK);
+
+    Font font8Bit = context.resources.getFont8Bit(20);
+    const Vector2 playerPosition = m_player.getPosition();
+    const CameraTopLeft cameraTopLeft = Camera2DFollow::calculate(
+        playerPosition.x, playerPosition.y, m_roomWidth, m_roomHeight);
+    Camera2D camera = {};
+    camera.target = { cameraTopLeft.x, cameraTopLeft.y };
+    camera.offset = { 0.0f, 0.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
+    BeginMode2D(camera);
+
+    drawMapLayers(context, false);
+
+    // The old image-only entrance keeps its simple placeholder pillars.
+    if (m_tiledMap.tilesets.empty() && hasMapObject("left_pillar") && hasMapObject("right_pillar")) {
+        const Rectangle leftPillar = objectBounds("left_pillar", { 140, 160, 50, 80 });
+        const Rectangle rightPillar = objectBounds("right_pillar", { 450, 160, 50, 80 });
+        DrawRectangleRec(leftPillar, { 70, 50, 90, 255 });
+        DrawRectangleLines(static_cast<int>(leftPillar.x), static_cast<int>(leftPillar.y),
+                           static_cast<int>(leftPillar.width), static_cast<int>(leftPillar.height), BLACK);
+        DrawRectangleRec(rightPillar, { 70, 50, 90, 255 });
+        DrawRectangleLines(static_cast<int>(rightPillar.x), static_cast<int>(rightPillar.y),
+                           static_cast<int>(rightPillar.width), static_cast<int>(rightPillar.height), BLACK);
+    }
+
+    if (m_savePoint) m_savePoint->render(context);
+
+    struct DrawEntry {
+        float baseY = 0.0f;
+        int kind = 0; // 0 = interactable, 1 = prop, 2 = player
+        std::size_t index = 0;
+    };
+    std::vector<DrawEntry> drawOrder;
+    drawOrder.reserve(m_interactables.size() + m_props.size() + 1);
+    for (std::size_t index = 0; index < m_interactables.size(); ++index) {
+        const Rectangle bounds = m_interactables[index]->getBounds();
+        drawOrder.push_back({ bounds.y + bounds.height, 0, index });
+    }
+    for (std::size_t index = 0; index < m_props.size(); ++index) {
+        const Rectangle bounds = m_props[index].bounds;
+        drawOrder.push_back({ bounds.y + bounds.height, 1, index });
+    }
+    drawOrder.push_back({ m_player.getSpritePivot().y, 2, 0 });
+    std::stable_sort(drawOrder.begin(), drawOrder.end(), [](const DrawEntry& left, const DrawEntry& right) {
+        return left.baseY < right.baseY;
+    });
+    for (const DrawEntry& entry : drawOrder) {
+        if (entry.kind == 0) m_interactables[entry.index]->render(context);
+        else if (entry.kind == 1) drawProp(context, m_props[entry.index]);
+        else drawPlayer(context);
+    }
+
+    drawMapLayers(context, true);
 
     // 5. Hitbox Debug Overlay (QA-002)
     if (context.debugHitboxes) {
@@ -1118,6 +1442,12 @@ void OverworldScene::render(GameContext& context) {
 
     // 6. Render DialogBox if open
     m_dialogBox.render(context);
+
+    if (m_roomTransition.active()) {
+        const unsigned char alpha = static_cast<unsigned char>(
+            std::clamp(m_roomTransition.alpha(), 0.0f, 1.0f) * 255.0f);
+        DrawRectangle(0, 0, 640, 480, Color{ 0, 0, 0, alpha });
+    }
 }
 
 void OverworldScene::onExit(GameContext& context) {
