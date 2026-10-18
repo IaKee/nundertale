@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "Ah... the dummy is for hugging!",
+        "There is no need to destroy our fluffy friends, my child."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.dummy.result",
+      "value": 2
+    }
+  ]
+}

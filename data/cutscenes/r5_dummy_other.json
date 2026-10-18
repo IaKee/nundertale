@@ -1,0 +1,17 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "...that is also a choice.",
+        "Fleeing can be very sensible when you are unprepared."
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.dummy.result",
+      "value": 3
+    }
+  ]
+}

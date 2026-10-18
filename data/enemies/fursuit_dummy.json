@@ -20,13 +20,13 @@
       "id": "talk",
       "label": "Talk",
       "text": "* It doesn't seem much for conversation. Furiell seems happy.",
-      "effects": { "skipAttack": true }
+      "effects": { "skipAttack": true, "setFlag": "ruins.dummy.talked" }
     },
     {
       "id": "accept_hug",
       "label": "Accept Hug",
       "text": "* You hug the dummy. It's damp. FUR +10.",
-      "effects": { "fur": 10, "spareNow": true }
+      "effects": { "fur": 10, "spareNow": true, "setFlag": "ruins.dummy.hugged" }
     }
   ],
   "flavor": {
