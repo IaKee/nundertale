@@ -292,7 +292,7 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 | :--- | :--- | :--- | :--- |
 | **BUG-33** | `src/services/InputService.cpp`, every menu | **Held keys repeat and carry over.** Holding Z counts as more than one press: in battle, confirming a menu instantly confirms the next one because Z is still down. | A press must be edge-triggered and consumed: one press per key-down, and after a confirm/cancel the next screen ignores that key until it is released (Undertale behaves this way). Add a test for "held Z confirms once". **P0 · S** · **[x] Fixed (2026-10-18):** the input kept every press latched until some scene asked for it, so a Z pressed while text was typing or an animation ran fired later in the next menu (and the gamepad stick repeated every frame). Every action now goes through `core/PressLatch.hpp`: one press per key-down (stick included), and `Game` drops unread presses after each 30 Hz tick (`IInputService::endTick`). Typed letters ignore the OS key repeat. Test suite 45. |
 | **BUG-34** | `ResourceService::drawText` and every caller | **Blurry text edges** in some screens (seen on the name screen). Fonts are drawn at fractional sizes or positions, so the pixel font lands between pixels. BUG-15 fixed the load size but not all call sites. | Round font size and draw position to whole pixels inside `drawText`/`drawCenteredText` (and `measureTextWidth`), use the loaded `baseSize` (or an integer multiple), keep POINT filtering. Check every scene at 1× and fullscreen. **P0 · S** · **[x] Fixed (2026-10-18):** measured: 8bitoperator only lands on whole pixels at 16/32/48 px, and the game uses it at 12–24, so the rasterizer's anti-aliasing left gray glyph edges. `ResourceService` now makes every font atlas pixel fully opaque or clear on load and rounds every text position (centered text and the per-letter jitter too); gray edge pixels on the name screen went from 1936 to 304 (the rest is text that is gray on purpose). Non-integer window scaling is still FRT-009. |
-| **OVW-020** | `data/maps/ruins_entrance.json`, `assets/img/test.bmp` | **The first room is a placeholder:** the background is the Windows XP wallpaper, there are no walls, no scenery and nowhere to go; the only content is the scripted Barky fight, which is not finished either. | Build the first Ruins room(s) as a real Tiled map with `assets/tiles/ruins.png` (ART-F01), walls/collision, exits and props from the art kit; keep the Barky fight as the room's event and finish it (BHL-014, ACT-002). See C1 for the room list. **P0 · L** |
+| **OVW-020** | `data/maps/ruins_entrance.json`, `assets/img/test.bmp` | **The first room is a placeholder:** the background is the Windows XP wallpaper, there are no walls, no scenery and nowhere to go; the only content is the scripted Barky fight, which is not finished either. | Build the first Ruins room(s) as a real Tiled map with `assets/tiles/ruins.png` (ART-F01), walls/collision, exits and props from the art kit; keep the Barky fight as the room's event and finish it (BHL-014, ACT-002). See C1 for the room list. **P0 · L** · **[~] Partly done (2026-10-18):** five real rooms built from the ART-F01 tileset and props, chained by doors with fades: R1 Fall Room (new games start here, wake-up cutscene) → R2 Floofy (cutscene) → R3 Entrance (Furiell intro) → R8 Notices (CRT, laser pointer, curtain, random encounters) → R9 Barky's Arena (the old test room, now tiled, still the Barky fight). `test.bmp` is no longer used. Pending: R4–R7 and R10–R13, the real Floofy pellet battle, moving Barky's scripted behavior to data (C1-009). |
 | **FRT-011** | `src/scenes/DisclaimerScene.cpp` | **The disclaimer is hard to read and says too much.** It doesn't make clear that the game is a parody, that it is for adults (18+), or what kind of humor it has, and nobody will read that much text. | Rewrite as 3–4 short, large lines: a fan-made parody of Undertale (not affiliated), adults only (18+), crude internet humor about gamers and furries with no explicit content, "Press Z". Big readable font, high contrast, centered. **P0 · S** · **[x] Done (2026-10-18):** `WARNING` / `A fan-made PARODY of UNDERTALE.` / `Not affiliated with UNDERTALE or its creator.` / `For ADULTS only (18+).` / `Crude internet humor about` / `gamers and furries.` / `Nothing explicit, lots of cringe.` / `[Press Z or ENTER]`, in 8bitoperator at 48/32/16 px; nothing runs off the screen any more. |
 | **FRT-012** | `data/names.json`, `old/legacy_c`, `old/legacy_python` | **More name easter eggs.** The original legacy code seems to have had more special names than FRT-008's table. | Read the legacy code for special names and their reactions, port the ones that fit LORE (no real people, LORE §2.2), and add a few new ones. **P2 · S** |
 | **BUG-35** | `src/scenes/NameSelectScene.cpp` | **The selected letter keeps shaking.** | Only unselected letters tremble; the highlighted letter stays still (yellow). **P1 · S** · **[x] Fixed (2026-10-18):** `NameSelectScene::drawGridLetter` draws the letter under the cursor without jitter. |
@@ -814,9 +814,10 @@ P0 · S · BUG-10
 P0 · M · GFX-002
 - **What:** the soul has a small central hitbox (confirm ~8×8); bullets have per-type hitboxes (circle, rotated rectangle, optional per-pixel mask for irregular shapes). The debug overlay (QA-002) draws them all.
 
-#### BHL-004 — Attack pattern framework `[ ]`
+#### BHL-004 — Attack pattern framework `[~]`
 P0 · L · D-09, BFL-005
 - **What:** `IAttackPattern { boxSize(); duration(); onStart(); update(frame); }` + a `PatternRegistry` mapping the JSON name → class. Parameters (speed, density, damage, `fur`, `shame`) in the enemy JSON. Per-turn selection: sequential, random, or conditioned on flags/HP.
+- **First step (2026-10-18):** patterns are declared per enemy in JSON with a `kind` and params (`include/combat/EnemyPatterns.hpp`): `rain`, `hop` (parabolic arcs), `swarm` (drifts toward the soul with jitter), `wall` (a column with a gap) and `bounce` (gravity); one weighted pattern per enemy turn. Barky keeps his own `BarkyPatterns` cycle. Pending: timelines/sequencing inside a turn, the remaining LORE patterns, sprites for the bullets.
 
 #### BHL-005 — Per-bullet damage and player DF `[x]`
 P0 · S · BUG-07, PRG-002
@@ -958,9 +959,10 @@ P0 · M · CORE-003, BUI-007
 - **Where:** replaces the current black fade from `changeScene` in `OverworldScene` and the B shortcut.
 - **Acceptance:** identical to a reference recording; zero frames of gray fade.
 
-#### ENC-003 — Step-based random encounters `[ ]`
+#### ENC-003 — Step-based random encounters `[x]`
 P1 · M · OVW-003
 - **What:** each room defines an `encounterTable` + `stepsMin/stepsMax`; a step counter (distance walked) fires a weighted encounter. No encounter during the first N steps after a battle or after entering the room.
+- **Done (2026-10-18):** map property `encounters` (`"froggsona:2,shysona:1,modsmal:1"`, ids with weights); while Pepe actually moves, a counter runs down from a random 90–200 walking ticks, then the `!` alert and the encounter transition start that battle. Never during dialog, cutscenes, menus or door fades. Pure logic in `include/core/RandomEncounters.hpp` (seeded xorshift, tested).
 
 #### ENC-004 — Area exhaustion (for the Toxic Gamer route) `[ ]`
 P2 · M · ENC-003, PRG-030
@@ -971,9 +973,10 @@ P2 · M · ENC-003, PRG-030
 P0 · S · QA-001
 - **What:** the B key only works with `NUNDERTALE_DEBUG`; it becomes an entry in the debug menu (QA-003).
 
-#### ENC-006 — Per-area encounter budget `[ ]`
+#### ENC-006 — Per-area encounter budget `[~]`
 P1 · S · ENC-003
 - **What (LORE §11.1, §18.6):** outside the Toxic route, **2–3 random encounters per area**, spread across rooms with a budget (R8: 1 · R10: 1 · S5: 2 · W3: 2 · H1→H2: 1). Once a room's budget is spent, the step counter stops firing. On the Toxic route the budget is ignored until the cap (ENC-004); on the Furry route encounters become hugs (FLF-009).
+- **Per room (2026-10-18):** map property `encounterBudget`; `enc.<roomId>.count` goes up when an encounter fires (fleeing also counts), and the room stops spawning at the budget. R8 has budget 1. Pending: area-wide totals and the Toxic route caps (ENC-004).
 
 ---
 
@@ -1898,9 +1901,10 @@ P0 · M · NAR-008
 - **What:** Floofy comments (`You spared her? Wow. No shame. ...I respect that.` + variants); the iron door opens onto the frozen forest under a neon aurora; Senpai Sans at the sentry station in the distance.
 - **Save:** `* The cold air and the faint smell of ozone fill you with DETERMINATION.`
 
-#### C1-020 — Ruins bestiary `[ ]`
+#### C1-020 — Ruins bestiary `[~]`
 P0 · L · NAR-006, ART-110, BHL-004
 - **What:** data (`data/enemies/*.json`), sprites and patterns for every common enemy (LORE §18.1). Replaces the old proposal (Frogposter/Soytoid dropped).
+- **Partly done (2026-10-18):** Fursuit Dummy, Froggsona, Shysona and Modsmal have data (`data/enemies/`, LORE §18.1 stats, Check, ACTs, bubbles, FUR) and encounters (`data/encounters/`); battles load by encounter id (`BattleScene(id)`), use the battle sprites, and set `battle.<id>.spared` / `battle.<id>.killed` (kills also count in `kills.ruins`). New ACT effect `flees`. Pending: Lurkeye, Reply Guy (needs BFL-004), Grasstoid, Napstablurk, and the thought/Check variants.
 
 | Enemy (parody) | HP/AT/DF · EXP/G · FUR | ACTs → spare | Patterns | Note |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1929,9 +1933,10 @@ P0 · XL · BHL-004, BHL-020, ART-111
 P2 · M · NAR-017, ART-111
 - **What:** an optional encounter in the R10 hallway; `Cheer` ×3 in sequence (`Like their post` → `Leave a comment` → `Share`) → spare; `Flirt` (`* You slide into their DMs. They leave you on read. Out of nervousness.`); `seen_tears` dealing 1 damage; ending `oh... i usually come here because nobody's online... but today i met somebody nice...`; `ruins.napstablurk.state`. Formerly `xX_AFK_Xx` (jar #2).
 
-#### C1-024 — Ruins random encounters `[ ]`
+#### C1-024 — Ruins random encounters `[~]`
 P1 · S · ENC-003, C1-020
 - **What:** `data/encounters/ruins_*.json`: R8 (budget 1: Froggsona · Shysona · Modsmal), R10 (budget 1: Lurkeye · Reply Guy · Grasstoid), with "X and co." combos and weights. Toxic route: encounters until the cap of 6 (C7-002).
+- **R8 done (2026-10-18):** `ruins_notices` meets Froggsona (weight 2), Shysona or Modsmal, budget 1. Pending: R10 (needs Lurkeye, Reply Guy, Grasstoid), "X and co." combos (BFL-004).
 
 #### C1-030 — The Ruins playable start to finish `[ ]`
 P0 · XL · C1-001..C1-024

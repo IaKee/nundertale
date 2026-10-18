@@ -1,6 +1,7 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
 #include "scenes/OverworldScene.hpp"
+#include "scenes/BattleScene.hpp"
 #include "services/MusicTracks.hpp"
 #include <algorithm>
 #include <fstream>
@@ -16,6 +17,9 @@ Game::Game(int argc, char** argv) {
         const std::string argument = argv[index];
         if (argument == "--room" && index + 1 < argc) {
             m_debugRoom = argv[++index];
+            m_debugLaunch = true;
+        } else if (argument == "--battle" && index + 1 < argc) {
+            m_debugBattle = argv[++index];
             m_debugLaunch = true;
         } else if (argument == "--spawn" && index + 1 < argc) {
             m_debugSpawn = argv[++index];
@@ -77,12 +81,17 @@ Game::Game(int argc, char** argv) {
     // Initial scene: pushScene with context properly executes onEnter (BUG-01)
 #ifdef NUNDERTALE_DEBUG
     if (m_debugLaunch) {
-        m_context->state.currentRoom = m_debugRoom;
+        if (!m_debugRoom.empty()) m_context->state.currentRoom = m_debugRoom;
         m_context->state.playerPos = { 0.0f, 0.0f };
         m_context->launchSpawn = m_debugSpawn;
         m_context->state.setFlag("raid_msgs_shown", 0xF);
         for (const auto& [key, value] : m_debugFlags) m_context->state.setFlag(key, value);
-        m_sceneManager->pushScene(std::make_unique<OverworldScene>(), *m_context);
+        if (!m_debugRoom.empty() || m_debugBattle.empty()) {
+            m_sceneManager->pushScene(std::make_unique<OverworldScene>(), *m_context);
+        }
+        if (!m_debugBattle.empty()) {
+            m_sceneManager->pushScene(std::make_unique<BattleScene>(m_debugBattle), *m_context);
+        }
     } else {
         m_sceneManager->pushScene(std::make_unique<DisclaimerScene>(), *m_context);
     }
