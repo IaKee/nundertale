@@ -294,7 +294,7 @@
         {
           "height": 0,
           "id": 7,
-          "name": "from_entrance",
+          "name": "from_switches",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -313,7 +313,7 @@
         {
           "height": 0,
           "id": 8,
-          "name": "spawn",
+          "name": "from_entrance",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -332,6 +332,44 @@
         {
           "height": 0,
           "id": 9,
+          "name": "spawn",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 370,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 10,
+          "name": "from_hallway",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 11,
           "name": "from_notices",
           "rotation": 0,
           "type": "spawn",
@@ -350,8 +388,8 @@
         },
         {
           "height": 40,
-          "id": 10,
-          "name": "door_to_entrance",
+          "id": 12,
+          "name": "door_to_switches",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -362,7 +400,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_entrance"
+              "value": "ruins_switches"
             },
             {
               "name": "targetSpawn",
@@ -373,8 +411,8 @@
         },
         {
           "height": 40,
-          "id": 11,
-          "name": "door_to_notices",
+          "id": 13,
+          "name": "door_to_hallway",
           "rotation": 0,
           "type": "door",
           "visible": true,
@@ -385,7 +423,7 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_notices"
+              "value": "ruins_hallway"
             },
             {
               "name": "targetSpawn",
@@ -396,7 +434,7 @@
         },
         {
           "height": 40,
-          "id": 12,
+          "id": 14,
           "name": "dummy",
           "rotation": 0,
           "type": "prop",
@@ -434,7 +472,7 @@
         },
         {
           "height": 60,
-          "id": 13,
+          "id": 15,
           "name": "furiell",
           "rotation": 0,
           "type": "npc",
@@ -472,7 +510,7 @@
         },
         {
           "height": 40,
-          "id": 14,
+          "id": 16,
           "name": "trigger_intro",
           "rotation": 0,
           "type": "trigger",
@@ -495,7 +533,7 @@
         },
         {
           "height": 315,
-          "id": 15,
+          "id": 17,
           "name": "trigger_react_hug",
           "rotation": 0,
           "type": "trigger",
@@ -523,7 +561,7 @@
         },
         {
           "height": 315,
-          "id": 16,
+          "id": 18,
           "name": "trigger_react_talk",
           "rotation": 0,
           "type": "trigger",
@@ -551,7 +589,7 @@
         },
         {
           "height": 315,
-          "id": 17,
+          "id": 19,
           "name": "trigger_react_fight",
           "rotation": 0,
           "type": "trigger",
@@ -579,7 +617,7 @@
         },
         {
           "height": 315,
-          "id": 18,
+          "id": 20,
           "name": "trigger_react_flee",
           "rotation": 0,
           "type": "trigger",
@@ -607,7 +645,7 @@
         },
         {
           "height": 315,
-          "id": 19,
+          "id": 21,
           "name": "trigger_react_spare",
           "rotation": 0,
           "type": "trigger",
@@ -854,7 +892,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 22,
   "orientation": "orthogonal",
   "properties": [
     {

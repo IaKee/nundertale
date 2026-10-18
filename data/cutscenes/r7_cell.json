@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "lines": [
+        "You have done wonderfully so far, my child.",
+        "Take this CELL phone. It is a flip phone with paw stickers.",
+        "If you need anything, simply call me.",
+        "I will wait for you at the end of the hall. Do not be afraid!"
+      ]
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.cell.given",
+      "value": 1
+    },
+    {
+      "type": "setFlag",
+      "key": "cell_furiell",
+      "value": 1
+    }
+  ]
+}
