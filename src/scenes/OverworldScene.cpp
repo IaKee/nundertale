@@ -40,6 +40,12 @@ void OverworldScene::initObstacles() {
 }
 
 void OverworldScene::loadRoomMap(const std::string& roomId) {
+    m_cutsceneFadeAlpha = 0.0f;
+    m_cutsceneFadeStart = 0.0f;
+    m_cutsceneFadeTarget = 0.0f;
+    m_cutsceneFadeElapsed = 0.0f;
+    m_cutsceneFadeActive = false;
+    m_autoFadeIn = false;
     m_tiledMap = {};
     m_roomWidth = 640.0f;
     m_roomHeight = 480.0f;
@@ -210,6 +216,7 @@ void OverworldScene::startCutscene(const std::string& id) {
     json << file.rdbuf();
     Cutscene cutscene;
     if (parseCutsceneJson(json.str(), cutscene) && !cutscene.steps.empty()) {
+        m_autoFadeIn = false;
         m_cutscene.start(std::move(cutscene));
     }
 }
@@ -1213,6 +1220,16 @@ void OverworldScene::update(float dt, GameContext& context) {
     int targetFluff = fluffTargetCount(context.state.furry.value, context.state.getRoute() == GameState::RouteType::ToxicGamer);
     updateFluff(m_fluffParticles, dt, targetFluff, m_fluffRng);
 
+    if (m_autoFadeIn) {
+        m_cutsceneFadeElapsed += std::max(0.0f, dt);
+        m_cutsceneFadeAlpha = fadeAlpha(
+            m_cutsceneFadeStart, 0.0f, m_cutsceneFadeElapsed, 0.3f);
+        if (m_cutsceneFadeAlpha == 0.0f) {
+            m_autoFadeIn = false;
+            m_cutsceneFadeActive = false;
+        }
+    }
+
     if (m_doorFadeState != DoorFadeState::None) {
         updateDoorTransition(context);
         return;
@@ -1226,10 +1243,15 @@ void OverworldScene::update(float dt, GameContext& context) {
                                   std::unordered_set<std::string>& hidden,
                                   std::unordered_map<std::string, std::string>& animations,
                                   std::unordered_set<std::string>& logged,
-                                  float& controlsLockedRemaining)
+                                  float& controlsLockedRemaining, float& fadeAlphaValue,
+                                  float& fadeStart, float& fadeTarget, float& fadeElapsed,
+                                  bool& fadeActive)
                 : m_dialogBox(dialogBox), m_player(player), m_context(context),
                   m_roomObjects(roomObjects), m_hidden(hidden), m_animations(animations),
-                  m_logged(logged), m_controlsLockedRemaining(controlsLockedRemaining) {}
+                  m_logged(logged), m_controlsLockedRemaining(controlsLockedRemaining),
+                  m_fadeAlpha(fadeAlphaValue), m_fadeStart(fadeStart),
+                  m_fadeTarget(fadeTarget), m_fadeElapsed(fadeElapsed),
+                  m_fadeActive(fadeActive) {}
 
             void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
                 m_dialogBox.startDialog(lines, speaker);
@@ -1376,7 +1398,29 @@ void OverworldScene::update(float dt, GameContext& context) {
                     m_controlsLockedRemaining, std::max(0.0f, seconds));
             }
 
+            bool fadeOut(float seconds, float dt) override {
+                return fadeTo(1.0f, seconds, dt);
+            }
+
+            bool fadeIn(float seconds, float dt) override {
+                return fadeTo(0.0f, seconds, dt);
+            }
+
         private:
+            bool fadeTo(float target, float seconds, float dt) {
+                if (!m_fadeActive || m_fadeTarget != target) {
+                    m_fadeStart = m_fadeAlpha;
+                    m_fadeTarget = target;
+                    m_fadeElapsed = 0.0f;
+                    m_fadeActive = true;
+                }
+                m_fadeElapsed += std::max(0.0f, dt);
+                m_fadeAlpha = fadeAlpha(m_fadeStart, target, m_fadeElapsed, seconds);
+                if (m_fadeAlpha != target) return false;
+                m_fadeActive = false;
+                return true;
+            }
+
             DialogBox& m_dialogBox;
             Player& m_player;
             GameContext& m_context;
@@ -1385,10 +1429,23 @@ void OverworldScene::update(float dt, GameContext& context) {
             std::unordered_map<std::string, std::string>& m_animations;
             std::unordered_set<std::string>& m_logged;
             float& m_controlsLockedRemaining;
+            float& m_fadeAlpha;
+            float& m_fadeStart;
+            float& m_fadeTarget;
+            float& m_fadeElapsed;
+            bool& m_fadeActive;
         } host(m_dialogBox, m_player, context, m_roomObjects, m_hiddenRoomObjects,
-               m_roomObjectAnimations, m_loggedConditions, m_controlsLockedRemaining);
+               m_roomObjectAnimations, m_loggedConditions, m_controlsLockedRemaining,
+               m_cutsceneFadeAlpha, m_cutsceneFadeStart, m_cutsceneFadeTarget,
+               m_cutsceneFadeElapsed, m_cutsceneFadeActive);
 
         m_cutscene.update(dt, host);
+        if (!m_cutscene.running() && m_cutsceneFadeAlpha > 0.0f) {
+            m_autoFadeIn = true;
+            m_cutsceneFadeStart = m_cutsceneFadeAlpha;
+            m_cutsceneFadeElapsed = 0.0f;
+            m_cutsceneFadeActive = true;
+        }
         refreshDynamicObstacles(context);
         if (m_dialogBox.isActive()) {
             m_dialogBox.update(dt, context);
@@ -1791,6 +1848,11 @@ void OverworldScene::render(GameContext& context) {
     renderSaveBox(context, font8Bit);
 
     // 6. Render DialogBox if open
+    if (m_cutsceneFadeAlpha > 0.0f) {
+        DrawRectangle(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT,
+                      Color{ 0, 0, 0, static_cast<unsigned char>(
+                          std::clamp(m_cutsceneFadeAlpha, 0.0f, 1.0f) * 255.0f) });
+    }
     m_dialogBox.render(context);
 
     if (m_doorFadeState != DoorFadeState::None) {

@@ -2357,7 +2357,8 @@ def build_ruins_bakesale():
     ]
 
     collision = [
-        {"x": 0, "y": 0, "w": 800, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 0, "w": 600, "h": 80, "name": "top_wall_left"},
+        {"x": 680, "y": 0, "w": 120, "h": 80, "name": "top_wall_right"},
         {"x": 0, "y": 440, "w": 280, "h": 40, "name": "bottom_wall_left"},
         {"x": 360, "y": 440, "w": 440, "h": 40, "name": "bottom_wall_right"},
         {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
@@ -2382,6 +2383,15 @@ def build_ruins_bakesale():
             "x": 320,
             "y": 380,
             "properties": {"facing": "up"},
+        },
+        # Spawn when entering from Furiell's House (north)
+        {
+            "name": "from_house",
+            "type": "spawn",
+            "point": True,
+            "x": 640,
+            "y": 140,
+            "properties": {"facing": "down"},
         },
         # Door south back to ruins_barky
         {
@@ -2516,16 +2526,17 @@ def build_ruins_bakesale():
                 "lines": "* \"All proceeds go to spider artists. Slots open. ETA: yes.\"",
             },
         },
-        # North dark doorway leading towards R11 (not accessible yet)
+        # Door north forward to ruins_house
         {
-            "name": "north_doorway",
-            "type": "examine",
+            "name": "door_to_house",
+            "type": "door",
             "x": 600,
-            "y": 60,
+            "y": 40,
             "w": 80,
             "h": 40,
             "properties": {
-                "lines": "* (The hallway beyond smells like lavender and printer toner. Not yet.)",
+                "targetRoom": "ruins_house",
+                "targetSpawn": "from_bakesale",
             },
         },
     ]
@@ -2546,6 +2557,228 @@ def build_ruins_bakesale():
     )
 
 
+# =============================================================================
+# Room R11: Furiell's House - Living Room (ruins_house)
+# Size: 20x12 tiles (800x480 px).
+# Cozy living room with fireplace, armchair, bookshelf, desk with laptop and
+# letterhead, Glitter Pop-Tart pickup, locked door to her room, basement stairs,
+# and the mirror.
+# =============================================================================
+def build_ruins_house():
+    width = 20
+    height = 12
+
+    ground = [
+        "#[=]u[============]#",
+        "#{--}j{--QWE-----o}#",
+        "#.,;..;,..ASD...;,;#",
+        "#;.,..;,..,;,..;.,.#",
+        "#.,.::.78888889.,;.#",
+        "#;..c..45555556;.,.#",
+        "#.,.,..455z5556.,;,#",
+        "#;.,...45555p56;.,.#",
+        "#.,;,..12222223.,;.#",
+        "#;.,..*....*....;..#",
+        "#________  ________#",
+        "#########..#########",
+    ]
+
+    above = [
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+        "....................",
+    ]
+
+    collision = [
+        {"x": 0, "y": 0, "w": 800, "h": 80, "name": "top_wall"},
+        {"x": 0, "y": 440, "w": 360, "h": 40, "name": "bottom_wall_left"},
+        {"x": 440, "y": 440, "w": 360, "h": 40, "name": "bottom_wall_right"},
+        {"x": 0, "y": 0, "w": 40, "h": 480, "name": "left_wall"},
+        {"x": 760, "y": 0, "w": 40, "h": 480, "name": "right_wall"},
+        {"x": 80, "y": 180, "w": 160, "h": 40, "name": "col_desk"},
+    ]
+
+    objects = [
+        # South spawn (from Bake Sale) & default spawn
+        {
+            "name": "from_bakesale",
+            "type": "spawn",
+            "point": True,
+            "x": 400,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        {
+            "name": "spawn",
+            "type": "spawn",
+            "point": True,
+            "x": 400,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
+        # Door south back to ruins_bakesale
+        {
+            "name": "door_to_bakesale",
+            "type": "door",
+            "x": 360,
+            "y": 440,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "targetRoom": "ruins_bakesale",
+                "targetSpawn": "from_house",
+            },
+        },
+        # Locked door to her room
+        {
+            "name": "furiell_room_door",
+            "type": "examine",
+            "x": 120,
+            "y": 40,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* It's locked. You hear a printer.",
+            },
+        },
+        # Stairs to basement blocked with examine
+        {
+            "name": "stairs_basement",
+            "type": "examine",
+            "x": 240,
+            "y": 40,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* (The basement. Not yet.)",
+            },
+        },
+        # Table / desk area - Laptop examine
+        {
+            "name": "laptop",
+            "type": "examine",
+            "x": 80,
+            "y": 180,
+            "w": 50,
+            "h": 40,
+            "properties": {
+                "lines": "* She closes a tab very fast.",
+            },
+        },
+        # Table / desk area - Letterhead examine
+        {
+            "name": "letterhead",
+            "type": "examine",
+            "x": 130,
+            "y": 180,
+            "w": 50,
+            "h": 40,
+            "properties": {
+                "lines": "* \"RUINS ADMINISTRATION\". In her handwriting. Hm.",
+            },
+        },
+        # Table / desk area - Glitter Pop-Tart itemPickup
+        {
+            "name": "poptart_pickup",
+            "type": "itemPickup",
+            "x": 180,
+            "y": 180,
+            "w": 50,
+            "h": 40,
+            "properties": {
+                "item": "Glitter Pop-Tart",
+                "flag": "ruins.house.poptart",
+                "lines": "* (You take the Glitter Pop-Tart.)\n* It sparkles aggressively.",
+                "emptyLines": "* (The plate is empty.)",
+                "fullLines": "* You're carrying too much.",
+            },
+        },
+        # Soft Armchair
+        {
+            "name": "armchair",
+            "type": "prop",
+            "x": 410,
+            "y": 140,
+            "w": 60,
+            "h": 60,
+            "properties": {
+                "sprite": "assets/props/ruins_armchair.png",
+                "solid": True,
+                "lines": "* A very soft armchair.\n* It smells faintly of vanilla and dryer sheets.",
+            },
+        },
+        # Crackling Fireplace
+        {
+            "name": "fireplace",
+            "type": "prop",
+            "x": 480,
+            "y": 40,
+            "w": 80,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_fireplace.png",
+                "anim": "burn",
+                "solid": True,
+                "lines": "* A cozy fire crackles in the fireplace.",
+            },
+        },
+        # Bookshelf with book line
+        {
+            "name": "bookshelf",
+            "type": "prop",
+            "x": 580,
+            "y": 40,
+            "w": 80,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_bookshelf.png",
+                "solid": True,
+                "lines": "* \"Fanfics of Questionable Quality, Vol. 7\". You read one sentence. You put it down very carefully.",
+            },
+        },
+        # Mirror with normal and fur lines
+        {
+            "name": "mirror",
+            "type": "prop",
+            "x": 680,
+            "y": 40,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "sprite": "assets/props/ruins_mirror.png",
+                "anim": "normal",
+                "altAnim": "fur",
+                "altAnimIf": "fur >= 20",
+                "solid": True,
+                "lines": "* It's you!",
+                "furMin": 20,
+                "furLines": "* It's... still you. With ears.",
+            },
+        },
+    ]
+
+    return make_tiled_map(
+        room_id="ruins_house",
+        display_name="Ruins - Furiell's House",
+        width=width,
+        height=height,
+        ground_grid=ground,
+        collision_boxes=collision,
+        objects=objects,
+        above_grid=above,
+        music="overworld.default",
+    )
+
+
 def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     maps_dir = os.path.join(repo_root, "data", "maps")
@@ -2562,6 +2795,7 @@ def main():
         "ruins_notices.json": build_ruins_notices,
         "ruins_barky.json": build_ruins_barky,
         "ruins_bakesale.json": build_ruins_bakesale,
+        "ruins_house.json": build_ruins_house,
     }
 
     print("Building Ruins maps...")

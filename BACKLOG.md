@@ -403,7 +403,8 @@ P1 · L · CORE-010, TXT-001
 - **Partly done (2026-10-17):** `include/core/Cutscene.hpp`: a JSON-loaded step runner (`wait`, `dialog` blocking until the box closes, `sound`, `setFlag`, `shake`, `flash`, `startBattle`), and player input is blocked while it runs. Barky's entrance is now `data/cutscenes/barky_entrance.json` (sound → shake → wait → BARKY's 3 lines → battle), with the old hardcoded version as the fallback. `moveNpc`, `cameraPan` and `fadeOut` are parsed but skipped (no NPC movement or camera yet), and `startBattle` only knows `barky` (BFL-004).
 - **Round 6 (2026-10-18):** new steps `setFur`, `healFull`, `facePlayer`, `playerAnim` (Pepe drawn with another sheet, e.g. the R1 wake-up). Room triggers start `data/cutscenes/<id>.json`.
 - **Round 7b (2026-10-18):** any step can carry `"if": "<condition>"` (room-condition syntax, `fur`/`hp` pseudo-flags; false skips the step); new steps `giveItem`, `addFlag`, `addFur`, `npcFace`, `npcAnim`, `hideNpc`/`showNpc`. Room objects: a `cutscene` property on sign/examine/prop/npc runs instead of `lines`, `altAnim` + `altAnimIf` on props/NPCs, a `hazard` rect type (damage, HP floor 1, push-back). ContentLint rejects unknown step types.
-- **Round 8 (2026-10-18):** `moveNpc` {npc, x, y, speed} and `movePlayer` {x, y, speed} (blocking, dt-based, walk animations; NPC positions reset on room entry), `lockControls` {seconds} (non-blocking). Room objects: `bumpCutscene` on solid props/NPCs runs a cutscene after 0.25 s of pushing into them. Pending: `cameraPan`, `fadeOut`.
+- **Round 8 (2026-10-18):** `moveNpc` {npc, x, y, speed} and `movePlayer` {x, y, speed} (blocking, dt-based, walk animations; NPC positions reset on room entry), `lockControls` {seconds} (non-blocking). Room objects: `bumpCutscene` on solid props/NPCs runs a cutscene after 0.25 s of pushing into them. Pending: `cameraPan`.
+- **Round 9 (2026-10-18):** `fadeOut`/`fadeIn` {seconds} (blocking black overlay under the dialog box; auto fade-in when a cutscene ends dark).
 
 #### CORE-012 — Play time clock `[x]`
 P1 · S · CORE-004
@@ -1894,11 +1895,12 @@ P1 · L · OVW-011, SHP-002, C1-023
 - **Partly done (2026-10-18, round 7b):** `ruins_bakesale` opens north of R9 once Barky is resolved (`ruins.barky.state >= 1`): the Dorito bowl (`Stale Doritos` pickup, `ruins.bowl.taken`, empty bowl afterwards), the Commission Bake Sale booth with its sign and a one-time `Commissioned Donut` sample (`ruins.bakesale.sample`), the mod rock (3 lines, `ruins.modrock.talks`), the glitter forced call (`r10_call`, `ruins.r10.call`), a save point and a dark doorway to R11. Pending: take 4 → tipped bowl (`ruins.bowl.broken`), the shop menu (SHP-002), Napstablurk (C1-023), pushing the rock / 5 s mute, random encounters, the closet call.
 - **Round 8 (2026-10-18):** the bowl is one prop with a cutscene (`r10_bowl`, counter `ruins.bowl.takes`): three Doritos with guiltier lines, the 4th tips it over (`ruins.bowl.broken`, `knocked` sprite). Pushing the mod rock (`bumpCutscene` `r10_modrock_push`) → `* You have been muted for 5 seconds.` and controls lock for 5 s. Still pending: the shop menu (SHP-002), Napstablurk (C1-023), random encounters, the closet call.
 
-#### C1-011 — R11: Furiell's House `[ ]`
+#### C1-011 — R11: Furiell's House `[~]`
 P0 · L · NAR-003, ART-120, OVW-011
 - **Rooms:** living room, hallway with a mirror, Pepe's room, her room (locked: `* It's locked. You hear a printer.`), stairs to the basement.
 - **Examinables:** mirror `* It's you!` → FUR ≥ 20 `* It's... still you. With ears.` · book `* "Fanfics of Questionable Quality, Vol. 7". You read one sentence. You put it down very carefully.` · laptop `* She closes a tab very fast.` (sets up the running gag) · letterhead `* "RUINS ADMINISTRATION". In her handwriting. Hm.` · Pepe's closet: the **`Fursuit Head`** (`* A spare fursuit head. It's your size. Why is it your size?`, `ruins.fursuit_head.taken`) · bed `* You nap under the faux-fur blanket. HP fully restored. FUR +5.`
 - **House items:** `Glitter Pop-Tart` (full HP), `Faux-Fur Bandana` (room to be decided, NAR-030). Line: `Do you prefer glitter or MORE glitter?`.
+- **Partly done (2026-10-18, round 9):** `ruins_house` (the living room) through R10's north doorway: fireplace, armchair, bookshelf (fanfic book), desk with the laptop and letterhead lines, a `Glitter Pop-Tart` pickup (`ruins.house.poptart`), her locked door (printer line), the basement stairs (blocked for now) and the mirror (`* It's you!`, FUR >= 20 → `* It's... still you. With ears.` and the `fur` mirror sprite). Pending: the hallway, Pepe's room (bed: full HP + 5 FUR, closet with the Fursuit Head), the stairs to R12.
 
 #### C1-012 — R12: Basement and Furiell's fight `[ ]`
 P0 · XL · NAR-003, C1-022
