@@ -3005,6 +3005,16 @@ int main() {
         std::cout << "[PASS] T3: enemy JSONs, flees effect, encounter parsing, seeded picks, budget, and steps verified." << std::endl;
     }
 
-    std::cout << "\nAll 48 test suites passed successfully!" << std::endl;
+    // Suite 49: OVW-007 NPCs turn toward Pepe (larger axis wins, ties go vertical)
+    {
+        assert(nundertale::faceTowardDirection(100.0f, 100.0f, 160.0f, 110.0f) == "right");
+        assert(nundertale::faceTowardDirection(100.0f, 100.0f, 40.0f, 90.0f) == "left");
+        assert(nundertale::faceTowardDirection(100.0f, 100.0f, 105.0f, 180.0f) == "down");
+        assert(nundertale::faceTowardDirection(100.0f, 100.0f, 95.0f, 20.0f) == "up");
+        assert(nundertale::faceTowardDirection(100.0f, 100.0f, 150.0f, 150.0f) == "down");
+        std::cout << "[PASS] OVW-007: NPC face-toward direction verified." << std::endl;
+    }
+
+    std::cout << "\nAll 49 test suites passed successfully!" << std::endl;
     return 0;
 }
