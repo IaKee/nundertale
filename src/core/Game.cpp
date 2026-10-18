@@ -1,6 +1,7 @@
 #include "core/Game.hpp"
 #include "scenes/DisclaimerScene.hpp"
 #include "scenes/OverworldScene.hpp"
+#include "scenes/BattleScene.hpp"
 #include "services/MusicTracks.hpp"
 #include <algorithm>
 #include <cstdlib>
@@ -49,6 +50,11 @@ Game::Game() {
     if (debugRoom != nullptr && debugRoom[0] != '\0') {
         m_context->state.currentRoom = debugRoom;
         m_sceneManager->pushScene(std::make_unique<OverworldScene>(), *m_context);
+        // NUNDERTALE_BATTLE=<encounterId> also starts that battle on top of the room.
+        const char* debugBattle = std::getenv("NUNDERTALE_BATTLE");
+        if (debugBattle != nullptr && debugBattle[0] != 0) {
+            m_sceneManager->pushScene(std::make_unique<BattleScene>(debugBattle), *m_context);
+        }
         return;
     }
 #endif

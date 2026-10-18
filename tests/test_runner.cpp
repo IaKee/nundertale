@@ -13,6 +13,8 @@
 #include "combat/ResidualDamage.hpp"
 #include "combat/AttackTarget.hpp"
 #include "combat/BarkyPatterns.hpp"
+#include "combat/GenericPatterns.hpp"
+#include "combat/EnemyLoader.hpp"
 #include "ui/DialogBox.hpp"
 #include "ui/Mosaic.hpp"
 #include "core/AreaPalettes.hpp"
@@ -2912,6 +2914,194 @@ int main() {
         std::cout << "[PASS] C-T1: pipe-separated dialog pages preserve embedded newlines." << std::endl;
     }
 
-    std::cout << "\nAll 50 test suites passed successfully!" << std::endl;
+    // 51. C-T3: generic pattern spawner generates deterministic positions inside box and exact bullet counts
+    {
+        using namespace nundertale;
+        Rectangle box = { 200.0f, 200.0f, 200.0f, 150.0f };
+        Vector2 target = { 300.0f, 275.0f };
+
+        // 1. Hop pattern (Froggsona colon_three_hop)
+        GenericPatternDef hopPat;
+        hopPat.id = "colon_three_hop";
+        hopPat.kind = "hop";
+        hopPat.count = 3;
+        hopPat.speed = 110.0f;
+        hopPat.damage = 3;
+        hopPat.fur = 3;
+        hopPat.bullet = ":3";
+
+        auto hopBullets = spawnGenericPattern(hopPat, box, target);
+        assert(hopBullets.size() == 3);
+        for (const auto& b : hopBullets) {
+            assert(b.position.x >= box.x && b.position.x <= box.x + box.width);
+            assert(b.position.y >= box.y && b.position.y <= box.y + box.height);
+            assert(b.damage == 3);
+            assert(b.fur == 3);
+            assert(b.bounces == true);
+            assert(b.gravity > 0.0f);
+            assert(b.text == ":3");
+        }
+
+        // Deterministic reproduction
+        auto hopBullets2 = spawnGenericPattern(hopPat, box, target);
+        assert(hopBullets2.size() == hopBullets.size());
+        for (size_t i = 0; i < hopBullets.size(); ++i) {
+            assert(hopBullets[i].position.x == hopBullets2[i].position.x);
+            assert(hopBullets[i].position.y == hopBullets2[i].position.y);
+            assert(hopBullets[i].velocity.x == hopBullets2[i].velocity.x);
+            assert(hopBullets[i].velocity.y == hopBullets2[i].velocity.y);
+        }
+
+        // 2. Bounce pattern (Modsmal ban_gel)
+        GenericPatternDef bouncePat;
+        bouncePat.id = "ban_gel";
+        bouncePat.kind = "bounce";
+        bouncePat.count = 3;
+        bouncePat.speed = 70.0f;
+        bouncePat.damage = 2;
+        bouncePat.fur = 2;
+        bouncePat.bullet = "gel_hammer";
+
+        auto bounceBullets = spawnGenericPattern(bouncePat, box, target);
+        assert(bounceBullets.size() == 3);
+        for (const auto& b : bounceBullets) {
+            assert(b.position.x >= box.x && b.position.x <= box.x + box.width);
+            assert(b.position.y >= box.y && b.position.y <= box.y + box.height);
+            assert(b.bounces == true);
+            assert(b.damage == 2);
+            assert(b.fur == 2);
+        }
+
+        // 3. Rain pattern (Froggsona fly_swarm)
+        GenericPatternDef rainPat;
+        rainPat.id = "fly_swarm";
+        rainPat.kind = "rain";
+        rainPat.count = 5;
+        rainPat.speed = 85.0f;
+        rainPat.damage = 3;
+        rainPat.fur = 3;
+        rainPat.bullet = "fly";
+
+        auto rainBullets = spawnGenericPattern(rainPat, box, target);
+        assert(rainBullets.size() == 5);
+        for (const auto& b : rainBullets) {
+            assert(b.position.x >= box.x && b.position.x <= box.x + box.width);
+            assert(b.position.y >= box.y && b.position.y <= box.y + box.height);
+            assert(b.velocity.y > 0.0f);
+        }
+
+        // 4. Aimed pattern
+        GenericPatternDef aimedPat;
+        aimedPat.kind = "aimed";
+        aimedPat.count = 4;
+        aimedPat.speed = 90.0f;
+        auto aimedBullets = spawnGenericPattern(aimedPat, box, target);
+        assert(aimedBullets.size() == 4);
+        for (const auto& b : aimedBullets) {
+            assert(b.position.x >= box.x && b.position.x <= box.x + box.width);
+            assert(b.position.y >= box.y && b.position.y <= box.y + box.height);
+        }
+
+        std::cout << "[PASS] C-T3: generic pattern spawner generates deterministic positions inside box and exact bullet counts." << std::endl;
+    }
+
+    // 52. C-T3: enemy JSON loading parses stats, check text, ACTs, spare/flee effects, and bubbles
+    {
+        using namespace nundertale;
+
+        // Froggsona loading test
+        EnemyData frog = loadEnemyDataFromFile("data/enemies/froggsona.json");
+        assert(frog.id == "froggsona");
+        assert(frog.name == "Froggsona");
+        assert(frog.hp == 30);
+        assert(frog.maxHp == 30);
+        assert(frog.atk == 4);
+        assert(frog.def == 2);
+        assert(frog.exp == 3);
+        assert(frog.gold == 2);
+        assert(frog.sprite == "froggsona");
+        assert(frog.check == "A frog fursona. Every sentence ends in \":3\".");
+        assert(frog.bubbles.size() >= 2);
+        assert(frog.bubbles[0] == "ribbit :3");
+        assert(frog.patterns.size() == 2);
+        assert(frog.patterns[0].id == "colon_three_hop");
+        assert(frog.patterns[1].id == "fly_swarm");
+
+        // ACT checks
+        assert(frog.acts.size() == 4);
+        bool foundComp = false;
+        bool foundThreat = false;
+        bool foundHug = false;
+        for (const auto& act : frog.acts) {
+            if (act.id == "compliment") {
+                assert(act.spareable == true);
+                assert(act.flee == false);
+                foundComp = true;
+            } else if (act.id == "threaten") {
+                assert(act.flee == true);
+                foundThreat = true;
+            } else if (act.id == "accept_hug") {
+                assert(act.fur == 10);
+                assert(act.spareNow == true);
+                foundHug = true;
+            }
+        }
+        assert(foundComp && foundThreat && foundHug);
+
+        // Shysona loading test
+        EnemyData shy = loadEnemyDataFromFile("data/enemies/shysona.json");
+        assert(shy.id == "shysona");
+        assert(shy.hp == 10);
+        assert(shy.atk == 5);
+        assert(shy.def == 0);
+        assert(shy.exp == 2);
+        assert(shy.gold == 0);
+        bool foundTerror = false;
+        bool foundConsole = false;
+        for (const auto& act : shy.acts) {
+            if (act.id == "terrorize") {
+                assert(act.flee == true);
+                foundTerror = true;
+            } else if (act.id == "console") {
+                assert(act.spareable == true);
+                foundConsole = true;
+            }
+        }
+        assert(foundTerror && foundConsole);
+
+        // Modsmal loading test
+        EnemyData mod = loadEnemyDataFromFile("data/enemies/modsmal.json");
+        assert(mod.id == "modsmal");
+        assert(mod.hp == 50);
+        assert(mod.atk == 1);
+        assert(mod.def == 0);
+        assert(mod.exp == 3);
+        assert(mod.gold == 3);
+        bool foundImitate = false;
+        bool foundFlirt = false;
+        for (const auto& act : mod.acts) {
+            if (act.id == "imitate") {
+                assert(act.spareable == true);
+                foundImitate = true;
+            } else if (act.id == "flirt") {
+                assert(act.spareable == true);
+                foundFlirt = true;
+            }
+        }
+        assert(foundImitate && foundFlirt);
+
+        // Encounter parsing test
+        EncounterData enc = loadEncounterDataFromFile("data/encounters/froggsona.json");
+        assert(enc.id == "encounter_froggsona");
+        assert(enc.enemyId == "froggsona");
+        assert(enc.intro == "* Froggsona hops close!");
+        assert(enc.background == "grid_tube");
+        assert(enc.music == "default");
+        assert(enc.canFlee == true);
+
+        std::cout << "[PASS] C-T3: enemy JSON loading parses stats, check text, ACTs, spare/flee effects, and bubbles." << std::endl;
+    }
+
+    std::cout << "\nAll 52 test suites passed successfully!" << std::endl;
     return 0;
 }

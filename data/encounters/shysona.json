@@ -1,0 +1,8 @@
+{
+  "id": "encounter_shysona",
+  "enemy": "shysona",
+  "intro": "* Shysona appears. It apologizes.",
+  "background": "grid_tube",
+  "music": "default",
+  "canFlee": true
+}

@@ -1,0 +1,69 @@
+{
+  "id": "modsmal",
+  "name": "Modsmal",
+  "hp": 50,
+  "maxHp": 50,
+  "atk": 1,
+  "def": 0,
+  "exp": 3,
+  "gold": 3,
+  "sprite": "modsmal",
+  "check": "A gelatinous moderator of the NSFW channel. Wobbles. Enforces. Sometimes.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "imitate",
+      "label": "Imitate",
+      "text": "* You wobble. Modsmal wobbles back in approval.",
+      "effects": {
+        "spare": true
+      },
+      "response": "*squelch*"
+    },
+    {
+      "id": "flirt",
+      "label": "Flirt",
+      "text": "* You say \"nice ban hammer\". Rule 7 bends a little.",
+      "effects": {
+        "spare": true
+      },
+      "response": "*squorch*"
+    }
+  ],
+  "bubbles": [
+    "*squorch* (Read the pins.)",
+    "*squelch* (Tag your art.)"
+  ],
+  "patterns": [
+    {
+      "id": "ban_gel",
+      "kind": "bounce",
+      "count": 3,
+      "speed": 70,
+      "duration": 5.0,
+      "damage": 2,
+      "fur": 2,
+      "bullet": "gel_hammer"
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Modsmal wobbles gelatinously.",
+      "* A sticky authority radiates from Modsmal.",
+      "* Smells like lime gelatin and moderation logs."
+    ],
+    "lowHp": [
+      "* Modsmal's gelatinous form is losing cohesion.",
+      "* Modsmal wobbles weakly."
+    ],
+    "spareable": [
+      "* Modsmal is contentedly vibrating.",
+      "* Modsmal seems ready to moderate other matters."
+    ]
+  }
+}

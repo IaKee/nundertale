@@ -123,25 +123,34 @@ void BattleSystem::update(float dt, GameContext& context) {
                 if (m_dialogReturnsToMenu) {
                     m_dialogReturnsToMenu = false;
                     m_state = BattleState::MenuSelect;
-                } else if (m_enemy->isDead() || m_isSpared) { // BUG-02
+                } else if (m_enemy->isDead() || m_isSpared || m_isEnemyFled) { // BUG-02
                     m_state = BattleState::Victory;
                     m_residual.clear();
-                    if (m_isSpared) {
-                        context.player.gold += 10;
-                        context.state.setFlag("ruins.barky.spared", 1);
-                        context.state.setFlag("ruins.barky.state", 1);
+                    if (m_isEnemyFled) {
+                        m_narratorText = "* " + m_enemy->getName() + " ran away.";
+                    } else if (m_isSpared) {
+                        int goldGained = m_enemy->getGold();
+                        context.player.gold += goldGained;
+                        if (m_enemy->getName() == "Barky") {
+                            context.state.setFlag("ruins.barky.spared", 1);
+                            context.state.setFlag("ruins.barky.state", 1);
+                        }
                         context.state.sparesTotal += 1;
-                        m_narratorText = "* YOU WON!\n* You earned 0 EXP and 10 gold.";
+                        m_narratorText = "* YOU WON!\n* You earned 0 EXP and " + std::to_string(goldGained) + " gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 25, COLOR_UNDERTALE_YELLOW);
                     } else {
-                        context.player.exp += 20;
-                        context.player.gold += 15;
-                        context.state.setFlag("ruins.barky.killed", 1);
-                        context.state.setFlag("ruins.barky.state", 2);
+                        int expGained = m_enemy->getExp();
+                        int goldGained = (m_enemy->getName() == "Barky") ? 15 : m_enemy->getGold();
+                        context.player.exp += expGained;
+                        context.player.gold += goldGained;
+                        if (m_enemy->getName() == "Barky") {
+                            context.state.setFlag("ruins.barky.killed", 1);
+                            context.state.setFlag("ruins.barky.state", 2);
+                        }
                         context.state.killsTotal += 1;
                         sessionOnKill(context.session);
                         context.state.killsByArea["ruins"] += 1;
-                        m_narratorText = "* YOU WON!\n* You earned 20 EXP and 15 gold.";
+                        m_narratorText = "* YOU WON!\n* You earned " + std::to_string(expGained) + " EXP and " + std::to_string(goldGained) + " gold.";
                         spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 30, LIGHTGRAY);
 
                         // Check level up (PRG-001, BUG-16)
@@ -409,6 +418,9 @@ void BattleSystem::handleActInput(GameContext& context) {
                 m_isSpared = true;
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
             }
+            if (applies && act.flee) {
+                m_isEnemyFled = true;
+            }
             if (applies) {
                 m_enemy->addMercy(act.mercy);
                 if (act.spareable) {
@@ -565,7 +577,13 @@ void BattleSystem::handleMercyInput(GameContext& context) {
             if (m_enemy->isSpareable()) {
                 m_isSpared = true;
                 m_narratorText = "* You spared " + m_enemy->getName() + ".";
-                m_enemySpeechBubble = "You can tell no one about the zipper. Pack secret."; // LORE §19.1
+                if (m_enemy->getName() == "Barky") {
+                    m_enemySpeechBubble = "You can tell no one about the zipper. Pack secret."; // LORE §19.1
+                } else if (!m_enemy->getBubbles().empty()) {
+                    m_enemySpeechBubble = m_enemy->getRandomBubble();
+                } else {
+                    m_enemySpeechBubble = "";
+                }
                 spawnDust({ (float)(VIRTUAL_WIDTH / 2), (float)(ENEMY_BASELINE_Y - 80) }, 15, COLOR_UNDERTALE_YELLOW);
                 context.audio.playSound("assets/sfx/menu_select.wav", 1.0f);
             } else {
@@ -584,7 +602,11 @@ void BattleSystem::handleMercyInput(GameContext& context) {
                 m_fleeTimer = 0.0f;
                 context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.7f);
             } else {
-                m_narratorText = "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!";
+                if (m_enemy->getName() == "Barky") {
+                    m_narratorText = "* Couldn't run away!\n* Barky blocked your escape with energetic awoos!";
+                } else {
+                    m_narratorText = "* Couldn't run away!\n* " + m_enemy->getName() + " blocked your escape!";
+                }
                 m_state = BattleState::DialogMessage;
             }
         }
@@ -618,12 +640,22 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     m_bullets.clear();
     m_zones.clear();
     m_ribbitState = RibbitState{};
-    const auto cringeUses = m_actUseCounts.find("cringe_check");
-    const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
-    const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
-    m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
-    m_howlUnlocked = howlUnlocked;
-    m_howlWallTimer = 1000.0f; // first wall of a turn spawns immediately (BHL-014 tuning)
+    if (m_enemy && m_enemy->hasGenericPatterns()) {
+        const auto& patterns = m_enemy->getPatterns();
+        int patternIndex = (m_turnCount - 1) % static_cast<int>(patterns.size());
+        if (patternIndex < 0) patternIndex = 0;
+        const auto& curPattern = patterns[static_cast<size_t>(patternIndex)];
+        m_enemyTurnDuration = (curPattern.duration > 0.0f) ? curPattern.duration : 5.0f;
+        m_bullets = spawnGenericPattern(curPattern, m_arenaRect, m_soulPosition);
+    } else {
+        const auto cringeUses = m_actUseCounts.find("cringe_check");
+        const bool howlUnlocked = cringeUses != m_actUseCounts.end() && cringeUses->second > 0;
+        const bool howlJustUnlocked = howlUnlocked && !m_howlUnlocked;
+        m_barkyPattern = barkyPatternForTurn(m_turnCount - 1, howlUnlocked, howlJustUnlocked);
+        m_howlUnlocked = howlUnlocked;
+        m_howlWallTimer = 1000.0f; // first wall of a turn spawns immediately (BHL-014 tuning)
+        m_enemyTurnDuration = 5.0f;
+    }
     // Center soul in arena
     m_soulPosition = { 320.0f, 320.0f };
 
@@ -640,10 +672,14 @@ void BattleSystem::startEnemyTurn(GameContext& context) {
     }
 
     const bool hasQueuedActResponse = !m_lastActResponse.empty();
-    const std::string furReaction = furReactionLine(context.state.furry.value, "barky");
+    const std::string furReaction = furReactionLine(context.state.furry.value, m_enemy->getId());
     if (!m_furReactionSaid && !hasQueuedActResponse && !furReaction.empty()) {
         m_enemySpeechBubble = furReaction;
         m_furReactionSaid = true;
+    } else if (hasQueuedActResponse) {
+        m_enemySpeechBubble = m_lastActResponse;
+    } else if (!m_enemy->getBubbles().empty()) {
+        m_enemySpeechBubble = m_enemy->getRandomBubble();
     } else {
         m_enemySpeechBubble = m_enemy->getDialogueForTrigger(trigger, m_lastActResponse);
     }
@@ -816,6 +852,17 @@ void BattleSystem::updateEnemyTurn(float dt, GameContext& context) {
 }
 
 void BattleSystem::spawnBulletWave() {
+    if (m_enemy && m_enemy->hasGenericPatterns()) {
+        if (m_bullets.empty() && m_enemyTurnTimer + 1.0f < m_enemyTurnDuration) {
+            const auto& patterns = m_enemy->getPatterns();
+            int patternIndex = (m_turnCount - 1) % static_cast<int>(patterns.size());
+            if (patternIndex < 0) patternIndex = 0;
+            const auto& curPattern = patterns[static_cast<size_t>(patternIndex)];
+            m_bullets = spawnGenericPattern(curPattern, m_arenaRect, m_soulPosition);
+        }
+        return;
+    }
+
     if (m_barkyPattern == BarkyPattern::UwuRain) {
         // Pattern 1: UwU Rain (BHL-014: falling letters with slight zigzag)
         float startX = m_arenaRect.x + (float)GetRandomValue(15, (int)m_arenaRect.width - 25);
@@ -1285,10 +1332,39 @@ void BattleSystem::drawBullet(GameContext& context, const Bullet& b) const {
                 drewSprite = true;
             }
         }
+    } else if (!b.text.empty() && b.text != ":3" && b.text != "sorry") {
+        std::string spritePng = b.text;
+        std::string spriteJson;
+        if (spritePng.find('/') == std::string::npos && !spritePng.ends_with(".png")) {
+            spritePng = "assets/bullets/" + b.text + ".png";
+            spriteJson = "assets/bullets/" + b.text + ".json";
+        } else if (spritePng.ends_with(".png")) {
+            spriteJson = spritePng.substr(0, spritePng.size() - 4) + ".json";
+        }
+        if (!spriteJson.empty() && FileExists(spritePng.c_str())) {
+            const SpriteSheetDef* bulletSheet = spriteSheetCache().load(spritePng, spriteJson);
+            if (bulletSheet != nullptr) {
+                Texture2D bTex = context.resources.getTexture(spritePng);
+                if (bTex.id > 0) {
+                    SetTextureFilter(bTex, TEXTURE_FILTER_POINT);
+                    std::string anim = "idle";
+                    if (!bulletSheet->anims.empty()) {
+                        anim = bulletSheet->anims.begin()->first;
+                    }
+                    drawSprite(bTex, *bulletSheet, anim, m_enemyIdleTimer, b.position, 2.0f, renderColor);
+                    drewSprite = true;
+                }
+            }
+        }
     }
 
     if (!drewSprite) {
-        b.render();
+        if (!b.text.empty()) {
+            int textW = static_cast<int>(b.text.size() * 8);
+            DrawText(b.text.c_str(), static_cast<int>(b.position.x) - textW / 2, static_cast<int>(b.position.y) - 6, 14, renderColor);
+        } else {
+            b.render();
+        }
     }
 }
 
@@ -1315,37 +1391,49 @@ void BattleSystem::render(GameContext& context) {
     if (m_enemy->isDead() && m_state == BattleState::Victory) {
         shouldDrawEnemy = false; // Vaporized into fluff / dust!
     }
+    if (m_isEnemyFled && m_state == BattleState::Victory) {
+        shouldDrawEnemy = false;
+    }
 
     if (shouldDrawEnemy) {
-        const SpriteSheetDef* barkySheet = nullptr;
-        if (m_enemy->getName() == "Barky") {
-            barkySheet = spriteSheetCache().load(
-                "assets/sprites/battle/barky.png",
-                "assets/sprites/battle/barky.json"
-            );
+        std::string spriteId = m_enemy->getSprite();
+        if (spriteId.empty()) spriteId = "barky";
+        std::string pngPath = spriteId;
+        std::string jsonPath;
+        if (pngPath.find('/') == std::string::npos && !pngPath.ends_with(".png")) {
+            pngPath = "assets/sprites/battle/" + spriteId + ".png";
+            jsonPath = "assets/sprites/battle/" + spriteId + ".json";
+        } else if (pngPath.ends_with(".png")) {
+            jsonPath = pngPath.substr(0, pngPath.size() - 4) + ".json";
         }
 
-        if (barkySheet != nullptr) {
+        const SpriteSheetDef* enemySheet = spriteSheetCache().load(pngPath, jsonPath);
+
+        if (enemySheet != nullptr) {
             std::string animation = "idle";
             Color tint = WHITE;
             if (m_isSpared) {
-                animation = "spared";
+                if (enemySheet->anims.find("spared") != enemySheet->anims.end()) {
+                    animation = "spared";
+                }
                 tint.a = 120;
             } else if (m_enemyShakeTimer > 0.0f) {
-                animation = "hurt";
+                if (enemySheet->anims.find("hurt") != enemySheet->anims.end()) {
+                    animation = "hurt";
+                }
             } else {
                 const auto cringeUses = m_actUseCounts.find("cringe_check");
                 if (cringeUses != m_actUseCounts.end() && cringeUses->second > 0 &&
-                    barkySheet->anims.find("blush") != barkySheet->anims.end()) {
+                    enemySheet->anims.find("blush") != enemySheet->anims.end()) {
                     animation = "blush";
                 }
             }
 
-            Texture2D barkyTexture = context.resources.getTexture("assets/sprites/battle/barky.png");
-            SetTextureFilter(barkyTexture, TEXTURE_FILTER_POINT);
+            Texture2D enemyTexture = context.resources.getTexture(pngPath);
+            SetTextureFilter(enemyTexture, TEXTURE_FILTER_POINT);
             drawSprite(
-                barkyTexture,
-                *barkySheet,
+                enemyTexture,
+                *enemySheet,
                 animation,
                 m_enemyIdleTimer,
                 { static_cast<float>(enemyCenterX), static_cast<float>(baselineY) },

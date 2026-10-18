@@ -91,6 +91,9 @@ public:
     bool isVictory() const { return m_state == BattleState::Victory; }
     bool isFled() const { return m_state == BattleState::Fled; }
     bool isSpared() const { return m_isSpared; }
+    bool isEnemyFled() const { return m_isEnemyFled; }
+    void setNarratorText(const std::string& text) { m_narratorText = text; }
+    const std::string& getNarratorText() const { return m_narratorText; }
     BattleState getState() const { return m_state; }
     Vector2 getSoulPosition() const { return m_soulPosition; }
     const RibbitState& getRibbitState() const { return m_ribbitState; }
@@ -133,6 +136,7 @@ private:
     MainButton m_selectedButton = MainButton::Fight;
     int m_subOptionIndex = 0;
     bool m_isSpared = false;
+    bool m_isEnemyFled = false;
     int m_turnCount = 0;
 
     // Heart inside dodge box

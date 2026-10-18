@@ -1,4 +1,5 @@
 #include "combat/Enemy.hpp"
+#include "combat/EnemyLoader.hpp"
 #include "core/FurTable.hpp"
 #include <fstream>
 #include <sstream>
@@ -110,6 +111,15 @@ void Enemy::setFlavorPools(const std::vector<std::string>& def,
     m_defaultFlavor = def;
     m_lowHpFlavor = lowHp;
     m_spareableFlavor = spareable;
+}
+
+// Enemy speech bubble
+std::string Enemy::getRandomBubble() const {
+    if (!m_bubbles.empty()) {
+        int idx = GetRandomValue(0, static_cast<int>(m_bubbles.size()) - 1);
+        return m_bubbles[static_cast<size_t>(idx)];
+    }
+    return getRandomDialogue();
 }
 
 // BFL-003: Contextual dialogue based on triggers
@@ -247,134 +257,52 @@ void Enemy::initDefaultDialogues() {
     };
 }
 
-// Helper functions for lightweight JSON parsing
-static std::string unescapeJson(const std::string& raw) {
-    std::string out;
-    out.reserve(raw.size());
-    for (size_t i = 0; i < raw.size(); ++i) {
-        if (raw[i] == '\\' && i + 1 < raw.size()) {
-            char n = raw[++i];
-            out += (n == 'n') ? '\n' : n;
-        } else {
-            out += raw[i];
-        }
-    }
-    return out;
-}
-
-static std::string extractJsonString(const std::string& json, const std::string& key) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return "";
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    if (pos >= json.size() || json[pos] != '\"') return "";
-    pos++;
-    size_t end = pos;
-    while (end < json.size() && !(json[end] == '\"' && json[end - 1] != '\\')) end++;
-    if (end >= json.size()) return "";
-    return unescapeJson(json.substr(pos, end - pos));
-}
-
-static int extractJsonInt(const std::string& json, const std::string& key, int defaultVal = 0) {
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return defaultVal;
-    pos += needle.size();
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) pos++;
-    size_t end = pos;
-    while (end < json.size() && (std::isdigit(json[end]) || json[end] == '-')) end++;
-    if (end > pos) {
-        try {
-            return std::stoi(json.substr(pos, end - pos));
-        } catch (...) {}
-    }
-    return defaultVal;
-}
-
-static std::vector<std::string> extractStringArray(const std::string& json, const std::string& key) {
-    std::vector<std::string> result;
-    std::string needle = "\"" + key + "\":";
-    size_t pos = json.find(needle);
-    if (pos == std::string::npos) return result;
-    size_t openBracket = json.find('[', pos);
-    if (openBracket == std::string::npos) return result;
-    size_t closeBracket = json.find(']', openBracket);
-    if (closeBracket == std::string::npos) return result;
-
-    std::string slice = json.substr(openBracket + 1, closeBracket - openBracket - 1);
-    size_t cur = 0;
-    while (cur < slice.size()) {
-        size_t q1 = slice.find('\"', cur);
-        if (q1 == std::string::npos) break;
-        size_t q2 = slice.find('\"', q1 + 1);
-        if (q2 == std::string::npos) break;
-        result.push_back(unescapeJson(slice.substr(q1 + 1, q2 - q1 - 1)));
-        cur = q2 + 1;
-    }
-    return result;
-}
-
 std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
+    std::ifstream testFile(filepath);
+    if (!testFile.is_open()) {
         // Fallback to default Barky
         return std::make_unique<Enemy>("Barky", 30, 4, 2);
     }
+    testFile.close();
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string json = buffer.str();
+    EnemyData data = loadEnemyDataFromFile(filepath);
+    auto enemy = std::make_unique<Enemy>(data.name, data.maxHp, data.atk, data.def);
+    enemy->m_id = data.id;
+    enemy->m_sprite = data.sprite;
+    enemy->m_exp = data.exp;
+    enemy->m_gold = data.gold;
+    enemy->setMercyLockedAbovePct(data.mercyLockedAbovePct);
 
-    std::string name = extractJsonString(json, "name");
-    if (name.empty()) name = "Barky";
-    int hp = extractJsonInt(json, "hp", 30);
-    int maxHp = extractJsonInt(json, "maxHp", hp);
-    int atk = extractJsonInt(json, "atk", 4);
-    int def = extractJsonInt(json, "def", 2);
-
-    auto enemy = std::make_unique<Enemy>(name, maxHp, atk, def);
-    enemy->m_exp = extractJsonInt(json, "exp", 20);
-    enemy->m_gold = extractJsonInt(json, "gold", 10);
-    enemy->setMercyLockedAbovePct(extractJsonInt(json, "mercyLockedAbovePct", 0));
-    const int missingPatternFur = -1;
-    const int uwuFur = patternFurFromJson(json, "uwu_rain", missingPatternFur);
-    const int dewFur = patternFurFromJson(json, "dew_bounce", missingPatternFur);
-    if (uwuFur >= 0) enemy->m_patternFur["uwu_rain"] = uwuFur;
-    if (dewFur >= 0) enemy->m_patternFur["dew_bounce"] = dewFur;
-    enemy->m_howlFur = howlFurFromJson(json, missingPatternFur);
-
-    std::string checkStr = extractJsonString(json, "check");
-    if (!checkStr.empty()) {
-        enemy->setCheckFlavor(checkStr);
+    if (!data.check.empty()) {
+        enemy->setCheckFlavor(data.check);
+    }
+    if (!data.acts.empty()) {
+        enemy->setActs(data.acts);
+    }
+    if (!data.bubbles.empty()) {
+        enemy->setBubbles(data.bubbles);
+    }
+    if (!data.patterns.empty()) {
+        enemy->setPatterns(data.patterns);
+    }
+    if (!data.defaultFlavor.empty() || !data.lowHpFlavor.empty() || !data.spareableFlavor.empty()) {
+        enemy->setFlavorPools(data.defaultFlavor, data.lowHpFlavor, data.spareableFlavor);
+    }
+    if (!data.defaultDialogue.empty() || !data.afterHitDialogue.empty()) {
+        enemy->setDialogueTriggers(data.defaultDialogue, data.afterHitDialogue, {}, {}, {});
     }
 
-    // Extract flavor pools (BFL-002)
-    size_t flavorPos = json.find("\"flavor\":");
-    if (flavorPos != std::string::npos) {
-        size_t flavorEnd = json.find('}', json.find('{', flavorPos));
-        if (flavorEnd != std::string::npos) {
-            std::string flavorSlice = json.substr(flavorPos, flavorEnd - flavorPos + 1);
-            std::vector<std::string> defFlavors = extractStringArray(flavorSlice, "default");
-            std::vector<std::string> lowHpFlavors = extractStringArray(flavorSlice, "lowHp");
-            std::vector<std::string> spareFlavors = extractStringArray(flavorSlice, "spareable");
-            if (!defFlavors.empty()) enemy->m_defaultFlavor = defFlavors;
-            if (!lowHpFlavors.empty()) enemy->m_lowHpFlavor = lowHpFlavors;
-            if (!spareFlavors.empty()) enemy->m_spareableFlavor = spareFlavors;
-        }
-    }
-
-    // Extract dialogue pools (BFL-003)
-    size_t diagPos = json.find("\"dialogue\":");
-    if (diagPos != std::string::npos) {
-        size_t diagEnd = json.find('}', json.find('{', diagPos));
-        if (diagEnd != std::string::npos) {
-            std::string diagSlice = json.substr(diagPos, diagEnd - diagPos + 1);
-            std::vector<std::string> defDiags = extractStringArray(diagSlice, "default");
-            std::vector<std::string> hitDiags = extractStringArray(diagSlice, "afterHit");
-            if (!defDiags.empty()) enemy->m_dialoguesDefault = defDiags;
-            if (!hitDiags.empty()) enemy->m_dialoguesAfterHit = hitDiags;
-        }
+    std::ifstream file(filepath);
+    if (file.is_open()) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string json = buffer.str();
+        const int missingPatternFur = -1;
+        const int uwuFur = patternFurFromJson(json, "uwu_rain", missingPatternFur);
+        const int dewFur = patternFurFromJson(json, "dew_bounce", missingPatternFur);
+        if (uwuFur >= 0) enemy->m_patternFur["uwu_rain"] = uwuFur;
+        if (dewFur >= 0) enemy->m_patternFur["dew_bounce"] = dewFur;
+        enemy->m_howlFur = howlFurFromJson(json, missingPatternFur);
     }
 
     return enemy;

@@ -1,0 +1,80 @@
+{
+  "id": "shysona",
+  "name": "Shysona",
+  "hp": 10,
+  "maxHp": 10,
+  "atk": 5,
+  "def": 0,
+  "exp": 2,
+  "gold": 0,
+  "sprite": "shysona",
+  "check": "A brand-new fursona. Apologizes for existing. And for its commissions.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "console",
+      "label": "Console",
+      "text": "* You tell Shysona it's doing fine.",
+      "effects": {
+        "spare": true
+      },
+      "response": "Sorry... thank you..."
+    },
+    {
+      "id": "terrorize",
+      "label": "Terrorize",
+      "text": "* You make a terrifying face.",
+      "effects": {
+        "flee": true
+      },
+      "response": "I'm sorry!"
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* You hug Shysona gently. It shakes. FUR +10.",
+      "effects": {
+        "fur": 10,
+        "spareNow": true
+      },
+      "response": "Sorry for being damp..."
+    }
+  ],
+  "bubbles": [
+    "Sorry...",
+    "Sorry for the art...",
+    "You weren't supposed to see that..."
+  ],
+  "patterns": [
+    {
+      "id": "sorry_moths",
+      "kind": "rain",
+      "count": 4,
+      "speed": 60,
+      "duration": 5.0,
+      "damage": 2,
+      "fur": 6,
+      "bullet": "moth"
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Shysona is fluttering nervously.",
+      "* Shysona is apologizing to a wall.",
+      "* Smells like nervous sweat and sketchbook paper."
+    ],
+    "lowHp": [
+      "* Shysona is on the verge of tears.",
+      "* Shysona is apologizing profusely."
+    ],
+    "spareable": [
+      "* Shysona seems a little less nervous.",
+      "* Shysona is trying its best to smile."
+    ]
+  }
+}

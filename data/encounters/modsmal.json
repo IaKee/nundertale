@@ -1,0 +1,8 @@
+{
+  "id": "encounter_modsmal",
+  "enemy": "modsmal",
+  "intro": "* Modsmal blocks the way. It wobbles.",
+  "background": "grid_tube",
+  "music": "default",
+  "canFlee": true
+}

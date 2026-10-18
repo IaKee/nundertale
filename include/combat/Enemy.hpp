@@ -1,5 +1,6 @@
 #pragma once
 
+#include "combat/GenericPatterns.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -100,6 +101,7 @@ struct ActDef {
     std::string repeatResponse; // enemy line from the 2nd use on, "" = reuse response
     int fur = 0;                // FUR added when the effect applies (ACT-005 Accept Hug)
     bool spareNow = false;      // spares on the spot, without MERCY (ACT-005)
+    bool flee = false;          // enemy flees: ends battle like a spare but with 0 EXP
 };
 
 // Text and enemy line for the Nth use of an ACT (1-based).
@@ -137,6 +139,10 @@ public:
     Enemy(const std::string& name, int maxHp, int atk, int def);
 
     std::string getName() const { return m_name; }
+    std::string getId() const { return m_id; }
+    void setId(const std::string& id) { m_id = id; }
+    std::string getSprite() const { return m_sprite.empty() ? m_id : m_sprite; }
+    void setSprite(const std::string& s) { m_sprite = s; }
     int getHp() const { return m_hp; }
     int getMaxHp() const { return m_maxHp; }
     int getAtk() const { return m_atk; }
@@ -192,6 +198,14 @@ public:
                              const std::vector<std::string>& miss,
                              const std::vector<std::string>& item);
 
+    const std::vector<std::string>& getBubbles() const { return m_bubbles; }
+    void setBubbles(const std::vector<std::string>& bubbles) { m_bubbles = bubbles; }
+    std::string getRandomBubble() const;
+
+    const std::vector<GenericPatternDef>& getPatterns() const { return m_patterns; }
+    void setPatterns(const std::vector<GenericPatternDef>& p) { m_patterns = p; }
+    bool hasGenericPatterns() const { return !m_patterns.empty(); }
+
     // BFL-005 & BFL-006: Data-driven enemy loader
     static std::unique_ptr<Enemy> loadFromJson(const std::string& filepath);
 
@@ -201,6 +215,8 @@ private:
     void initDefaultDialogues();
 
     std::string m_name;
+    std::string m_id = "barky";
+    std::string m_sprite = "barky";
     int m_maxHp;
     int m_hp;
     int m_atk;
@@ -214,6 +230,8 @@ private:
     bool m_spareable = false;
 
     std::vector<ActDef> m_acts;
+    std::vector<std::string> m_bubbles;
+    std::vector<GenericPatternDef> m_patterns;
     std::unordered_map<std::string, int> m_patternFur;
     int m_howlFur = -1;
 

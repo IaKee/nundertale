@@ -1,0 +1,8 @@
+{
+  "id": "encounter_froggsona",
+  "enemy": "froggsona",
+  "intro": "* Froggsona hops close!",
+  "background": "grid_tube",
+  "music": "default",
+  "canFlee": true
+}
