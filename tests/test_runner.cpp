@@ -42,6 +42,7 @@
 #include "core/TiledMap.hpp"
 #include "core/Camera2DFollow.hpp"
 #include "core/RoomTransition.hpp"
+#include "core/EncounterTable.hpp"
 #include "scenes/LoreScroll.hpp"
 
 // Raylib stub for tests running without libraylib runtime
@@ -3102,6 +3103,84 @@ int main() {
         std::cout << "[PASS] C-T3: enemy JSON loading parses stats, check text, ACTs, spare/flee effects, and bubbles." << std::endl;
     }
 
-    std::cout << "\nAll 52 test suites passed successfully!" << std::endl;
+    // 53. C-T4: encounter table parsing and room budget logic
+    {
+        using namespace nundertale;
+        EncounterTableData data;
+        assert(loadEncounterTableFromFile("data/encounters/tables/ruins_r8.json", data));
+        assert(data.stepsMin == 220);
+        assert(data.stepsMax == 480);
+        assert(data.budget == 1);
+        assert(data.entries.size() == 3);
+        assert(data.entries[0].encounter == "froggsona" && data.entries[0].weight == 3);
+        assert(data.entries[1].encounter == "shysona" && data.entries[1].weight == 2);
+        assert(data.entries[2].encounter == "modsmal" && data.entries[2].weight == 2);
+        assert(encounterBudgetAllows(0, data.budget));
+        assert(!encounterBudgetAllows(1, data.budget));
+        assert(!encounterBudgetAllows(0, 0));
+        assert(!parseEncounterTableJson(
+            R"json({"stepsMin":10,"stepsMax":5,"budget":1,"entries":[{"encounter":"x","weight":1}]})json",
+            data));
+        std::cout << "[PASS] C-T4: encounter table parsing validates ranges, entries, weights, and budget." << std::endl;
+    }
+
+    // 54. C-T4: seeded step thresholds are deterministic and fire only when crossed
+    {
+        using namespace nundertale;
+        EncounterTableData data;
+        assert(parseEncounterTableJson(
+            R"json({"stepsMin":220,"stepsMax":480,"budget":1,"entries":[{"encounter":"frog","weight":1}]})json",
+            data));
+        EncounterTable first(data, 0xC0FFEEu);
+        EncounterTable second(data, 0xC0FFEEu);
+        assert(first.threshold() == second.threshold());
+        assert(first.threshold() >= 220 && first.threshold() <= 480);
+        const float almostThreshold = static_cast<float>(first.threshold()) - 0.5f;
+        assert(!first.addDistance(almostThreshold));
+        assert(!second.addDistance(almostThreshold));
+        assert(first.addDistance(0.5f));
+        assert(second.addDistance(0.5f));
+        assert(first.threshold() == second.threshold());
+        assert(first.distance() == 0.0f);
+        std::cout << "[PASS] C-T4: fixed seeds reproduce threshold rolls and distance crossing." << std::endl;
+    }
+
+    // 55. C-T4: weighted encounter selection follows the configured proportions
+    {
+        using namespace nundertale;
+        EncounterTableData data;
+        assert(loadEncounterTableFromFile("data/encounters/tables/ruins_r8.json", data));
+        EncounterTable table(data, 12345u);
+        int froggsona = 0;
+        int shysona = 0;
+        int modsmal = 0;
+        for (int pick = 0; pick < 7000; ++pick) {
+            const std::string encounter = table.pickEncounter();
+            if (encounter == "froggsona") ++froggsona;
+            else if (encounter == "shysona") ++shysona;
+            else if (encounter == "modsmal") ++modsmal;
+            else assert(false);
+        }
+        assert(froggsona > 2600 && froggsona < 3400);
+        assert(shysona > 1600 && shysona < 2400);
+        assert(modsmal > 1600 && modsmal < 2400);
+        std::cout << "[PASS] C-T4: weighted picks match the 3:2:2 table within a sanity margin." << std::endl;
+    }
+
+    // 56. C-T4: startBattle accepts generic battle/id aliases and defaults to Barky
+    {
+        using namespace nundertale;
+        Cutscene cutscene;
+        assert(parseCutsceneJson(
+            R"json({"steps":[{"type":"startBattle","battle":"froggsona"},{"type":"startBattle","id":"shysona"},{"type":"startBattle"}]})json",
+            cutscene));
+        assert(cutscene.steps.size() == 3);
+        assert(cutscene.steps[0].encounter == "froggsona");
+        assert(cutscene.steps[1].encounter == "shysona");
+        assert(cutscene.steps[2].encounter == "barky");
+        std::cout << "[PASS] C-T4: startBattle encounter ids support battle/id aliases and Barky default." << std::endl;
+    }
+
+    std::cout << "\nAll 56 test suites passed successfully!" << std::endl;
     return 0;
 }

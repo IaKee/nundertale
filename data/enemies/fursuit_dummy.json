@@ -1,0 +1,55 @@
+{
+  "id": "fursuit_dummy",
+  "name": "Fursuit Dummy",
+  "hp": 15,
+  "maxHp": 15,
+  "atk": 0,
+  "def": -5,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "fursuit_dummy",
+  "check": "A mannequin wearing a fursuit head. Smells like the previous owner.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "text": "* You talk to the dummy.\n* It doesn't seem much for conversation.",
+      "effects": {
+        "spare": true
+      }
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* You hug the dummy. It's damp. FUR +10.",
+      "effects": {
+        "fur": 10,
+        "spareNow": true
+      }
+    }
+  ],
+  "bubbles": [
+    "...",
+    "(It stares through you with button eyes.)"
+  ],
+  "patterns": [],
+  "flavor": {
+    "default": [
+      "* The dummy stands there.",
+      "* The fursuit head is slightly crooked.",
+      "* Smells like a convention hall at 3 AM."
+    ],
+    "lowHp": [
+      "* Stuffing is leaking out of the dummy."
+    ],
+    "spareable": [
+      "* The dummy looks... content? It's hard to tell."
+    ]
+  }
+}

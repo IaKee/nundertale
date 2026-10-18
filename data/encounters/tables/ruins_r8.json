@@ -1,0 +1,10 @@
+{
+  "stepsMin": 220,
+  "stepsMax": 480,
+  "budget": 1,
+  "entries": [
+    { "encounter": "froggsona", "weight": 3 },
+    { "encounter": "shysona", "weight": 2 },
+    { "encounter": "modsmal", "weight": 2 }
+  ]
+}

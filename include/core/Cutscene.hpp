@@ -35,7 +35,7 @@ struct CutsceneStep {
     int r = 255;
     int g = 255;
     int b = 255;
-    std::string encounter;
+    std::string encounter = "barky";
 };
 
 struct Cutscene {
@@ -143,7 +143,9 @@ private:
         if (key == "lines") return parseStringArray(step.lines);
         if (key == "path") return parseString(step.path);
         if (key == "key") return parseString(step.key);
-        if (key == "encounter") return parseString(step.encounter);
+        if (key == "encounter" || key == "battle" || key == "id") {
+            return parseString(step.encounter);
+        }
 
         if (key == "seconds") return parseNumber(step.seconds);
         if (key == "volume") return parseNumber(step.volume);

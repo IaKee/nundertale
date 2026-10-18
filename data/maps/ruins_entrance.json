@@ -896,7 +896,7 @@
    "objects": [
     {
      "id": 12,
-     "name": "to_notices",
+     "name": "to_dummy",
      "type": "door",
      "x": 288,
      "y": 100,
@@ -908,7 +908,7 @@
       {
        "name": "targetRoom",
        "type": "string",
-       "value": "ruins_notices"
+       "value": "ruins_dummy"
       },
       {
        "name": "targetSpawn",
@@ -918,7 +918,7 @@
       {
        "name": "facing",
        "type": "string",
-       "value": "right"
+       "value": "up"
       }
      ]
     },
@@ -988,7 +988,7 @@
     },
     {
      "id": 16,
-     "name": "from_notices",
+     "name": "from_dummy",
      "type": "spawn",
      "x": 300,
      "y": 164,

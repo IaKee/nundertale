@@ -86,6 +86,8 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_roomHeight = 480.0f;
     m_backgroundImage = "assets/img/test.bmp";
     m_backgroundOffset = { 0.0f, 0.0f };
+    m_encounterTable.reset();
+    m_encounterGraceRemaining = 0.0f;
     initObstacles();
 
     TiledMap loaded;
@@ -113,6 +115,44 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
         }
     }
     m_baseObstacleCount = m_obstacles.size();
+    resetRandomEncounters();
+}
+
+void OverworldScene::resetRandomEncounters() {
+    m_encounterTable.reset();
+    m_encounterGraceRemaining = 0.0f;
+
+    const std::string tableId = stringProperty(m_tiledMap, "encounters");
+    if (tableId.empty()) return;
+
+    EncounterTableData data;
+    if (!loadEncounterTableFromFile("data/encounters/tables/" + tableId + ".json", data)) return;
+    m_encounterTable.emplace(std::move(data));
+    m_encounterGraceRemaining = 120.0f;
+}
+
+bool OverworldScene::updateRandomEncounters(float movedDistance, GameContext& context) {
+    if (!m_encounterTable.has_value() || movedDistance <= 0.0f) return false;
+
+    const std::string budgetFlag = "room." + context.state.currentRoom + ".encounters";
+    const int encounterCount = context.state.getFlag(budgetFlag, 0);
+    if (!encounterBudgetAllows(encounterCount, m_encounterTable->budget())) return false;
+
+    const float graceDistance = std::min(movedDistance, m_encounterGraceRemaining);
+    m_encounterGraceRemaining -= graceDistance;
+    movedDistance -= graceDistance;
+    if (movedDistance <= 0.0f || !m_encounterTable->addDistance(movedDistance)) return false;
+
+    const std::string encounter = m_encounterTable->pickEncounter();
+    if (encounter.empty()) return false;
+
+    context.state.setFlag(budgetFlag, encounterCount + 1);
+    const Vector2 playerPos = m_player.getPosition();
+    context.scenes.pushScene(
+        std::make_unique<EncounterTransitionScene>(
+            playerPos, std::make_unique<BattleScene>(encounter)),
+        context);
+    return true;
 }
 
 bool OverworldScene::hasMapObject(const std::string& name) const {
@@ -600,6 +640,7 @@ void OverworldScene::onResume(GameContext& context) {
     const MusicEntry resumeTrack = musicFor("overworld." + context.state.currentRoom);
     context.audio.playMusic(resumeTrack.path, true, resumeTrack.loopStart, resumeTrack.loopEnd);
     initInteractables(context);
+    if (m_encounterTable.has_value()) m_encounterGraceRemaining = 120.0f;
 }
 
 void OverworldScene::drawSoul(float x, float y) const {
@@ -1103,10 +1144,11 @@ void OverworldScene::update(float dt, GameContext& context) {
             }
 
             void startBattle(const std::string& encounter) override {
-                if (encounter != "barky") return;
                 const Vector2 playerPos = m_player.getPosition();
+                const std::string encounterId = encounter.empty() ? "barky" : encounter;
                 m_context.scenes.pushScene(
-                    std::make_unique<EncounterTransitionScene>(playerPos, std::make_unique<BattleScene>()),
+                    std::make_unique<EncounterTransitionScene>(
+                        playerPos, std::make_unique<BattleScene>(encounterId)),
                     m_context);
             }
 
@@ -1180,7 +1222,9 @@ void OverworldScene::update(float dt, GameContext& context) {
     if (context.input.isUp()) inputDir.y -= 1.0f;
     if (context.input.isDown()) inputDir.y += 1.0f;
 
+    const Vector2 oldPosition = m_player.getPosition();
     m_player.update(dt, inputDir, m_obstacles);
+    const Vector2 newPosition = m_player.getPosition();
 
     // Keep GameState synchronized (CORE-004)
     context.state.playerPos = m_player.getPosition();
@@ -1194,6 +1238,10 @@ void OverworldScene::update(float dt, GameContext& context) {
             return;
         }
     }
+
+    const float movedX = newPosition.x - oldPosition.x;
+    const float movedY = newPosition.y - oldPosition.y;
+    if (updateRandomEncounters(std::sqrt(movedX * movedX + movedY * movedY), context)) return;
 
     // Interaction check
     if (context.input.isConfirmPressed()) {

@@ -241,13 +241,13 @@ def ruins_entrance():
     r.solid("corridor_l", 0, 13 * T, 7 * T, T)
     r.solid("corridor_r", 9 * T, 13 * T, 7 * T, T)
     r.solid("arch_back", 7 * T, 0, 2 * T, 2 * T + 20)
-    r.obj("to_notices", "door", 7 * T + 8, 2 * T + 20, 2 * T - 16, 20,
-          targetRoom="ruins_notices", targetSpawn="from_entrance", facing="right")
+    r.obj("to_dummy", "door", 7 * T + 8, 2 * T + 20, 2 * T - 16, 20,
+          targetRoom="ruins_dummy", targetSpawn="from_entrance", facing="up")
     r.obj("to_fall", "door", 7 * T + 8, 14 * T - 12, 2 * T - 16, 12,
           targetRoom="ruins_fall", targetSpawn="from_entrance", facing="down")
     r.obj("from_fall", "spawn", 8 * T - 20, 12 * T, facing="up")
     r.obj("default", "spawn", 8 * T - 20, 10 * T, facing="up")
-    r.obj("from_notices", "spawn", 8 * T - 20, 4 * T + 4, facing="down")
+    r.obj("from_dummy", "spawn", 8 * T - 20, 4 * T + 4, facing="down")
     # banners on the wall front (the wall is already solid)
     r.obj("banner_welcome", "prop", 3 * T + 20, T + 20, 120, 80,
           sprite="assets/props/ruins_banner_welcome.png", solid=False,
@@ -260,6 +260,39 @@ def ruins_entrance():
           text="* A pile of empty chip bags.|* *crunch*",
           text2="* *crunch*|* ...You stepped in it on purpose, didn't you.")
     r.obj("savepoint", "savepoint", 3 * T, 10 * T)
+    write(r, {"music": "ruins"})
+
+
+# --- R5: Fursuit Dummy --------------------------------------------------------------
+def ruins_dummy():
+    r = Room("ruins_dummy", 16, 12, "Ruins - Training Room")
+    r.wall(1, 15, 1)
+    r.floor(1, 4, 15, 10)
+    r.floor(7, 11, 8, 11)  # corridor down to the entrance
+    r.carpet(5, 5, 10, 9)
+    r.put("decor", 7, 4, TAPE)
+    r.put("decor", 3, 9, CRUMBS)
+    r.put("decor", 13, 5, GLITTER)
+    r.put("decor", 12, 9, CRACKED)
+    r.put("ground", 4, 2, FRONT_HOOK)
+    r.put("ground", 11, 2, FRONT_HOOK)
+    box_walls(r, 1, 4, 15, 10, gaps=[("bottom", 7, 8), ("right", 6, 8)])
+    r.solid("corridor_l", 0, 11 * T, 7 * T, T)
+    r.solid("corridor_r", 9 * T, 11 * T, 7 * T, T)
+    r.obj("to_entrance", "door", 7 * T + 8, 12 * T - 12, 2 * T - 16, 12,
+          targetRoom="ruins_entrance", targetSpawn="from_dummy", facing="down")
+    r.obj("to_notices", "door", 16 * T - 12, 6 * T, 12, 3 * T,
+          targetRoom="ruins_notices", targetSpawn="from_dummy", facing="right")
+    r.obj("from_entrance", "spawn", 8 * T - 20, 10 * T, facing="up")
+    r.obj("from_notices", "spawn", 14 * T, 7 * T, facing="left")
+    r.obj("default", "spawn", 8 * T - 20, 10 * T, facing="up")
+    # the training dummy: Z starts the tutorial battle once (C1-005)
+    r.obj("dummy", "encounter", 8 * T - 20, 6 * T + 12, 40, 28,
+          encounter="fursuit_dummy", sprite="assets/sprites/battle/fursuit_dummy.png", scale=1.0,
+          text="* A training dummy wearing a fursuit head.|* It looks... huggable.",
+          textAfter="* The dummy stands there, satisfied.|* Smells like the previous owner.")
+    r.obj("note", "examine", 2 * T, 4 * T, 40, 40, solid=False,
+          text="* A sticky note on the floor:|* \"Practice your ACTs. Hugs are an ACT.\"\n* \"- Ruins Administration (not Furiell)\"")
     write(r, {"music": "ruins"})
 
 
@@ -278,11 +311,11 @@ def ruins_notices():
     r.put("ground", 11, 3, FRONT_OUTLET)
     r.put("ground", 17, 2, FRONT_CRACK)
     box_walls(r, 0, 4, 21, 10, gaps=[("left", 5, 8), ("right", 6, 8)])
-    r.obj("to_entrance", "door", 0, 5 * T, 12, 4 * T,
-          targetRoom="ruins_entrance", targetSpawn="from_notices", facing="down")
+    r.obj("to_dummy", "door", 0, 5 * T, 12, 4 * T,
+          targetRoom="ruins_dummy", targetSpawn="from_notices", facing="left")
     r.obj("to_arena", "door", 22 * T - 12, 6 * T, 12, 3 * T,
           targetRoom="ruins_arena", targetSpawn="from_notices", facing="right")
-    r.obj("from_entrance", "spawn", T, 6 * T + 10, facing="right")
+    r.obj("from_dummy", "spawn", T, 6 * T + 10, facing="right")
     r.obj("default", "spawn", 4 * T, 6 * T + 10, facing="right")
     r.obj("from_arena", "spawn", 20 * T, 7 * T, facing="left")
     r.obj("notice", "prop", 3 * T, 2 * T + 10, 80, 60,
@@ -340,5 +373,6 @@ def ruins_arena():
 if __name__ == "__main__":
     ruins_fall()
     ruins_entrance()
+    ruins_dummy()
     ruins_notices()
     ruins_arena()

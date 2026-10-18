@@ -8,9 +8,11 @@
 #include "core/Cutscene.hpp"
 #include "core/TiledMap.hpp"
 #include "core/RoomTransition.hpp"
+#include "core/EncounterTable.hpp"
 #include <cstddef>
 #include <vector>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace nundertale {
@@ -62,6 +64,8 @@ private:
     void drawMapLayers(GameContext& context, bool above) const;
     void drawProp(GameContext& context, const PropDef& prop) const;
     void drawPlayer(GameContext& context) const;
+    void resetRandomEncounters();
+    bool updateRandomEncounters(float movedDistance, GameContext& context);
 
     void handleMenuInput(GameContext& context);
     void renderMenu(GameContext& context, Font font);
@@ -83,6 +87,8 @@ private:
     float m_roomHeight = 480.0f;
     std::string m_backgroundImage = "assets/img/test.bmp";
     Vector2 m_backgroundOffset = { 0.0f, 0.0f };
+    std::optional<EncounterTable> m_encounterTable;
+    float m_encounterGraceRemaining = 0.0f;
 
     // Overworld C Menu (MNU-001)
     OverworldMenuState m_menuState = OverworldMenuState::Closed;
