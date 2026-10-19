@@ -1,0 +1,76 @@
+{
+  "id": "napstablurk",
+  "name": "Napstablurk",
+  "hp": 88,
+  "maxHp": 88,
+  "atk": 10,
+  "def": 10,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "napstablurk",
+  "check": "Lurks in the NSFW channel \"for the lo-fi beats\".",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "cheer",
+      "label": "Cheer",
+      "text": "* Like their post.",
+      "response": "oh... a like...?",
+      "useTexts": [
+        "* Like their post.",
+        "* Leave a comment.",
+        "* Share."
+      ],
+      "useResponses": [
+        "oh... a like...?",
+        "a comment... thank you...",
+        "you shared it...?"
+      ],
+      "minUses": 3,
+      "effects": { "spareable": true }
+    },
+    {
+      "id": "flirt",
+      "label": "Flirt",
+      "text": "* You slide into their DMs. They leave you on read. Out of nervousness.",
+      "effects": {}
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Napstablurk is pretending not to be here.",
+      "* Napstablurk is listening to lo-fi beats.",
+      "* Napstablurk lurks silently."
+    ],
+    "lowHp": ["* Napstablurk is fading even more."],
+    "spareable": ["* Napstablurk seems slightly less sad."]
+  },
+  "dialogue": {
+    "default": [
+      "oh... i'm just... lurking...",
+      "i made a beat... nobody listened..."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "seen_tears",
+      "kind": "rain",
+      "weight": 1,
+      "params": {
+        "count": 5,
+        "speed": 60,
+        "damage": 1,
+        "furry": 1
+      }
+    }
+  ],
+  "spareFlag": "ruins.napstablurk.spared",
+  "killFlag": "ruins.napstablurk.killed",
+  "spareText": "oh... i usually come here because nobody's online... but today i met somebody nice...",
+  "deathText": "* Napstablurk logged off and vanished."
+}

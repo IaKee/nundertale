@@ -3,6 +3,6 @@
   "enemies": ["fursuit_dummy"],
   "introText": "* You encountered the Fursuit Dummy.",
   "background": "grid",
-  "music": "battle.default",
+  "music": "battle.bass_shake",
   "canFlee": true
 }

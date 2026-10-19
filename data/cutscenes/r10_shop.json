@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"All proceeds go to spider artists. Slots open. ETA: yes.\""]
+    },
+    {
+      "type": "openShop",
+      "shop": "bakesale"
+    }
+  ]
+}

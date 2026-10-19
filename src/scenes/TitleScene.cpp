@@ -64,7 +64,7 @@ void TitleScene::update(float dt, GameContext& context) {
 
 void TitleScene::updateSplash(float dt, GameContext& context) {
     if (!m_promptSoundPlayed && pressPromptVisible(m_animTimer)) {
-        context.audio.playSound("assets/sfx/n.ogg", 0.8f);
+        context.audio.playSound("assets/sfx/intro_noise.ogg", 0.8f);
         m_promptSoundPlayed = true;
     }
 
@@ -88,11 +88,11 @@ void TitleScene::updateSplash(float dt, GameContext& context) {
     const bool acceptedConfirm = confirmPressed && pressPromptVisible(m_animTimer);
     switch (titleNext(acceptedConfirm, m_hasSave, m_idleTimer)) {
         case TitleNext::Instructions:
-            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
             context.scenes.changeScene(std::make_unique<InstructionsScene>(), 0.5f);
             break;
         case TitleNext::ContinueCard:
-            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
             m_screen = Screen::ContinueCard;
             m_selectedIndex = 0;
             break;
@@ -129,12 +129,12 @@ void TitleScene::updateContinueCard(float /*dt*/, GameContext& context) {
 
     if (context.input.isConfirmPressed()) {
         if (m_selectedIndex == 0) {
-            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
             context.save.loadGame(context.state);
             sessionOnLoad(context.session, false);
             context.scenes.changeScene(std::make_unique<OverworldScene>(), 0.5f);
         } else if (m_selectedIndex == 1) {
-            context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+            context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
             context.save.deleteSaveGame();
             context.state = GameState();
             context.scenes.changeScene(std::make_unique<NameSelectScene>(), 0.5f);

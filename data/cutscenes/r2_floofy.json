@@ -17,6 +17,16 @@
       ]
     },
     {
+      "type": "sound",
+      "path": "assets/sfx/bullet_spawn.ogg",
+      "volume": 0.75
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/hurt.ogg",
+      "volume": 0.85
+    },
+    {
       "type": "flash",
       "r": 255,
       "g": 105,
@@ -43,7 +53,7 @@
     },
     {
       "type": "sound",
-      "path": "assets/sfx/heal.wav",
+      "path": "assets/sfx/glitter_spray.ogg",
       "volume": 0.85
     },
     {

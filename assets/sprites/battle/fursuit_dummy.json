@@ -1,18 +1,18 @@
 {
   "image": "fursuit_dummy.png",
   "cell": [
-    40,
-    60
+    48,
+    64
   ],
   "origin": [
-    20,
-    60
+    24,
+    64
   ],
   "anims": {
     "idle": {
       "row": 0,
       "frames": 4,
-      "fps": 2
+      "fps": 4.33
     },
     "hurt": {
       "row": 1,

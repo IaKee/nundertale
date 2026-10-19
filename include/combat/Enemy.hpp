@@ -89,6 +89,7 @@ struct ActDef {
     std::string response;
     bool spareable = false;
     bool skipAttack = false;
+    bool stopsBeat = false; // BSK: no more enemy attack turns this battle + music ducked
     bool flees = false;
     int mercy = 0;
     std::string requiresItem;
@@ -96,20 +97,30 @@ struct ActDef {
     std::string requiresFlag;
     int minUses = 1;
     int atkDelta = 0;
+    bool atkDeltaOnce = false;
     int defDelta = 0;
     int freezeTurns = 0;
     std::string repeatText;     // shown from the 2nd use on (e.g. Cringe Check), "" = reuse text
     std::string repeatResponse; // enemy line from the 2nd use on, "" = reuse response
+    std::vector<std::string> useTexts;     // per-use text (use N -> [N-1], last one repeats); wins over text/repeatText
+    std::vector<std::string> useResponses; // per-use enemy line, same rule
     int fur = 0;                // FUR added when the effect applies (ACT-005 Accept Hug)
     bool spareNow = false;      // spares on the spot, without MERCY (ACT-005)
     std::string setFlag;
+    bool healNextAttack = false;
 };
 
 // Text and enemy line for the Nth use of an ACT (1-based).
 inline const std::string& actTextForUse(const ActDef& act, int useCount) {
+    if (!act.useTexts.empty()) {
+        return act.useTexts[static_cast<std::size_t>(std::clamp(useCount, 1, static_cast<int>(act.useTexts.size())) - 1)];
+    }
     return (useCount >= 2 && !act.repeatText.empty()) ? act.repeatText : act.text;
 }
 inline const std::string& actResponseForUse(const ActDef& act, int useCount) {
+    if (!act.useResponses.empty()) {
+        return act.useResponses[static_cast<std::size_t>(std::clamp(useCount, 1, static_cast<int>(act.useResponses.size())) - 1)];
+    }
     return (useCount >= 2 && !act.repeatResponse.empty()) ? act.repeatResponse : act.response;
 }
 
@@ -150,6 +161,16 @@ public:
     int getGold() const { return m_gold; }
     const std::string& getSpareText() const { return m_spareText; }
     const std::string& getDeathText() const { return m_deathText; }
+    // C1-022: repeated-spare lines (Furiell), spared narrator outro, death lines and outcome flags
+    const std::vector<std::string>& getSpareLines() const { return m_spareLines; }
+    std::size_t getSpareLinesShown() const { return m_spareLinesShown; }
+    void setSpareLinesShown(std::size_t shown) { m_spareLinesShown = shown; }
+    const std::string& getSpareOutro() const { return m_spareOutro; }
+    const std::vector<std::string>& getDeathLines() const { return m_deathLines; }
+    const std::string& getSpareFlag() const { return m_spareFlag; }
+    const std::string& getKillFlag() const { return m_killFlag; }
+    // BHL-020: bullets can't hurt a soul at HP <= 4 and steer away from it
+    bool hasMercifulBullets() const { return m_mercifulBullets; }
     int getMercy() const { return m_mercy; }
     bool isDead() const { return m_hp <= 0; }
     bool isSpareable() const { return m_spareable; }
@@ -229,6 +250,13 @@ private:
     std::vector<EnemyPatternDef> m_patterns;
     std::string m_spareText = "You can tell no one about the zipper. Pack secret.";
     std::string m_deathText = "* Only a pile of synthetic wolf fur remains.";
+    std::vector<std::string> m_spareLines;
+    std::size_t m_spareLinesShown = 0;
+    std::string m_spareOutro;
+    std::vector<std::string> m_deathLines;
+    std::string m_spareFlag;
+    std::string m_killFlag;
+    bool m_mercifulBullets = false;
 
     // Flavor pools (BFL-002)
     std::vector<std::string> m_defaultFlavor;

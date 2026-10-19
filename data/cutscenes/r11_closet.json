@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "lines": [
+        "* Just hangers. And a faint smell of lavender."
+      ],
+      "if": "ruins.fursuit_head.taken >= 1"
+    },
+    {
+      "type": "giveItem",
+      "item": "Fursuit Head",
+      "lines": [
+        "* A spare fursuit head. It's your size. Why is it your size?"
+      ],
+      "fullLines": [
+        "* A spare fursuit head is inside, but you're carrying too much."
+      ],
+      "if": "ruins.fursuit_head.taken == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.fursuit_head.taken",
+      "value": 1,
+      "if": "ruins.fursuit_head.taken == 0"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ void DisclaimerScene::onEnter(GameContext& context) {
     m_timer = 0.0f;
     m_alpha = 0.0f;
     m_fadingIn = true;
-    context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.5f);
+    context.audio.playSound("assets/sfx/intro_noise.ogg", 0.5f);
 }
 
 void DisclaimerScene::update(float dt, GameContext& context) {

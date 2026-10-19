@@ -297,6 +297,8 @@ ActDef parseAct(const JsonValue& value) {
     act.response = stringValue(value, "response");
     act.repeatText = stringValue(value, "repeatText");
     act.repeatResponse = stringValue(value, "repeatResponse");
+    act.useTexts = stringArray(value, "useTexts");
+    act.useResponses = stringArray(value, "useResponses");
     act.requiresItem = stringValue(value, "requiresItem");
     act.requiresFlag = stringValue(value, "requiresFlag");
     act.requiresFurMin = intValue(value, "requiresFurMin", 0);
@@ -306,14 +308,17 @@ ActDef parseAct(const JsonValue& value) {
     if (effects != nullptr) {
         act.spareable = boolValue(*effects, "spareable");
         act.skipAttack = boolValue(*effects, "skipAttack");
+        act.stopsBeat = boolValue(*effects, "stopsBeat");
         act.flees = boolValue(*effects, "flees");
         act.spareNow = boolValue(*effects, "spareNow");
         act.mercy = intValue(*effects, "mercy", 0);
         act.fur = intValue(*effects, "fur", 0);
         act.atkDelta = intValue(*effects, "atkDelta", 0);
+        act.atkDeltaOnce = boolValue(*effects, "atkDeltaOnce", false);
         act.defDelta = intValue(*effects, "defDelta", 0);
         act.freezeTurns = intValue(*effects, "freezeTurns", 0);
         act.setFlag = stringValue(*effects, "setFlag");
+        act.healNextAttack = boolValue(*effects, "healNextAttack", false);
     }
     return act;
 }
@@ -329,7 +334,22 @@ EnemyPatternDef parsePattern(const JsonValue& value) {
         pattern.speed = floatValue(*params, "speed", 100.0f);
         pattern.damage = intValue(*params, "damage", 1);
         pattern.furry = intValue(*params, "furry", intValue(*params, "fur", 0));
+        pattern.heal = intValue(*params, "heal", 0);
         pattern.text = stringValue(*params, "text");
+        pattern.words = stringArray(*params, "words");
+        const std::string color = stringValue(*params, "color", "white");
+        if (color == "blue") {
+            pattern.color = AttackColor::Blue;
+        } else if (color == "orange") {
+            pattern.color = AttackColor::Orange;
+        } else if (color == "green") {
+            pattern.color = AttackColor::Green;
+        } else {
+            pattern.color = AttackColor::White;
+        }
+        pattern.strike = boolValue(*params, "strike", false);
+        pattern.strikeAfter = floatValue(*params, "strikeAfter", 0.0f);
+        pattern.beatmap = stringValue(*params, "beatmap");
     }
     return pattern;
 }
@@ -366,6 +386,12 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
     enemy->m_deathText = stringValue(root, "deathText", enemy->m_deathText);
     enemy->setMercyLockedAbovePct(intValue(root, "mercyLockedAbovePct", 0));
     enemy->m_howlFur = intValue(root, "howlFur", -1);
+    enemy->m_spareLines = stringArray(root, "spareLines");
+    enemy->m_spareOutro = stringValue(root, "spareOutro");
+    enemy->m_deathLines = stringArray(root, "deathLines");
+    enemy->m_spareFlag = stringValue(root, "spareFlag");
+    enemy->m_killFlag = stringValue(root, "killFlag");
+    enemy->m_mercifulBullets = boolValue(root, "mercifulBullets", false);
 
     const std::string check = stringValue(root, "check");
     if (!check.empty()) enemy->m_checkFlavor = check;
@@ -396,8 +422,9 @@ std::unique_ptr<Enemy> Enemy::loadFromJson(const std::string& filepath) {
         const std::vector<std::string> lowHp = stringArray(*flavor, "lowHp");
         const std::vector<std::string> spareable = stringArray(*flavor, "spareable");
         if (!defaults.empty()) enemy->m_defaultFlavor = defaults;
-        if (!lowHp.empty()) enemy->m_lowHpFlavor = lowHp;
-        if (!spareable.empty()) enemy->m_spareableFlavor = spareable;
+        // a data enemy never inherits Barky's built-in pools: missing pools fall back to `default`
+        enemy->m_lowHpFlavor = lowHp;
+        enemy->m_spareableFlavor = spareable;
     }
 
     if (const JsonValue* dialogue = objectField(root, "dialogue", JsonValue::Kind::Object)) {

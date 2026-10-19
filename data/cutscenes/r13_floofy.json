@@ -1,0 +1,67 @@
+{
+  "steps": [
+    {
+      "type": "setFlag",
+      "key": "ruins.r13.floofy_pop",
+      "value": 1
+    },
+    {
+      "type": "showNpc",
+      "npc": "floofy"
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "idle"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "She hugged you and you LET her? ...You smell like lavender now.",
+        "No shame. ...Okay, a LITTLE shame."
+      ],
+      "if": "ruins.furiell.hugged >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "You spared her? Wow. No shame. ...I respect that."
+      ],
+      "if": "ruins.furiell.hugged == 0 && ruins.furiell.spared >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "So you CAN press the button.",
+        "...Golly. Up there, they're gonna LOVE you."
+      ],
+      "if": "ruins.furiell.killed >= 1"
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "sink"
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "hideNpc",
+      "npc": "floofy"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r13.floofy_pop",
+      "value": 0
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r13.floofy",
+      "value": 1
+    }
+  ]
+}

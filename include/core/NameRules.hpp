@@ -314,12 +314,16 @@ inline bool lookupBuiltinReaction(const std::string& rawName, NameReaction& out)
         out = NameReaction{ "[GOLD]", "Gold plated. You are the ultimate gamer.", true, NameEffect::Gold };
         return true;
     }
-    if (name == "PEPE") {
+    if (name == "GRUB") {
         out = NameReaction{ "[THE PROTAGONIST]", "Feels good man. Ready to climb down Mt. Dew.", true, NameEffect::FrogSoul };
         return true;
     }
-    if (name == "FROG") {
+    if (name == "GOBLIN" || name == "FROG") {
         out = NameReaction{ "[RIBBIT]", "Feels froggy man.", true, NameEffect::FrogSoul };
+        return true;
+    }
+    if (name == "PEPE") {
+        out = NameReaction{ "", "* Not that frog.", true, NameEffect::None };
         return true;
     }
     if (name == "SKYRIM") {
@@ -396,7 +400,7 @@ inline bool lookupBuiltinReaction(const std::string& rawName, NameReaction& out)
 
 inline const std::vector<std::string>& builtinTableNames() {
     static const std::vector<std::string> names = {
-        "CHAD", "PEPE", "FROG", "SKYRIM", "SANS", "FRISK",
+        "CHAD", "GRUB", "GOBLIN", "FROG", "PEPE", "SKYRIM", "SANS", "FRISK",
         "CHARA", "FLOWEY", "TORIEL", "ASGORE", "RUIVA", "LOIRA",
         "OTOME", "GOTICA", "MORENA", "YANDER", "FURIEL", "FURIELL",
         "BARKY", "FLOOFY", "AZZY", "YIFF", "OWO", "GAMER",

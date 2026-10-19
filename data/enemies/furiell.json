@@ -1,0 +1,95 @@
+{
+  "id": "furiell",
+  "name": "Furiell",
+  "hp": 250,
+  "maxHp": 250,
+  "atk": 6,
+  "def": 1,
+  "exp": 150,
+  "gold": 0,
+  "sprite": "furiell",
+  "voice": "furiell",
+  "check": "Knows what's best for you. Has forty blankets to prove it.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "text": "* You talk about video games. She nods. She is not listening.",
+      "effects": {}
+    },
+    {
+      "id": "accept_hug",
+      "label": "Accept Hug",
+      "text": "* She hugs you. It lasts a while.",
+      "effects": {
+        "fur": 30,
+        "spareNow": true,
+        "setFlag": "ruins.furiell.hugged"
+      },
+      "response": "...You'll stay a little longer, then?"
+    }
+  ],
+  "spareLines": [
+    "...",
+    "...",
+    "What are you doing?",
+    "Attack or run away!",
+    "What are you proving?",
+    "Fight me or leave!",
+    "Stop it.",
+    "Stop looking at me like that.",
+    "Go away!",
+    "...I know you want to go home, but...",
+    "Please go upstairs. I have so many blankets.",
+    "...Ha ha. I can't even keep a single gamer.",
+    "...No. You'd be unhappy down here. Even with the fursuit head."
+  ],
+  "spareOutro": "* It's warm. It's VERY fluffy. It smells like lavender and fursuit.",
+  "spareText": "If you truly wish to leave... I won't stop you. But please. Leave a review.",
+  "spareFlag": "ruins.furiell.spared",
+  "killFlag": "ruins.furiell.killed",
+  "deathText": "* Only a small pile of plush stuffing remains.",
+  "deathLines": [
+    "You... really think I'm that cringe...?",
+    "...so you really are... just a gamer..."
+  ],
+  "mercifulBullets": true,
+  "flavor": {
+    "default": [
+      "* Furiell is looking through you.",
+      "* Furiell adjusts her glitter. It does not need adjusting.",
+      "* Smells like lavender and fursuit."
+    ],
+    "lowHp": ["* Furiell is breathing hard. She is still smiling."],
+    "spareable": ["* Furiell is waiting for you to leave."]
+  },
+  "dialogue": {
+    "default": ["...", "Go upstairs.", "I have blankets."]
+  },
+  "patterns": [
+    {
+      "id": "fluff_balls",
+      "kind": "bounce",
+      "weight": 2,
+      "params": { "count": 7, "speed": 70, "damage": 2, "furry": 6 }
+    },
+    {
+      "id": "glitter_hands",
+      "kind": "swarm",
+      "weight": 2,
+      "params": { "count": 5, "speed": 48, "damage": 2, "furry": 6 }
+    },
+    {
+      "id": "hug_ring",
+      "kind": "ring",
+      "weight": 1,
+      "params": { "count": 3, "speed": 46, "damage": 3, "furry": 10 }
+    }
+  ]
+}

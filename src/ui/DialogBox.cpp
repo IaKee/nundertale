@@ -31,10 +31,14 @@ void DialogBox::startDialog(const std::vector<std::string>& pages, const std::st
         m_voiceSfx = voiceSfx;
     } else if (speaker.find("Sans") != std::string::npos) {
         m_voiceSfx = "assets/sfx/sans_type.wav";
+    } else if (speaker.find("Furiell") != std::string::npos || speaker.find("FURIELL") != std::string::npos) {
+        m_voiceSfx = "assets/sfx/voice_furiell.ogg";
+    } else if (speaker.find("Floofy") != std::string::npos || speaker.find("FLOOFY") != std::string::npos) {
+        m_voiceSfx = "assets/sfx/voice_floofy.ogg";
     } else if (speaker.find("Discord") != std::string::npos || speaker.find("Raid") != std::string::npos) {
-        m_voiceSfx = "assets/sfx/type_long.ogg";
+        m_voiceSfx = "assets/sfx/voice_default.ogg";
     } else {
-        m_voiceSfx = "assets/sfx/type.ogg";
+        m_voiceSfx = "assets/sfx/voice_default.ogg";
     }
 }
 

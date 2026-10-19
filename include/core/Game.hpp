@@ -3,9 +3,9 @@
 #include "Constants.hpp"
 #include "GameContext.hpp"
 #include "SceneManager.hpp"
-#include "services/AudioService.hpp"
+#include "services/IAudioService.hpp"
+#include "services/IInputService.hpp"
 #include "services/ResourceService.hpp"
-#include "services/InputService.hpp"
 #include "services/SaveService.hpp"
 #include <memory>
 #include <string>
@@ -25,9 +25,9 @@ private:
     void initWindow();
     void renderLetterboxed();
 
-    std::unique_ptr<AudioService> m_audioService;
+    std::unique_ptr<IAudioService> m_audioService;
     std::unique_ptr<ResourceService> m_resourceService;
-    std::unique_ptr<InputService> m_inputService;
+    std::unique_ptr<IInputService> m_inputService;
     std::unique_ptr<SaveService> m_saveService;
     std::unique_ptr<SceneManager> m_sceneManager;
 
@@ -43,6 +43,10 @@ private:
     std::string m_debugShotPath;
     int m_debugShotFrames = 20;
     int m_debugTicks = 0;
+    std::string m_debugRecordDirectory;
+    std::string m_debugInputPath;
+    double m_debugRecordSeconds = 30.0;
+    int m_debugRecordTickLimit = 900;
 #endif
 };
 

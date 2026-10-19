@@ -1,0 +1,60 @@
+{
+  "id": "grasstoid",
+  "name": "Grasstoid",
+  "hp": 72,
+  "maxHp": 72,
+  "atk": 6,
+  "def": 6,
+  "exp": 6,
+  "gold": 4,
+  "sprite": "grasstoid",
+  "check": "A living patch of grass. Nobody down here has touched it. Ever.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "touch",
+      "label": "Touch",
+      "text": "* You touched the grass. You feel less fluffy. FUR -10.",
+      "response": "Touch me.",
+      "effects": { "fur": -10, "spareable": true }
+    },
+    {
+      "id": "dinner",
+      "label": "Dinner",
+      "text": "* You ask Grasstoid for a healthy meal.",
+      "response": "Outside is NICE.",
+      "effects": { "healNextAttack": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Grasstoid gently photosynthesizes.",
+      "* Grasstoid invites you to touch grass.",
+      "* Smells like fresh dew and outdoor air."
+    ],
+    "lowHp": ["* Grasstoid is wilting."],
+    "spareable": ["* Grasstoid has been touched. Peace has been achieved."]
+  },
+  "dialogue": {
+    "default": [
+      "Touch me.",
+      "Please. Nobody ever does.",
+      "Outside is NICE."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "grass_blades",
+      "kind": "rain",
+      "weight": 1,
+      "params": { "count": 6, "speed": 70, "damage": 2, "furry": 2, "heal": 2 }
+    }
+  ],
+  "spareText": "Outside is NICE.",
+  "deathText": "* Grasstoid dries up into loose lawn clippings."
+}

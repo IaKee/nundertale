@@ -33,7 +33,7 @@ private:
     float m_idleTimer = 0.0f;
     bool m_promptSoundPlayed = false;
     bool m_hasSave = false;
-    std::string m_savedName = "PEPE";
+    std::string m_savedName = "GRUB";
     int m_savedLevel = 1;
     float m_savedPlayTime = 0.0f;
     std::string m_savedRoom = "Ruins - Entrance";

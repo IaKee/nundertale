@@ -1,0 +1,8 @@
+{
+  "id": "reply_guy",
+  "enemies": ["reply_guy"],
+  "introText": "* Reply Guy started typing!",
+  "background": "grid",
+  "music": "battle.default",
+  "canFlee": true
+}

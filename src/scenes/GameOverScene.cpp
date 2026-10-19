@@ -69,7 +69,7 @@ void GameOverScene::update(float dt, GameContext& context) {
             if (m_stateTimer >= 0.5f) {
                 m_state = State::Sprouting;
                 m_stateTimer = 0.0f;
-                context.audio.playSound("assets/sfx/type.ogg", 0.8f);
+                context.audio.playSound("assets/sfx/soul_shatter.ogg", 0.8f);
             }
             break;
 
@@ -87,7 +87,7 @@ void GameOverScene::update(float dt, GameContext& context) {
                 spawnPomPoms();
                 context.flash(Color{ 255, 170, 220, 255 }, 0.15f);
                 context.shake(4.0f, 0.2f);
-                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.9f);
+                context.audio.playSound("assets/sfx/pomf.ogg", 0.9f);
             }
             break;
 
@@ -136,7 +136,7 @@ void GameOverScene::update(float dt, GameContext& context) {
                     if (m_charTimer >= 0.05f) {
                         m_charTimer = 0.0f;
                         m_displayedChars++;
-                        context.audio.playSound("assets/sfx/sans_type.wav", 0.5f);
+                        context.audio.playSound("assets/sfx/voice_default.ogg", 0.5f);
                     }
                 } else {
                     m_linePauseTimer += dt;
@@ -156,7 +156,7 @@ void GameOverScene::update(float dt, GameContext& context) {
 
         case State::WaitingInput:
             if (context.input.isConfirmPressed()) {
-                context.audio.playSound("assets/sfx/u_activate.wav", 0.8f);
+                context.audio.playSound("assets/sfx/menu_select.wav", 0.8f);
 
                 // Reload from save if available, otherwise restore HP
                 if (context.save.hasSaveGame()) {

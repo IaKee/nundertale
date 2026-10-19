@@ -1,0 +1,20 @@
+{
+  "steps": [
+    {
+      "type": "setFlag",
+      "key": "ruins.napstablurk.met",
+      "value": 1
+    },
+    {
+      "type": "dialog",
+      "speaker": "NAPSTABLURK",
+      "lines": [
+        "oh... i'm just... lurking..."
+      ]
+    },
+    {
+      "type": "startBattle",
+      "encounter": "napstablurk"
+    }
+  ]
+}

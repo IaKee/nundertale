@@ -18,6 +18,7 @@ enum class CutsceneStepType {
     Shake,
     Flash,
     StartBattle,
+    OpenShop,
     SetFur,
     HealFull,
     FacePlayer,
@@ -53,6 +54,7 @@ struct CutsceneStep {
     int g = 255;
     int b = 255;
     std::string encounter;
+    std::string shop;
     std::string condition;
     std::string item;
     std::vector<std::string> fullLines;
@@ -75,6 +77,7 @@ inline CutsceneStepType cutsceneStepTypeFromString(const std::string& type) {
     if (type == "shake") return CutsceneStepType::Shake;
     if (type == "flash") return CutsceneStepType::Flash;
     if (type == "startBattle") return CutsceneStepType::StartBattle;
+    if (type == "openShop") return CutsceneStepType::OpenShop;
     if (type == "setFur") return CutsceneStepType::SetFur;
     if (type == "healFull") return CutsceneStepType::HealFull;
     if (type == "facePlayer") return CutsceneStepType::FacePlayer;
@@ -189,6 +192,7 @@ private:
         if (key == "path") return parseString(step.path);
         if (key == "key") return parseString(step.key);
         if (key == "encounter") return parseString(step.encounter);
+        if (key == "shop") return parseString(step.shop);
         if (key == "if") return parseString(step.condition);
         if (key == "item") return parseString(step.item);
         if (key == "fullLines") return parseStringArray(step.fullLines);
@@ -368,6 +372,7 @@ public:
     virtual void shake(float intensity, float seconds) = 0;
     virtual void flash(int r, int g, int b, float seconds) = 0;
     virtual void startBattle(const std::string& encounter) = 0;
+    virtual void openShop(const std::string&) {}
     virtual void setFur(int value) = 0;
     virtual void healFull() = 0;
     virtual void facePlayer(const std::string& key) = 0;
@@ -456,6 +461,14 @@ public:
                     m_index = m_cutscene.steps.size();
                     m_running = false;
                     return;
+                case CutsceneStepType::OpenShop:
+                    if (!m_stepStarted) {
+                        m_stepStarted = true;
+                        host.openShop(step.shop);
+                        return;
+                    }
+                    finishStep();
+                    break;
                 case CutsceneStepType::SetFur:
                     host.setFur(step.value);
                     finishStep();

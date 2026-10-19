@@ -9,6 +9,7 @@
 #include "core/TiledMap.hpp"
 #include "core/RoomObjects.hpp"
 #include "core/RandomEncounters.hpp"
+#include "core/Fur.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -16,6 +17,18 @@
 #include <unordered_map>
 
 namespace nundertale {
+
+struct FurStatText {
+    std::string valueLine;
+    std::string stageLine;
+};
+
+inline FurStatText furStatText(int value) {
+    return {
+        "FUR  " + std::to_string(value),
+        furStageName(furStageFor(value))
+    };
+}
 
 enum class OverworldMenuState {
     Closed,

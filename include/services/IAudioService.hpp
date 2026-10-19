@@ -15,6 +15,10 @@ public:
     virtual void pauseMusic() = 0;
     virtual void resumeMusic() = 0;
     virtual void updateMusic() = 0;
+    // BSK: playback position of the current music stream in seconds (0 when nothing plays)
+    virtual float musicTime() const = 0;
+    // BSK: jump the current music stream to `seconds` (no-op when nothing plays)
+    virtual void seekMusic(float seconds) = 0;
     virtual void setMusicVolume(float volume) = 0;
     // AUD-006: fadeOutMusic stops the track when the fade ends; fadeInMusic starts a track from silence
     virtual void fadeOutMusic(float seconds) = 0;

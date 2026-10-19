@@ -25,5 +25,13 @@
   },
   "gameover": {
     "path": "assets/music/epic_background_loop.ogg"
+  },
+  "battle.boss_furiell": {
+    "path": "assets/music/main_menu_loop.ogg"
+  },
+  "battle.bass_shake": {
+    "path": "assets/music/bass_shake.ogg",
+    "loopStart": 1.846,
+    "loopEnd": 3.692
   }
 }

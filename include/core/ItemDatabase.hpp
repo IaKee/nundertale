@@ -17,9 +17,13 @@ struct ItemDef {
     int at = 0;
     int df = 0;
     int furry = 0;
+    int buyPrice = 0;
+    int sellPrice = 0;
     float furMult = 1.0f;
     std::string info;
     std::string useText;
+    std::string dropText;
+    bool noDrop = false;
 };
 
 class ItemDatabase {
@@ -125,11 +129,15 @@ private:
             if (key == "type") return parseString(item.type);
             if (key == "info") return parseString(item.info);
             if (key == "useText") return parseString(item.useText);
+            if (key == "dropText") return parseString(item.dropText);
+            if (key == "noDrop") return parseBool(item.noDrop);
 
             if (key == "heal") return parseInt(item.heal);
             if (key == "at") return parseInt(item.at);
             if (key == "df") return parseInt(item.df);
             if (key == "furry") return parseInt(item.furry);
+            if (key == "buyPrice") return parseInt(item.buyPrice);
+            if (key == "sellPrice") return parseInt(item.sellPrice);
             if (key == "furMult") return parseFloat(item.furMult);
 
             return skipValue();
@@ -187,6 +195,25 @@ private:
             }
             value = static_cast<float>(number);
             return true;
+        }
+
+        bool parseBool(bool& value) {
+            skipWhitespace();
+            if (consume('t')) {
+                if (consume('r') && consume('u') && consume('e')) {
+                    value = true;
+                    return true;
+                }
+                return false;
+            }
+            if (consume('f')) {
+                if (consume('a') && consume('l') && consume('s') && consume('e')) {
+                    value = false;
+                    return true;
+                }
+                return false;
+            }
+            return false;
         }
 
         bool parseNumber(double& value) {

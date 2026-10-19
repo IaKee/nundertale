@@ -104,6 +104,16 @@ void AudioService::updateMusic() {
     }
 }
 
+float AudioService::musicTime() const {
+    return m_hasActiveMusic ? GetMusicTimePlayed(m_currentMusic) : 0.0f;
+}
+
+void AudioService::seekMusic(float seconds) {
+    if (m_hasActiveMusic) {
+        SeekMusicStream(m_currentMusic, seconds);
+    }
+}
+
 void AudioService::setMusicPitch(float pitch) {
     if (m_hasActiveMusic) {
         SetMusicPitch(m_currentMusic, pitch > 0.0f ? pitch : 1.0f);

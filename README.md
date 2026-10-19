@@ -6,9 +6,9 @@
 
 ## 🌟 Overview
 
-**nUndertale** is a comedic parody inspired by *Undertale*. In the game, the player assumes the role of **Pepe the Fallen Gamer**, who plummets into the forgotten underworld of **Mt. Dew** — a subterranean realm inhabited by eccentric internet tribes (Furries, Weeaboos, and Roleplayers).
+**nUndertale** is a comedic parody inspired by *Undertale*. In the game, the player assumes the role of **Grub the Fallen Gamer**, who plummets into the forgotten underworld of **Mt. Dew** — a subterranean realm inhabited by eccentric internet tribes (Furries, Weeaboos, and Roleplayers).
 
-Unlike the original game, losing all your HP in *nUndertale* does not simply destroy your soul: Pepe succumbs to the surrounding "cringe" and undergoes a gradual metamorphosis into a furry! Your objective is to explore the Ruins, solve ridiculous puzzles, interact with eccentric characters, dodge meme bullets in retro bullet-hell encounters, and find your way back to your gaming PC.
+Unlike the original game, losing all your HP in *nUndertale* does not simply destroy your soul: Grub succumbs to the surrounding "cringe" and undergoes a gradual metamorphosis into a furry! Your objective is to explore the Ruins, solve ridiculous puzzles, interact with eccentric characters, dodge meme bullets in retro bullet-hell encounters, and find your way back to your gaming PC.
 
 ---
 
@@ -21,10 +21,10 @@ Unlike the original game, losing all your HP in *nUndertale* does not simply des
 - **Character Naming ("Name the fallen gamer"):**
   - Interactive 4x7 character matrix with subtle authentic pixel-jitter.
   - Special buttons: `[PRO]`, `[GAMER]`, `[Backspace]`, `[Done]`.
-  - Dynamic Easter Eggs with unique audio/visual reactions for: `CHAD` (golden border), `PEPE`, `SKYRIM`, `SANS`, `FRISK`, `CHARA`, `FLOWEY`, `TORIEL`, `ASGORE`, `RUIVA`, `LOIRA`, `OTOME`, `GOTICA`, `MORENA`, repeated letters, and spamming limits.
+  - Dynamic Easter Eggs with unique audio/visual reactions for: `CHAD` (golden border), `GRUB`, `GOBLIN`, `PEPE`, `SKYRIM`, `SANS`, `FRISK`, `CHARA`, `FLOWEY`, `TORIEL`, `ASGORE`, `RUIVA`, `LOIRA`, `OTOME`, `GOTICA`, `MORENA`, repeated letters, and spamming limits.
   - Confirmation screen: *"Are you sure about that?"* with animated zooming name, PI angle jitter, and YES/NO choices.
 - **Overworld Exploration (Playable Test Level):**
-  - Full 4-directional walking animations for Pepe using the original spritesheet (`pepe_char.bmp`) with magenta color-key transparency.
+  - Full 4-directional walking animations for Grub using the original spritesheet (`pepe_char.bmp`) with magenta color-key transparency.
   - Virtual 640x480 retro canvas with pixel-perfect letterboxing on modern high-resolution displays.
   - Sparkling animated Save Point: heals HP to 20/20, plays sound, and displays Determination text.
   - Interactive signpost and Barky the Alpha Wolf NPC with typewriter dialogue box and sound bleeps.
@@ -54,7 +54,7 @@ The project was migrated from a legacy procedural singleton structure to **Moder
 
 | Key | Action |
 | :--- | :--- |
-| **Arrow keys / W, A, S, D** | Move Pepe / Menu Navigation / Dodge in Battle Box |
+| **Arrow keys / W, A, S, D** | Move Grub / Menu Navigation / Dodge in Battle Box |
 | **Z / Enter / Space** | Confirm / Interact / Advance Dialogue / Attack |
 | **X / Shift** | Cancel / Run / Backspace / Fast-forward text |
 | **C / Ctrl** | Menu / Inventory |

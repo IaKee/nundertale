@@ -1,7 +1,9 @@
 #include "scenes/OverworldScene.hpp"
+#include "core/ToxicTrack.hpp"
 #include "scenes/BattleScene.hpp"
 #include "scenes/TitleScene.hpp"
 #include "scenes/EncounterTransitionScene.hpp"
+#include "scenes/ShopScene.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
@@ -69,7 +71,7 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_saveLinesOverride = tiledStringProperty(m_tiledMap.properties, "savePlace");
     m_roomEncounters = parseEncounterSpec(tiledStringProperty(m_tiledMap.properties, "encounters"));
     m_encounterBudget = tiledIntProperty(m_tiledMap.properties, "encounterBudget", 0);
-    if (!m_roomEncounters.empty() && m_encounterBudget > 0) {
+    if (!m_roomEncounters.empty()) {
         m_encounterStepsRemaining = randomEncounterStepCountdown(m_encounterRng);
     }
 
@@ -150,6 +152,11 @@ bool OverworldScene::roomObjectVisible(const TiledObject& object, GameContext& c
     const auto lookup = [&context](const std::string& key) {
         if (key == "fur") return context.state.furry.value;
         if (key == "hp") return context.player.hp;
+        const int inv = evaluateInventoryCondition(key, context.player.inventory, [&context](const std::string& name) {
+            const ItemDef* def = context.itemDatabase.findItemByName(name);
+            return def != nullptr ? def->id : "";
+        });
+        if (inv >= 0) return inv;
         return context.state.getFlag(key, 0);
     };
     const auto evaluate = [this, &lookup, &object](const std::string& propertyName,
@@ -267,7 +274,9 @@ void OverworldScene::interactWithRoomObject(const TiledObject& object, GameConte
             npcBounds.x + npcBounds.width * 0.5f, npcBounds.y + npcBounds.height * 0.5f,
             playerBox.x + playerBox.width * 0.5f, playerBox.y + playerBox.height * 0.5f);
     }
-    context.audio.playSound("assets/sfx/menu_select.wav", 0.6f);
+    const bool firstSwitchFlip = counter == 0 && counterKey.rfind("ruins.r4.sw", 0) == 0;
+    context.audio.playSound(
+        firstSwitchFlip ? "assets/sfx/switch_click.ogg" : "assets/sfx/menu_select.wav", 0.6f);
     if (!cutsceneId.empty()) {
         startCutscene(cutsceneId);
         return;
@@ -300,6 +309,7 @@ void OverworldScene::updateHazards(GameContext& context) {
 
     context.player.hp = applyHazardDamage(
         context.player.hp, tiledIntProperty(hit->properties, "damage", 2));
+    context.audio.playSound("assets/sfx/zap.ogg", 0.85f);
     context.flash({ 255, 48, 48, 255 }, 0.12f);
     context.shake(2.0f, 0.12f);
     m_player.setPosition(m_lastHazardSafePosition);
@@ -340,6 +350,7 @@ void OverworldScene::swapDoorRoom(GameContext& context) {
     context.state.playerPos = m_player.getPosition();
     const MusicEntry track = musicFor(roomMusicKey(context.state.currentRoom));
     context.audio.playMusic(track.path, true, track.loopStart, track.loopEnd);
+    context.audio.setMusicPitch(overworldMusicPitch(toxicTrack(context.state), context.state.currentRoom));
 }
 
 void OverworldScene::updateDoorTransition(GameContext& context) {
@@ -732,6 +743,7 @@ void OverworldScene::onEnter(GameContext& context) {
     context.raidPaused = false;
     const MusicEntry enterTrack = musicFor(roomMusicKey(context.state.currentRoom));
     context.audio.playMusic(enterTrack.path, true, enterTrack.loopStart, enterTrack.loopEnd);
+    context.audio.setMusicPitch(overworldMusicPitch(toxicTrack(context.state), context.state.currentRoom));
     const std::string requestedSpawn = context.launchSpawn.empty() ? "spawn" : context.launchSpawn;
     const TiledObject* spawn = findRoomSpawn(m_tiledMap, requestedSpawn);
     if (!context.launchSpawn.empty() && spawn != nullptr) {
@@ -759,6 +771,7 @@ void OverworldScene::onResume(GameContext& context) {
     context.audio.stopMusic();
     const MusicEntry resumeTrack = musicFor(roomMusicKey(context.state.currentRoom));
     context.audio.playMusic(resumeTrack.path, true, resumeTrack.loopStart, resumeTrack.loopEnd);
+    context.audio.setMusicPitch(overworldMusicPitch(toxicTrack(context.state), context.state.currentRoom));
     initRoomObjects(context);
     initInteractables(context);
 }
@@ -857,18 +870,35 @@ void OverworldScene::handleMenuInput(GameContext& context) {
             if (m_itemActionIndex == 1) {
                 const std::string infoText = (item == "Bottle")
                     ? "* A bottle. It's not Mountain Dew.\n* (You don't want to talk about it.)"
-                    : "* " + item + ".";
-                m_dialogBox.startDialog({ infoText }, "");
+                    : (itemDef != nullptr && !itemDef->info.empty()) ? itemDef->info : "* " + item + ".";
+                m_dialogBox.startDialog(splitRoomPages(infoText), "");
                 return;
             }
 
             if (m_itemActionIndex == 2) {
+                if (itemDef != nullptr && itemDef->noDrop) {
+                    const std::string dropRefusal = !itemDef->dropText.empty()
+                        ? itemDef->dropText
+                        : "* (Forbidden candy.)";
+                    m_dialogBox.startDialog(splitRoomPages(dropRefusal), "");
+                    return;
+                }
                 context.player.inventory.erase(context.player.inventory.begin() + m_itemSubIndex);
-                const std::string dropText = (item == "Bottle")
-                    ? "* You throw it away. The Underground will remember."
-                    : "* The " + item + " was thrown away.";
+                const std::string dropText = (itemDef != nullptr && !itemDef->dropText.empty())
+                    ? itemDef->dropText
+                    : (item == "Bottle")
+                        ? "* You throw it away. The Underground will remember."
+                        : "* The " + item + " was thrown away.";
                 m_itemSubIndex = std::max(0, std::min(m_itemSubIndex, (int)context.player.inventory.size() - 1));
-                m_dialogBox.startDialog({ dropText }, "");
+                m_dialogBox.startDialog(splitRoomPages(dropText), "");
+                return;
+            }
+
+            if (itemDef != nullptr && itemDef->type == "key") {
+                const std::string useText = !itemDef->useText.empty()
+                    ? itemDef->useText
+                    : (item == "Bottle" ? "* You consider drinking from the bottle.\n* ...No. Absolutely not." : "* You used the " + item + ".");
+                m_dialogBox.startDialog(splitRoomPages(useText), "");
                 return;
             }
 
@@ -1066,13 +1096,16 @@ void OverworldScene::renderMenu(GameContext& context, Font font) {
         context.resources.drawText(font, "ARMOR:  " + context.player.armor, { 210, 246 }, 18, WHITE, 1.0f);
         context.resources.drawText(font, "GOLD:   " + std::to_string(context.player.gold), { 210, 272 }, 18, WHITE, 1.0f);
 
-        // Furry meter status line (MNU-003 / FUR-006)
+        // Furry route state is not represented in GameState::RouteType yet. Hide
+        // these lines when that route is added and FLF replaces HP.
+        const FurStatText furText = furStatText(context.state.furry.value);
         Color furColor = (context.state.furry.value > 0) ? KR_PURPLE : WHITE;
-        context.resources.drawText(font, "FUR:    " + std::to_string(context.state.furry.value) + " (" + furStageName(furStageFor(context.state.furry.value)) + ")", { 210, 305 }, 18, furColor, 1.0f);
+        context.resources.drawText(font, furText.valueLine, { 210, 305 }, 18, furColor, 1.0f);
+        context.resources.drawText(font, furText.stageLine, { 210, 329 }, 18, furColor, 1.0f);
 
         const std::string raidText = raidLabel(context.state.raid);
         if (!raidText.empty()) {
-            context.resources.drawText(font, raidText, { 210, 337 }, 18, WHITE, 1.0f);
+            context.resources.drawText(font, raidText, { 210, 355 }, 18, WHITE, 1.0f);
         }
     } else if (m_menuState == OverworldMenuState::Item || m_menuState == OverworldMenuState::ItemAction) {
         Rectangle itemBox = { 186, 52, 400, 300 };
@@ -1291,6 +1324,11 @@ void OverworldScene::update(float dt, GameContext& context) {
                     m_context);
             }
 
+            void openShop(const std::string& shop) override {
+                if (shop.empty()) return;
+                m_context.scenes.pushScene(std::make_unique<ShopScene>(shop), m_context);
+            }
+
             void setFur(int value) override {
                 m_context.state.furry.value = std::clamp(value, 0, 100);
             }
@@ -1314,6 +1352,11 @@ void OverworldScene::update(float dt, GameContext& context) {
                 const bool result = evaluateRoomCondition(text, [this](const std::string& key) {
                     if (key == "fur") return m_context.state.furry.value;
                     if (key == "hp") return m_context.player.hp;
+                    const int inv = evaluateInventoryCondition(key, m_context.player.inventory, [this](const std::string& name) {
+                        const ItemDef* def = m_context.itemDatabase.findItemByName(name);
+                        return def != nullptr ? def->id : "";
+                    });
+                    if (inv >= 0) return inv;
                     return m_context.state.getFlag(key, 0);
                 }, &parsed);
                 if (!parsed && m_logged.insert("cutscene:" + text).second) {
@@ -1576,8 +1619,16 @@ void OverworldScene::update(float dt, GameContext& context) {
     }
 
     const std::string encounterCountFlag = "enc." + context.state.currentRoom + ".count";
+    const std::string_view encounterArea = encounterAreaForRoom(context.state.currentRoom);
+    const int areaKills = encounterArea.empty()
+        ? 0
+        : context.state.getFlag("kills." + std::string(encounterArea), 0);
     if (!m_roomEncounters.empty() &&
-        encounterBudgetAllows(context.state.getFlag(encounterCountFlag, 0), m_encounterBudget) &&
+        encounterAllowed(context.state.getFlag(encounterCountFlag, 0),
+                         m_encounterBudget,
+                         context.state.getFlag("toxic.track", 0),
+                         areaKills,
+                         encounterArea) &&
         advanceEncounterStep(m_encounterStepsRemaining, playerWalked)) {
         const std::string encounterId = pickWeightedEncounter(m_roomEncounters, m_encounterRng);
         auto battle = std::make_unique<BattleScene>(encounterId);
@@ -1867,4 +1918,3 @@ void OverworldScene::onExit(GameContext& context) {
 }
 
 } // namespace nundertale
-

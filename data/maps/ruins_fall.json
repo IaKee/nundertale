@@ -426,6 +426,67 @@
               "value": "ruins.r1.woke"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 13,
+          "name": "tide_pod",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 380,
+          "y": 240,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/tide_pod.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "item.tide_pod.taken >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1_tide_pod"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 14,
+          "name": "floor_message",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 220,
+          "y": 260,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/floor_message.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "floormsg_r1"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -648,7 +709,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 13,
+  "nextobjectid": 15,
   "orientation": "orthogonal",
   "properties": [
     {

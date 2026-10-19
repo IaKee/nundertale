@@ -17,7 +17,7 @@ void EncounterTransitionScene::onEnter(GameContext& context) {
     m_timer = 0.0f;
     m_flashStep = 0;
     m_soulVisible = false;
-    context.audio.playSound("assets/sfx/pipipipopopo_backwards.ogg", 0.9f);
+    context.audio.playSound("assets/sfx/alert.ogg", 0.9f);
 }
 
 void EncounterTransitionScene::update(float dt, GameContext& context) {
@@ -30,7 +30,7 @@ void EncounterTransitionScene::update(float dt, GameContext& context) {
             m_timer = 0.0f;
             m_flashStep = 0;
             m_soulVisible = true;
-            context.audio.playSound("assets/sfx/menu_select.wav", 0.9f);
+            context.audio.playSound("assets/sfx/encounter_beep.ogg", 0.9f);
         }
     } else if (m_phase == Phase::Flash) {
         if (m_timer >= 0.08f) {
@@ -39,14 +39,14 @@ void EncounterTransitionScene::update(float dt, GameContext& context) {
             m_soulVisible = (m_flashStep % 2 == 0);
 
             if (m_soulVisible) {
-                context.audio.playSound("assets/sfx/menu_select.wav", 0.9f);
+                context.audio.playSound("assets/sfx/encounter_beep.ogg", 0.9f);
             }
 
             if (m_flashStep >= 6) {
                 m_phase = Phase::Slide;
                 m_timer = 0.0f;
                 m_soulVisible = true;
-                context.audio.playSound("assets/sfx/cartoon_slip.ogg", 0.6f);
+                context.audio.playSound("assets/sfx/encounter_fall.ogg", 0.6f);
             }
         }
     } else if (m_phase == Phase::Slide) {

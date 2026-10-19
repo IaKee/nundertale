@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "Bullet.hpp"
 
 namespace nundertale {
 
@@ -13,7 +14,10 @@ enum class EnemyPatternKind {
     Hop,
     Swarm,
     Wall,
-    Bounce
+    Bounce,
+    Ring,
+    Beat,
+    TextWall
 };
 
 inline EnemyPatternKind enemyPatternKindFromString(const std::string& kind) {
@@ -22,6 +26,9 @@ inline EnemyPatternKind enemyPatternKindFromString(const std::string& kind) {
     if (kind == "swarm") return EnemyPatternKind::Swarm;
     if (kind == "wall") return EnemyPatternKind::Wall;
     if (kind == "bounce") return EnemyPatternKind::Bounce;
+    if (kind == "ring") return EnemyPatternKind::Ring;
+    if (kind == "beat") return EnemyPatternKind::Beat;
+    if (kind == "text_wall") return EnemyPatternKind::TextWall;
     return EnemyPatternKind::None;
 }
 
@@ -33,7 +40,13 @@ struct EnemyPatternDef {
     float speed = 100.0f;
     int damage = 1;
     int furry = 0;
+    int heal = 0;
     std::string text;
+    std::vector<std::string> words;
+    AttackColor color = AttackColor::White;
+    bool strike = false;
+    float strikeAfter = 0.0f;
+    std::string beatmap;
 };
 
 inline std::size_t pickWeightedPatternIndex(const std::vector<EnemyPatternDef>& patterns,

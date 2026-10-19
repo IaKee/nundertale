@@ -1,0 +1,53 @@
+{
+  "id": "reply_guy",
+  "name": "Reply Guy",
+  "hp": 40,
+  "maxHp": 40,
+  "atk": 6,
+  "def": 4,
+  "exp": 5,
+  "gold": 3,
+  "sprite": "reply_guy",
+  "check": "Has a correction about your fursona's species.",
+  "acts": [
+    {
+      "id": "check",
+      "label": "Check",
+      "text": "",
+      "effects": {}
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "text": "* You talk to Reply Guy.",
+      "response": "...yeah, it's a wolf, man.",
+      "effects": { "spareable": true }
+    }
+  ],
+  "flavor": {
+    "default": [
+      "* Reply Guy prepares another correction.",
+      "* Reply Guy is fact-checking your existence.",
+      "* Reply Guy is citing uncited sources."
+    ],
+    "lowHp": ["* Reply Guy's arguments are falling apart."],
+    "spareable": ["* Reply Guy concedes the point."]
+  },
+  "dialogue": {
+    "default": [
+      "Well, actually, that's a coyote.",
+      "Source?",
+      "...yeah, it's a wolf, man."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "well_actually",
+      "kind": "rain",
+      "weight": 1,
+      "params": { "count": 5, "speed": 75, "damage": 2, "furry": 2, "text": "Well, actually" }
+    }
+  ],
+  "spareText": "...yeah, it's a wolf, man.",
+  "deathText": "* Reply Guy deleted his account."
+}

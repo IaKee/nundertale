@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include "TextBullet.hpp"
 
 namespace nundertale {
 
@@ -35,6 +36,9 @@ struct Bullet {
     AttackColor attackColor = AttackColor::White;
     int heal = 0; // used only when attackColor == Green
     std::string text = "";
+    float textFontSize = TEXT_BULLET_FONT_SIZE;
+    bool strike = false;
+    float strikeAfter = 0.0f;
     int damage = 3;
     int fur = 6;
     bool active = true;
@@ -49,9 +53,12 @@ struct Bullet {
     bool homes = false;
     float homingSpeed = 45.0f;
     float jitter = 12.0f;
+    // BSK: optional single-image PNG drawn centered (fluff tufts); empty = shape fallback
+    std::string spritePath;
 
     // Pure rule, unit-testable: does touching this bullet hurt the soul?
     bool hurtsSoul(bool soulMoving) const {
+        if (textBulletStruck(strike, age, strikeAfter)) return false;
         switch (attackColor) {
             case AttackColor::White:
                 return true;
@@ -69,8 +76,15 @@ struct Bullet {
         return attackColor == AttackColor::Green;
     }
 
+    bool isStruck() const {
+        return textBulletStruck(strike, age, strikeAfter);
+    }
+
     void update(float dt, const Rectangle* box = nullptr) {
         age += dt;
+        if (textBulletExpired(strike, age, strikeAfter)) {
+            active = false;
+        }
         if (parabolic) {
             position.x += velocity.x * dt;
             const float duration = std::max(0.1f, flightDuration);

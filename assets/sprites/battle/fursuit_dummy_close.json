@@ -9,9 +9,29 @@
     120
   ],
   "anims": {
+    "smug": {
+      "row": 0,
+      "frames": 2,
+      "fps": 1
+    },
+    "wink": {
+      "row": 1,
+      "frames": 2,
+      "fps": 1
+    },
+    "pout": {
+      "row": 2,
+      "frames": 2,
+      "fps": 1
+    },
+    "smirk": {
+      "row": 3,
+      "frames": 2,
+      "fps": 1
+    },
     "shake": {
       "row": 0,
-      "frames": 4,
+      "frames": 2,
       "fps": 12
     }
   }

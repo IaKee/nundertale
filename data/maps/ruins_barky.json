@@ -446,8 +446,36 @@
           ]
         },
         {
-          "height": 20,
+          "height": 40,
           "id": 17,
+          "name": "floor_message",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 220,
+          "y": 280,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/floor_message.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "floormsg_r9"
+            }
+          ]
+        },
+        {
+          "height": 20,
+          "id": 18,
           "name": "to_bakesale",
           "rotation": 0,
           "type": "door",
@@ -475,7 +503,7 @@
         },
         {
           "height": 0,
-          "id": 18,
+          "id": 19,
           "name": "from_bakesale",
           "rotation": 0,
           "type": "spawn",
@@ -713,7 +741,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 19,
+  "nextobjectid": 20,
   "orientation": "orthogonal",
   "properties": [
     {
