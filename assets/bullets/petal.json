@@ -1,0 +1,18 @@
+{
+  "image": "petal.png",
+  "cell": [
+    10,
+    10
+  ],
+  "origin": [
+    5,
+    5
+  ],
+  "anims": {
+    "spin": {
+      "row": 0,
+      "frames": 2,
+      "fps": 6
+    }
+  }
+}

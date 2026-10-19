@@ -1,0 +1,29 @@
+{
+  "image": "gladowos.png",
+  "cell": [
+    120,
+    140
+  ],
+  "origin": [
+    60,
+    140
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    },
+    "talking": {
+      "row": 1,
+      "frames": 1
+    },
+    "phase2": {
+      "row": 2,
+      "frames": 1
+    },
+    "phase3": {
+      "row": 3,
+      "frames": 1
+    }
+  }
+}

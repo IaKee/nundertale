@@ -1,0 +1,17 @@
+{
+  "image": "rose_vine.png",
+  "cell": [
+    48,
+    10
+  ],
+  "origin": [
+    24,
+    5
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}

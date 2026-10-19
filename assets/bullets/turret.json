@@ -1,0 +1,16 @@
+{
+  "image": "turret.png",
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
+  "anims": {
+    "idle": {
+      "row": 0
+    }
+  }
+}

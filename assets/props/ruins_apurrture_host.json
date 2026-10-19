@@ -1,0 +1,17 @@
+{
+  "image": "ruins_apurrture_host.png",
+  "cell": [
+    40,
+    60
+  ],
+  "origin": [
+    20,
+    59
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}
