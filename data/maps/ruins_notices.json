@@ -684,6 +684,123 @@
               "value": "* A bid sheet. Highest bid: 400G. For a drawing of a \"very tired raccoon\". You don't ask."
             }
           ]
+        },
+        {
+          "height": 30,
+          "id": 19,
+          "name": "bloodstain",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 60,
+          "x": 560,
+          "y": 380,
+          "properties": [
+            {
+              "name": "bloodstain",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r8_bloodstain"
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 20,
+          "name": "bloodstain_ghost",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 32,
+          "x": 448,
+          "y": 380,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/grub.png"
+            },
+            {
+              "name": "ghost",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r8.ghost_on == 1"
+            }
+          ]
+        },
+        {
+          "height": 44,
+          "id": 21,
+          "name": "bloodstain_hugger",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 32,
+          "x": 612,
+          "y": 368,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/furiell.png"
+            },
+            {
+              "name": "ghost",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r8.ghost_on == 1"
+            }
+          ]
+        },
+        {
+          "height": 16,
+          "id": 22,
+          "name": "bloodstain_soul",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 16,
+          "x": 576,
+          "y": 350,
+          "properties": [
+            {
+              "name": "heart",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r8.soul_on == 1"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -994,7 +1111,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 19,
+  "nextobjectid": 23,
   "orientation": "orthogonal",
   "properties": [
     {

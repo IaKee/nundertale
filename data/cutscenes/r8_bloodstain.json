@@ -1,0 +1,29 @@
+{
+  "steps": [
+    { "type": "moveNpc", "npc": "bloodstain_ghost", "x": 448, "y": 380, "speed": 100000 },
+    { "type": "moveNpc", "npc": "bloodstain_hugger", "x": 612, "y": 368, "speed": 100000 },
+    { "type": "moveNpc", "npc": "bloodstain_soul", "x": 576, "y": 350, "speed": 100000 },
+    { "type": "npcAnim", "npc": "bloodstain_ghost", "key": "stand_right" },
+    { "type": "npcAnim", "npc": "bloodstain_hugger", "key": "stand_left" },
+    { "type": "setFlag", "key": "ruins.r8.ghost_on", "value": 1 },
+    { "type": "wait", "seconds": 0.5 },
+    { "type": "npcAnim", "npc": "bloodstain_ghost", "key": "walk_right" },
+    { "type": "moveNpc", "npc": "bloodstain_ghost", "x": 568, "y": 380, "speed": 60 },
+    { "type": "npcAnim", "npc": "bloodstain_ghost", "key": "stand_right" },
+    { "type": "moveNpc", "npc": "bloodstain_hugger", "x": 598, "y": 368, "speed": 28 },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "setFlag", "key": "ruins.r8.soul_on", "value": 1 },
+    { "type": "moveNpc", "npc": "bloodstain_soul", "x": 576, "y": 305, "speed": 30 },
+    { "type": "setFlag", "key": "ruins.r8.soul_on", "value": 0 },
+    { "type": "setFlag", "key": "ruins.r8.ghost_on", "value": 0 },
+    { "type": "wait", "seconds": 0.6 },
+    { "type": "addFlag", "key": "ruins.r8.bloodstain.seen", "value": 1 },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* (They said yes.)"
+      ]
+    }
+  ]
+}

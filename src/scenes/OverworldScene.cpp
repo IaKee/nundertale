@@ -11,6 +11,7 @@
 #include "core/FurReactions.hpp"
 #include "core/Cell.hpp"
 #include "core/Camera2DFollow.hpp"
+#include "core/Bloodstain.hpp"
 #include "core/RgbKeyboard.hpp"
 #include "core/RoomObjects.hpp"
 #include "services/MusicTracks.hpp"
@@ -1597,6 +1598,27 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
     const TiledRect tiledBounds = object.bounds();
     const Rectangle bounds = { tiledBounds.x, tiledBounds.y, tiledBounds.width, tiledBounds.height };
     const std::string sprite = tiledStringProperty(object.properties, "sprite");
+    // OVW-022: the bloodstain is drawn in code (no art yet); the replay's soul is a small red heart.
+    if (tiledBoolProperty(object.properties, "bloodstain", false)) {
+        const float cx = bounds.x + bounds.width * 0.5f;
+        const float cy = bounds.y + bounds.height * 0.5f;
+        DrawEllipse(static_cast<int>(cx), static_cast<int>(cy),
+                    bounds.width * 0.5f, bounds.height * 0.5f, Color{ 92, 14, 22, 220 });
+        DrawEllipse(static_cast<int>(cx - 6.0f), static_cast<int>(cy - 2.0f),
+                    bounds.width * 0.25f, bounds.height * 0.25f, Color{ 128, 20, 30, 220 });
+        DrawEllipse(static_cast<int>(cx + bounds.width * 0.4f), static_cast<int>(cy + 6.0f),
+                    4.0f, 3.0f, Color{ 92, 14, 22, 220 });
+        return;
+    }
+    if (tiledBoolProperty(object.properties, "heart", false)) {
+        const float cx = bounds.x + bounds.width * 0.5f;
+        const float cy = bounds.y + bounds.height * 0.5f;
+        const Color red = { 255, 0, 0, 200 };
+        DrawCircle(static_cast<int>(cx - 3.0f), static_cast<int>(cy - 2.0f), 4.0f, red);
+        DrawCircle(static_cast<int>(cx + 3.0f), static_cast<int>(cy - 2.0f), 4.0f, red);
+        DrawTriangle({ cx - 7.0f, cy }, { cx, cy + 8.0f }, { cx + 7.0f, cy }, red);
+        return;
+    }
     if (!sprite.empty()) {
         const SpriteSheetDef* sheet = spriteSheetCache().load(sprite, spriteJsonPath(sprite));
         Texture2D texture = context.resources.getTexture(sprite);
@@ -1637,7 +1659,11 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
                 const std::string turned = "stand_" + m_talkingFacing;
                 if (sheet->anims.find(turned) != sheet->anims.end()) animation = turned;
             }
-            drawSprite(texture, *sheet, animation, m_roomAnimationTime, pivot);
+            const bool ghost = tiledBoolProperty(object.properties, "ghost", false);
+            const Color tint = ghost
+                ? Color{ 190, 205, 255, static_cast<unsigned char>(255.0f * kBloodstainGhostAlpha) }
+                : WHITE;
+            drawSprite(texture, *sheet, animation, m_roomAnimationTime, pivot, 2.0f, tint);
         } else {
             const Rectangle source = {
                 0.0f, 0.0f, static_cast<float>(texture.width), static_cast<float>(texture.height)

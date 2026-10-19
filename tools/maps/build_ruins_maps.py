@@ -3080,6 +3080,62 @@ def build_ruins_notices():
                 "lines": "* A bid sheet. Highest bid: 400G. For a drawing of a \"very tired raccoon\". You don't ask.",
             },
         },
+        # OVW-022 (LORE §30.4): a bloodstain where an ex-gamer converted. Examining it replays a
+        # translucent ghost (data/cutscenes/r8_bloodstain.json) then "* (They said yes.)".
+        {
+            "name": "bloodstain",
+            "type": "prop",
+            "x": 560,
+            "y": 380,
+            "w": 60,
+            "h": 30,
+            "properties": {
+                "bloodstain": True,
+                "cutscene": "r8_bloodstain",
+            },
+        },
+        # The replay cast: hidden until the cutscene raises ruins.r8.ghost_on / soul_on.
+        {
+            "name": "bloodstain_ghost",
+            "type": "npc",
+            "x": 448,
+            "y": 380,
+            "w": 32,
+            "h": 32,
+            "properties": {
+                "sprite": "assets/sprites/ow/grub.png",
+                "ghost": True,
+                "solid": False,
+                "showIf": "ruins.r8.ghost_on == 1",
+            },
+        },
+        {
+            "name": "bloodstain_hugger",
+            "type": "npc",
+            "x": 612,
+            "y": 368,
+            "w": 32,
+            "h": 44,
+            "properties": {
+                "sprite": "assets/sprites/ow/furiell.png",
+                "ghost": True,
+                "solid": False,
+                "showIf": "ruins.r8.ghost_on == 1",
+            },
+        },
+        {
+            "name": "bloodstain_soul",
+            "type": "npc",
+            "x": 576,
+            "y": 350,
+            "w": 16,
+            "h": 16,
+            "properties": {
+                "heart": True,
+                "solid": False,
+                "showIf": "ruins.r8.soul_on == 1",
+            },
+        },
     ]
 
     return make_tiled_map(
