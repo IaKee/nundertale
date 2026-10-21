@@ -2,8 +2,8 @@
     "window": {},
     "menu": 
     {
-        "mainTitle": "nundertale",
-        "subTitle": 
+        "main_title": "nundertale",
+        "sub_title_randomized": 
         [
             "definitely not undertails",
             "177013",
@@ -15,6 +15,10 @@
             "so it begins"
         ],
         "continue": "[Press %CONFIRMKEY% or %CONFIRMKEYALT%]"
+    },
+    "intro_level":
+    {
+
     },
     "gibberish": [
         "Reticulating Splines",
