@@ -11,8 +11,8 @@
   "anims": {
     "idle": {
       "row": 0,
-      "frames": 4,
-      "fps": 4.33
+      "frames": 8,
+      "fps": 8.67
     },
     "hurt": {
       "row": 1,

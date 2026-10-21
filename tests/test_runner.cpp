@@ -47,6 +47,7 @@
 #include "core/RandomEncounters.hpp"
 #include "core/ToxicTrack.hpp"
 #include "core/Camera2DFollow.hpp"
+#include "core/Game.hpp"
 #include "scenes/LoreScroll.hpp"
 #include "scenes/ShopModel.hpp"
 #include "scenes/OverworldScene.hpp"
@@ -2656,7 +2657,7 @@ int main() {
 
         // OVW-020: every Ruins room loads, has a default spawn, and every door lands on a real spawn.
         const std::vector<std::string> ruinsRooms = {
-            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house", "ruins_house_pepe", "ruins_basement", "ruins_exit"
+            "ruins_fall", "ruins_floofy", "ruins_entrance", "ruins_switches", "ruins_dummy", "ruins_hallway", "ruins_notices", "ruins_barky", "ruins_bakesale", "ruins_cables", "ruins_house", "ruins_house_hallway", "ruins_house_pepe", "ruins_basement", "ruins_exit"
         };
         std::map<std::string, TiledMap> rooms;
         for (const std::string& roomId : ruinsRooms) {
@@ -3318,7 +3319,7 @@ int main() {
         std::cout << "[PASS] R10-A: Furiell data, 13-line spare, hug and merciful bullets verified." << std::endl;
     }
 
-    // Suite 57: BSK-T2 beat-map parsing, scheduling, clock wrap, shots, and Beat pattern data
+    // Suite 57: BSK-T2 authoritative grid, transport, event partitioning, and render sampling
     {
         using namespace nundertale;
 
@@ -3330,25 +3331,38 @@ int main() {
         assert(map.expressions.size() == 4U);
         assert(!parseBeatMap("{", map));
 
-        for (int pass = 0; pass < map.passesPerTurn; ++pass) {
-            const float downbeat = static_cast<float>(pass) * map.loopLength;
-            const std::vector<BeatEvent> closeup =
-                beatEventsBetween(map, downbeat - 0.001f, downbeat + map.turnEndsAt);
-            assert(closeup.size() == 10U);
-            const std::vector<BeatEvent> wide = beatEventsBetween(
-                map, downbeat + map.turnEndsAt, downbeat + map.loopLength - 0.0001f);
-            assert(wide.empty());
+        // 1. Every runtime value is snapped to the double-precision 130 BPM grid.
+        const double quarter = 60.0 / 130.0;
+        const double sixteenth = quarter / 4.0;
+        const double loop = 8.0 * quarter;
+        assert(std::fabs(beatQuarter(map) - quarter) < 1e-12);
+        assert(std::fabs(beatSixteenth(map) - sixteenth) < 1e-12);
+        assert(std::fabs(map.loopLength - loop) < 1e-12);
+        assert(std::fabs(map.menuLoopStart - 4.0 * quarter) < 1e-12);
+        assert(std::fabs(map.menuLoopEnd - loop) < 1e-12);
+        assert(std::fabs(map.turnEndsAt - 3.0 * quarter) < 1e-12);
+        const int noteSteps[] = {0, 1, 2, 3, 4, 6, 8, 9, 10, 11};
+        for (std::size_t i = 0; i < map.notes.size(); ++i) {
+            assert(std::fabs(map.notes[i] - noteSteps[i] * sixteenth) < 1e-12);
         }
+        assert(std::fabs(map.kicks[0] - 0.0) < 1e-12);
+        assert(std::fabs(map.kicks[1] - 4.0 * sixteenth) < 1e-12);
+        assert(std::fabs(map.kicks[2] - 8.0 * sixteenth) < 1e-12);
+        assert(beatShotAt(map, 3.0 * quarter - 1e-9) == "closeup");
+        assert(beatShotAt(map, 3.0 * quarter) == "wide");
+        assert(beatShotAt(map, loop) == "closeup");
 
-        const float duration = beatTurnDuration(map);
-        assert(std::fabs(duration - 8.769f) <= 0.001f);
-        assert(!beatTurnFinished(map, duration - 0.001f));
+        const double duration = beatTurnDuration(map);
+        assert(std::fabs(duration - 19.0 * quarter) < 1e-12);
+        assert(!beatTurnFinished(map, duration - 0.001));
         assert(beatTurnFinished(map, duration));
-        const std::vector<BeatEvent> fullTurn = beatEventsBetween(map, -0.001f, duration);
+        const std::vector<BeatEvent> fullTurn =
+            beatEventsBetween(map, initialBeatEventCursor(map), duration);
         assert(fullTurn.size() == 30U);
 
         int bigCount = 0;
         int kickCount = 0;
+        int noteZeroCount = 0;
         for (const BeatEvent& event : fullTurn) {
             if (event.big) {
                 ++bigCount;
@@ -3358,45 +3372,163 @@ int main() {
                 ++kickCount;
                 assert(event.noteIndex == 0 || event.noteIndex == 4 || event.noteIndex == 6);
             }
+            if (event.noteIndex == 0) ++noteZeroCount;
         }
-        assert(bigCount == 6 && kickCount == 9);
+        assert(bigCount == 6 && kickCount == 9 && noteZeroCount == 3);
 
-        const auto verifyFrameSplit = [&map, duration](float dt) {
+        // 2. (prev, now] produces the same ordered 30 events for all update partitions.
+        const auto collectPartition = [&map, duration](const std::vector<double>& steps) {
+            std::vector<std::pair<int, int>> order;
             bool seen[3][10]{};
-            int count = 0;
-            float previous = -0.001f;
+            double previous = initialBeatEventCursor(map);
+            std::size_t stepIndex = 0U;
             while (previous < duration) {
-                const float now = std::min(duration, previous + dt);
+                const double now = std::min(duration, previous + steps[stepIndex % steps.size()]);
                 for (const BeatEvent& event : beatEventsBetween(map, previous, now)) {
                     assert(event.pass >= 0 && event.pass < 3);
                     assert(event.noteIndex >= 0 && event.noteIndex < 10);
                     assert(!seen[event.pass][event.noteIndex]);
                     seen[event.pass][event.noteIndex] = true;
-                    ++count;
+                    order.emplace_back(event.pass, event.noteIndex);
                 }
                 previous = now;
+                ++stepIndex;
             }
-            assert(count == 30);
+            return order;
         };
-        verifyFrameSplit(1.0f / 60.0f);
-        verifyFrameSplit(1.0f / 30.0f);
-        verifyFrameSplit(0.25f);
+        const auto events30 = collectPartition({1.0 / 30.0});
+        const auto events60 = collectPartition({1.0 / 60.0});
+        const auto eventsCoarse = collectPartition({0.250});
+        const auto eventsIrregular = collectPartition({0.007, 0.041, 0.133, 0.019, 0.250, 0.003});
+        assert(events30.size() == 30U);
+        assert(events30 == events60 && events30 == eventsCoarse && events30 == eventsIrregular);
+        for (int pass = 0; pass < 3; ++pass) {
+            for (int note = 0; note < 10; ++note) {
+                assert(events30[static_cast<std::size_t>(pass * 10 + note)] ==
+                       std::make_pair(pass, note));
+            }
+        }
 
+        // 3. Validated end-to-start wraps are monotonic; duplicates and jitter do not wrap.
         BeatTurnClock clock;
-        assert(std::fabs(clock.advance(map, 0.0f)) < 0.0001f);
-        assert(std::fabs(clock.advance(map, 3.680f) - 3.680f) < 0.0001f);
-        assert(std::fabs(clock.advance(map, 0.020f) - 3.712f) < 0.0001f);
-        assert(clock.pass == 1);
-        const std::vector<BeatEvent> toWrap = beatEventsBetween(map, 3.680f, 3.692f);
-        const std::vector<BeatEvent> fromWrap = beatEventsBetween(map, 3.692f, 3.712f);
-        assert(toWrap.size() == 1U && toWrap[0].pass == 1 && toWrap[0].noteIndex == 0);
-        assert(fromWrap.empty());
+        clock.beginSeek();
+        BeatClockSample sample = clock.advance(map, map.offset);
+        assert(sample.accepted && sample.turnTime == 0.0 && clock.pass == 0);
+        sample = clock.advance(map, map.offset);
+        assert(sample.accepted && !sample.advanced && clock.pass == 0);
+        sample = clock.advance(map, map.offset + loop - 0.0001);
+        assert(sample.accepted && clock.pass == 0);
+        const double beforeWrap = sample.turnTime;
+        sample = clock.advance(map, map.offset + loop);
+        assert(sample.accepted && sample.wrapped && sample.pass == 1);
+        assert(std::fabs(sample.turnTime - loop) < 1e-12);
+        const auto boundaryEvents = beatEventsBetween(map, beforeWrap, sample.turnTime);
+        assert(boundaryEvents.size() == 1U && boundaryEvents[0].pass == 1 &&
+               boundaryEvents[0].noteIndex == 0);
+        sample = clock.advance(map, map.offset + 0.0002);
+        assert(sample.accepted && clock.pass == 1);
+        const double beforeJitter = clock.turnTime;
+        sample = clock.advance(map, map.offset + 0.0001);
+        assert(!sample.advanced && clock.pass == 1 && clock.turnTime == beforeJitter);
+        sample = clock.advance(map, map.offset + 0.0002);
+        assert(sample.accepted && !sample.advanced && clock.pass == 1);
 
-        assert(beatShotAt(map, 0.0f) == "closeup");
-        assert(beatShotAt(map, 1.384f) == "closeup");
-        assert(beatShotAt(map, 1.386f) == "wide");
-        assert(beatShotAt(map, 3.691f) == "wide");
-        assert(beatShotAt(map, 3.693f) == "closeup");
+        // 4. A stale menu sample at exact L/2 cannot acknowledge seek or emit a burst.
+        BeatMap offsetMap = map;
+        offsetMap.offset = 2.75;
+        BeatTurnClock seekClock;
+        seekClock.beginSeek();
+        const std::uint64_t seekGeneration = seekClock.generation;
+        const BeatClockSample stale = seekClock.advance(
+            offsetMap, offsetMap.offset + offsetMap.loopLength * 0.5);
+        assert(!stale.accepted && seekClock.awaitingSeek &&
+               seekClock.acceptedGeneration != seekGeneration && seekClock.turnTime == 0.0);
+        const auto eventsForSample = [&offsetMap](double previous, const BeatClockSample& clockSample) {
+            return clockSample.accepted
+                ? beatEventsBetween(offsetMap, previous, clockSample.turnTime)
+                : std::vector<BeatEvent>{};
+        };
+        assert(eventsForSample(initialBeatEventCursor(offsetMap), stale).empty());
+        const BeatClockSample acknowledged = seekClock.advance(offsetMap, offsetMap.offset);
+        assert(acknowledged.accepted && seekClock.hasAcceptedSeek() && acknowledged.turnTime == 0.0);
+        const auto initialEvents = eventsForSample(initialBeatEventCursor(offsetMap), acknowledged);
+        assert(initialEvents.size() == 1U && initialEvents[0].pass == 0 &&
+               initialEvents[0].noteIndex == 0);
+
+        BeatMap latencyMap = map;
+        latencyMap.latencyMs = 40.0;
+        const auto earlyNote = beatEventsBetween(
+            latencyMap, initialBeatEventCursor(latencyMap), firstCompensatedBeatEvent(latencyMap));
+        assert(earlyNote.size() == 1U && std::fabs(earlyNote[0].turnTime + 0.040) < 1e-12);
+        const BeatVisualState noLatencyVisual = beatVisualStateAt(map, 0, quarter);
+        const BeatVisualState latencyVisual = beatVisualStateAt(latencyMap, 0, quarter);
+        assert(noLatencyVisual.phase == latencyVisual.phase &&
+               noLatencyVisual.closeup == latencyVisual.closeup &&
+               noLatencyVisual.closeColumn == latencyVisual.closeColumn);
+
+        // 5. Render-only samples are identical at an absolute music time regardless of update rate.
+        const auto renderAt = [&map](double target, const std::vector<double>& updates) {
+            BeatTurnClock renderClock;
+            renderClock.beginSeek();
+            assert(renderClock.advance(map, map.offset).accepted);
+            double updateTime = 0.0;
+            std::size_t updateIndex = 0U;
+            while (updateTime + updates[updateIndex % updates.size()] < target) {
+                updateTime += updates[updateIndex % updates.size()];
+                const double raw = map.offset + positiveBeatModulo(updateTime, map.loopLength);
+                renderClock.advance(map, raw);
+                ++updateIndex;
+            }
+            const double renderRaw = map.offset + positiveBeatModulo(target, map.loopLength);
+            const BeatClockSample renderSample = renderClock.sample(map, renderRaw);
+            assert(renderSample.accepted);
+            return beatVisualStateAt(map, 2, renderSample.turnTime);
+        };
+        const auto assertSameVisual = [](const BeatVisualState& a, const BeatVisualState& b) {
+            assert(std::fabs(a.turnTime - b.turnTime) < 1e-10);
+            assert(std::fabs(a.phase - b.phase) < 1e-10);
+            assert(a.pass == b.pass && a.closeup == b.closeup);
+            assert(a.expressionIndex == b.expressionIndex);
+            assert(a.wideFrame == b.wideFrame && a.closeColumn == b.closeColumn);
+            assert(std::fabs(a.pose.sway - b.pose.sway) < 1e-10);
+            assert(std::fabs(a.pose.squash - b.pose.squash) < 1e-10);
+        };
+        for (double target : {sixteenth * 0.5, 3.0 * quarter, loop,
+                              loop + 5.5 * sixteenth, 2.0 * loop + 2.0 * sixteenth}) {
+            const BeatVisualState at30 = renderAt(target, {1.0 / 30.0});
+            const BeatVisualState at60 = renderAt(target, {1.0 / 60.0});
+            const BeatVisualState irregular = renderAt(target, {0.011, 0.047, 0.133, 0.029});
+            assertSameVisual(at30, at60);
+            assertSameVisual(at30, irregular);
+        }
+
+        // 6. 10,000 wrapped loops use pass*L, not accumulated rounded dt/JSON duration.
+        BeatTurnClock longClock;
+        longClock.beginSeek();
+        assert(longClock.advance(offsetMap, offsetMap.offset).accepted);
+        for (int pass = 0; pass < 10000; ++pass) {
+            assert(longClock.advance(offsetMap,
+                                     offsetMap.offset + offsetMap.loopLength - 0.000001).accepted);
+            const BeatClockSample wrapped = longClock.advance(offsetMap, offsetMap.offset);
+            assert(wrapped.accepted && wrapped.wrapped);
+        }
+        assert(longClock.pass == 10000);
+        assert(std::fabs(longClock.turnTime - 10000.0 * offsetMap.loopLength) < 1e-9);
+        const double longPhase = positiveBeatModulo(longClock.turnTime, offsetMap.loopLength);
+        assert(std::min(longPhase, offsetMap.loopLength - longPhase) < 1e-9);
+
+        // 7. A stalled accepted clock neither fabricates wraps nor repeats note zero.
+        BeatTurnClock stalledClock;
+        stalledClock.beginSeek();
+        assert(stalledClock.advance(map, map.offset).accepted);
+        const double stalledTurnTime = stalledClock.turnTime;
+        for (int tick = 0; tick < 300; ++tick) {
+            const BeatClockSample stalled = stalledClock.advance(map, map.offset);
+            assert(stalled.accepted && !stalled.advanced && !stalled.wrapped);
+            assert(beatEventsBetween(map, stalledTurnTime, stalled.turnTime).empty());
+        }
+        assert(stalledClock.pass == 0 && stalledClock.turnTime == stalledTurnTime);
+
         assert(beatExpressionIndex(map, 1, 2) == 3U);
 
         assert(enemyPatternKindFromString("beat") == EnemyPatternKind::Beat);
@@ -3408,7 +3540,16 @@ int main() {
         assert(pattern.kind == EnemyPatternKind::Beat && pattern.beatmap == "bass_shake");
         assert(pattern.speed == 110.0f && pattern.damage == 1 && pattern.furry == 2);
 
-        std::cout << "[PASS] BSK-T2: beat map, frame-safe events, wrap clock, shots, and Beat pattern verified."
+        std::ifstream battleSourceFile("src/combat/BattleSystem.cpp");
+        assert(battleSourceFile.is_open());
+        std::stringstream battleSourceStream;
+        battleSourceStream << battleSourceFile.rdbuf();
+        const std::string battleSource = battleSourceStream.str();
+        assert(battleSource.find("m_beatMap.offset + m_beatMap.loopLength") != std::string::npos);
+        assert(battleSource.find("m_enemyTurnTimer >= m_enemyTurnDuration + 2.0f") != std::string::npos);
+        assert(battleSource.find("turn timer fallback") == std::string::npos);
+
+        std::cout << "[PASS] BSK-T2: grid, seek, wrap, partitions, render, latency, long-run, and stall safety verified."
                   << std::endl;
     }
 
@@ -4110,6 +4251,263 @@ int main() {
                   << std::endl;
     }
 
-    std::cout << "\nAll 68 test suites passed successfully!" << std::endl;
+    // Suite 69: BSK smooth close-up shake (sway between notes, kick squash)
+    {
+        nundertale::BeatMap map;
+        assert(nundertale::loadBeatMap("data/beatmaps/bass_shake.json", map));
+        const auto atNote0 = nundertale::beatShakePose(map, 0.0f);
+        const auto atNote1 = nundertale::beatShakePose(map, map.notes[1]);
+        const auto halfway = nundertale::beatShakePose(map, (map.notes[0] + map.notes[1]) * 0.5f);
+        assert(atNote0.sway < -0.99f && atNote1.sway > 0.99f);
+        assert(std::fabs(halfway.sway) < 0.05f);
+        assert(atNote0.squash < 0.95f);
+        assert(nundertale::beatShakePose(map, map.notes[1] + 0.02f).squash == 1.0f);
+        const double afterLast = map.notes.back() + 0.2;
+        assert(std::fabs(nundertale::beatShakePose(map, afterLast).sway) < 0.001f);
+        assert(nundertale::beatShakePose(map, 2.5f).squash == 1.0f);
+        std::cout << "[PASS] BSK-SMOOTH: close-up sway passes the centre between notes, kicks squash." << std::endl;
+    }
+
+    // Suite 70: CORE-006 fixed-tick hold-to-quit state
+    {
+        using nundertale::HoldToQuitState;
+        static_assert(HoldToQuitState::REQUIRED_TICKS == 45);
+        static_assert(HoldToQuitState::HOLD_SECONDS == 1.5f);
+
+        // A short press never completes and releasing clears all visible progress.
+        HoldToQuitState shortPress;
+        for (int tick = 0; tick < 3; ++tick) assert(!shortPress.update(true));
+        assert(shortPress.active());
+        assert(shortPress.progress() > 0.0f && shortPress.progress() < 1.0f);
+        assert(!shortPress.update(false));
+        assert(!shortPress.active() && shortPress.heldTicks() == 0);
+
+        // Held ticks accumulate deterministically at the fixed 30 Hz rate.
+        HoldToQuitState accumulating;
+        for (int tick = 0; tick < 42; ++tick) assert(!accumulating.update(true));
+        assert(accumulating.heldTicks() == 42);
+        assert(std::fabs(accumulating.progress() - (42.0f / 45.0f)) < 0.0001f);
+
+        // Releasing before completion cancels, and a later hold starts from zero.
+        assert(!accumulating.update(false));
+        assert(accumulating.heldTicks() == 0);
+        for (int tick = 0; tick < 44; ++tick) assert(!accumulating.update(true));
+        assert(!accumulating.complete());
+
+        // The 45th held tick (1.5 seconds) completes and remains complete while held.
+        assert(accumulating.update(true));
+        assert(accumulating.complete());
+        assert(accumulating.progress() == 1.0f);
+        assert(accumulating.update(true));
+        assert(accumulating.heldTicks() == HoldToQuitState::REQUIRED_TICKS);
+        assert(!accumulating.update(false));
+        assert(!accumulating.complete());
+
+        std::cout << "[PASS] CORE-006: ESC hold accumulates, cancels, and completes at 45 ticks."
+                  << std::endl;
+    }
+
+    // Suite 71: CORE-005 integer/fractional canvas geometry and FRT-009 persistence
+    {
+        using nundertale::UserConfig;
+        using nundertale::VirtualCanvasGeometry;
+        using nundertale::calculateVirtualCanvasGeometry;
+
+        const auto assertGeometry = [](const VirtualCanvasGeometry& geometry,
+                                       float scale, float x, float y,
+                                       float width, float height) {
+            assert(std::fabs(geometry.scale - scale) < 0.001f);
+            assert(std::fabs(geometry.x - x) < 0.001f);
+            assert(std::fabs(geometry.y - y) < 0.001f);
+            assert(std::fabs(geometry.width - width) < 0.001f);
+            assert(std::fabs(geometry.height - height) < 0.001f);
+        };
+
+        assertGeometry(calculateVirtualCanvasGeometry(640, 480, true),
+                       1.0f, 0.0f, 0.0f, 640.0f, 480.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(1280, 960, true),
+                       2.0f, 0.0f, 0.0f, 1280.0f, 960.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(1920, 1080, true),
+                       2.0f, 320.0f, 60.0f, 1280.0f, 960.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(1001, 701, true),
+                       1.0f, 180.0f, 110.0f, 640.0f, 480.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(320, 240, true),
+                       1.0f, -160.0f, -120.0f, 640.0f, 480.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(1920, 1080, false),
+                       2.25f, 240.0f, 0.0f, 1440.0f, 1080.0f);
+
+        UserConfig defaults;
+        assert(defaults.integerScale);
+        assert(nundertale::wrapIndex(5, +1, 6) == 0);
+        assert(nundertale::wrapIndex(0, -1, 6) == 5);
+
+        const char* oldLocalAppData = std::getenv("LOCALAPPDATA");
+        const std::string oldLocalAppDataValue = oldLocalAppData != nullptr ? oldLocalAppData : "";
+        const std::filesystem::path tempRoot = "tests/.tmp_core005_config";
+        std::error_code ec;
+        std::filesystem::remove_all(tempRoot, ec);
+        assert(_putenv_s("LOCALAPPDATA", tempRoot.string().c_str()) == 0);
+        {
+            nundertale::SaveService saves;
+            UserConfig config = saves.getConfig();
+            assert(config.integerScale);
+            config.integerScale = false;
+            assert(saves.saveConfig(config));
+            assert(!saves.getConfig().integerScale);
+
+            nundertale::SaveService reloaded;
+            assert(!reloaded.getConfig().integerScale);
+        }
+        assert(_putenv_s("LOCALAPPDATA", oldLocalAppDataValue.c_str()) == 0);
+        std::filesystem::remove_all(tempRoot, ec);
+
+        std::cout << "[PASS] CORE-005/FRT-009: integer/fractional canvas geometry and setting persistence verified."
+                  << std::endl;
+    }
+
+    // Suite 72: BUI-012 final spareability notification SFX wiring
+    {
+        std::ifstream combatFile("src/combat/BattleSystem.cpp");
+        assert(combatFile.is_open());
+        std::stringstream combatStream;
+        combatStream << combatFile.rdbuf();
+        const std::string combatSource = combatStream.str();
+        const std::string notificationGuard =
+            "if (!wasSpareable && m_enemy->isSpareable() && context.save.getConfig().spareDing) {\n"
+            "                context.audio.playSound(\"assets/sfx/notify.ogg\", 0.5f);\n"
+            "            }";
+        assert(combatSource.find(notificationGuard) != std::string::npos);
+        assert(combatSource.find("assets/sfx/bell.ogg") == std::string::npos);
+        assert(combatSource.find("assets/sfx/spare_poof.ogg") != std::string::npos);
+        assert(std::filesystem::is_regular_file("assets/sfx/notify.ogg"));
+
+        std::cout << "[PASS] BUI-012: spareability transition uses notify.ogg; spare poof remains wired."
+                  << std::endl;
+    }
+
+    // Suite 73: C1-011 R11 mirror hallway topology, safe spawns, and LORE v3.1 mirror variants
+    {
+        using namespace nundertale;
+
+        TiledMap house;
+        TiledMap hallway;
+        TiledMap pepeRoom;
+        assert(loadTiledMapFromFile("data/maps/ruins_house.json", house));
+        assert(loadTiledMapFromFile("data/maps/ruins_house_hallway.json", hallway));
+        assert(loadTiledMapFromFile("data/maps/ruins_house_pepe.json", pepeRoom));
+
+        assert(hallway.width == 16 && hallway.height == 12);
+        assert(tiledStringProperty(hallway.properties, "displayName") == "Ruins - Furiell's House");
+        assert(tiledStringProperty(hallway.properties, "music") == "overworld.default");
+        assert(hallway.findLayer("ground") != nullptr);
+        assert(hallway.findLayer("collision") != nullptr);
+        assert(hallway.findLayer("objects") != nullptr);
+        assert(hallway.findLayer("above") != nullptr);
+
+        // Mirror moved out of living room into the dedicated hallway
+        assert(house.findObject("mirror") == nullptr);
+        const TiledObject* mirror = hallway.findObject("mirror");
+        assert(mirror != nullptr);
+        assert(tiledObjectType(*mirror) == "prop");
+        assert(tiledBoolProperty(mirror->properties, "solid", false));
+        assert(tiledStringProperty(mirror->properties, "sprite") == "assets/props/ruins_mirror.png");
+        assert(tiledStringProperty(mirror->properties, "anim") == "normal");
+        assert(tiledStringProperty(mirror->properties, "altAnim") == "fur");
+        assert(tiledStringProperty(mirror->properties, "altAnimIf") == "fur > 0");
+        assert(tiledStringProperty(mirror->properties, "lines") == "* It's you!");
+        assert(tiledIntProperty(mirror->properties, "furMin", 101) == 1);
+        assert(tiledStringProperty(mirror->properties, "furLines") ==
+               "* It's you. ...With cat ears?||* (You touch your head. Nothing there.)");
+
+        // Bidirectional door chain: ruins_house <-> ruins_house_hallway <-> ruins_house_pepe
+        const TiledObject* houseToHallway = findRoomDoor(house, "door_to_hallway");
+        assert(houseToHallway != nullptr);
+        assert(tiledStringProperty(houseToHallway->properties, "targetRoom") == "ruins_house_hallway");
+        assert(tiledStringProperty(houseToHallway->properties, "targetSpawn") == "from_house");
+
+        const TiledObject* hallwayToHouse = findRoomDoor(hallway, "door_to_house");
+        assert(hallwayToHouse != nullptr);
+        assert(tiledStringProperty(hallwayToHouse->properties, "targetRoom") == "ruins_house");
+        assert(tiledStringProperty(hallwayToHouse->properties, "targetSpawn") == "from_hallway");
+
+        const TiledObject* hallwayToPepe = findRoomDoor(hallway, "door_to_pepe");
+        assert(hallwayToPepe != nullptr);
+        assert(tiledStringProperty(hallwayToPepe->properties, "targetRoom") == "ruins_house_pepe");
+        assert(tiledStringProperty(hallwayToPepe->properties, "targetSpawn") == "from_hallway");
+
+        const TiledObject* pepeToHallway = findRoomDoor(pepeRoom, "door_to_hallway");
+        assert(pepeToHallway != nullptr);
+        assert(tiledStringProperty(pepeToHallway->properties, "targetRoom") == "ruins_house_hallway");
+        assert(tiledStringProperty(pepeToHallway->properties, "targetSpawn") == "from_pepe");
+
+        const auto rectsOverlap = [](const TiledRect& a, const TiledRect& b) {
+            return a.x < b.x + b.width && a.x + a.width > b.x &&
+                   a.y < b.y + b.height && a.y + a.height > b.y;
+        };
+        const auto assertSpawnClear = [&](const TiledMap& room, const std::string& spawnName,
+                                          const std::string& expectedFacing) {
+            const TiledObject* sp = findRoomSpawn(room, spawnName);
+            assert(sp != nullptr);
+            assert(sp->width == 0.0f && sp->height == 0.0f);
+            assert(tiledStringProperty(sp->properties, "facing") == expectedFacing);
+            const TiledRect playerBox = { sp->x + 5.0f, sp->y + 38.0f, 28.0f, 18.0f };
+            assert(playerBox.x >= 0.0f && playerBox.y >= 0.0f);
+            assert(playerBox.x + playerBox.width <= static_cast<float>(room.width * room.tileWidth));
+            assert(playerBox.y + playerBox.height <= static_cast<float>(room.height * room.tileHeight));
+            const TiledLayer* collisionLayer = room.findLayer("collision");
+            assert(collisionLayer != nullptr);
+            for (const TiledObject& collision : collisionLayer->objects) {
+                assert(!rectsOverlap(playerBox, collision.bounds()));
+            }
+            const TiledLayer* objLayer = room.findLayer("objects");
+            assert(objLayer != nullptr);
+            for (const TiledObject& obj : objLayer->objects) {
+                const std::string objType = tiledObjectType(obj);
+                const bool blockingOrDoor = objType == "door" ||
+                    objType == "npc" ||
+                    (objType == "prop" && tiledBoolProperty(obj.properties, "solid", false));
+                if (!blockingOrDoor) continue;
+                assert(!rectsOverlap(playerBox, obj.bounds()));
+            }
+        };
+
+        assertSpawnClear(house, "from_hallway", "left");
+        assertSpawnClear(hallway, "spawn", "up");
+        assertSpawnClear(hallway, "from_house", "right");
+        assertSpawnClear(hallway, "from_pepe", "left");
+        assertSpawnClear(pepeRoom, "from_hallway", "right");
+        assertSpawnClear(pepeRoom, "spawn", "right");
+
+        // Evaluate mirror conditional presentation for FUR == 0 and FUR > 0 (LORE v3.1)
+        const std::vector<std::string> baseVariants = {
+            tiledStringProperty(mirror->properties, "lines")
+        };
+        const int furMin = tiledIntProperty(mirror->properties, "furMin", 101);
+        const std::string furLines = tiledStringProperty(mirror->properties, "furLines");
+        const std::string anim = tiledStringProperty(mirror->properties, "anim");
+        const std::string altAnim = tiledStringProperty(mirror->properties, "altAnim");
+        const std::string altAnimIf = tiledStringProperty(mirror->properties, "altAnimIf");
+
+        assert(selectRoomAnimation(anim, altAnim, altAnimIf,
+            [](const std::string& key) { return key == "fur" ? 0 : 0; }) == "normal");
+        const std::vector<std::string> normalPages = splitRoomPages(
+            selectRoomVariant(baseVariants, 0, 0, furMin, furLines));
+        assert(normalPages.size() == 1 && normalPages[0] == "* It's you!");
+
+        for (int furValue : { 1, 5, 20 }) {
+            assert(selectRoomAnimation(anim, altAnim, altAnimIf,
+                [furValue](const std::string& key) { return key == "fur" ? furValue : 0; }) == "fur");
+            const std::vector<std::string> catEarPages = splitRoomPages(
+                selectRoomVariant(baseVariants, 0, furValue, furMin, furLines));
+            assert(catEarPages.size() == 2);
+            assert(catEarPages[0] == "* It's you. ...With cat ears?");
+            assert(catEarPages[1] == "* (You touch your head. Nothing there.)");
+        }
+
+        std::cout << "[PASS] C1-011: ruins_house_hallway topology, safe spawns, and LORE v3.1 mirror verified."
+                  << std::endl;
+    }
+
+    std::cout << "\nAll 73 test suites passed successfully!" << std::endl;
     return 0;
 }

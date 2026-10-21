@@ -10,14 +10,26 @@ vendor/
 *.dylib
 *.a
 *.lib
+*.pdb
+*.ilk
+*.exp
+bin/
 build/
+build-*/
+cmake-build-*/
 dist/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+.cache/
 
 # Save files & runtime data
 saves/
 crash_reports/
 log/
 logs/
+!old/legacy_python/log/
 
 # Python cache & legacy files
 **/__pycache__/
@@ -33,9 +45,22 @@ logs/
 .idea/
 Thumbs.db
 Desktop.ini
+.DS_Store
+*.swp
+*~
 tools/content_lint_blocklist.txt
 tools/*.exe
+
+# Local AI agent state (Claude Code, Codex, Gemini/Antigravity): worktrees,
+# sessions, quotas and local settings — per machine, never shared
+.claude/
+.codex/
+.gemini/
+.agents/
 
 # Third-party references and raw AI generations (never committed)
 assets/_ref/
 assets/_gen/
+
+# Local backups made before regenerating assets
+assets/**/_pre_*_backup/

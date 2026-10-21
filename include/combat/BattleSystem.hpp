@@ -262,11 +262,8 @@ private:
     bool m_beatMapLoaded = false;
     bool m_beatTurnActive = false;
     BeatTurnClock m_beatClock;
-    float m_beatPrevTime = 0.0f;
-    float m_beatTurnTime = 0.0f;
-    int m_beatLean = 0;              // 0 = left, 1 = right (latest note parity)
-    bool m_beatInCloseup = false;
-    float m_closeupZoomTimer = 0.0f; // snap zoom 1.15 -> 1.0
+    double m_beatPrevTime = 0.0;
+    double m_beatTurnTime = 0.0;
     bool m_beatStopped = false;      // stopsBeat ACT used
     bool m_musicDucked = false;
 
