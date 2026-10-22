@@ -42,6 +42,7 @@ Real people, real events, sites, and conventions are outside this register and a
 | Brand or product | Appearance | Where | Backlog / LORE reference |
 |---|---|---|---|
 | Bad Dragon | Text and art | Closed-object/logo treatment at the R8 Art Show (`assets/props/ruins_banner_bad_dragon.png`); planned discreet package in R11 | LORE §2.1, §12 R8/R11, §25.3; D-14, D-19, ART-181 |
+| Gamer Girl Bath Water | Text and planned art | Registered in `data/items/items.json` (`gamer_girl_bath_water`); key item left by Discord Simp in X2 (Furry route); referenced by W3 waterfall jar (`FURRY BATH WATER`); bullet pattern `bath_water_jars` in X2. Permitted as a product name only (closed object/jar label); no seller is named, drawn, described, or depicted | LORE §2.2, §18.5, §20.4, §30.1; D-21, NAR-037, ART-183 (rows 25-26) |
 | Microsoft Windows XP | Legacy placeholder art only (removed from the room) | `assets/img/test.bmp` was documented as the Windows XP wallpaper and is no longer used by the rebuilt Ruins rooms | BACKLOG OVW-020; LORE §26 placeholder policy |
 | Comic Sans (Microsoft typeface) | Text reference only; original font must not ship | R8 CRT error-message gag; canonical font plan uses the free Comic Neue substitute for rendering | LORE §12 R8 and §26.9; C1-008, GFX-004 |
 

@@ -526,5 +526,23 @@
     "textTodo": true,
     "priceTodo": true,
     "notes": "Handed to the King on the Furry route."
+  },
+  {
+    "id": "gamer_girl_bath_water",
+    "name": "Gamer Girl Bath Water",
+    "shortName": "BathWtr",
+    "type": "key",
+    "heal": 0,
+    "at": 0,
+    "df": 0,
+    "furry": 0,
+    "speedBuff": 1.0,
+    "route": "furry",
+    "info": "* A sealed jar. \"Gamer Girl Bath Water.\"\n* Sold out on the surface in three seconds.",
+    "useText": "* You consider opening it.||* Some things should stay sealed.",
+    "dropText": "* You throw it away. Somewhere, a man feels a disturbance.",
+    "buyPrice": 0,
+    "sellPrice": 0,
+    "notes": "LORE §20.4, D-21: left behind by Discord Simp (X2) on Furry route. Product name only."
   }
 ]
