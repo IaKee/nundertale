@@ -93,14 +93,14 @@
       "kind": "rain",
       "weight": 1,
       "speech": "Neurotoxin purity: debatable. Musk concentration: regrettable.",
-      "params": { "count": 4, "speed": 24, "damage": 1, "fur": 0 }
+      "params": { "sprite": "assets/bullets/neurotoxin_cloud.png", "count": 4, "speed": 24, "damage": 1, "fur": 0 }
     },
     {
       "id": "cube_drop",
       "kind": "rain",
       "weight": 1,
       "speech": "The cube cannot feel pain. Barky has filed a disagreement.",
-      "params": { "count": 5, "speed": 58, "damage": 1, "fur": 0 }
+      "params": { "sprite": "assets/bullets/companion_cube.png", "count": 5, "speed": 58, "damage": 1, "fur": 0 }
     },
     {
       "id": "portal_bullets",

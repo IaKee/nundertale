@@ -1,8 +1,17 @@
 {
   "image": "fluff_ball.png",
-  "cell": [12, 12],
-  "origin": [6, 6],
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
   "anims": {
-    "pulse": { "row": 0, "frames": 2, "fps": 4 }
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
   }
 }

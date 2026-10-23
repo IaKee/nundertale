@@ -1,16 +1,17 @@
 {
   "image": "neurotoxin_cloud.png",
   "cell": [
-    20,
+    32,
     16
   ],
   "origin": [
-    10,
+    16,
     8
   ],
   "anims": {
     "idle": {
-      "row": 0
+      "row": 0,
+      "frames": 1
     }
   }
 }

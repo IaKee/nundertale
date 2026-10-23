@@ -2830,10 +2830,10 @@ void BattleSystem::render(GameContext& context) {
             drawSoul(m_soulPosition.x, m_soulPosition.y, SOUL_RED);
         }
 
-        // BHL-015: "thinking" ribbit text over soul when still
+        // BHL-015: "thinking" bubble over the soul when still (was Pepe's "ribbit"; Grub just goes AFK)
         if (ribbitVisible(m_ribbitState)) {
             Font fontTiny = context.resources.getFont8Bit(12);
-            float bubbleW = 44.0f;
+            float bubbleW = 30.0f;
             float bubbleH = 16.0f;
             Rectangle bubbleRect = { m_soulPosition.x + 8.0f, m_soulPosition.y - 20.0f, bubbleW, bubbleH };
 
@@ -2848,7 +2848,7 @@ void BattleSystem::render(GameContext& context) {
             DrawLineEx(p1, p3, 1.0f, BLACK);
             DrawLineEx(p2, p3, 1.0f, BLACK);
 
-            context.resources.drawText(fontTiny, "ribbit", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
+            context.resources.drawText(fontTiny, "afk", { bubbleRect.x + 5.0f, bubbleRect.y + 2.0f }, 12.0f, BLACK, 1.0f);
         }
     } else if (m_selectingEnemy) {
         const std::vector<std::size_t> active = activeEnemyIndices();

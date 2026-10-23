@@ -33,7 +33,7 @@
     },
     {
       "type": "playerAnim",
-      "path": "assets/sprites/ow/pepe_wakeup.png",
+      "path": "assets/sprites/ow/grub.png",
       "key": "get_up",
       "seconds": 0.75
     },

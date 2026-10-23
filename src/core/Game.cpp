@@ -471,6 +471,24 @@ Game::~Game() {
     CloseWindow();
 }
 
+// BUG-49: open at the largest whole multiple of the 640x480 canvas that fits the monitor (leaving room for the
+// title bar and taskbar), or the largest 4:3 fit when not even 2x fits, centred on the monitor.
+void Game::fitWindowToMonitor() {
+    const int monitor = GetCurrentMonitor();
+    const int monitorWidth = GetMonitorWidth(monitor);
+    const int monitorHeight = GetMonitorHeight(monitor);
+    if (monitorWidth <= 0 || monitorHeight <= 0) return;
+    const float fit = std::min(static_cast<float>(monitorWidth - 40) / static_cast<float>(VIRTUAL_WIDTH),
+                               static_cast<float>(monitorHeight - 90) / static_cast<float>(VIRTUAL_HEIGHT));
+    const float scale = fit >= 2.0f ? std::floor(fit) : std::max(1.0f, fit);
+    const int width = static_cast<int>(static_cast<float>(VIRTUAL_WIDTH) * scale);
+    const int height = static_cast<int>(static_cast<float>(VIRTUAL_HEIGHT) * scale);
+    SetWindowSize(width, height);
+    const Vector2 origin = GetMonitorPosition(monitor);
+    SetWindowPosition(static_cast<int>(origin.x) + (monitorWidth - width) / 2,
+                      static_cast<int>(origin.y) + std::max(0, (monitorHeight - height) / 2 - 20));
+}
+
 void Game::initWindow() {
     unsigned int windowFlags = FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT;
 #ifdef NUNDERTALE_DEBUG
@@ -488,6 +506,11 @@ void Game::initWindow() {
 #endif
     SetExitKey(KEY_NULL); // ESC is handled by the fixed-tick hold-to-quit state.
     SetWindowMinSize(640, 480);
+#ifdef NUNDERTALE_DEBUG
+    if (!useVirtualWindow) fitWindowToMonitor();
+#else
+    fitWindowToMonitor();
+#endif
 #ifdef NUNDERTALE_DEBUG
     SetTargetFPS(m_debugRecordDirectory.empty() && !m_debugFast ? TARGET_FPS : 0);
 #else

@@ -10,7 +10,7 @@
       "type": "dialog",
       "speaker": "",
       "lines": [
-        "* Forty-seven plushies. Alphabetized. Were."
+        "* Forty-seven kinds of flowers. Alphabetized. Were."
       ],
       "if": "ruins.r1.pile_check >= 1 && ruins.floofy.left_landing == 0"
     },
@@ -18,7 +18,7 @@
       "type": "dialog",
       "speaker": "",
       "lines": [
-        "* There's a fox-shaped dent in the plushies."
+        "* There's a fox-shaped dent in the flowers."
       ],
       "if": "ruins.r1.pile_check >= 1 && ruins.floofy.left_landing >= 1"
     },

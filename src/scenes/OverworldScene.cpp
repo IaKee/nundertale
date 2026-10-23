@@ -1795,7 +1795,9 @@ void OverworldScene::render(GameContext& context) {
         const std::string type = tiledObjectType(object);
         if (type == "prop" || type == "npc") {
             const TiledRect bounds = object.bounds();
-            sorted.push_back({ bounds.y + bounds.height, &object });
+            // A flat floor prop (R1's flower bed) lies under everything standing on it, whatever its base line.
+            const bool onFloor = tiledBoolProperty(object.properties, "floor", false);
+            sorted.push_back({ onFloor ? -1.0e9f : bounds.y + bounds.height, &object });
         }
     }
     sorted.push_back({ m_player.getCollisionBox().y + m_player.getCollisionBox().height, nullptr });

@@ -139,19 +139,19 @@
       "id": "fluff_balls",
       "kind": "bounce",
       "weight": 2,
-      "params": { "count": 7, "speed": 70, "damage": 2, "furry": 6 }
+      "params": { "sprite": "assets/bullets/fluff_ball.png", "count": 7, "speed": 70, "damage": 2, "furry": 6 }
     },
     {
       "id": "glitter_hands",
       "kind": "swarm",
       "weight": 2,
-      "params": { "count": 5, "speed": 48, "damage": 2, "furry": 6 }
+      "params": { "sprite": "assets/bullets/glitter_hand.png", "count": 5, "speed": 48, "damage": 2, "furry": 6 }
     },
     {
       "id": "hug_ring",
       "kind": "ring",
       "weight": 1,
-      "params": { "count": 3, "speed": 46, "damage": 3, "furry": 10 }
+      "params": { "sprite": "assets/bullets/paw_print.png", "count": 3, "speed": 46, "damage": 3, "furry": 10 }
     }
   ]
 }

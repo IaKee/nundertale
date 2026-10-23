@@ -57,7 +57,7 @@
       "id": "grass_blades",
       "kind": "rain",
       "weight": 1,
-      "params": { "count": 6, "speed": 70, "damage": 2, "furry": 2, "heal": 2 }
+      "params": { "sprite": "assets/bullets/grass_blade.png", "count": 6, "speed": 70, "damage": 2, "furry": 2, "heal": 2 }
     }
   ],
   "spareText": "Outside is NICE.",

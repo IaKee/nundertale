@@ -52,7 +52,7 @@
       "id": "seen_rings",
       "kind": "ring",
       "weight": 1,
-      "params": { "count": 2, "speed": 40, "damage": 2, "furry": 2 }
+      "params": { "sprite": "assets/bullets/seen_eye.png", "count": 2, "speed": 40, "damage": 2, "furry": 2 }
     }
   ],
   "spareText": "...",

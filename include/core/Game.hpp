@@ -29,7 +29,10 @@ inline VirtualCanvasGeometry calculateVirtualCanvasGeometry(
     float scale = std::min(
         static_cast<float>(windowWidth) / static_cast<float>(VIRTUAL_WIDTH),
         static_cast<float>(windowHeight) / static_cast<float>(VIRTUAL_HEIGHT));
-    if (integerScale) {
+    // BUG-49: integer scaling only when the whole multiple still fills most of the window; otherwise a
+    // 960x720 window would show a 1x canvas in a big black frame. Below that the canvas fits the window.
+    const bool useInteger = integerScale && (scale < 1.0f || std::floor(scale) >= scale * 0.85f);
+    if (useInteger) {
         scale = std::max(1.0f, std::floor(scale));
     }
 
@@ -37,7 +40,7 @@ inline VirtualCanvasGeometry calculateVirtualCanvasGeometry(
     const float height = static_cast<float>(VIRTUAL_HEIGHT) * scale;
     float x = (static_cast<float>(windowWidth) - width) * 0.5f;
     float y = (static_cast<float>(windowHeight) - height) * 0.5f;
-    if (integerScale) {
+    if (useInteger) {
         // Keep the texture origin on physical pixels. Odd-sized letterboxes put
         // the unavoidable extra pixel on the right/bottom edge.
         x = std::floor(x);
@@ -85,6 +88,7 @@ public:
 
 private:
     void initWindow();
+    void fitWindowToMonitor();
     void renderLetterboxed();
 
     std::unique_ptr<IAudioService> m_audioService;

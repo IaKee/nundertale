@@ -49,6 +49,13 @@
       "effects": {}
     },
     {
+      "id": "try_on",
+      "label": "Try It On",
+      "text": "* You try on one of the suit's paws.\n* Warm. Sticky with something unknown. FUR +25.",
+      "repeatText": "* You try on the other paw. Still sticky.\n* (You decide not to identify it.) FUR +25.",
+      "effects": { "fur": 25, "setFlag": "ruins.dummy.tried_on" }
+    },
+    {
       "id": "accept_hug",
       "label": "Accept Hug",
       "text": "* You hug the dummy. It's damp. FUR +10.",
@@ -75,7 +82,7 @@
       "id": "slow_fluff",
       "kind": "rain",
       "weight": 1,
-      "params": { "count": 5, "speed": 35, "damage": 0, "furry": 2, "color": "green" }
+      "params": { "sprite": "assets/sprites/bullets/fluff_tuft_small.png", "count": 5, "speed": 35, "damage": 0, "furry": 2, "color": "green" }
     }
   ],
   "spareText": "...",

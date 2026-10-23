@@ -403,8 +403,8 @@ def make_tiled_map(
 # Room R1: The Landing (ruins_fall)
 # Size: 16x12 tiles (640x480 px).
 # Cave room with compacted 2014 con trash and nacho cheese strata.
-# Grub wakes on a pile of 47 plushies with Floofy knocked out underneath,
-# bathed in a surface light beam. North exit is the scratched Con doors to R1a.
+# Grub wakes lying on top of Floofy, knocked out in his flower bed under the surface light beam
+# (LORE v3.4: the golden-flower parody made literal; BUG-46..48). North exit is the scratched Con doors to R1a.
 # =============================================================================
 def build_ruins_fall():
     width = 16
@@ -417,14 +417,15 @@ def build_ruins_fall():
         [8,  8, 17, 18, 29, 18, 43,  8,  8, 43, 18, 29, 18, 19,  8,  8],
         [8, 17, 20, 21, 24, 22, 44, 46, 47, 44, 20, 48, 24, 22, 19,  8],
         [8, 20, 27, 28, 32, 27, 45, 46, 47, 45, 27, 28, 32, 26, 22,  8],
-        [30, 23, 23, 23, 23, 23, 46, 47, 46, 46, 23, 23, 23, 23, 23, 31],
-        [30,  1,  3,  5,  2,  1,  4,  1,  2,  6,  1, 14,  3,  2,  1, 31],
-        [30,  2, 10,  1,  3,  5,  2,  1,  3,  1,  7,  2,  5, 11,  3, 31],
-        [30,  1,  4,  2,  6,  1,  3,  1,  2,  5,  1,  3,  2,  1,  4, 31],
-        [30,  3,  1, 13,  2,  1,  2,  3,  1,  2,  4,  1,  9,  5,  2, 31],
-        [30,  2,  5,  1,  3, 15,  1,  5,  2, 12,  1,  6,  2,  3,  1, 31],
-        [30,  1,  3,  7,  2,  1,  4,  2,  1,  3, 10,  1,  4,  2,  3, 31],
-        [8, 30, 23,  1,  3,  5,  2,  1,  3,  2,  6,  1,  3, 23, 31,  8],
+        [20, 23, 23, 23, 23, 23, 46, 47, 46, 46, 23, 23, 23, 23, 23, 22],
+        # BUG-46: a plain dirt floor; a ring of tiny flowers around the bed, three pieces of fallen trash.
+        [20,  1,  2,  1,  3,  1,  1,  2,  1,  1,  2,  1,  1,  3,  1, 22],
+        [20,  2,  1,  5,  1,  1, 14,  1,  2, 14,  1,  1,  5,  1,  2, 22],
+        [20,  1,  3,  1,  1, 14,  1,  1,  1,  1, 14,  1,  1,  1,  1, 22],
+        [20,  1,  1,  2,  1,  1, 14,  1,  1, 14,  1,  1,  9,  1,  3, 22],
+        [20,  2,  1,  1, 10,  1,  1,  1,  2,  1,  1,  1,  1,  2,  1, 22],
+        [20,  1,  3,  1,  1,  2,  1,  1,  1,  3,  1, 15,  1,  1,  2, 22],
+        [8, 20, 23,  1,  2,  1,  1,  3,  1,  1,  2,  1,  1, 23, 22,  8],
         [8,  8, 17, 18, 29, 18, 18, 29, 18, 18, 29, 18, 18, 19,  8,  8],
     ]
 
@@ -461,13 +462,16 @@ def build_ruins_fall():
             "name": "spawn",
             "type": "spawn",
             "point": True,
-            "x": 300,
-            "y": 240,
+            # BUG-47: lying across Floofy. Spawns are the player's top-left (pivot = +19, +58): pivot (342, 290),
+            # the flower bed is a floor prop (drawn first); Grub (290) draws after Floofy (275), whose head shows
+            # at Grub's left.
+            "x": 323,
+            "y": 232,
             # BUG-40: Grub is lying from the first frame (pose = anim key in the sheet), until r1_wake plays.
             "properties": {
-                "facing": "up",
+                "facing": "down",
                 "pose": "lying",
-                "poseSheet": "assets/sprites/ow/pepe_wakeup.png",
+                "poseSheet": "assets/sprites/ow/grub.png",
                 "poseUntil": "ruins.r1.woke",
             },
         },
@@ -544,12 +548,12 @@ def build_ruins_fall():
                 "lines": "* \"FURNATION CON '14 - REGISTRATION ->\". There are claw marks on the doors.\n* On the inside.",
             },
         },
-        # Floofy knocked out on the plush pile (4 pokes, hidden once player leaves R1)
+        # Floofy knocked out in his flower bed (4 pokes, hidden once player leaves R1)
         {
             "name": "floofy",
             "type": "npc",
             "x": 296,
-            "y": 238,
+            "y": 239,
             "w": 48,
             "h": 36,
             "properties": {
@@ -564,37 +568,38 @@ def build_ruins_fall():
         },
         # Fox-shaped dent examine when returning to R1 after Floofy leaves
         {
-            "name": "plush_dent",
+            "name": "flower_dent",
             "type": "examine",
-            "x": 270,
-            "y": 230,
-            "w": 100,
-            "h": 40,
+            "x": 240,
+            "y": 236,
+            "w": 160,
+            "h": 56,
             "properties": {
                 "showIf": "ruins.floofy.left_landing >= 1",
                 "counter": "ruins.r1.pile_check",
                 "cutscene": "r1_landing_items",
-                "lines": "* There's a fox-shaped dent in the plushies.",
+                "lines": "* There's a fox-shaped dent in the flowers.",
             },
         },
-        # Pile of 47 alphabetized plushies under the light beam (shows dent on return)
+        # Floofy's flower bed under the light beam (LORE v3.4; shows the dent on return)
         {
-            "name": "plush_pile",
+            "name": "flower_bed",
             "type": "prop",
-            "x": 270,
-            "y": 230,
-            "w": 100,
-            "h": 40,
+            "x": 224,
+            "y": 212,
+            "w": 192,
+            "h": 88,
             "properties": {
-                "sprite": "assets/props/ruins_plush_pile.png",
+                "floor": True,
+                "sprite": "assets/props/ruins_landing_flowerbed.png",
                 "anim": "floofy",
                 "altAnim": "dent",
                 "altAnimIf": "ruins.floofy.left_landing >= 1",
                 "solid": False,
                 "counter": "ruins.r1.pile_check",
                 "cutscene": "r1_landing_items",
-                "lines": "* Forty-seven plushies. Alphabetized. Were.",
-                "lines2": "* There's a fox-shaped dent in the plushies.",
+                "lines": "* Forty-seven kinds of flowers. Alphabetized. Were.",
+                "lines2": "* There's a fox-shaped dent in the flowers.",
             },
         },
         # Surface light beam examine
@@ -629,7 +634,7 @@ def build_ruins_fall():
                 "lines": "* Citrus Blast, 2014 edition. A vintage.",
             },
         },
-        # Wake-up cutscene trigger (covers spawn on the plush pile)
+        # Wake-up cutscene trigger (covers the spawn on the flower bed)
         {
             "name": "trigger_wake",
             "type": "trigger",
@@ -646,8 +651,8 @@ def build_ruins_fall():
         {
             "name": "tide_pod",
             "type": "prop",
-            "x": 380,
-            "y": 240,
+            "x": 404,
+            "y": 272,
             "w": 40,
             "h": 40,
             "properties": {
@@ -662,8 +667,8 @@ def build_ruins_fall():
         {
             "name": "floor_message",
             "type": "prop",
-            "x": 210,
-            "y": 260,
+            "x": 140,
+            "y": 360,
             "w": 40,
             "h": 40,
             "properties": {
@@ -686,12 +691,20 @@ def build_ruins_fall():
         above_grid=above,
         music="overworld.default",
         save_place="* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.",
+        # BUG-46 (2nd pass): the Landing is one painted room (ChatGPT, regen_r7 L10) like Undertale's first room:
+        # a dark cave, a pool of daylight, the flower bed. The tile rows stay as the fallback when it's missing.
+        background_image="assets/tiles/landing_bg.png",
     )
     tiled_map["tilesets"][0]["image"] = "assets/tiles/landing.png"
     tiled_map["tilesets"][0]["name"] = "landing"
-    tiled_map["layers"][0]["data"] = [gid for row in landing_ground_rows for gid in row]
-    tiled_map["layers"][3]["data"] = [gid for row in landing_above_rows for gid in row]
-    for obj in tiled_map["layers"][2]["objects"]:
+    layers = {layer["name"]: layer for layer in tiled_map["layers"]}
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "tiles", "landing_bg.png")):
+        layers["ground"]["data"] = [0] * (width * height)
+        layers["above"]["data"] = [0] * (width * height)
+    else:
+        layers["ground"]["data"] = [gid for row in landing_ground_rows for gid in row]
+        layers["above"]["data"] = [gid for row in landing_above_rows for gid in row]
+    for obj in layers["objects"]["objects"]:
         if obj.get("name") == "door_to_registration":
             obj["type"] = ""
             obj["class"] = "door"
@@ -714,11 +727,11 @@ def build_ruins_registration():
         "##{--v--  --k--}##",
         "##..7888888889..##",
         "##..4555555556..##",
-        "##;.45555z5556.;##",
+        "##;.4555555556.;##",
         "##..4555555556..##",
-        "##;.455x555556.;##",
+        "##;.4555555556.;##",
         "##..4555555556..##",
-        "##;.455555t556.;##",
+        "##;.455555.556.;##",
         "##..4555555556..##",
         "##;.4555555556.;##",
         "##..1222222223..##",
@@ -796,8 +809,8 @@ def build_ruins_registration():
         {
             "name": "registration_desk",
             "type": "prop",
-            "x": 88,
-            "y": 166,
+            "x": 176,
+            "y": 118,
             "w": 128,
             "h": 84,
             "properties": {
@@ -808,8 +821,8 @@ def build_ruins_registration():
         {
             "name": "badge_box",
             "type": "prop",
-            "x": 110,
-            "y": 190,
+            "x": 88,
+            "y": 142,
             "w": 84,
             "h": 60,
             "properties": {
@@ -823,8 +836,8 @@ def build_ruins_registration():
         {
             "name": "rules_board",
             "type": "prop",
-            "x": 510,
-            "y": 170,
+            "x": 424,
+            "y": 114,
             "w": 96,
             "h": 88,
             "properties": {
@@ -838,8 +851,8 @@ def build_ruins_registration():
         {
             "name": "escalator",
             "type": "prop",
-            "x": 100,
-            "y": 390,
+            "x": 84,
+            "y": 384,
             "w": 168,
             "h": 108,
             "properties": {
@@ -853,8 +866,8 @@ def build_ruins_registration():
         {
             "name": "lost_and_found",
             "type": "prop",
-            "x": 510,
-            "y": 390,
+            "x": 540,
+            "y": 424,
             "w": 92,
             "h": 72,
             "properties": {
@@ -911,13 +924,13 @@ def build_ruins_panelhall():
         "##{--v-  -k--}##",
         "##..78888889..##",
         "##;.45555556.;##",
-        "##..4555p556..##",
+        "##..4555.556..##",
         "##;.45555556.;##",
-        "##..455z5556..##",
+        "##..45555556..##",
         "##;.45555556.;##",
-        "##..45555t56..##",
+        "##..45555.56..##",
         "##;.45555556.;##",
-        "##..455x5556..##",
+        "##..45555556..##",
         "##;.45555556.;##",
         "##..45555556..##",
         "##;.45555556.;##",
@@ -996,25 +1009,50 @@ def build_ruins_panelhall():
                 "targetSpawn": "from_panelhall",
             },
         },
+        # BUG-50: the three panel-room doors stand in the north wall, two left of the lounge door, one right
         {
-            "name": "panel_doors",
+            "name": "panel_door_1",
             "type": "prop",
-            "x": 92,
-            "y": 520,
-            "w": 132,
-            "h": 58,
+            "x": 80,
+            "y": 6,
+            "w": 86,
+            "h": 116,
             "properties": {
-                "sprite": "assets/props/ruins_panel_door.png",
+                "sprite": "assets/props/ruins_panel_door_1.png",
+                "solid": False,
+            },
+        },
+        {
+            "name": "panel_door_2",
+            "type": "prop",
+            "x": 166,
+            "y": 6,
+            "w": 86,
+            "h": 116,
+            "properties": {
+                "sprite": "assets/props/ruins_panel_door_2.png",
+                "solid": False,
+            },
+        },
+        {
+            "name": "panel_door_3",
+            "type": "prop",
+            "x": 430,
+            "y": 6,
+            "w": 86,
+            "h": 116,
+            "properties": {
+                "sprite": "assets/props/ruins_panel_door_3.png",
                 "solid": False,
             },
         },
         {
             "name": "panel_maintenance",
             "type": "examine",
-            "x": 26,
-            "y": 462,
-            "w": 88,
-            "h": 116,
+            "x": 80,
+            "y": 50,
+            "w": 86,
+            "h": 84,
             "properties": {
                 "counter": "ruins.r1b.maintenance",
                 "cutscene": "r1b_items",
@@ -1024,10 +1062,10 @@ def build_ruins_panelhall():
         {
             "name": "panel_parents",
             "type": "examine",
-            "x": 114,
-            "y": 462,
-            "w": 88,
-            "h": 116,
+            "x": 166,
+            "y": 50,
+            "w": 86,
+            "h": 84,
             "properties": {
                 "counter": "ruins.r1b.parents",
                 "cutscene": "r1b_items",
@@ -1037,10 +1075,10 @@ def build_ruins_panelhall():
         {
             "name": "panel_gamers",
             "type": "examine",
-            "x": 202,
-            "y": 462,
-            "w": 88,
-            "h": 116,
+            "x": 430,
+            "y": 50,
+            "w": 86,
+            "h": 84,
             "properties": {
                 "counter": "ruins.r1b.gamers",
                 "cutscene": "r1b_items",
@@ -1066,7 +1104,7 @@ def build_ruins_panelhall():
             "name": "lounge_door",
             "type": "prop",
             "x": 286,
-            "y": 105,
+            "y": 56,
             "w": 68,
             "h": 66,
             "properties": {
@@ -1126,14 +1164,14 @@ def build_ruins_floofy():
         "###.;.7889.,.###",
         "###.,.4556.;.###",
         "###;.,4556.,.###",
-        "###.,*45z6.;.###",
+        "###.,*4556.;.###",
         "###;.,4556.w.###",
         "###.,.4556.,.###",
-        "###;.,4x56.;.###",
-        "###.,t4556.,.###",
+        "###;.,4556.;.###",
+        "###.,.4556.,.###",
         "###;.,4556.,.###",
         "###.,.4556.;.###",
-        "###;.,4556.p.###",
+        "###;.,4556...###",
         "###.,.4556.,.###",
         "###;..1223.;.###",
         "###___    ___###",
@@ -1288,7 +1326,7 @@ def build_ruins_floofy():
             "name": "fairy_lights_left",
             "type": "prop",
             "x": 120,
-            "y": 120,
+            "y": 40,
             "w": 160,
             "h": 28,
             "properties": {
@@ -1300,7 +1338,7 @@ def build_ruins_floofy():
             "name": "fairy_lights_right",
             "type": "prop",
             "x": 360,
-            "y": 120,
+            "y": 40,
             "w": 160,
             "h": 28,
             "properties": {
@@ -1313,7 +1351,7 @@ def build_ruins_floofy():
             "name": "flowerwall_left",
             "type": "prop",
             "x": 120,
-            "y": 160,
+            "y": 40,
             "w": 80,
             "h": 80,
             "properties": {
@@ -1324,8 +1362,8 @@ def build_ruins_floofy():
         {
             "name": "flowerwall_right",
             "type": "prop",
-            "x": 440,
-            "y": 160,
+            "x": 200,
+            "y": 40,
             "w": 80,
             "h": 80,
             "properties": {
@@ -1351,8 +1389,8 @@ def build_ruins_floofy():
         {
             "name": "prop_neon",
             "type": "prop",
-            "x": 380,
-            "y": 140,
+            "x": 390,
+            "y": 60,
             "w": 120,
             "h": 60,
             "properties": {
@@ -1377,7 +1415,7 @@ def build_ruins_floofy():
         {
             "name": "prop_headrack",
             "type": "prop",
-            "x": 120,
+            "x": 124,
             "y": 280,
             "w": 160,
             "h": 104,
@@ -1403,8 +1441,8 @@ def build_ruins_floofy():
         {
             "name": "prop_rope",
             "type": "prop",
-            "x": 390,
-            "y": 380,
+            "x": 392,
+            "y": 412,
             "w": 128,
             "h": 56,
             "properties": {
@@ -1429,7 +1467,7 @@ def build_ruins_floofy():
         {
             "name": "headrack",
             "type": "examine",
-            "x": 120,
+            "x": 124,
             "y": 280,
             "w": 160,
             "h": 104,
@@ -1455,8 +1493,8 @@ def build_ruins_floofy():
         {
             "name": "neon",
             "type": "examine",
-            "x": 380,
-            "y": 140,
+            "x": 390,
+            "y": 60,
             "w": 120,
             "h": 60,
             "properties": {
@@ -1482,8 +1520,8 @@ def build_ruins_floofy():
         {
             "name": "velvet_rope",
             "type": "examine",
-            "x": 390,
-            "y": 380,
+            "x": 392,
+            "y": 412,
             "w": 128,
             "h": 56,
             "properties": {

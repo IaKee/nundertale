@@ -1,0 +1,17 @@
+{
+  "image": "seen_eye.png",
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}

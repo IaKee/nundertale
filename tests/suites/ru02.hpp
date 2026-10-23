@@ -47,7 +47,7 @@ inline void suite_ru02() {
     assert(spawn != nullptr);
     const SpawnPose pose = spawnPoseOf(*spawn);
     assert(pose.anim == "lying");  // keyed on the frame name; the sheet is just data
-    assert(pose.sheet == "assets/sprites/ow/pepe_wakeup.png");
+    assert(pose.sheet == "assets/sprites/ow/grub.png");
     assert(pose.untilFlag == "ruins.r1.woke");
     assert(spawnPoseApplies(pose, 0));   // new game: lying before the first update and draw
     assert(!spawnPoseApplies(pose, 1));  // already woke: coming back never lies him down again
@@ -59,7 +59,7 @@ inline void suite_ru02() {
     assert(spawnPoseOf(*back).anim.empty());  // other spawns stay standing
 
     // the sheet really has both frames the pose and the get-up use
-    const std::string sheet = slurp("assets/sprites/ow/pepe_wakeup.json");
+    const std::string sheet = slurp("assets/sprites/ow/grub.json");
     assert(sheet.find("\"lying\"") != std::string::npos);
     assert(sheet.find("\"get_up\"") != std::string::npos);
 

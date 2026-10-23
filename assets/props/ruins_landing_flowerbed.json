@@ -1,0 +1,21 @@
+{
+  "image": "ruins_landing_flowerbed.png",
+  "cell": [
+    96,
+    44
+  ],
+  "origin": [
+    48,
+    43
+  ],
+  "anims": {
+    "floofy": {
+      "row": 0,
+      "frames": 1
+    },
+    "dent": {
+      "row": 1,
+      "frames": 1
+    }
+  }
+}

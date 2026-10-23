@@ -38,8 +38,7 @@
     },
     "knocked_out": {
       "row": 5,
-      "frames": 2,
-      "fps": 1
+      "frames": 1
     },
     "vanity_back": {
       "row": 6,

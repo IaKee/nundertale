@@ -61,7 +61,7 @@
       "id": "seen_tears",
       "kind": "rain",
       "weight": 1,
-      "params": {
+      "params": { "sprite": "assets/bullets/tear.png",
         "count": 5,
         "speed": 60,
         "damage": 1,

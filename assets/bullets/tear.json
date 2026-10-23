@@ -1,8 +1,17 @@
 {
   "image": "tear.png",
-  "cell": [6, 8],
-  "origin": [3, 4],
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
   "anims": {
-    "idle": { "row": 0, "frames": 1 }
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
   }
 }

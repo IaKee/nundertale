@@ -190,7 +190,7 @@ inline void suite_ru38() {
         host.choicePick = 0;  // "Sorry."
         runToEnd("r2_floofy_scene", host);
         assert(host.battles.size() == 1U && host.battles[0] == "floofy");  // the battle picks the variant
-        assert(host.lines.front() == "Forty-seven plushies.");
+        assert(host.lines.front() == "Forty-seven flowers.");
         assert(contains(host.lines, "Oh. My. FLUFF."));
         assert(contains(host.lines, "Aww~ manners! On a GAMER! I'm keeping you."));
         assert(!contains(host.lines, "Cute."));

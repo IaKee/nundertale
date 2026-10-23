@@ -57,13 +57,13 @@
       "id": "colon_three_hop",
       "kind": "hop",
       "weight": 2,
-      "params": { "count": 4, "speed": 120, "damage": 2, "furry": 3, "text": ":3" }
+      "params": { "sprite": "assets/bullets/colon_three.png", "count": 4, "speed": 120, "damage": 2, "furry": 3, "text": ":3" }
     },
     {
       "id": "fly_swarm",
       "kind": "swarm",
       "weight": 1,
-      "params": { "count": 2, "speed": 42, "damage": 2, "furry": 3 }
+      "params": { "sprite": "assets/bullets/fly.png", "count": 2, "speed": 42, "damage": 2, "furry": 3 }
     }
   ],
   "spareText": "ribbit :3",

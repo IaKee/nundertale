@@ -93,39 +93,7 @@
         13,
         13,
         13,
-        22,
-        13,
-        13,
-        14,
         1,
-        1,
-        8,
-        8,
-        8,
-        8,
-        3,
-        1,
-        12,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        14,
-        1,
-        3,
-        8,
-        8,
-        8,
-        8,
-        1,
-        1,
-        12,
-        13,
-        13,
-        15,
-        13,
         13,
         13,
         14,
@@ -158,7 +126,7 @@
         13,
         13,
         13,
-        20,
+        13,
         13,
         14,
         1,
@@ -188,7 +156,39 @@
         12,
         13,
         13,
-        16,
+        13,
+        13,
+        1,
+        13,
+        14,
+        1,
+        1,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        12,
+        13,
+        13,
+        13,
+        13,
+        13,
+        13,
+        14,
+        1,
+        3,
+        8,
+        8,
+        8,
+        8,
+        1,
+        1,
+        12,
+        13,
+        13,
+        13,
         13,
         13,
         13,
@@ -472,20 +472,20 @@
           ]
         },
         {
-          "height": 58,
+          "height": 116,
           "id": 11,
-          "name": "panel_doors",
+          "name": "panel_door_1",
           "rotation": 0,
           "type": "prop",
           "visible": true,
-          "width": 132,
-          "x": 92,
-          "y": 520,
+          "width": 86,
+          "x": 80,
+          "y": 6,
           "properties": [
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_panel_door.png"
+              "value": "assets/props/ruins_panel_door_1.png"
             },
             {
               "name": "solid",
@@ -497,13 +497,59 @@
         {
           "height": 116,
           "id": 12,
+          "name": "panel_door_2",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 86,
+          "x": 166,
+          "y": 6,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_panel_door_2.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 116,
+          "id": 13,
+          "name": "panel_door_3",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 86,
+          "x": 430,
+          "y": 6,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_panel_door_3.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 84,
+          "id": 14,
           "name": "panel_maintenance",
           "rotation": 0,
           "type": "examine",
           "visible": true,
-          "width": 88,
-          "x": 26,
-          "y": 462,
+          "width": 86,
+          "x": 80,
+          "y": 50,
           "properties": [
             {
               "name": "counter",
@@ -523,15 +569,15 @@
           ]
         },
         {
-          "height": 116,
-          "id": 13,
+          "height": 84,
+          "id": 15,
           "name": "panel_parents",
           "rotation": 0,
           "type": "examine",
           "visible": true,
-          "width": 88,
-          "x": 114,
-          "y": 462,
+          "width": 86,
+          "x": 166,
+          "y": 50,
           "properties": [
             {
               "name": "counter",
@@ -551,15 +597,15 @@
           ]
         },
         {
-          "height": 116,
-          "id": 14,
+          "height": 84,
+          "id": 16,
           "name": "panel_gamers",
           "rotation": 0,
           "type": "examine",
           "visible": true,
-          "width": 88,
-          "x": 202,
-          "y": 462,
+          "width": 86,
+          "x": 430,
+          "y": 50,
           "properties": [
             {
               "name": "counter",
@@ -580,7 +626,7 @@
         },
         {
           "height": 16,
-          "id": 15,
+          "id": 17,
           "name": "petal_trail",
           "rotation": 0,
           "type": "prop",
@@ -618,14 +664,14 @@
         },
         {
           "height": 66,
-          "id": 16,
+          "id": 18,
           "name": "lounge_door",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 68,
           "x": 286,
-          "y": 105,
+          "y": 56,
           "properties": [
             {
               "name": "sprite",
@@ -656,7 +702,7 @@
         },
         {
           "height": 0,
-          "id": 17,
+          "id": 19,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -983,7 +1029,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 18,
+  "nextobjectid": 20,
   "orientation": "orthogonal",
   "properties": [
     {

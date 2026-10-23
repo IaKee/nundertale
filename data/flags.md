@@ -29,6 +29,7 @@
 | `ruins.r13.floofy_pop` | bool | `0` | `1` transient flag while Floofy has popped up in R13 |
 | `ruins.dummy.talked` | bool | `0` | `1` when Talk was used on the Fursuit Dummy |
 | `ruins.dummy.hugged` | bool | `0` | `1` when Accept Hug was used on the Fursuit Dummy |
+| `ruins.dummy.tried_on` | bool | `0` | `1` when Try It On was used on the Fursuit Dummy (FUR +25 per use; LORE §18.1 v3.4) |
 | `ruins.dummy.shook` | bool | `0` | `1` when Shake to the Bass reached its 3rd use (Furiell joins; dummy becomes spareable) |
 | `ruins.dummy.quiet` | bool | `0` | `1` when Turn It Down was used (dummy stops the beat, spareable, no more attack turns) |
 | `ruins.dummy.reacted` | bool | `0` | `1` once Furiell's R5 reaction cutscene has played |

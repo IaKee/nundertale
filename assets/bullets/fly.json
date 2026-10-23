@@ -1,8 +1,18 @@
 {
   "image": "fly.png",
-  "cell": [8, 8],
-  "origin": [4, 4],
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
   "anims": {
-    "buzz": { "row": 0, "frames": 2, "fps": 10 }
+    "spin": {
+      "row": 0,
+      "frames": 2,
+      "fps": 10
+    }
   }
 }

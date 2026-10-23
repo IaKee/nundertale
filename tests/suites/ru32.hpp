@@ -110,22 +110,20 @@ inline void suite_ru32() {
     const TiledLayer* above = map.findLayer("above");
     assert(ground != nullptr && ground->data.size() == 16U * 12U);
     assert(above != nullptr && above->data.size() == 16U * 12U);
-    bool hasNachoStratum = false;
-    bool hasLightBeam = false;
-    for (int gid : ground->data) {
-        if (gid >= 25 && gid <= 32) hasNachoStratum = true;
-    }
-    for (int gid : above->data) {
-        if (gid >= 33 && gid <= 40) hasLightBeam = true;
-    }
-    assert(hasNachoStratum && hasLightBeam);
+    // BUG-46 (2nd pass): the Landing is one painted background (cave, nacho stratum, the pool of daylight);
+    // the tile layers stay empty so nothing draws over it.
+    const TiledLayer* background = map.findLayer("background");
+    assert(background != nullptr && background->type == TiledLayerType::Image);
+    assert(background->image == "assets/tiles/landing_bg.png");
+    for (int gid : ground->data) assert(gid == 0);
+    for (int gid : above->data) assert(gid == 0);
 
     // 2. Spawns: spawn (lying pose) and from_registration (returning from R1a)
     const TiledObject* spawn = findRoomSpawn(map, "spawn");
     assert(spawn != nullptr);
-    assert(std::fabs(spawn->x - 300.0f) < 0.01f && std::fabs(spawn->y - 240.0f) < 0.01f);
+    assert(std::fabs(spawn->x - 323.0f) < 0.01f && std::fabs(spawn->y - 232.0f) < 0.01f);
     assert(tiledStringProperty(spawn->properties, "pose") == "lying");
-    assert(tiledStringProperty(spawn->properties, "poseSheet") == "assets/sprites/ow/pepe_wakeup.png");
+    assert(tiledStringProperty(spawn->properties, "poseSheet") == "assets/sprites/ow/grub.png");
     assert(tiledStringProperty(spawn->properties, "poseUntil") == "ruins.r1.woke");
 
     const TiledObject* fromReg = findRoomSpawn(map, "from_registration");
@@ -159,7 +157,7 @@ inline void suite_ru32() {
         assert(host.lastLines[1] == "* On the inside.");
     }
 
-    // 4. Plush pile, Floofy knocked out, leaving sets ruins.floofy.left_landing, dent on return
+    // 4. Flower bed (LORE v3.4), Floofy knocked out, leaving sets ruins.floofy.left_landing, dent on return
     const TiledObject* floofy = map.findObject("floofy");
     assert(floofy != nullptr);
     assert(tiledObjectType(*floofy) == "npc");
@@ -170,20 +168,20 @@ inline void suite_ru32() {
     assert(tiledStringProperty(floofy->properties, "hideIf") == "ruins.floofy.left_landing >= 1");
     assert(tiledStringProperty(floofy->properties, "cutscene") == "r1_floofy_poke");
 
-    const TiledObject* pile = map.findObject("plush_pile");
+    const TiledObject* pile = map.findObject("flower_bed");
     assert(pile != nullptr);
     assert(tiledObjectType(*pile) == "prop");
-    assert(tiledStringProperty(pile->properties, "sprite") == "assets/props/ruins_plush_pile.png");
+    assert(tiledStringProperty(pile->properties, "sprite") == "assets/props/ruins_landing_flowerbed.png");
     assert(tiledStringProperty(pile->properties, "anim") == "floofy");
     assert(tiledStringProperty(pile->properties, "altAnim") == "dent");
     assert(tiledStringProperty(pile->properties, "altAnimIf") == "ruins.floofy.left_landing >= 1");
-    assert(tiledStringProperty(pile->properties, "lines") == "* Forty-seven plushies. Alphabetized. Were.");
-    assert(tiledStringProperty(pile->properties, "lines2") == "* There's a fox-shaped dent in the plushies.");
+    assert(tiledStringProperty(pile->properties, "lines") == "* Forty-seven kinds of flowers. Alphabetized. Were.");
+    assert(tiledStringProperty(pile->properties, "lines2") == "* There's a fox-shaped dent in the flowers.");
 
-    const TiledObject* dent = map.findObject("plush_dent");
+    const TiledObject* dent = map.findObject("flower_dent");
     assert(dent != nullptr);
     assert(tiledStringProperty(dent->properties, "showIf") == "ruins.floofy.left_landing >= 1");
-    assert(tiledStringProperty(dent->properties, "lines") == "* There's a fox-shaped dent in the plushies.");
+    assert(tiledStringProperty(dent->properties, "lines") == "* There's a fox-shaped dent in the flowers.");
 
     const TiledObject* leaveTrigger = map.findObject("trigger_leave_landing");
     assert(leaveTrigger != nullptr);
@@ -198,14 +196,14 @@ inline void suite_ru32() {
         assert(selectRoomAnimation("floofy", "dent", "ruins.floofy.left_landing >= 1", flagLookup) == "floofy");
 
         const Cutscene itemsCs = loadCutscene("r1_landing_items");
-        // Examining plush pile before leaving shows the 47 plushies line
+        // Examining the flower bed before leaving shows the 47 flowers line
         state.setFlag("ruins.r1.pile_check", 1);
         PokeTestHost hostBefore(state);
         runCutsceneToCompletion(itemsCs, hostBefore);
         assert(hostBefore.dialogsShown == 1);
         assert(hostBefore.lastSpeaker.empty());
         assert(hostBefore.lastLines.size() == 1U);
-        assert(hostBefore.lastLines[0] == "* Forty-seven plushies. Alphabetized. Were.");
+        assert(hostBefore.lastLines[0] == "* Forty-seven kinds of flowers. Alphabetized. Were.");
         assert(state.getFlag("ruins.floofy.left_landing", 0) == 0);
 
         // Trigger on leaving sets ruins.floofy.left_landing = 1 without opening dialog
@@ -216,14 +214,14 @@ inline void suite_ru32() {
         assert(evaluateRoomCondition(tiledStringProperty(floofy->properties, "hideIf"), flagLookup));
         assert(selectRoomAnimation("floofy", "dent", "ruins.floofy.left_landing >= 1", flagLookup) == "dent");
 
-        // Examining plush pile after returning shows the fox-shaped dent line
+        // Examining the flower bed after returning shows the fox-shaped dent line
         state.setFlag("ruins.r1.pile_check", 1);
         PokeTestHost hostAfter(state);
         runCutsceneToCompletion(itemsCs, hostAfter);
         assert(hostAfter.dialogsShown == 1);
         assert(hostAfter.lastSpeaker.empty());
         assert(hostAfter.lastLines.size() == 1U);
-        assert(hostAfter.lastLines[0] == "* There's a fox-shaped dent in the plushies.");
+        assert(hostAfter.lastLines[0] == "* There's a fox-shaped dent in the flowers.");
     }
 
     // 5. Other LORE §12 R1 examinables: Citrus Blast can, Tide Pod, light beam, AFK floor message, Save Point

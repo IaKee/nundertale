@@ -3003,7 +3003,7 @@ int main() {
             { "froggsona", "* FROGGSONA - ATK 4 DEF 2\n* A frog fursona. Every sentence ends in \":3\".", 4 },
             { "shysona", "* SHYSONA - ATK 5 DEF 0\n* A brand-new fursona. Apologizes for existing. And for its commissions.", 4 },
             { "modsmal", "* MODSMAL - ATK 1 DEF 0\n* A gelatinous moderator of the NSFW channel. Wobbles. Enforces. Sometimes.", 3 },
-            { "fursuit_dummy", "* FURSUIT DUMMY - ATK 0 DEF -5\n* A friend's spare fursuit on a coat rack. The friend wants it back.", 5 }
+            { "fursuit_dummy", "* FURSUIT DUMMY - ATK 0 DEF -5\n* A friend's spare fursuit on a coat rack. The friend wants it back.", 6 }
         };
         for (const ExpectedEnemy& item : expected) {
             const std::unique_ptr<Enemy> enemy = Enemy::loadFromJson(
@@ -4336,8 +4336,12 @@ int main() {
                        2.0f, 0.0f, 0.0f, 1280.0f, 960.0f);
         assertGeometry(calculateVirtualCanvasGeometry(1920, 1080, true),
                        2.0f, 320.0f, 60.0f, 1280.0f, 960.0f);
+        // BUG-49: a whole multiple that leaves more than 15% of the window empty falls back to the fit.
         assertGeometry(calculateVirtualCanvasGeometry(1001, 701, true),
-                       1.0f, 180.0f, 110.0f, 640.0f, 480.0f);
+                       701.0f / 480.0f, (1001.0f - 640.0f * 701.0f / 480.0f) * 0.5f, 0.0f,
+                       640.0f * 701.0f / 480.0f, 701.0f);
+        assertGeometry(calculateVirtualCanvasGeometry(960, 720, true),
+                       1.5f, 0.0f, 0.0f, 960.0f, 720.0f);
         assertGeometry(calculateVirtualCanvasGeometry(320, 240, true),
                        1.0f, -160.0f, -120.0f, 640.0f, 480.0f);
         assertGeometry(calculateVirtualCanvasGeometry(1920, 1080, false),

@@ -1,16 +1,17 @@
 {
   "image": "portal.png",
   "cell": [
-    12,
+    16,
     16
   ],
   "origin": [
-    6,
+    8,
     8
   ],
   "anims": {
     "idle": {
-      "row": 0
+      "row": 0,
+      "frames": 1
     }
   }
 }

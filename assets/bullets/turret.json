@@ -10,7 +10,8 @@
   ],
   "anims": {
     "idle": {
-      "row": 0
+      "row": 0,
+      "frames": 1
     }
   }
 }

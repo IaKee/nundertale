@@ -1,8 +1,17 @@
 {
   "image": "glitter_hand.png",
-  "cell": [30, 30],
-  "origin": [15, 15],
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
   "anims": {
-    "grab": { "row": 0, "frames": 2, "fps": 4 }
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
   }
 }

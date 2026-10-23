@@ -3,6 +3,9 @@
 > **Status:** canonical document for lore, world rules, cast, structure, routes and art/audio direction. **v2** fully replaced v1 (the "Gamers vs Fandoms / Firewall / Gamertags / WASD keycaps" premise was dropped).
 > **v3 (2026-10-18):** the protagonist is now **Grub**, a gamer goblin (Pepe the Frog is dropped, §2.2), and every surface gamer is a goblin (§4.1); the game over is **WELCOME HOME** (§23.1); real brands and games are used openly (§2.1); the Toxic route corrupts the HUD with other games' interfaces and the Furry route softens it (§8.9–8.11); new content: the Apurrture booth and GLaDOwOS (R9a, §19.10), the night-shift office (H1a), floor messages (§30.4), meme foods and hidden Toxic weapons (§20).
 > **v3.1 (2026-10-18):** Grub was running home for a **Fortnite** match with his squad (the raid became the squad, the Furry act became **The Drop**); **Floofy** is a zesty flower-themed furry recruiter (§6.5, §10.10); **Furiell** is the first dose of real furry cringe (§10.2); new R4 puzzle and R5 dummy (The Bass Shake); MERCY reads **Yiff** outside the toxic track (§8.8); peaceful ends take 4–8 ACTs (§8.12); the toxic track starts at the first kill and ends at the first spare (§22.0).
+> **v3.2 (2026-10-28, lore review after synergy-2 round 6):** the **protagonist's race is open again** (D-16 reopened: the goblin reads too generic, §4.1, §10.1; "Grub" stays as a working name); the Ruins open with **The Landing**, an entrance outside the Con where Grub **falls on top of Floofy** and his plushies (§12, R1), then two quiet rooms (R1a, R1b) before Floofy's lair; Floofy's first encounter is a **real, lethal fight** with no Spare, his "friendship petals" are **flower-shaped adult toys** (§2.1, §19.0), and **Furiell** ends it with a **water spray bottle** (§10.2); **The Bass Shake** moves from the Fursuit Dummy to Floofy's alternate fight, triggered by annoying him (§19.0); intro card 1 reads `FURRIES and GAMERS.` and card 6 returns to the legacy `MTn. DEW` lines (§9); more name reactions (§30.2); new reference: **Gamer Girl Bath Water** (§2.2, §18.5, §20.4).
+> **v3.3 (2026-10-28, D-16 locked):** the protagonist is a **human gamer NEET**. Grub keeps his name and everything that never depended on his race; he is now a pale 26-year-old wrapped in **his own blanket worn as a hooded cape**, with the headset over the hood (§10.1). **The Goblinization is cut:** gamers are plain humans. "Goblin mode" was only gamer slang for the post-war life behind closed curtains; the furries, sealed underground with one bar of signal, took it **literally**, and the Hall of Posts draws gamers as goblins (§4.1, §16). The goblin jokes survive as **furry myth**. Also: the headset soul for `GRUB` (§3 D-01), plain human grunts instead of RuneScape goblin sounds (§27.2), Barky's tell is now his old headset (§10.3).
+> **v3.4 (2026-10-30, round-7 playtest):** Grub falls onto Floofy **in a bed of flowers**: Floofy was napping in his flower bed at the bottom of the Rift, so the golden-flower parody is literal now and the plush pile is gone (§6.5, §9 card 10, §12 R1, §19.0). The Fursuit Dummy gets a new ACT, **Try It On** (§18.1). Asset generation (sprites, audio, music) stays out of multi-agent runs (BACKLOG D-22).
 > **Scope:** a complete **~25–30 minute** experience on the main route (speedrun ~15–18 min); the Furry route runs about as long.
 > **Precedence:** when this file conflicts with `ROTEIRO.md`, `notes.txt`, `LoreScene.cpp` or proposals in `BACKLOG.md`, **this file wins**.
 > **Language:** this document is written in English because it is a development reference and because the jokes live in English — most of the memes the game parodies come from English-speaking internet culture. **Every line the player sees is English**; quoted in-game text follows `docs/writing_style.md`.
@@ -47,9 +50,9 @@
 
 ## 1. The pitch
 
-Twelve years ago, the **GAMERS** won the **Great Yiff War** and sealed the **FURRIES** under **Mt. Dew** — a mountain made of gamer trash — behind a Barrier of closed-bedroom stench and expired body spray. Then they closed the curtains and never came out. Twelve years of winning turned them into **goblins**. Literally.
+Twelve years ago, the **GAMERS** won the **Great Yiff War** and sealed the **FURRIES** under **Mt. Dew** — a mountain made of gamer trash — behind a Barrier of closed-bedroom stench and expired body spray. Then they closed the curtains and never came out. Twelve years of winning turned a whole race into **NEETs**; up there they call it *goblin mode*. Down below, the furries think that's literal.
 
-**Grub**, 26, a jaded gamer goblin who lives in his mom's basement, only leaves the house when the Mountain Dew runs out. On the way back from the store, **30 minutes before his squad's Fortnite match**, he cuts across Mt. Dew to get home faster, slips on a **Tide Pod** and falls into the Rift. The clock is the urgency of the whole game.
+**Grub**, 26, a jaded gamer NEET who lives in his mom's basement wrapped in a blanket, only leaves the house when the Mountain Dew runs out. On the way back from the store, **30 minutes before his squad's Fortnite match**, he cuts across Mt. Dew to get home faster, slips on a **Tide Pod** and falls into the Rift. The clock is the urgency of the whole game.
 
 Down there, every furry wants the same thing: **for him to say "yes."** A gamer soul can only be converted **willingly** — and the King needs one more to break the Barrier and **furrify the entire surface**. That's why the Underground is so nice. The hugs, the glitter Pop-Tarts, the blankets, the "you're safe here": it's all **love-bombing**.
 
@@ -71,6 +74,7 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 | **Furries as the main target** | Stinky fursuits, the zipper, musk, unsolicited hugs, "18+" art, commissions, zero shame, love-bombing. |
 | **Gamers are gross too** | Hygiene, the bottle that isn't Mountain Dew, the "Homework" folder, the "ergonomic" mousepad, swimsuit gacha, Discord simps, the body pillow "washed once", the "she's actually a 1,000,000-year-old dragon" excuse. |
 | **Real brands, by name and in the art** (v3) | The game is non-commercial, so brands show up **openly**, in text **and** drawn into the art with their real names: Doritos, Mountain Dew (Code Red, Baja Blast), Monster Energy, G FUEL, Axe, Febreze, Cheetos, Pop-Tarts, Tide, Discord, Steam. Small sprites carry the brand as **its packaging color plus one word** in pixel font (a green can with `DEW`, a red triangle bag with `DORITOS`). **Adult brands** (e.g. **Bad Dragon**) appear only as **a logo or a name on a closed object**: a sealed package, a banner over a curtain. Nothing about the product is shown. There is **no brand swap** for the public build. |
+| **Floofy's friendship petals** (v3.2, user decision D-20) | The **one exception** to "adult products stay closed": Floofy's petals are **flower-shaped adult toys** (the rose-shaped one first; a small capsule "bullet" for the pun). They are drawn **only as bullets**: tiny white-on-black pixel objects (8–16 px) that read as a rose or a capsule, with a 2-frame buzz wobble. **Never in use, never touching or next to a body, no anatomy, no brand, no packaging.** The joke is the vocabulary (`good vibes`, `filled with them`), the buzzing and the narrator refusing (`* The petals are vibrating.` / `* (Why are they vibrating.)`). They appear only in Floofy's fights (R2, §19.0; the Mascot's `bouquet_mouth`, §19.7) and as the "rose" in his paw (§10.10). |
 | **Other games, by name, look and sound** (v3) | Other games can be referenced openly: their item names, HUDs and iconic sounds (RuneScape, League of Legends, Counter-Strike, Call of Duty, Portal, Half-Life, Minecraft, Fortnite, StarCraft, Dark Souls, FNAF). Most of it is concentrated in the Toxic route's HUD (§8.9); see rule 7 in §2.3. |
 
 ### 2.2 What's not allowed (fixed rules)
@@ -82,7 +86,7 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 | **Hate-adjacent memes** (v3) | **Pepe the Frog and its variants** (Groyper, etc.) are not used anywhere: the meme was co-opted by hate groups. The protagonist is **Grub** (§10.1). Same rule for any meme mostly known for hate-group use. The name easter egg `PEPE` only answers `* Not that frog.` |
 | **Controlled exception: the dragon excuse** | Only as satire of **the gamer making the excuse**. The character he refers to **never appears, is never described and has no sprite**. The joke is the narrator cutting the gamer off (§18.5). |
 | **Real animals** | No reference to acts involving real animals. Every "animal" in the game is a person's fursona/fursuit. |
-| **Real people** | No real person named, depicted or recognizable (this includes faces from photo memes, YouTubers, streamers, and brands built around one person). Real-world events, sites and conventions become fictional too (e.g. the convention is **FurNation Con '14**). **Brands and games are the exception** (§2.1). |
+| **Real people** | No real person named, depicted or recognizable (this includes faces from photo memes, YouTubers, streamers, and brands built around one person). Real-world events, sites and conventions become fictional too (e.g. the convention is **FurNation Con '14**). **Brands and games are the exception** (§2.1). **Gamer Girl Bath Water** (v3.2, D-21) is allowed as **the product name only**: a sealed jar with a label. The person who sold it is never named, drawn, described or alluded to, and there is no "gamer girl" character. |
 
 ### 2.3 How to make the "gross" humor work
 
@@ -90,7 +94,7 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 2. **Cut it off mid-sentence.** `Okay but technically—` `* No.`
 3. **Closed object.** A curtain, a tab, a folder, a padlocked book. Examining it twice changes the reaction; it never opens.
 4. **Ratio:** ~70% of the gross-out jokes land on furries, ~30% on gamers. Gamers show up more on the surface side (squad messages, Grub's room, "The Drop" act).
-5. **Grub is an original goblin** in the Old School RuneScape mold (§10.1), never a frog: the old protagonist was dropped under §2.2.
+5. **The protagonist is original** (§10.1), never a frog: the old protagonist was dropped under §2.2. He is a plain human gamer NEET (v3.3, D-16); goblins exist only in furry myth (§4.1).
 6. **Write the meme natively.** The jokes are English internet culture — ratio, touch grass, skill issue, "no cap", "it's giving", "rent free", "down bad", Reply Guys, copypastas. Use the real cadence of the format (a Discord message reads like a Discord message, a streamer reads like a streamer) instead of explaining the joke.
 7. **References to other games ambush the player; they never pile up** (v3).
    - **Zero before the first kill.** The `FIRST BLOOD` only lands because the game had no references until then.
@@ -112,8 +116,8 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 
 | Topic | Decision |
 | :--- | :--- |
-| **Conflict** | **Gamers vs Furries.** Gamers = the humans (they won, they live on the surface; twelve years later they are **goblins**, §4.1). Furries = the monsters (sealed in the Underground). Weeaboos are not a faction; the only weeb in the Underground is Senpai Sans (§10.4). |
-| **Protagonist** (v3) | **Grub**, a gamer goblin in the Old School RuneScape mold (§10.1). Replaces Pepe the Frog (§2.2). |
+| **Conflict** | **Gamers vs Furries.** Gamers = the humans (they won, they live on the surface; twelve years later they are **NEETs** behind closed curtains, still human, §4.1). Furries = the monsters (sealed in the Underground). Weeaboos are not a faction; the only weeb in the Underground is Senpai Sans (§10.4). |
+| **Protagonist** (v3.3) | **Grub**, a **human gamer NEET** wrapped in his own blanket (§10.1). Replaces Pepe the Frog (§2.2) and the v3 goblin. **D-16 locked on 2026-10-28** (reopened in v3.2 because the goblin read as a generic fantasy creature). |
 | **Antagonists** | Apparent: **King Asgrr** (wants the 7th soul). Real: **Floofy** (Flowey parody, zero shame). On the Furry route: **xX_Moderator_Xx**, party leader of Grub's Fortnite squad. On the Toxic route: Grub himself. |
 | **Threat** | Furrification by **voluntary conversion**: the furries need Grub to say yes. |
 | **Furry route (trigger)** | FUR hits **100%** → **Mirror** scene → the player accepts or refuses (§8.5). |
@@ -121,7 +125,8 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 | **Grub's secret** | He secretly likes furries, **only through subtle hints** (§10.1). Never stated outright. |
 | **Cut from v1** | Firewall/Gamertags/DDoS, WASD keycaps, the Wholesome reconciliation ending, weebs as a faction, Weebfall. |
 | **Cut in v3** | Pepe the Frog as the protagonist; the FURRY OVER name; the frog-shaped soul; the "brand swap for the public build" idea. |
-| **D-01** | Red soul; name `GRUB` or `GOBLIN` → a red soul with goblin ears (cosmetic). `PEPE` → `* Not that frog.` |
+| **Cut in v3.3** | The Goblinization (gamers turning into goblins for real); goblin Grub; the goblin-eared soul; the RuneScape goblin grunts; the other protagonist candidates of v3.2 (patched gamers, gamer gremlins, internet trolls). Goblins survive only as furry myth (§4.1). |
+| **D-01** | Red soul; name `GRUB` → a red soul wearing a **tiny headset** (cosmetic, v3.3; was goblin ears). `GOBLIN` gets a line, no soul (§30.2). `PEPE` → `* Not that frog.` |
 | **Game over** (v3) | HP 0 on the Gamer and Toxic routes = **WELCOME HOME** (§23.1); on the Toxic route the screen corrupts as kills rise. The Furry route keeps **GAMER OVER**. |
 | **Route UI** (v3) | Kills corrupt the HUD with other games' interfaces (§8.9); the Furry route softens it, a little (§8.10). The HUD is **never hidden**. |
 | **Route difficulty** (v3) | Kills make fights harder: new patterns, more HP, more damage, more ACTs to spare. Furry-route enemies are very hard to hurt (§8.11). |
@@ -137,7 +142,9 @@ Down there, every furry wants the same thing: **for him to say "yes."** A gamer 
 ### 4.1 The Surface
 The world above, home of the Gamers. After the war nobody posts fanart anymore: just headshot clips, patch-note complaints and gacha banners. Closed bedrooms, monitor glow, bottles on the floor. It is technically a victory. Nobody seems happy.
 
-**The Goblinization (v3).** The gamers won, closed the curtains and went **goblin mode**. Twelve years later they are goblins for real: green skin, big pointy ears, big nose, a hunch from the chair (the Old School RuneScape goblin is the model). It happened slowly and nobody up there noticed. **The gamers never mention it**: the intro is their propaganda (§9), and to them it's normal. **The furries tell it** in the Hall of Posts (§16): `* They used to be human.` / `* Then they won.` Gamers from before the change are drawn human (xX_CHARA_Xx, 2014); everyone who fell later already was a goblin (Barky, 2021, wears his fursuit over a goblin).
+**Goblin mode (v3.3).** The gamers won, closed the curtains and went **goblin mode**, the slang kind: no showers, no daylight, Doritos at 3 AM, the same hoodie for a month. Twelve years later the surface is a race of **NEETs**. They are still plain humans, just pale, hunched and wrapped in blankets. It happened slowly and nobody up there noticed. **The gamers never mention it**: the intro is their propaganda (§9), and to them it's normal.
+
+**The goblin myth.** The furries only ever heard the slang. Sealed underground with one bar of signal, they caught `goblin mode` in memes and in what the fallen said, and took it **literally**. The Hall of Posts (§16) tells it as history, and its mural draws the gamers as green, pointy-eared goblins: `* They used to be human.` / `* Then they won. Then they went goblin mode.` Every gamer who actually falls is a pale human in a hoodie or a blanket, and the furries are a little let down each time (Furiell, R2: `You're not even green. The murals lied~`). The joke lives in the gap: the furries' story about the gamers is as wrong as the gamers' story about the furries (§9). (Replaces the v3 Goblinization, where the gamers turned into goblins for real.)
 
 ### 4.2 Mt. Dew
 A mountain made of **12 years of gamer trash**: compacted cans, Dorito dust in layers ("the nacho stratum"), broken headsets, cables and bottles that are **not** soda. At the peak, a giant flat-brim cap. Legend: "you get 5G at the top" (a lie; one bar, sometimes). Halfway up is **the Rift**, with a hand-written sign: `FREE HUGS ↓`.
@@ -188,7 +195,7 @@ The game tells the war **twice**, and both versions are biased:
 | **2015** | **The Split.** Furiell disagrees with the "by force" part; she wants "everyone in their own time, with lots of love and Pop-Tarts." She moves to the Ruins to catch the fallen before the Guard does. |
 | **2015** | **Floofy volunteers** for Alphys's DETERMINATION experiment and loses all shame (§6.5). |
 | **2015–2021** | Six gamers fall. All of them say **yes** (§6.3). |
-| **2014–202X** | **The Goblinization** on the surface (§4.1): the winners slowly turn into goblins. The later fallen are goblins under their fursuits. |
+| **2014–202X** | **Goblin mode** on the surface (§4.1): the winners close the curtains and become a race of NEETs. Underground, the furries hear the slang and believe it; the Hall of Posts mural draws gamers as goblins. |
 | **2021–202X** | Nobody falls. |
 | **202X** | **Grub falls.** His squad queues in 30 minutes. |
 
@@ -254,6 +261,8 @@ Jar labels (examine text):
 - His motto: **"In this world, it's YIFF or be YIFFED."**
 - He wants the **seven souls** to become the **Supreme Fursona** and furrify the entire world, no limits at all. (He is, quite literally, the furry with the fewest boundaries in existence.)
 - **Where the humor is:** in how furry and how zesty he is, always pushing you to "join" (`*pounces on you* OwO what's this?`). He's openly gay and flamboyant; the jokes are about his shamelessness and his recruiting, never about him being gay (writing style guide).
+- **Where Grub finds him (v3.2):** napping in **his flower bed** at the bottom of the Rift (v3.4; was his plush collection), "waiting for someone to fall for him." Someone did: Grub lands on top of him and knocks him out (R1). He wakes up off-screen, takes it personally and waits for Grub in his lair (R2).
+- **Soft outside, thorns inside (v3.2):** all flowers, pastel and zest, but in a fight he is **pure thorns**: vines, spikes, nothing gentle. Hitting him does nothing: the fursuit padding is too soft to hurt (§19.0).
 
 ---
 
@@ -262,7 +271,7 @@ Jar labels (examine text):
 | Layer | The player learns | Where |
 | :---: | :--- | :--- |
 | 1 | The furries were sealed away by the gamers. | Intro |
-| 2 | Getting hit makes you fluffy; HP 0 "converts" you (WELCOME HOME). | Floofy (tutorial), first WELCOME HOME |
+| 2 | Getting hit makes you fluffy; HP 0 "converts" you (WELCOME HOME). | Floofy's fight (R2, where the first WELCOME HOME can already happen) |
 | 3 | Furiell wants you to stay. Forever. | Furiell's house |
 | 4 | Conversion is **voluntary**; everyone is nice **on purpose**. | Grillby's LAN House (Senpai Sans) |
 | 5 | Barky and others **used to be gamers**. | Wetfall (Repost Flowers) → the King's jars |
@@ -284,7 +293,7 @@ Jar labels (examine text):
 | Shooter | Yellow | Mettapaw | A cursor to answer the quiz | `OH YES! YOUR SOUL IS A CURSOR NOW, DARLING! CLICK!` |
 | Plush | Pink with ears | — | **Furry route** | `* Your SOUL is soft now.` |
 
-Easter egg: name `GRUB` or `GOBLIN` → a red soul with goblin ears (cosmetic).
+Easter egg: name `GRUB` → a red soul wearing a tiny headset (cosmetic, v3.3). `GOBLIN` only gets a line (§30.2).
 
 ### 8.2 LV and EXP
 - **LV = Level of Vitriol**. **EXP = eXcessive Posting**: killing means posting shame about someone until they turn to dust.
@@ -328,8 +337,8 @@ Displayed like Sans's KARMA: a `FUR` label after the HP bar, a `KR_PURPLE` (#FF0
 
 | FUR | Stage | Look | Reactions |
 | :---: | :--- | :--- | :--- |
-| 0–19 | **Goblin** | Normal Grub (§10.1): the gamer goblin, eye bags, nacho-stained blue T-shirt, shorts, flip-flops. | — |
-| 20–39 | **Ears** | His big goblin ears grow tufts of soft fur. `* Your ears were already big. Now they're fluffy.` | `* Nice ears, newcomer!` |
+| 0–19 | **Gamer** | Normal Grub (§10.1): the pale human NEET, eye bags, blanket hood with the headset over it, nacho-stained blue T-shirt, shorts, flip-flops. | — |
+| 20–39 | **Ears** | Fluffy ears poke up through his blanket hood, next to the headset. `* Something is poking through your hood.` / `* Ears. Soft ones.` | `* Nice ears, newcomer!` |
 | 40–59 | **Paws** | Paw hands and feet. | Barky: `Dude. Your paws are SO much better than mine.` |
 | 60–79 | **Tail** | A shiny tail that wags as he walks. | Shopkeepers give a "fandom discount." |
 | 80–99 | **Snout** | A snout, mint-green fur patches, a "squeak" at the end of his lines. | Senpai Sans: `heh. you're one bad day away from a con badge.` |
@@ -430,16 +439,18 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 
 | Card | Image | Text |
 | :---: | :--- | :--- |
-| 1 | `lore1` — a gamer (still human: it's before the Goblinization, §4.1) and a furry side by side | `Long ago, two races ruled` / `over the internet:` / `GAMERS and FURRIES.` |
+| 1 | `lore1` — a (human) gamer and a furry side by side | `Long ago, two races ruled` / `over the internet:` / `FURRIES and GAMERS.` (v3.2: furries first, the order of the legacy intro) |
 | 2 | `lore2` — fursuit wolf with a bone vs an armored human gamer | `One day, the FURRIES tried` / `to turn every GAMER` / `into a FURRY.` |
 | 3 | `lore3` — battlefield | `The GAMERS fought back with` / `copypastas, raids, and a` / `total lack of shame.` |
 | 4 | `lore4` — "BEGONE!" (**redraw: real face**) | `After a decisive ratio,` / `the GAMERS were victorious.` |
 | 5 | `lore4` or new art (the Seven in silhouette) | `Seven GAMERS sealed the` / `degenerates underground` / `with a magic BARRIER.` |
-| 6 | `lore5` — Mt. Dew | `Many years later...` / ` ` / `MT. DEW, 202X` |
+| 6 | `lore5` — Mt. Dew | v3.2, the legacy lines verbatim: `<<................MTn. DEW................>>` / `<<...................202X....................>>` (see below) |
 | 7 | `lore6` — the Rift, a furry peeking out, the sign | `Legend says that those who` / `keep on yiffin'` / `may never game again...` |
 | 8 | `lore7` — Grub hurrying across Mt. Dew with a shopping bag full of Mountain Dew, phone in hand (`SQUAD QUEUES IN 30:00`) | *(no text)* |
-| 9 | `lore8` — a goblin foot in a flip-flop slipping on a **Tide Pod** next to a tail (v3: the Tide Pod replaces the Dorito; it falls in with him, R1) | *(no text)* |
-| 10 | `lore9` + `lore10` animation | *(no text; cut to title)* |
+| 9 | `lore8` — a pale foot in a flip-flop slipping on a **Tide Pod** next to a tail (v3: the Tide Pod replaces the Dorito; it falls in with him, R1) | *(no text)* |
+| 10 | `lore9` + `lore10` animation; the tall panel (`card10_tall`) scrolls down the Rift and ends on Grub sprawled on top of a knocked-out Floofy **in a bed of flowers**, a Tide Pod beside them (v3.4) | *(no text; cut to title)* |
+
+**Card 6 formatting (v3.2, from the single-file legacy build, `old/legacy_c/nundertale.c`, LORE CARD 5).** Two lines, exactly `<<................MTn. DEW................>>` and `<<...................202X....................>>`, left-aligned at the same x as the other cards. The dots type about **100× faster** than letters (the legacy code divides the per-character pause by 100 on a `.`), so each line reads as two quick dotted fills around a word that types at normal speed, with the type sound on every character. There's no `Many years later...` line. The capitalization `MTn.` is intended. If a line doesn't fit at the card font's native size, drop the same number of dots on both sides; never wrap it.
 
 **Title:** after card 10, black screen → `nUNDERTALE` logo (the lowercase `n` in red, trembling slightly). Post-ending variations in §24.
 
@@ -451,27 +462,31 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 
 ### 10.1 Grub the Fallen Gamer (protagonist)
 
+> **v3.3: decided (D-16 locked, 2026-10-28).** Grub is a **human gamer NEET**. The v3 goblin is cut, and so are the other v3.2 candidates (patched gamers, gamer gremlins, internet trolls, goblin plus gamer traits). Goblins live on only as furry myth (§4.1). Unchanged from v3: he never speaks, the secret, the `Bottle`, the `Homework` folder, the Fortnite squad, the starting gear.
+
 - **Parody of:** Frisk.
 - **Role:** the 8th fallen; owner of the 7th gamer soul.
-- **Who he is:** 26, a gamer **goblin** (every surface gamer is one now, §4.1), lives with his mom, in the basement bedroom. Lives on Fortnite, gacha and Doritos. Only leaves the house when the Mountain Dew runs out.
-- **Look (v3):** an **Old School RuneScape-style goblin**: green skin, **big pointy ears** (his black silhouette element), a big nose, heavy droopy eyelids with eye bags, a slight hunch from the chair. The gamer kit on top: **plain blue T-shirt with nacho stains**, shorts, flip-flops, a gaming headset around the neck. Plain green hands (no orange fingertips). Adult proportions (LOR-004). Overworld ~20×30 px native. The old frog sprites (`docs/art_prompts/ruins/style/04_pepe_anchor.png`, `pepe_char.bmp`, `sprites/ow/pepe_*.png`) are **legacy** and get redrawn as Grub (ART-001).
-- **Voice:** he never talks, but his grunts are **RuneScape goblin sounds** (hurt, death, effort), §27.2.
+- **Who he is:** 26, a human gamer **NEET** (like every surface gamer now, §4.1): no school, no job, no plans. Lives with his mom, in the basement bedroom, and wakes up at 3 PM. Lives on Fortnite, gacha and Doritos. Only leaves the house when the Mountain Dew runs out, and didn't take the blanket off for the trip.
+- **Look (v3.3):** a plain **human**: monitor-pale skin, heavy droopy eyelids with dark eye bags, messy unwashed hair sticking out of the hood, a slight hunch from the chair. **His own blanket**, a faded fleece worn over the head like a hooded cape and held shut at the chest, is his **black silhouette element**; the **gaming headset sits over the hood**, so the two ear-cup bumps break the outline. Under the blanket: the **plain blue T-shirt with nacho stains**, shorts, flip-flops. Plain hands (no orange fingertips). The blanket's color is an art call; it has to read against the purple and neon-green Ruins (ART-180). Adult proportions (LOR-004). Overworld ~20×30 px native. The old frog sprites (`docs/art_prompts/ruins/style/04_pepe_anchor.png`, `pepe_char.bmp`, `sprites/ow/pepe_*.png`) and the v3 goblin sheets (`sprites/ow/grub_goblin.*`, `grub_wakeup.*`) are **legacy** and get redrawn as the human Grub (ART-001, ART-180).
+- **Voice:** he never talks; his grunts are **plain, low-effort human grunts**: a tired `uhh` on effort, a sharp breath when hurt, a long exhale on death (§27.2; v3.3, were RuneScape goblin sounds).
 - **Personality:** sarcastic, lazy, openly hates furries. **Never speaks out loud** (faithful to Frisk): he only thinks, in `* (...)`.
 - **Gamer gross factor:** his inventory starts with a **`Bottle`** he doesn't want to discuss (`* A bottle. It's not Mountain Dew.` / `* (You don't want to talk about it.)`). It can't be used, only thrown away (`* You throw it away. The Underground will remember.`). His phone has a folder called `Homework` (400 GB) that shows up on the CELL and never opens.
+- **The blanket (v3.3):** he brought his own. Whenever a furry offers him a blanket (the love-bombing, §1), he thinks the same thing: `* (You brought your own.)`
 - **Secret (subtle):** he likes furries, but the game **never says so**. There are only hints the player might not even catch — he knows too much:
   - Examining Barky's fursuit: `* (Digitigrade legs. Those are expensive.)` `* (...Not that you'd know.)`
   - Examining a plush tail: `* (Good stitching.)` `* (You don't know why you noticed that.)`
   - At the Art Show's 18+ section: `* You decide to respect the curtain.` → 2nd time: `* You respect the curtain. For a while.` → 3rd: `* (...No.)`
   - At the shop: `* (Fandom discount? You don't need that.)` `* (You take the fandom discount.)`
   - In the Mirror (Furry route), the only confirmation: `* (You always kind of wondered.)`
-- **Furry form:** **"Grub the Pawsome"** — a green goblin-wolf with a scarf, his big ears now fully fluffy, a shiny tail, eye bags still there.
+- **Furry form:** **"Grub the Pawsome"** — a mint-green wolf, the blanket turned into a fluffy fur-lined cape, the headset still on over big fluffy ears, a shiny tail, eye bags still there.
 - **Starting gear:** `Frayed USB Mouse` (AT 2), `One-Sided Broken Headset` (DF 1).
 
 ### 10.2 Furiell — Guardian of the Ruins (Area 1 boss)
 
 - **Parody of:** Toriel, but **not 1:1** (v3.1): she is the game's **first concrete dose of furry cringe**.
 - **Role:** former Queen. Lives in the Ruins to catch gamers before the Guard does and convert them "with love." She is the **love-bombing champion**. Anonymously signs the "Ruins Administration" notices.
-- **Look:** a fluffy white goat fursuit, half-moon glasses, a paw-print apron, a **zipper visible on her back** (she swears it isn't there).
+- **Look:** a fluffy white goat fursuit, half-moon glasses, a paw-print apron, a **zipper visible on her back** (she swears it isn't there). v3.2: a **spray bottle** (water and a little lavender) hangs from her apron, the kind you use to keep a cat off the counter.
+- **First appearance (v3.2):** in the middle of Floofy's fight (R2), she shoos him off with the spray bottle like a cat on the counter (`*spritz*` → Floofy: `EEP!!`), then sprays Grub too: it heals him and washes the fluff off. Only then does she introduce herself and take his hand (§19.0).
 - **Personality:** cringe in every direction. She **grabs Grub's hand** all the time and doesn't let go, tries to hug him every few lines, talks in uwu (`hewwo`, `fwiend`, `>w<`, `*nuzzles*`) and has a **degradation kink**: insults make her happier. Calls Grub **"pup"** or **"hun"**. Bakes **glitter Pop-Tarts**. Still wants him to stay forever.
 - **Shame doesn't work on her** (§6.4): the gamers' weapon backfires, because she enjoys it. Insulting her makes her want you more; even Grub's FIGHT shows `* Furiell is enjoying this.` (the damage is real; she just likes it).
 - **Voice:** default font, soft low beep, a squeak on every "uwu".
@@ -487,7 +502,7 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 
 - **Parody of:** the Ruins' first "real" encounter + the internet edgelord. Data in `data/enemies/barky.json`.
 - **Role:** **the 7th convert (2021)**, formerly `xX_BarkSc0p3_Xx`, **23 years old**. Fell while trying to film a video "at the top of Mt. Dew." Said "yes" after two weeks of Pop-Tarts. Still has gamer flashbacks and doesn't know where they come from.
-- **Look:** wolf ears, studded faux-leather jacket, plastic chains, fingerless gloves, a tail held on with a safety pin, a cheap fursuit with a **visible zipper**. Under the fursuit he's a goblin (he fell in 2021, §4.1); a goblin ear tip pokes out of the head when he's flustered.
+- **Look:** wolf ears, studded faux-leather jacket, plastic chains, fingerless gloves, a tail held on with a safety pin, a cheap fursuit with a **visible zipper**. Under the fursuit he's a plain human gamer (§4.1). When he's flustered the fursuit head slips and his **old gaming headset** shows underneath; he doesn't know why he still wears it (the first hint for N3's `* (Barky... was a gamer?)`).
 - **Personality:** edgy, dramatic, howls at fluorescent lights, leads the "Shadow Fang Pack" (membership: him). Insecure: thinks everyone can tell he's "new."
 - **Voice:** small font, high-pitched little bark.
 - **Gross factor:** the fursuit smell (`* Barky smells like a gym bag that has seen war.`), dollar-store "musk," involuntary OwOs.
@@ -568,22 +583,23 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 
 - **Parody of:** Flowey.
 - **Role:** the Underground's self-appointed welcome committee (§6.5). No shame left. Grub's first "friend," fake tutor, commentator and the real antagonist.
-- **Look:** a pastel-pink fox fursona covered in flowers: a flower crown, petal-patterned fur, a bouquet for a tail and **a rose always in hand** (his black silhouette element). In sinister mode the petals wilt black and his smile gets too wide (never anything more).
+- **Look:** a pastel-pink fox fursona covered in flowers: a flower crown, petal-patterned fur, a bouquet for a tail and **a rose always in hand** (his black silhouette element). In sinister mode the petals wilt black and his smile gets too wide (never anything more). v3.2: **the rose is not a rose.** It's the rose-shaped toy (§2.1). Nobody ever says so; it just buzzes now and then.
 - **Personality:** flamboyant, zesty, flirty and **relentless**: every line is a pitch to make you a furry. He pounces on you, OwOs, compliments a fursona you don't have, offers to "help you pick a species". Later: mocking and **completely boundaryless**. Says everything nobody would say.
 - **Voice:** default font in a speech bubble decorated with little hearts and sparkles; in sinister mode, a thicker, shaky font.
 - **Lines:**
-  - `Howdy~! I'm FLOOFY! Floofy the Floof! *pounces on you* OwO what's this? A new friend?`
-  - `Down here, we share these little... "friendship petals"! Catch them, cutie~`
-  - `You idiot. In this world, it's YIFF or be YIFFED.`
+  - `Howdy~! I'm FLOOFY! Floofy the Floof!` / `*pounces on you* OwO what's this?`
+  - `I was waiting for someone to fall for me, sweetie.` / `...Not ON me. But I'll allow it~`
+  - `Here, we're all about good vibes~` / `...and soon you'll be FILLED with them.`
+  - `You idiot.` / `In this world, it's YIFF or be YIFFED.`
   - `Shame? I donated mine to science. Want to see what that's like?`
-- **Tutorial (R2):** the "friendship petals" are little pink petals that deal damage and **+20 FUR** each; he surrounds Grub with a ring of them: `*pounces*`. **Furiell** arrives and drives him off with a **glitter spray**; she heals Grub and FUR drops back to 0 (`my glitter is hypoallergenic, pup`).
-- **Attacks:** petals, pollen clouds (`* You're allergic. To him.`), thorny rose vines, pounces.
-- **Appearances:** R2, R13, S7, H2 (through the log), N5 (finale). On the Furry route, he's the one who **calls the squad in** (§17).
+- **First encounter (v3.2, R1–R2):** Grub falls on him at the Landing and knocks him out (R1, no introduction). Two rooms later, Floofy is waiting in his lair (R2): the full introduction, the "friendship petals" pitch, a short fake tutorial where catching a petal hurts, the twist, then **a real fight** with no Spare that Grub can lose, until **Furiell** sprays him off with water (`EEP!!`). He flees and comes back later. Full scene in §19.0. (Replaces the v3.1 cutscene where Furiell's glitter cancelled the fight at once.)
+- **Attacks:** buzzing friendship petals, thorny rose vines, spiky petal storms, pollen clouds (`* You're allergic. To him.`), pounces. Annoy him enough and he fights you to **The Bass** instead (§19.0).
+- **Appearances:** R1 (knocked out), R2, R13, S7, H2 (through the log), N5 (finale). On the Furry route, he's the one who **calls the squad in** (§17).
 
 ### 10.11 xX_Moderator_Xx — the Supreme Gamer (Furry route boss)
 
 - **Role:** party leader of Grub's Fortnite squad and the last of the Seven Moderators still active. 38. Hasn't showered since the Sealing ("a ritual"). Only appears **through messages** until the Furry route, where he leads **the drop on the Underground**.
-- **Look:** an old, heavy goblin: a huge headset over his big ears, greasy hair in a ponytail, a stained "GG" T-shirt, Cheetos-orange fingers, sitting in an **RGB gaming chair turned mech** (casters, robot arms, bottle holder), a green stink cloud around him.
+- **Look:** an old, heavy gamer (human, like all of them, §4.1): a huge headset, greasy hair in a ponytail, a stained "GG" T-shirt, Cheetos-orange fingers, sitting in an **RGB gaming chair turned mech** (casters, robot arms, bottle holder), a green stink cloud around him.
 - **Personality:** the total toxic gamer. Talks in caps, in memes, in "skill issue."
 - **Lines:** `FURRY OUTBREAK. EVERYONE ON VOICE. NOW.` · `Grub?? bro you're a FURRY now?? that's actually crazy. ratio.` · `I've been in this chair since 2014. The chair is part of me now.`
 - **Gross factor:** everything (§19.9).
@@ -599,8 +615,8 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 | **Uwu-mie** | Temmie | Wetfall | Cat-dog things with UwU faces. `hOI!!! i'm uwu-mie!!!` |
 | **Washua** | Woshua | Wetfall | The **only furry who showers**. Treated as a living legend. |
 | **Azzy** | Asriel | Hall of Posts | The prince, an adult. Only appears in the Hall of Posts. |
-| **xX_CHARA_Xx** | Chara | Mentioned only | The first fallen, an adult. One panel in the Hall of Posts (drawn **human**: they fell in 2014, before the Goblinization) and the `CHARA` name easter egg. |
-| **Grub's Mom** | — | Messages | A goblin too. `dinner's ready` · `are you on the mountain again` · `bring the bottles down`. |
+| **xX_CHARA_Xx** | Chara | Mentioned only | The first fallen, an adult. One panel in the Hall of Posts, drawn **human** because the King knew them (the mural next to it draws every other gamer as a goblin, §4.1), and the `CHARA` name easter egg. |
+| **Grub's Mom** | — | Messages | Upstairs. Hasn't opened the curtains since 2014 either. `dinner's ready` · `are you on the mountain again` · `bring the bottles down`. |
 | **GLaDOwOS** (v3) | GLaDOS (Portal) | Ruins (R9a) | The animatronic host of the Apurrture fan booth. Nobody inside. Runs tests since 2014, alone (§19.10). |
 
 ---
@@ -613,7 +629,7 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 3. Random encounters on a budget: **2–3 per area** outside the Toxic route.
 4. Bosses last 2–3 minutes (4–6 turns with the right ACT).
 5. Puzzles solvable in < 45 s, with a funny hint.
-6. Cutscenes run at most ~6 text boxes before handing control back.
+6. Cutscenes run at most ~6 text boxes before handing control back. Floofy's R2 introduction (§19.0) is the one exception: it's longer, so its boxes are broken up with choices, movement and the fake tutorial.
 
 ### 11.2 Gamer route (main)
 
@@ -627,6 +643,8 @@ The intro is **gamer propaganda**: the narrator is biased (that's the joke; the 
 | 24:30–28:30 | Con Center | Hall of Posts (layer 6), Last Lobby, throne and jars, Asgrr, Floofy |
 | 28:30–30:00 | Ending | Epilogue + credits |
 
+> **v3.2 pacing note:** the Landing plus two quiet rooms (R1a, R1b) and Floofy's real fight add about **+2:25** to the Ruins (§12: R1 +0:10, R1a +0:30, R1b +0:30, R2 +1:30, R5 −0:15), so the Ruins block now ends around 13:25. Trim in playtest (QA-020); the quiet rooms are short on purpose.
+>
 > **v3 pacing note:** the Apurrture booth (R9a: ~0:30, plus ~1:30 for GLaDOwOS when the player refuses the sacrifice) and the night-shift office (H1a, ~1:00) push the Gamer route to **~31–33 min**. Trim elsewhere in playtest (QA-020) to stay near 30.
 
 ### 11.3 Furry route
@@ -649,17 +667,21 @@ Same path until the conversion (which can happen in any area from R3 on). After 
 
 ## 12. Area 1 — The Ruins of Con '14
 
-**Time:** 8.5 min (+0:30 for R9a, +1:30 if GLaDOwOS is fought) · **Music:** "Ruins (lo-fi beats to get lost to)" · **Palette:** purple + neon green
+**Time:** ~11 min (v3.2; was 8.5) (+0:30 for R9a, +1:30 if GLaDOwOS is fought) · **Music:** "Ruins (lo-fi beats to get lost to)" · **Palette:** purple + neon green
 
 **Concept:** the original halls of **FurNation Con '14**, sunk 12 years ago. Cracked purple stone mixed with convention carpet, faded banners, canvas booths, the **Art Show** with its 18+ section behind a black curtain. The smell gets described in almost every room.
 
+**The opening (v3.2), like Undertale's first minutes:** the fall lands **outside** the Ruins (R1, the Landing: the bottom of the Rift, in front of the Con's sunken doors). The Ruins begin past those doors, with **two quiet rooms and nobody in them** (R1a, R1b), only examinables and a growing trail of pink petals, before Floofy's lair (R2). Every ambient room still follows §2.4 (at least one funny examinable).
+
 | ID | Room | Time | What happens | Examinables |
 | :--- | :--- | :---: | :--- | :--- |
-| **R1** | **The Fall Room** | 0:20 | Grub wakes up on a bed of snack wrappers under a beam of light. `* (Ugh... where's my wireless mouse? And why does it smell like body spray and wet dog?)` The phone buzzes (the squad, §8.7). | **Save:** `* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.` · Can: `* Citrus Blast, 2014 edition. A vintage.` · Tide Pod (key item, §20.4): `* The Tide Pod you slipped on. It fell in with you.` / `* (Forbidden candy.)` · Floor message (§30.4): `* "hole ahead" — xX_AFK_Xx. Rated: 47.` |
-| **R2** | **Floofy** | 1:00 | The fake "friendship petals" tutorial (§10.10). The **FUR bar shows up for the first time**, trembling. Furiell arrives with the glitter spray. | — |
-| **R3** | **Ruins Entrance** | 0:30 | Furiell introduces herself, grabbing Grub's hand on the first line: `*grabs your hand* Hewwo~! I'm Furiell! You must be new. You smell new. uwu` She doesn't let go. Double staircase, banners `FurNation Con '14 — Welcome!` and, underneath, `Deodorant is NOT optional`. A pile of Dorito bags (crunch!). | **Save:** `* The distant hum of dial-up internet fills you with DETERMINATION.` |
+| **R1** | **The Landing** (v3.2; was the Fall Room) | 0:30 | **Not a Ruins room:** the bottom of the Rift, outside. Cave walls of compacted cans with the "nacho stratum" in layers, a beam of light from the hole above, trash that fell from Mt. Dew. At the north end, the **sunken front doors of FurNation Con '14**: the Ruins begin past them. Grub starts **already lying down** (from the first frame) on top of **Floofy, asleep in his bed of flowers** right under the light beam; Floofy broke his fall (v3.4: the golden flower bed parody, made literal; was a pile of plushies). The squad message buzzes while he is still lying there (§8.7); the buzz wakes him; he gets up; `* (Ugh... where's my wireless mouse? And why does it smell like body spray and wet dog?)`. **Floofy stays knocked out in the flowers:** no introduction, no lines. If Grub leaves and comes back, Floofy is gone: `* There's a fox-shaped dent in the flowers.` | **Save:** `* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.` · Floofy (knocked out; each examine is a "poke"): 1 `* A fox fursuiter covered in flowers. You landed on him.` / `* He's out cold. He's smiling anyway.` · 2 `* (He broke your fall.)` / `* (You broke his flower crown.)` · 3 `* Something in his paw is buzzing faintly.` / `* (You decide it's a phone.)` · 4+ `* You poke him again. He giggles in his sleep.` (poking him 3+ times annoys him, §19.0) · Flower bed: `* Forty-seven kinds of flowers. Alphabetized. Were.` · Can: `* Citrus Blast, 2014 edition. A vintage.` · Tide Pod (key item, §20.4): `* The Tide Pod you slipped on. It fell in with you.` / `* (Forbidden candy.)` · Light beam: `* Light from the surface. One bar of signal. Sometimes.` · Floor message (§30.4): `* "hole ahead" — xX_AFK_Xx. Rated: 47.` · Con doors: `* "FURNATION CON '14 — REGISTRATION →". There are claw marks on the doors.` / `* On the inside.` |
+| **R1a** | **Registration** (v3.2) | 0:30 | The first room of the Ruins: the Con's abandoned badge pickup. Dim, empty, quiet music. **No NPCs, no encounters.** A single pink petal by the far door. | Badge box: `* Unclaimed badges, 2014. Nobody came back for them.` · Rules board: `* CON RULES: 1. No yiffing in the hallways. 2. Please. 3. We mean it.` · Escalator: `* Out of order since 2014. The "temporarily" sign is laminated.` · Lost and found: `* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)` (Floofy's, §6.5) · Petal: `* A pink petal. It's warm.` |
+| **R1b** | **Panel Hall** (v3.2) | 0:30 | A hallway of closed panel rooms. **No NPCs, no encounters.** Faint music leaks from the door at the end ("Your Best Floof"); the petals become a trail that leads to it. The last quiet moment before the lair, with a save point. | **Save:** `* The muffled thump of music behind a door fills you with DETERMINATION. Mostly.` · Panel doors: `* "Fursuit Maintenance 101". CANCELLED (smell).` · `* "Explaining Your Fursona to Your Parents". FULL.` · `* "Gamers: Are They Real?". 4 PM, 2014. The room is still booked.` · Petal trail: `* The petals lead to the door at the end.` / `* (You've played enough games to know what that means.)` · Lair door: `* "HEADLESS LOUNGE — SUITERS ONLY". Someone taped "FLOOFY'S" over it.` |
+| **R2** | **Floofy's lair: the Headless Lounge** (v3.2) | 2:30 | The Con's old fursuiters' lounge, turned into Floofy's **boss lair** even though it's a first encounter. Walls of flowers, fairy lights, a heart-shaped beanbag, a velvet rope, a pink neon sign `GOOD VIBES ONLY`, a vanity mirror ringed with bulbs, a plush "throne" and a **rack of empty fursuit heads** staring at the door (a first hint of the Mascot, §19.7). Full scene in **§19.0**: the introduction (spaced out, with choices), the friendship petals, the fake tutorial, the twist, a **real fight with no Spare** (Grub can die), and **Furiell's spray bottle** ending it. The **FUR bar shows up for the first time**, trembling. Furiell introduces herself here. | Head rack: `* Fursuit heads. Dozens. All empty. All facing the door.` · Vanity: `* A vanity mirror. Forty bulbs. Thirty-nine work.` · Neon: `* "GOOD VIBES ONLY". It hums. Everything in here hums.` · Beanbag: `* Heart-shaped. Still warm.` / `* You decide not to sit on it.` · Velvet rope: `* VIP. Very Important Plushies.` (after the fight; the room is examinable only once Floofy is gone) |
+| **R3** | **Ruins Entrance** | 0:30 | Furiell leads Grub in by the hand (she took it in R2): `Welcome to your new home, pup! uwu ...Do you like bwankets? I have forty.` She doesn't let go. Double staircase, banners `FurNation Con '14 — Welcome!` and, underneath, `Deodorant is NOT optional`. A pile of Dorito bags (crunch!). | **Save:** `* The distant hum of dial-up internet fills you with DETERMINATION.` |
 | **R4** | **RGB Switches** (v3.1) | 0:45 | The room's light comes from a giant **RGB keyboard** on the wall: 5 keys in a row, each one a color channel, and pressing a key toggles it **and its two neighbors** (Lights Out). The room's color is the mix of the lit keys. Furiell wants it **pink**: `Make it pink, hun! Pink is for hugs! uwu` Grub knows this one: `* (You've done this a thousand times. In the RGB app.)` Tuned to take 2–3 presses; no flashing lights. A note: `Not this one. — Ruins Administration (not Furiell)`. | Sign: `* "Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob."` |
-| **R5** | **Fursuit Dummy** (v3.1) | 0:45 | Battle tutorial against a **coat rack wearing a friend's spare fursuit**, to **The Bass Shake** (§18.1). Teaches ACTs and **Accept Hug**: `You can always accept a hug, pup! It's the fastest way to make fwiends~` (plants the love-bombing). | — |
+| **R5** | **Fursuit Dummy** (v3.1; v3.2: plain dummy) | 0:30 | Battle tutorial against a **coat rack wearing a friend's spare fursuit** (§18.1). v3.2: a plain, harmless dummy like Undertale's; The Bass Shake moved to Floofy (§19.0). Teaches ACTs and **Accept Hug**: `You can always accept a hug, pup! It's the fastest way to make fwiends~` (plants the love-bombing). | — |
 | **R6** | **Cable Maze** | 0:20 | Network cables that shock you. Furiell holds Grub's "hand" and guides him. `* Her paw is very soft. Suspiciously soft.` `* (Good stitching.)` `* (She has not let go since R3.)` | — |
 | **R7** | **Long Hallway** | 0:30 | Independence test; Grub gets the **CELL** (a flip phone with paw stickers). Behind the pillar, Furiell's tail sticks out. `* (You can see her tail. She can see you seeing her tail.)` | — |
 | **R8** | **Notices, CRT and Art Show** | 0:40 | Encounters (budget: 1). **Toy Laser Pointer** behind the CRT. | Notice: `* NOTICE FROM RUINS ADMINISTRATION: Please do not shed in the ventilation shafts. Violators will be banned from the Minecraft server.` · CRT: `* A blue screen of death. The error message is in Comic Sans.` · Art Show 18+ curtain: see §10.1. · Banner over the curtain (v3): `* A BAD DRAGON banner hangs over the curtain. You keep respecting the curtain.` · Art supply table (v3): **`White Glue`** (§20.1). · Art Show table: `* A bid sheet. Highest bid: 400G. For a drawing of a "very tired raccoon". You don't ask.` |
@@ -691,7 +713,7 @@ Same path until the conversion (which can happen in any area from R3 on). After 
 | **S5b** | **Librarby** | opt. | The "official" (gamer) history of the war and the Seven Moderators. | `* "A History of the Great Yiff War." Chapter 1: "Free Hugs." Chapter 2: "No." Chapter 3: "Ratio." Chapter 4: "Begone."` · `* "The Seven Moderators: A Biography." Every page is a screenshot of someone getting ratioed.` · `* "Mt. Dew: A Geological Survey." 40% cans. 30% nacho dust. 30% "do not ask".` |
 | **S5c** | **The skeletons' house** | opt. | Papyrus's room: **12 cardboard fursuit prototypes** on a rack. Sans's room: a swirl of body pillows; a box labeled `study materials`. | Rack: `* Fursona v1 through v12. All skeletons. All cardboard. All rejected.` · Box: `* "Study materials". Taped shut. Twice.` · Papyrus's PC: `* Followers: 3. Following: 1,204.` |
 | **S6** | **Fog + Papyrus's fight** | 1:45 | Fight (§19.3). Afterward: `* Papyrus gives you his phone number. And his stream key. By accident.` | **Save:** `* The hum of the town's single shared router fills you with DETERMINATION.` |
-| **S7** | **Exit** | 0:15 | Floofy in the snow: `Six SOULs in the castle, idiot. Guess who's lucky number seven?` | — |
+| **S7** | **Exit** | 0:15 | Floofy in the snow: `Six SOULs in the castle, idiot. Guess who's lucky number seven?` v3.2: a snow machine hisses behind him and he jumps (`EEP!`), the spray-bottle callback (§30.1). | — |
 
 **Saves:** entrance `* The crunch of styrofoam snow fills you with DETERMINATION.` · town `* The sight of 47 people sharing one Wi-Fi password on a fridge fills you with DETERMINATION.`
 
@@ -707,7 +729,7 @@ Same path until the conversion (which can happen in any area from R3 on). After 
 | :--- | :--- | :---: | :--- | :--- |
 | **W1** | **Entrance + Sharkdyne** | 0:45 | Sharkdyne, on a high rock, fires a **DM harpoon** (`hey :3`) that just misses. Grub hides in the "tall grass": **a clothesline of drying fursuits**. | **Save:** `* The sound of dripping and a distant "rawr" fill you with DETERMINATION.` · Clothesline: `* Fursuits, drying. One of them is still warm. You move on.` |
 | **W2** | **Repost Flowers** | 1:00 | Flowers that repeat the last thing said near them. One has Barky's voice: `"...one more match, mom, I'm almost at prestige..."`; another: `"...brb..."`. **Layer 5.** `* (Why would a wolf say that?)` | `* (You whisper "cringe" into the flower.) * It reposts "cringe". 0 likes.` |
-| **W3** | **Commission Queue Room** | 0:30 | Wishing Room parody: the ceiling crystals are **open commissions**, "waiting on the artist since 2016." Encounters (budget: 2). Optional **Mad Daki**. | `* "Long ago, people would whisper their commissions to the ceiling... and the ceiling would say 'ETA 6-8 weeks'."` · Trash can: **`Phone Camera`** (§20.2): `* Someone threw away a phone. The camera still works. Dangerous.` |
+| **W3** | **Commission Queue Room** | 0:30 | Wishing Room parody: the ceiling crystals are **open commissions**, "waiting on the artist since 2016." Encounters (budget: 2). Optional **Mad Daki**. | `* "Long ago, people would whisper their commissions to the ceiling... and the ceiling would say 'ETA 6-8 weeks'."` · Trash can: **`Phone Camera`** (§20.2): `* Someone threw away a phone. The camera still works. Dangerous.` · Jar (v3.2): `* A jar labeled "FURRY BATH WATER". Limited edition.` / `* It's from the waterfall. You know what the waterfall is made of.` (sets up the bath water gag, §30.1) |
 | **W4** | **Uwu-mie Village** | 0:45 | Shop and chatter (optional). `hOI!!! i'm uwu-mie!!!` | Statue: `* An uwu-mie statue. Its face says "uwu". Its eyes say "help".` |
 | **W5** | **Chase bridge** | 0:30 | Sharkdyne gives chase, firing DMs in lines (overworld dodging). | — |
 | **W6** | **Sharkdyne's fight** | 2:00 | Speech: `For twelve years we've been stuck down here, smelling each other!` Fight (§19.4). | **Save:** `* The humidity of a thousand fursuits fills you with DETERMINATION.` |
@@ -752,12 +774,14 @@ Encounters between H1 and H2 (budget: 1): Overclockin, Tsundere-Bot.
 | 1 | `* "Twelve years ago we ran the biggest con on the internet. Now we run a 47-person group chat. Same energy."` | `+1` · `F` |
 | 2 | `* "We only wanted to share. We shared a lot. At 3 AM. On their forums. ...In hindsight."` | `ratio (affectionate)` |
 | 3 | `* "They came with cameras. We came with hugs. One of those goes viral better."` | `F` · `F` · `F` |
-| 3b (v3) | `* "Funny thing about the gamers. They used to be human." / "Then they won. Then they closed the curtains."` | `goblin mode (derogatory)` · `F` |
+| 3b (v3.3) | `* "Funny thing about the gamers. They used to be human." / "Then they won. Then they went goblin mode."` | `goblin mode (literal)` · `F` |
 | 4 | `* "A gamer fell. We named them Chara. They called me 'boomer'. I think it is a compliment."` | `it is not` |
 | 5 | `* "Azzy went up with a sign that said FREE HUGS. They filmed him. 10 million views."` | (no comments. Someone turned them off.) |
 | 6 | `* "He did not fight back. Not once. I am so proud of him. I am so angry."` | `F` |
 | 7 | `* "PINNED: Every gamer who falls will be WELCOMED. With hugs. With blankets. Whether they like it or not."` | Furiell: `"Whether they like it or NOT?"` · King: `"It is a figure of speech."` · Furiell: `"It is not."` |
 | 8 | `* "Six SOULs. One to go. I have bought a very large jar."` | `+1` · `that jar is huge` |
+
+**The mural (v3.3)**, on the wall between posts 3 and 3b: the furry version of the war (§4.1). Examine: `* A mural of the Great Yiff War. The gamers are green, with pointy ears and fangs.` / `* (You check your hands. Still pale.)` · 2nd time: `* (The goblins have better posture than you.)`
 
 ---
 
@@ -810,13 +834,9 @@ See the Furry ending (§22.3).
 - **v3.1:** a **coat rack** where Furiell keeps a **friend's spare fursuit** ("for when she visits").
 - HP 15 · AT 0 · DF −5 · EXP 0 · G 0
 - Check: `* FURSUIT DUMMY - ATK 0 DEF -5` / `* A friend's spare fursuit on a coat rack. The friend wants it back.`
-- **The Bass Shake:** the battle music is **"The Bass" (巴巴贝斯) by DJ Wave**, and the fight copies the meme's editing: it **cuts between two shots**, exactly on the track's tempo changes.
-  - **Fast beat, close-up:** a hard cut to a zoomed-in **close-up of the fursuit head**, shaking side to side very fast, ears and fur tufts whipping, staring right at you. Bullets: quick little bursts of fluff thrown left and right on every beat (`bass_fluff_fast`).
-  - **Slow rhythm, wide shot:** a cut back to the **whole coat rack**, swaying slowly side to side in a little dance. Bullets: slow, wide waves of fluff that sweep across the box (`bass_fluff_slow`).
-  - **Turn structure (2026-10-18, see `docs/fights/R5_fursuit_dummy_bass_shake.md`):** the menu turn stays on the wide shot and the calm part; each enemy turn plays the meme loop three times, and **each accelerated part (close-up) is one burst of fluff on its notes: 3 bursts per turn**, with no bullets in the wide-shot gaps (this replaces `bass_fluff_slow`).
-  - The cuts and the bullets come from a **beat map** of the track, timed by the music's playback position, so they land on the music. On each drop, the battle box gives a short shake. Only the choreography is referenced: the meme's original character (Milk, by SeanWayStudio) is **not** used.
-- ACTs: `Talk` (`* It doesn't seem much for conversation. It's busy vibing.`) · `Shake to the Bass` ×3 (you join in; on the 3rd, Furiell joins too and it's spareable) · `Turn It Down` (it stops shaking, sad; spareable) · `Accept Hug` (`* You hug the dummy. It's damp. FUR +10.`; spares)
-- Furiell's reactions: Shake → she dances (`uwu~ pump the bass, pup!`); Accept Hug → **beaming**; FIGHT → `Hey! That's my fwiend's suit!`; flee → `...that is also a choice.`
+- **v3.2: a plain dummy.** It just stands there and sways a little, like Undertale's. No attacks worth the name (a few slow fluff tufts on its turn, 0 damage, FUR +2). **The Bass Shake moved to Floofy's alternate fight** (§19.0), with its beat map, music and two-shot editing.
+- ACTs: `Talk` (`* It doesn't seem much for conversation.`; spareable) · `Accept Hug` (`* You hug the dummy. It's damp. FUR +10.`; spares) · **`Try It On`** (v3.4): Grub tries on one of the suit's paws, `* Warm. Sticky with something unknown.` 2nd use: `* (You decide not to identify it.)` The biggest FUR hit in the Ruins (**FUR +25** per use); doesn't spare.
+- Furiell's reactions: Talk → happy (`You're a natural, pup! uwu`); Accept Hug → **beaming**; FIGHT → `Hey! That's my fwiend's suit!`; flee → `...that is also a choice.`
 - **Doesn't count** for the toxic track (it's not a monster, §22.0).
 
 #### Froggsona (Froggit)
@@ -936,7 +956,7 @@ See the Furry ending (§22.3).
 - Check: `* WASHUA - ATK 8 DEF 3` / `* The only furry who showers. A living legend.`
 - ACTs: `Shower` → **FUR −10**, spare (`* Washua scrubs you. You feel less fluffy. And more ashamed.`) · `Clean Yourself` → spare
 - Patterns: `soap_bubbles` (green bubbles heal)
-- Bubble: `Hygiene is a lifestyle.` · `Do you know how hard it is down here?`
+- Bubble: `Hygiene is a lifestyle.` · `Do you know how hard it is down here?` · (v3.2) `Do NOT buy the bath water. I know where it comes from.`
 
 #### Uwu-mie (Temmie)
 - HP 5 · AT 1 · DF 1 · EXP 1 · G 1 · FUR +8
@@ -969,16 +989,18 @@ See the Furry ending (§22.3).
 
 ### 18.5 Gamers (Furry route, The Drop act)
 
-> Every gamer here is a **goblin** (§4.1) with gamer gear on top. They are **very hard to hurt** (§8.11): BONK deals very little, and every fight takes more ACTs to end peacefully.
+> Every gamer here is a plain **human** NEET (§4.1) with gamer gear on top. They are **very hard to hurt** (§8.11): BONK deals very little, and every fight takes more ACTs to end peacefully.
 >
 > Gamers don't die: furry Grub's FIGHT is **BONK** (`* Go to horny jail.`) and when a gamer hits zero they go to "horny jail" (a little pink cage that drops in and vanishes). Spared, they **rage-quit**: `* [name] has left the game.` Their bullets deal **SHAME** (FLUFF damage).
 
 #### Discord Simp
 - HP 40 · AT 8 · DF 2
 - Check: `* DISCORD SIMP - ATK 8 DEF 2` / `* Has said "hey" to every girl in 400 servers. Zero replies.`
-- ACTs: `Leave on Read` ×2 → he crumbles → spare · `Reply "hey"` → he gets euphoric and skips his attack
-- Patterns: `hey_spam` (bullets "hey", "hey", "hey?", "u there?", "ok whatever"), `discord_kitten_request`
-- Bubble: `hey` · `hey` · `hey?` · `wow ok`
+- ACTs: `Leave on Read` ×2 → he crumbles → spare · `Reply "hey"` → he gets euphoric and skips his attack · `Ask About the Jar` (v3.2) → `I bought it in 2019. Sold out in three seconds. I've never opened it. It's an INVESTMENT.` (skips his attack)
+- Patterns: `hey_spam` (bullets "hey", "hey", "hey?", "u there?", "ok whatever"), `discord_kitten_request`, `bath_water_jars` (v3.2: sealed jars lobbed in arcs, each with a tiny `GGBW` label; they never open)
+- Bubble: `hey` · `hey` · `hey?` · `wow ok` · (v3.2) `don't touch the jar`
+- On rage-quit (v3.2) he leaves the jar behind: key item **`Gamer Girl Bath Water`** (§20.4).
+- **Rule (D-21):** the product name only. No seller is named or drawn, and nothing in the jar is shown (§2.2).
 
 #### Gacha Whale
 - HP 60 · AT 10 · DF 4
@@ -1029,6 +1051,69 @@ See the Furry ending (§22.3).
 ---
 
 ## 19. Bosses
+
+### 19.0 Floofy — first encounter (Ruins, R2, v3.2)
+
+The Flowey encounter, rebuilt: a lair, a slow introduction, a short fake tutorial, the twist, then **a real fight the player can lose**, ended by Furiell. It replaces the v3.1 version (one dialog box with five lines, a red flash and Furiell cancelling the fight before it started).
+
+**Why he's angry.** Grub fell on him and his flower bed at the Landing (R1). Floofy doesn't mention it at first; it comes out as he loses the mask.
+
+**Step 1: the lair.** Grub walks in. Floofy has his back to the door, fixing his flower crown at the vanity. A step into the room plays a thought, `* (Fairy lights. A velvet rope. A rack of fursuit heads, staring at you.)`, then a trigger near the center starts the scene. Each numbered beat below is **its own text box**, separated by an action (a turn, a pause, a sound, a move), so the scene is spaced out rather than read in one go.
+
+1. Floofy, still facing the mirror: `Forty-seven flowers.` / `Hand-picked. Alphabetized.`
+2. `And then something fell out of the SKY and sat on ALL of them.`
+3. He turns around. A pause, a sparkle sound. `...` / `Oh. My. FLUFF.`
+4. He dashes up to Grub (pounce sound, a little hop): `*pounces on you* OwO what's this?`
+5. `Howdy~! I'm FLOOFY! Floofy the Floof!`
+6. `I was waiting for someone to fall for me, sweetie.` / `...Not ON me. But I'll allow it~`
+   - **Choice 1:** `Sorry.` → `Aww~ manners! On a GAMER! I'm keeping you.` · `You broke my fall.` (**annoys him**) → `...` / `Ha. Ha. Ha.` / `Cute.` (one petal on his crown wilts for a frame, then perks back up)
+7. `You're SO new here. Golly, you must be so confused~` / `Someone ought to teach you how things work down here!` / `I guess little old me will have to do.`
+
+**Step 2: the fake tutorial (in the battle box).** The encounter opens like Undertale's: the soul in the box, Floofy above it.
+
+8. `See that heart? That's your SOUL. The very culmination of your being!` / `It starts off weak. Pasty. Unloved. Very... basement.`
+9. `You want to make it stronger, right? Down here, we share our little... "friendship petals"~` / `Everyone has one. Some people have, like, nine.`
+   - **Choice 2:** `...Okay.` → `That's the spirit!` · `Those are NOT petals.` (**annoys him**) → `...` / `You KNOW what these are?` / `* (You don't know what these are.)` / `* (...You know exactly what these are.)` (a hint at Grub's secret, §10.1) / Floofy: `Oh, you're FUN.`
+10. The petals appear around him, buzzing. Box text: `* The petals are vibrating.` / `* (Why are they vibrating.)`
+11. `Here, we're all about good vibes~` / `...and soon you'll be FILLED with them.`
+12. `Move around! Catch as many as you can!` A few petals drift slowly at the soul.
+   - **Dodged once:** `Hey, buddy. You missed them.` / `Let's try again, okay?` (slower petals).
+   - **Dodged twice** (**annoys him**): the sinister face flashes for a frame. `Is this a JOKE, darling? Are you ALLERGIC?` / `RUN. INTO. THE. PETALS!!!` Then the petals come fast and can't be dodged.
+13. **The hit:** a real chunk of HP (about 25%), FUR +20, and **the FUR bar shows up for the first time, trembling** (FUR-003). Floofy's petals wilt black and his smile gets too wide.
+
+**Step 3: the twist.** The cute music stops.
+
+14. `You idiot.` (a long pause)
+15. `You really thought I'd share my petals for FREE?` / `In this world, it's YIFF or be YIFFED.`
+16. `Why would ANYONE pass up a chance like this?` / `A gamer. Fresh. Unfluffed.`
+17. `You fell on me. You crushed my babies.` / `And now? You're going to STAY.`
+18. **Petal fight:** `Now hold still, darling~ you'd make a FABULOUS fox. Let's get you fluffy!` → "Your Best Floof" comes back slowed and detuned, and the real fight starts.
+    **Bass Shake fight** (Floofy annoyed enough, below): `...` / `You think you're FUNNY?` / `I've been nice. I've been SO nice.` / `Now hold still, darling~ ...no. Actually? Don't.` / `DANCE.` → a record scratch, "The Bass" drops, hard cut to the close-up.
+
+**Which fight.** Annoyance counter `ruins.floofy.annoyed`, +1 for each: poking him 3+ times at the Landing (R1; he felt it: `Also? I felt the poking.` gets added to beat 2), choice 1 `You broke my fall.`, choice 2 `Those are NOT petals.`, dodging the tutorial petals twice. **At 2 or more, the Bass Shake fight**; otherwise the petal fight. The choice is saved (`ruins.floofy.fight`: 1 petals, 2 bass) and a retry uses the same one.
+
+**The fight (both versions).**
+- **Can't be hurt:** FIGHT → `* You hit him. Your fist sinks into the fursuit padding.` / `* It's too soft to hurt.` Floofy: `Aww~ was that a hug?`
+- **No Spare:** MERCY has no `Spare`/`Yiff` entry; `Flee` → `* The petals block the exit.`
+- ACTs: `Check` (`* FLOOFY - ATK 5 DEF ???` / `* Floral. Zesty. Pure thorns.`) · `Plead` (`* You say you're not into it.` → `That's what they ALL say~`) · `Compliment the Crown` (`* You say the crown is nice.` → `I KNOW.`). None of them end the fight.
+- **Not designed to be easy.** Six enemy turns that get harder, 3–4 damage per hit against 20 HP, FUR on every petal. A first-time player should take real damage, and **dying here is allowed**: HP 0 → WELCOME HOME (§23.1), back to the R1b save. FUR caps at 99 in R2 (no Mirror before R3, §8.5).
+- **Petal fight patterns** (flowers and petals, all thorns): `friendship_petals` (buzzing rose-toy petals that drift and wobble, FUR +8) · `thorn_vines` (thorny rose vines sweeping in from the sides) · `petal_storm` (a spiral of spiked petals) · `pollen_cloud` (a cloud that lingers in the box: `* You're allergic. To him.`) · `bouquet_burst` (a bouquet in the middle bursts into thorns) · `pounce_ring` (last turn only: a ring of petals that closes in).
+- **Bass Shake fight** (what used to be the Fursuit Dummy's, §18.1): battle music **"The Bass" (巴巴贝斯) by DJ Wave**, edited like the meme, **cutting between two shots** on the track's tempo changes. **Close-up** on the fast beat: Floofy's head shaking side to side very fast, flower crown and ear tufts whipping, petals flying off, staring right at you; one **burst of thorny petals per accelerated part, 3 bursts per turn**, on the notes, a new expression each burst (smug, wink, pout, smirk). **Wide shot** on the calm part: Floofy swaying with his bouquet tail, no bullets. The menu turn stays on the wide shot and the calm bar; each enemy turn plays the loop three times; the box gives a short shake on each drop. Cuts and bullets come from the beat map timed by the music's playback position (`docs/fights/R5_fursuit_dummy_bass_shake.md`, to be renamed for R2). Only the choreography is referenced: the meme's original character (Milk, by SeanWayStudio) is **not** used. The last turn ends in the `pounce_ring` too, on the beat.
+
+**Step 4: Furiell.** After the 6th enemy turn starts, the `pounce_ring` closes in (`Hold STILL~`). Just before it lands: **`*SPRITZ*`**. A burst of water hits Floofy and the ring scatters. (In the Bass Shake fight the spray lands on the drop and the track scratches to a stop.)
+
+19. Floofy, soaked, fur flattened, crown dripping: `EEP!!`
+20. `My BLOWOUT!` / `This isn't over, gamer! I know where you SAVE~!` (he remembers saves, §6.5)
+21. The battle ends. In the overworld, Floofy bolts and dives into a flowerbed; it shakes; one petal floats down.
+22. Furiell, spray bottle in paw: `Bad flower! BAD! *spritz* *spritz* Shoo!`
+23. `Oh, you poor pup... did that nasty weed get you all fluffy? >w<`
+24. `* Furiell spritzes you.` → full HP, **FUR back to 0** → `It's just water and a little lavender, hun. It washes the fluff right off~`
+25. `*grabs your hand* Hewwo~! I'm Furiell! I take care of the Ruins.` / `You must be new. You smell new. uwu` / `...You're not even green. The murals lied~` (v3.3, the goblin myth, §4.1)
+26. `Come, come! I'll show you around.` / `...I'm not letting go, by the way.` She walks Grub to R3 by the hand. `ruins.floofy.met = 1`.
+
+**Retry after a WELCOME HOME.** Floofy is already facing the door, sinister: `Back already, darling? I KNEW you'd miss me~` / `Same SOUL. Same smell. Let's go again.` Straight to the fight (steps 1–3 are skipped), same version as before. After the 3rd WELCOME HOME here, Furiell arrives one turn earlier per extra death, down to 3 turns (tuning, QA-020). WELCOME HOME line for this fight: `Floofy? ...Oh dear. Stay determined, [NAME]. And stay away from his petals.`
+
+**Later.** He's gone for now. He comes back in R13 (`Still smell like lavender. Gross.` opens each of his R13 variants), S7, H2 (the log) and N5.
 
 ### 19.1 Barky the Alpha Wolf (Ruins, mini-boss)
 - HP 30 · AT 4 · DF 2 · EXP 20 · G 10 (already in `barky.json`)
@@ -1106,7 +1191,7 @@ See the Furry ending (§22.3).
 
 ### 19.7 Floofy (Gamer route finale) — "The Mascot"
 - Floofy absorbs the 6 souls and becomes **The Mascot**: a giant, grotesque convention mascot stitched together from **hundreds of fursuit heads, plushies and tails**, with a CRT TV in its chest showing Floofy's face, winking, and a garden's worth of flowers growing out of the seams. Cute horror, **nothing explicit**: the horror is the sheer number of plastic eyes.
-- **Mechanics:** `File Load` (Flowey's save/load parody: he undoes your last turn, the screen flashes `File Loaded`), `plush_tentacles`, `glitter_cannon`, `owo_missiles`, `bouquet_mouth` (a giant flower opens in its chest and unleashes a torrent of "friendship petals").
+- **Mechanics:** `File Load` (Flowey's save/load parody: he undoes your last turn, the screen flashes `File Loaded`), `plush_tentacles`, `glitter_cannon`, `owo_missiles`, `bouquet_mouth` (a giant flower opens in its chest and unleashes a torrent of buzzing "friendship petals", the R2 callback, §19.0).
 - **The 6 souls rebel (1:1):** each phase adds an ACT named after a converted ex-gamer (`Barky`, `Napstablurk`, `Jerry`, `Musk-ron`, `Vtuber-en`, `Mettapaw`). Using it shows the soul remembering who they were, heals Grub and weakens the Mascot:
   - `* xX_BarkSc0p3_Xx remembers his first headshot. It shields you.`
   - `* xX_AFK_Xx remembers being away from keyboard. It finally logs in for you.`
@@ -1225,6 +1310,7 @@ Parody of Portal's GLaDOS and the Weighted Companion Cube. **Barky is the compan
 | `CELL` | R7. |
 | `Your Old SOUL (Jar)` | Furry route: handed to the King. |
 | `Tide Pod` (v3) | R1: the pod Grub slipped on. Use: `* You consider it.` / `* The narrator stops you.` Can't be eaten or thrown away. Furiell reacts to it in R11. |
+| `Gamer Girl Bath Water` (v3.2) | Furry route, left behind by the Discord Simp (X2). A sealed jar, a closed object (§2.3 rule 3). Examine: `* A sealed jar. "Gamer Girl Bath Water."` / `* Sold out on the surface in three seconds.` Use: `* You consider opening it.` / `* Some things should stay sealed.` Can be thrown away: `* You throw it away. Somewhere, a man feels a disturbance.` |
 | `Bones` (v3) | Papyrus's drop when killed (lore only). Use: `* Bury the bones?` → `* You bury them. Nothing happens. You feel worse.` |
 
 ### 20.5 Shops
@@ -1261,7 +1347,7 @@ A flip phone with paw stickers (R7). At the top: the **squad clock**. A visible 
 | `Puzzle Help` | `Make it pink, hun! Pink is always right. uwu` |
 | `About Yourself` | `I used to run a convention. Now I run a household of one. Soon two!` |
 | `Call Her "Mod"` | `...Did you just call me "Mod"? Oh my. Would you like to be pinned? To the fridge?` |
-| `Send a Meme` | `Is this... a goblin? Is this you? I'm printing it.` |
+| `Send a Meme` | `A goblin! Is this how gamers see themselves? The murals were RIGHT. I'm printing it.` |
 
 ### 21.3 Automatic messages
 - **Squad:** R1 `SQUAD QUEUES IN 30:00. bring dew` · 15:00 `15 MIN WHERE ARE U` · 5:00 `5 min. we're queuing without u. no cap.` · zero: §8.7.
@@ -1356,7 +1442,7 @@ A flip phone with paw stickers (R7). At the top: the **squad clock**. A visible 
   - `Get up, [NAME]. Your squad is counting on you. ...Probably.`
   - `You cannot give up just yet... You have not even picked a species.`
   - `Your SOUL said no, [NAME]. ...This time.`
-- **Variations:** against Barky: `...welcome to the pack? no? ok.` · 3+ WELCOME HOMEs (`meta.ever_transformed ≥ 3`): `...Again? Keep the tail, [NAME].` · Toxic route: no voice.
+- **Variations:** against Floofy (R2, v3.2): `Floofy? ...Oh dear. Stay determined, [NAME]. And stay away from his petals.` · against Barky: `...welcome to the pack? no? ok.` · 3+ WELCOME HOMEs (`meta.ever_transformed ≥ 3`): `...Again? Keep the tail, [NAME].` · Toxic route: no voice.
 - **On continue:** back to the save; FUR returns to the saved value.
 
 ### 23.2 GAMER OVER (Furry route)
@@ -1400,7 +1486,7 @@ A flip phone with paw stickers (R7). At the top: the **squad clock**. A visible 
 - **Colorful overworld** with a limited palette per area; **battles in white on black**, color only for special moments.
 - **Nothing visually explicit** (§2.2). The ceiling is: **mosaic censor blocks**, closed objects (tab, folder, curtain), stink clouds, and the narrator refusing to describe.
 - **Every character has adult proportions.** No childlike designs.
-- **Readable silhouette:** every character has one element that reads in solid black (Grub's big goblin ears, Barky's ears, Sans's body pillow, Papyrus's cardboard ears, Sharkdyne's harpoon, Asgrr's lanyards, Mettapaw's ring light, Floofy's flower crown and rose, the Moderator's chair-mech).
+- **Readable silhouette:** every character has one element that reads in solid black (Grub's blanket hood with the headset bumps, Barky's ears, Sans's body pillow, Papyrus's cardboard ears, Sharkdyne's harpoon, Asgrr's lanyards, Mettapaw's ring light, Floofy's flower crown and rose, the Moderator's chair-mech).
 - **The stench is visible:** wavy green (cartoon) lines coming off fursuits, Bottle Guy, the Moderator and the Barrier.
 - **"Fluff" particles** in the air in every area (2–4 per screen, `#FFB3E6` and `#FFD27F`), denser the higher the FUR.
 - **All text inside art is English** (banners, signs, screens, posters).
@@ -1422,6 +1508,7 @@ A flip phone with paw stickers (R7). At the top: the **squad clock**. A visible 
 | Battle | Background |
 | :--- | :--- |
 | Common | 1:1 green grid (turns red with kills, §8.9; pink on the Furry route, §8.10) |
+| Floofy (R2, v3.2) | Petal fight: black with a faint string of fairy lights along the top. Bass Shake fight: plain black, so the two-shot cuts read (§19.0). |
 | Barky | Grid + a fluorescent tube at the top |
 | Furiell | Plain black |
 | Papyrus | Grid + scrolling chat panel (3 names) |
@@ -1462,12 +1549,12 @@ Standard: 4 directions × 2–4 walk frames; magenta `#FF00FF` as transparency (
 
 | File | What | Frame size | Prio. | Suggested search |
 | :--- | :--- | :---: | :---: | :--- |
-| `sprites/ow/grub_goblin.png` | Normal Grub, an OSRS-style goblin (replaces the legacy `pepe_frog.png` / `pepe_char.bmp`) | ~20×30 | P0 | "goblin rpg sprite" |
-| `sprites/ow/grub_ears.png` · `_paws` · `_tail` · `_snout` | FUR stages | ~20×30 | P1 | the goblin + fur overlays |
-| `sprites/ow/grub_pawsome.png` | Final furry form (goblin-wolf) | ~22×32 | P2 | "wolf rpg sprite" in green |
-| `sprites/ow/furiell.png` | Big goat in an apron | ~26×40 | P0 | "goat npc sprite", "Toriel-like" |
+| `sprites/ow/grub.png` | Normal Grub, the human gamer NEET in his blanket hood with the headset over it (§10.1, v3.3). Replaces the legacy `pepe_frog.png` / `pepe_char.bmp` and the v3 `grub_goblin.png`. Needs a **lying** pose from frame 0 for the Landing (R1). | ~20×30 | P0 | "rpg character hoodie sprite", "blanket cape sprite" |
+| `sprites/ow/grub_ears.png` · `_paws` · `_tail` · `_snout` | FUR stages (§8.4; ears poke through the hood) | ~20×30 | P1 | the human + fur overlays |
+| `sprites/ow/grub_pawsome.png` | Final furry form (mint-green wolf, blanket cape, headset) | ~22×32 | P2 | "wolf rpg sprite" in mint green |
+| `sprites/ow/furiell.png` | Big goat in an apron. v3.2: + the spray bottle on her apron, a `spritz` pose (arm out, bottle aimed) and a walk holding Grub's hand | ~26×40 | P0 | "goat npc sprite", "Toriel-like" |
 | `sprites/ow/barky.png` | Edgy wolf in a jacket | ~22×32 | P0 | "wolf character top-down" |
-| `sprites/ow/floofy.png` | Pastel flower fox (idle, talking, pounce, sinister, diving into a bush) | ~22×32 | P0 | "fox npc sprite" + flowers |
+| `sprites/ow/floofy.png` | Pastel flower fox. v3.2 frames: **knocked out** in the flower bed (one still frame: flat on his back, spiral eyes, bent crown; R1, v3.4) · back turned at the vanity · turning around · talking · pounce · sinister (wilted black petals, too-wide smile) · **soaked** (`EEP!!`: fur flattened, crown dripping) · diving into a flowerbed | ~22×32 | P0 | "fox npc sprite" + flowers |
 | `sprites/ow/sans.png` | Short skeleton in a hoodie + body pillow | ~22×30 | P1 | "skeleton rpg sprite" |
 | `sprites/ow/papyrus.png` | Tall skeleton in a cardboard fursuit | ~24×44 | P1 | "tall skeleton sprite" |
 | `sprites/ow/sharkdyne.png` · `_overheated` | Armored shark; passed-out version | ~26×40 | P1 | "shark warrior sprite" |
@@ -1478,7 +1565,7 @@ Standard: 4 directions × 2–4 walk frames; magenta `#FF00FF` as transparency (
 | `sprites/ow/grillby.png` · `bunny.png` · `innkeeper.png` · `washua.png` · `uwumie.png` | NPCs | ~20×30 | P1–P2 | "fantasy npc pack" |
 | `sprites/ow/townsfolk_01..04.png` | Generic Snowdinha furries | ~20×30 | P1 | "animal villager sprites" |
 | `sprites/ow/moderator_mecha.png` | Gamer in the chair-mech | ~40×40 | P2 | "mech chair" / any small mech |
-| `sprites/ow/raider_01..03.png` | Gamer goblins with headsets | ~20×30 | P2 | "goblin npc sprite" |
+| `sprites/ow/raider_01..03.png` | Human gamers with headsets and hoodies | ~20×30 | P2 | "rpg npc hoodie sprite" |
 | `sprites/ow/barky_follow.png` | Barky following Grub into R9a | ~22×32 | P1 | — |
 | `sprites/ow/fuzzbear_*.png` | Empty animatronic fursuits (H1a) | ~24×36 | P1 | "animatronic sprite" |
 
@@ -1486,7 +1573,8 @@ Standard: 4 directions × 2–4 walk frames; magenta `#FF00FF` as transparency (
 
 | File | Frames | Size | Prio. |
 | :--- | :--- | :---: | :---: |
-| `sprites/battle/fursuit_dummy.png` | wide shot: the coat rack swaying, one step per beat (3f + hurt) · close-up: the fursuit head shaking, 4 expressions (smug, wink, pout, smirk) × lean L/R (its own larger sprite; spec in `docs/fights/R5_fursuit_dummy_bass_shake.md`) | ~40×60 / ~120×120 | P0 |
+| `sprites/battle/fursuit_dummy.png` | v3.2: a plain dummy, idle sway 2f + hurt. The close-up (`fursuit_dummy_close`) is retired: The Bass Shake moved to Floofy | ~40×60 | P0 |
+| `sprites/battle/floofy.png` (v3.2) | idle, talking, sinister (wilted petals), soaked (`EEP!!`). **Bass Shake:** wide shot swaying with the bouquet tail (3f, one step per beat) and a separate **close-up** sprite of his head shaking, 4 expressions (smug, wink, pout, smirk) × lean L/R, flower crown and ear tufts whipping (spec carried over from the dummy's) | ~50×70 / ~120×120 | P0 |
 | `sprites/battle/froggsona.png` · `shysona.png` · `modsmal.png` · `lurkeye.png` · `reply_guy.png` · `grasstoid.png` | idle 2f + hurt | 30–60 | P0 |
 | `sprites/battle/barky.png` | idle 2f, hurt, blush, spared | ~60×80 | P0 (placeholder already exists) |
 | `sprites/battle/furiell.png` | idle, hurt, sad | ~80×110 | P0 |
@@ -1498,7 +1586,7 @@ Standard: 4 directions × 2–4 walk frames; magenta `#FF00FF` as transparency (
 | `sprites/battle/overclockin.png` · `tsundere_bot.png` | idle 2f | 40–60 | P1 |
 | `sprites/battle/mettapaw.png` | idle, host pose | ~70×110 | P1 |
 | `sprites/battle/asgrr.png` | idle, kneeling | ~120×140 | P1 |
-| `sprites/battle/floofy.png` · `the_mascot.png` | idle/talking; giant mascot in parts | 40 / ~300×240 | P1 |
+| `sprites/battle/the_mascot.png` | giant mascot in parts (Floofy's R2 sprite is listed above, P0) | ~300×240 | P1 |
 | `sprites/battle/sans.png` | idle, asleep | ~50×60 | P2 |
 | `sprites/battle/discord_simp.png` · `gacha_whale.png` · `bottle_guy.png` · `apology_streamer.png` · `dragon_excuse_guy.png` | idle 2f | 40–70 | P2 |
 | `sprites/battle/moderator.png` | mech, phases | ~140×140 | P2 |
@@ -1509,7 +1597,7 @@ White, 8–16 px native unless noted. **P0:** the Ruins ones.
 
 | File | Patterns |
 | :--- | :--- |
-| `bullets/petal.png` · `pollen.png` · `rose_vine.png` · `heart_pellet.png` | friendship petals and Floofy's attacks; `hug_ring` |
+| `bullets/petal.png` · `pollen.png` · `rose_vine.png` · `heart_pellet.png` | friendship petals and Floofy's attacks; `hug_ring`. **v3.2:** `petal.png` becomes the **rose-shaped toy** (reads as a rose at 12 px, 2-frame buzz wobble, §2.1) + `petal_bullet.png` (the capsule "bullet"); `rose_vine.png` gets **thorns**; new `thorn_petal.png` (spiked petal for `petal_storm`/`bouquet_burst`/the Bass Shake bursts) and `water_burst.png` (Furiell's spritz, ~24) |
 | `bullets/uwu_letters.png` | `uwu_rain` |
 | `bullets/can.png` | `dew_bounce` |
 | `bullets/sound_ring.png` | `howl_wave`, `seen_rings` |
@@ -1530,7 +1618,7 @@ White, 8–16 px native unless noted. **P0:** the Ruins ones.
 | File | Expressions | Prio. |
 | :--- | :--- | :---: |
 | `portraits/furiell_*.png` | neutral, happy, sad, angry, flustered (tab closed) | P0 |
-| `portraits/floofy_*.png` | cute, smug, pouncing, sinister (wilted petals) | P0 |
+| `portraits/floofy_*.png` | cute, smug, pouncing, sinister (wilted petals), v3.2: soaked (`EEP!!`) | P0 |
 | `portraits/barky_*.png` | edgy, embarrassed, happy | P0 |
 | `portraits/sans_*.png` · `papyrus_*.png` | neutral, winking / shouting, happy, sad | P1 |
 | `portraits/sharkdyne_*.png` · `alphys_*.png` · `asgrr_*.png` | 3 each | P1 |
@@ -1539,7 +1627,12 @@ White, 8–16 px native unless noted. **P0:** the Ruins ones.
 ### 26.6 Tilesets and props (20×20 native tiles)
 | File | Content | Prio. | Suggested search |
 | :--- | :--- | :---: | :--- |
-| `tiles/ruins.png` | purple stone, carpet, walls, stairs, doors | P0 | "dungeon tileset purple" |
+| `tiles/ruins.png` | purple stone, carpet, walls, stairs, doors. v3.2: **doorways are cut into the wall** (the arch's top on the wall cap, its sill on the floor line), never an arch standing on the floor in front of the wall | P0 | "dungeon tileset purple" |
+| `tiles/landing.png` (v3.2) | R1: cave floor and walls of compacted cans with the nacho stratum in layers, trash, the light beam, the Con's sunken front doors (a facade, not a wall tile) | P0 | "cave tileset" |
+| `props/ruins_landing_flowerbed.png` (v3.4; replaces `ruins_plush_pile.png`) · `tiles/landing_bg.png` | R1: Floofy's flower bed in the pool of daylight, with Floofy in it and empty (the fox-shaped dent); the Landing itself is one painted room like Undertale's first: a dark quiet cave, the Con doors at the north | P0 | — |
+| `props/ruins_reg_*.png` (v3.2) | R1a: badge desk, box of badges, rules board, dead escalator, lost-and-found bin | P0 | "rpg furniture pack" |
+| `props/ruins_panel_*.png` · `props/petal_trail.png` (v3.2) | R1b: closed panel doors with schedule signs, the petal trail decals, the taped `FLOOFY'S` sign | P0 | — |
+| `props/ruins_lounge_*.png` (v3.2) | R2 Headless Lounge: flower walls, fairy lights, heart beanbag, velvet rope, `GOOD VIBES ONLY` neon, bulb vanity, plush throne, the fursuit-head rack, the flowerbed Floofy dives into | P0 | — |
 | `props/ruins_*.png` | Con banner, booth, 18+ curtain, CRT, notice board, switch, Dorito bowl, wrapper pile, cables (spikes), pillar, fireplace, armchair, bed, closet, mirror, bookshelf | P0 | "rpg furniture pack" |
 | `props/save_point.png` | 4-point spinning star (4–8 frames) + bottle | P0 | "save star sprite" |
 | `tiles/snowdinha.png` · `props/snow_*.png` | snow, plastic pine, sentry station, Grub lamp, CAPTCHA tiles, stream alerts, houses, LAN House, signs | P1 | "snow town tileset" |
@@ -1557,7 +1650,7 @@ White, 8–16 px native unless noted. **P0:** the Ruins ones.
 | File | What | Prio. |
 | :--- | :--- | :---: |
 | `ui/buttons.png` | FIGHT, ACT, ITEM, MERCY (normal/selected) + **BONK** | P0 |
-| `ui/souls.png` | red, blue, green, yellow, pink plush, goblin-eared | P0 |
+| `ui/souls.png` | red, blue, green, yellow, pink plush, headset (`GRUB` easter egg) | P0 |
 | `ui/hud.png` | HP bar, FUR overlay, mirrored FLUFF bar | P0 |
 | `ui/dialog_box.png` · `ui/portrait_frame.png` | dialogue box | P0 |
 | `ui/target.png` · `ui/attack_bar.png` · `ui/slash.png` · `ui/bonk.png` | FIGHT | P0 |
@@ -1574,7 +1667,7 @@ White, 8–16 px native unless noted. **P0:** the Ruins ones.
 | File | What | Prio. |
 | :--- | :--- | :---: |
 | `img/lore4.bmp` (redraw) | "BEGONE!" **without a real face** | P0 |
-| `img/lore1.bmp` · `lore2.bmp` · `lore7.bmp` · `lore8.bmp` (redraw) | v3: human gamers on cards 1–2, goblin Grub on card 8, the Tide Pod slip on card 9 | P0 |
+| `img/lore1.bmp` · `lore2.bmp` · `lore7.bmp` · `lore8.bmp` (redraw) | v3.3: human gamers on cards 1–2, human Grub on cards 8 and 10, a pale foot and the Tide Pod on card 9 (the v3 cards drew goblin Grub: redraw) | P0 |
 | `img/lore5b.bmp` | The Seven Moderators in silhouette (optional) | P2 |
 | `bg/mirror.png` | Mirror scene | P2 |
 | `bg/ending_gamer.png` · `_clean.png` · `_toxic.png` · `_furry_*.png` | ending cards | P1–P2 |
@@ -1598,7 +1691,8 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | :--- | :--- | :--- | :--- | :---: |
 | **Once Upon a Dew** | Intro, title | Once Upon a Time | Main theme; **Grub's leitmotif** (4 descending notes). | P0 |
 | **Start Menu** | Name screen | Start Menu | Music box. | P0 |
-| **Your Best Floof** | Floofy | Your Best Friend | Cute and fake, pitch bend at the end. | P0 |
+| **Your Best Floof** | Floofy | Your Best Friend | Cute and fake, pitch bend at the end. v3.2: also leaks through the R1b door; after the twist it returns slowed and detuned for the petal fight. | P0 |
+| **The Bass** (巴巴贝斯, DJ Wave) (v3.2) | Floofy's Bass Shake fight (R2) | — | The meme loop (`assets/music/bass_shake.ogg`, 130 BPM), moved from the Fursuit Dummy. Logged under D-04. | P0 |
 | **Fluffy Mother** | Furiell (overworld/house) | Fallen Down / Home | Lullaby. | P0 |
 | **Ruins (lo-fi beats to get lost to)** | Ruins | Ruins | Lo-fi chiptune with vinyl crackle. | P0 |
 | **Enemy Approaching (Fluffier)** | Common battles | Enemy Approaching | Upbeat, with 8-bit "uwu"s. | P0 |
@@ -1637,6 +1731,10 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | Plush squeak | Hug, Accept Hug | P0 |
 | *Pomf* | FUR stage, WELCOME HOME | P0 |
 | Off-key howl | Barky | P0 |
+| Spray bottle *spritz* (v3.2) | Furiell shoos Floofy and heals Grub (R2); replaces the glitter spray | P0 |
+| Soft buzz (v3.2) | Friendship petals; the "rose" in Floofy's paw (R1) | P0 |
+| Record scratch (v3.2) | Bass Shake fight: the drop in, and the stop when Furiell sprays | P0 |
+| Body thud on Floofy and the flowers (v3.4) | Grub landing on Floofy (intro card 10 into R1) | P1 |
 | Tab closing (fast mouse clicks) | Furiell/Alphys closing a tab | P1 |
 | MLG air horn | Sans | P1 |
 | Notification (*ding*) | CELL, spare | P1 |
@@ -1646,7 +1744,7 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | Cell door | Horny jail | P2 |
 | Voice chat "user left" | Gamer rage-quit | P2 |
 | Bottle bouncing | Bottle Guy | P2 |
-| RuneScape goblin sounds | Grub's hurt, death and effort grunts | P0 |
+| Low-effort human grunts | Grub's hurt, death and effort grunts (v3.3; were RuneScape goblin sounds) | P0 |
 | LoL announcer lines | `FIRST BLOOD`, `DOUBLE`/`TRIPLE`/`QUADRA`/`PENTA KILL`, `ACE` (§8.9) | P2 |
 | CoD hitmarker | Every hit on the Toxic HUD | P2 |
 | MW2 killstreak voice | Care Package, Predator Missile, `TACTICAL NUKE INCOMING` | P2 |
@@ -1665,7 +1763,11 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 
 | Flag | Type | Meaning |
 | :--- | :---: | :--- |
-| `ruins.floofy.met` | bool | Floofy's tutorial seen |
+| `ruins.floofy.met` | bool | Floofy's R2 encounter finished (Furiell arrived, v3.2) |
+| `ruins.floofy.pokes` | int | v3.2: times Grub examined the knocked-out Floofy at the Landing (R1) |
+| `ruins.floofy.annoyed` | int | v3.2: 0–4, how much Grub annoyed Floofy before the twist (§19.0); ≥ 2 picks the Bass Shake fight |
+| `ruins.floofy.fight` | int | v3.2: 0 not chosen · 1 petal fight · 2 Bass Shake fight (locked at the first twist, reused on retry) |
+| `ruins.floofy.deaths` | int | v3.2: WELCOME HOMEs in Floofy's fight (skips the intro on retry; tunes Furiell's arrival) |
 | `ruins.dummy.result` | int | 0 none · 1 talk · 2 fight · 3 flee · 4 spare · 5 hug |
 | `ruins.cell.given` | bool | Got the CELL |
 | `ruins.laser.taken` | bool | Took the Toy Laser Pointer |
@@ -1712,7 +1814,7 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 
 | Undertale | nUndertale |
 | :--- | :--- |
-| Frisk | Grub the Fallen Gamer (a goblin) |
+| Frisk | Grub the Fallen Gamer (a human NEET) |
 | Humans vs Monsters | Gamers vs Furries |
 | The War | The Great Yiff War / The Shaming |
 | The Barrier | The Barrier (bedroom stench + expired deodorant) |
@@ -1738,6 +1840,8 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | Spear of Justice (spears) | DMs (`hey :3`) |
 | Butterscotch Pie | Glitter Pop-Tart |
 | Golden Flowers | Participation trophies |
+| The bed of golden flowers Frisk lands on | Floofy, asleep in his own bed of flowers (R1, v3.4) |
+| Flowey's first encounter | Floofy's lair and fight (R2, a real fight, §19.0) · Toriel's fireball → Furiell's spray bottle |
 | "kill or be killed" | "YIFF or be YIFFED" |
 | friendliness pellets | friendship petals |
 | GAME OVER | WELCOME HOME (and GAMER OVER on the Furry route) |
@@ -1771,6 +1875,10 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | **The killfeed remembers** (v3) | Ex-gamers' old gamertags in the Toxic killfeed | The six jars (N3) |
 | **Grub-shaped lamp** | S1 | Empty booth in the Con Center: `* A lamp shaped like you. Another one. Who is making these?` |
 | **Fursuit Head in the closet** | R11 | Queen Furiell's epilogue call |
+| **Floofy's "rose"** (v3.2) | R1: it buzzes in his paw (`* (You decide it's a phone.)`) | R2: the friendship petals vibrate; the Mascot's `bouquet_mouth` (§19.7) |
+| **You fell on him** (v3.2) | R1: the flower bed and the knocked-out Floofy (v3.4) | R2: `You crushed my babies.`; R13: the fox-shaped dent is still in the flowers if Grub walks back |
+| **The spray bottle** (v3.2) | R2: Furiell shoos Floofy like a cat | Floofy flinches at any spray sound afterwards (S7: a snow machine hisses, `EEP!`) |
+| **The bath water** (v3.2) | W3: the `FURRY BATH WATER` jar (it's the waterfall) | X2: the Discord Simp's sealed `Gamer Girl Bath Water`, kept "as an investment" |
 
 ### 30.2 Name easter eggs (adding to the ROTEIRO §6 table)
 | Name | Reaction |
@@ -1779,12 +1887,93 @@ See §27 (soundtrack and SFX). Music placeholders: any CC0/CC-BY chiptune with t
 | `BARKY` | `* AWOO! ...wait. That's MY name.` |
 | `FLOOFY` | `* No shame. Respect. ...Not allowed, though.` |
 | `AZZY` | Screen darkens; `* ...` (name allowed) |
-| `GRUB` / `GOBLIN` | Goblin-eared red soul |
+| `GRUB` | `* Back to the basement.` + a red soul wearing a tiny headset (v3.3) |
+| `GOBLIN` | `* Goblin mode is a lifestyle. Not a species.` (v3.3, no special soul) |
 | `PEPE` | `* Not that frog.` (allowed, no special soul) |
 | `YIFF` | `* The narrator refuses.` (not allowed) |
 | `OWO` | `* What's this?` |
 
 > Review in the ROTEIRO table: `TORIEL` → `Furiell has already trademarked this name.` stays; replace any reference to "Midwest FurFest" with FurNation Con '14.
+
+**More reactions (v3.2).** Names are letters only and at most 6 characters, so this list only holds known strings of **0 to 6 letters**. Matching ignores case. Reactions show on the confirm screen in the usual `* ` style, unless marked as a tag. **Not allowed** means the name can't be confirmed. Rules: no real people (streamers, YouTubers and their handles are out, e.g. no `NINJA`), no hate-adjacent memes (§2.2), and no reaction spoils a reveal layer (§7).
+
+| Length / name | Reaction | Allowed | Why it's here |
+| :--- | :--- | :---: | :--- |
+| *(empty)* | `* You have to be someone. Even online.` (Done does nothing) | no | 0 letters |
+| any 1 letter | `* You call that a gamer? Saving characters?` (ROTEIRO, kept) | yes | 1 letter |
+| `AA`…`AAAAAA` (one letter repeated) | `* Not very creative... Did your keyboard jam?` (ROTEIRO, kept) | yes | repeated letters |
+| `GG` | `* Good game. It hasn't started.` | yes | gamer |
+| `EZ` | `* Nothing about this will be ez.` | yes | gamer |
+| `GGEZ` | `* Your squad has reported you.` | yes | gamer |
+| `NOOB` | `* Honest. Refreshing.` | yes | gamer |
+| `PWNED` | `* It's 2007 again. Somewhere.` | yes | gamer |
+| `AFK` | `* xX_AFK_Xx says hi. ...Eventually.` | yes | jar #2 (Napstablurk) |
+| `BRB` | `* Jerry would like a word. Later.` | yes | jar #3 |
+| `LAG` | `* It wasn't the lag.` | yes | gamer |
+| `NERF` | `* Furiell's hugs can't be nerfed.` | yes | gamer |
+| `BUFF` | `* Musk-ron approves.` | yes | Wetfall |
+| `CARRY` | `* Barky would like that title.` | yes | the Clean Run line |
+| `SMURF` | `* A new account. Same skill issue.` | yes | gamer |
+| `SKILL` | `* Issue.` | yes | Sk1llIssue |
+| `RATIO` | `* TheRatioKing has entered the chat.` | yes | a Moderator |
+| `TOXIC` | `* Noted.` | yes | the Toxic route, without saying so |
+| `NPC` | `* You were always an NPC. Now it's official.` | yes | internet |
+| `NEET` | `* Not in Education, Employment or Training. Just in the Underground.` | yes | the protagonist (v3.3) |
+| `MOD` · `MODS` | `* The mods are asleep. Post fursonas.` | yes | the "mods are asleep" meme |
+| `ADMIN` | `* RUINS ADMINISTRATION would like a word. (Not Furiell.)` | yes | R4 note gag |
+| `HACKER` | `* Reported.` | yes | gamer |
+| `SQUAD` | `* They're queuing without you.` | yes | the squad clock |
+| `VBUCKS` | `* Furiell doesn't take V-Bucks. She takes hugs.` | yes | Fortnite |
+| `BUS` | `* Thank the bus driver.` | yes | Fortnite meme |
+| `DEW` | `* Code Red. Baja Blast. Warm.` | yes | brand |
+| `DORITO` | `* The nacho stratum welcomes you.` | yes | brand, Mt. Dew |
+| `TIDE` | `* Forbidden candy.` | yes | the Tide Pod |
+| `BOTTLE` | `* (You don't want to talk about it.)` | yes | Grub's item |
+| `MOM` | `* dinner's ready` (lowercase, her texting style) | yes | Grub's Mom |
+| `SHOWER` | `* Washua would like to meet you.` | yes | Wetfall |
+| `GRASS` | `* You should.` | yes | touch grass, Grasstoid |
+| `SIMP` | `* hey` / `* hey?` | yes | Discord Simp |
+| `BRUH` | `* bruh.` | yes | internet |
+| `OOF` | `* Your squad felt that.` | yes | internet |
+| `NOCAP` | `* That's cap.` | yes | internet |
+| `RIZZ` | `* Furiell finds you very rizzable. She won't elaborate.` | yes | internet |
+| `SIGMA` | `* Grindset detected. The Underground runs on cozy-set.` | yes | internet |
+| `BASED` | `* Based on what?` | yes | internet |
+| `CRINGE` | `* Furiell's favorite word. Say it to her face.` | yes | Furiell's kink |
+| `REDDIT` | `* Thanks for the gold, kind stranger.` | yes | brand |
+| `TWITCH` | `* Papyrus would love a follow. He has 3 viewers.` | yes | Papyrus |
+| `STEAM` | `* 400 games in your library. You've played 6.` | yes | brand |
+| `FURRY` | `* Already? That was fast.` | yes | furry |
+| `UWU` | `* The Ruins already like you.` | yes | furry |
+| `RAWR` | `* x3 *nuzzles* ...the narrator apologizes.` | yes | the copypasta Floofy quotes |
+| `NUZZLE` | `* *nuzzles* ...No.` | yes | the same copypasta |
+| `POUNCE` | `* That's Floofy's move. He'll want royalties.` | yes | Floofy |
+| `AWOO` | `* Somewhere, Barky howls. He doesn't know why.` | yes | Barky |
+| `MURR` | `* The narrator pretends not to know that one.` | yes | furry slang |
+| `MUSK` | `* Wetfall will love you. Bring a towel.` | yes | Wetfall |
+| `FLUFF` | `* That's the other bar.` | yes | the Furry route |
+| `PAWS` | `* Soft. Deadly. Mostly soft.` | yes | the `Your Paws` item |
+| `ZIPPER` | `* There is no zipper.` / `* (There is a zipper.)` | yes | running gag |
+| `CON` | `* Registration closed in 2014.` | yes | R1a |
+| `FOX` | `* Floofy would like you to keep that energy.` | yes | Floofy |
+| `WOLF` | `* Barky feels threatened.` | yes | Barky |
+| `GOAT` | `* Two goats in the Underground just looked up.` | yes | Furiell, Asgrr |
+| `SHARK` | `* Sharkdyne has sent you a DM.` | yes | Sharkdyne |
+| `HORNY` | `* BONK.` / `* Go to horny jail.` | no | horny jail |
+| `BONK` | `* Not yet.` | yes | the Furry route's FIGHT |
+| `YIFFED` | `* The narrator still refuses.` | no | follows `YIFF` |
+| `ASRIEL` | `* That name belongs to someone else down here.` | yes | Undertale (Azzy) |
+| `UNDYNE` | `* Get your own harpoon.` | yes | Undertale (Sharkdyne) |
+| `ALPHYS` | `* ...is typing` | yes | Undertale (Alphys) |
+| `TEMMIE` | `* hOI!! ...uwu-mie is calling.` | yes | Undertale (Uwu-mie) |
+| `NAPSTA` | `* oh... you're using my name... it's okay... i wasn't using it...` | yes | Napstablurk |
+| `ASGRR` | `* The King would like his name back. He's not mad. He's never mad.` | no | the King |
+| `GLADOS` | `* Please step into the Emergency Fursuit Incinerator.` | yes | Portal (R9a) |
+| `CUBE` | `* It has a paw print on it. Someone hugs it.` | yes | R9a |
+| `CAKE` | `* The cake is being prepared. For other test subjects.` | yes | R9a |
+
+- `GRUB` / `GOBLIN` are decided (v3.3, D-16): `GRUB` gets the headset soul, `GOBLIN` the lifestyle line, both in the table above. The current `GRUB` text in `data/names.json` (`Feels good man.`) and `GOBLIN`/`FROG` (`Feels froggy man.`) are frog-meme leftovers and break §2.2; replace them.
+- `SKYRIM` and the other ROTEIRO entries stay as they are.
 
 ### 30.3 Optional secrets
 - Toy Laser Pointer behind the CRT (R8).
@@ -1808,7 +1997,7 @@ The six gamers who fell before Grub left **messages on the floor** in the Dark S
 | H2 | `amazing content ahead` | `ClipFarmer_99` | 1.2K |
 
 - **Bloodstains:** near the spot where each of the six converted, a stain on the floor. Examine it: a translucent ghost replays that gamer's last seconds as a gamer, accepting a hug and the red soul leaving the chest. No text, only the narrator: `* (They said yes.)`
-- **Toxic route:** new messages appear, unsigned, written by the furries about Grub: `goblin ahead, therefore run` · `liar ahead` · `don't hug it`.
+- **Toxic route:** new messages appear, unsigned, written by the furries about Grub: `goblin ahead, therefore run` (they decide the mural was right after all) · `liar ahead` · `don't hug it`.
 - **Furry route:** one new message, near the Con Center: `try hugging` — signed with Grub's own name. `* (You don't remember writing this.)`
 
 ---
@@ -1840,8 +2029,12 @@ The six gamers who fell before Grub left **messages on the floor** in the Dark S
 | **Horny jail** | Where gamers beaten by BONK go. |
 | **Touch grass** | An actual cure (and −10 FUR). |
 | **"But nobody logged in."** | An emptied area on the Toxic route. |
-| **Grub** | The protagonist, a gamer goblin (v3). |
-| **The Goblinization / goblin mode** | How the winning gamers turned into goblins over 12 years (§4.1). |
+| **Grub** | The protagonist: a human gamer NEET in a blanket hood (v3.3, §10.1; a goblin in v3). |
+| **NEET** | Not in Education, Employment or Training: every surface gamer since the war (§4.1). |
+| **The Landing** | R1 (v3.2): the bottom of the Rift, outside the Con, where Grub falls on Floofy. |
+| **Headless Lounge** | R2 (v3.2): the Con's fursuiters' lounge, now Floofy's lair. |
+| **Friendship petals** | Floofy's bullets: flower-shaped adult toys, drawn only as tiny bullets (§2.1). |
+| **Goblin mode / the goblin myth** | Gamer slang for the post-war NEET life; the furries took it literally and draw gamers as goblins (§4.1). Was "the Goblinization" in v3. |
 | **WELCOME HOME** | The game over screen (v3; was FURRY OVER). |
 | **Toxic HUD** | Other games' interfaces leaking in as kills rise: hitsplats, killfeed, announcer, killstreaks (§8.9). |
 | **Killstreak** | MW2 rewards: Care Package (4), Predator Missile (5), Tactical Nuke (25). |
