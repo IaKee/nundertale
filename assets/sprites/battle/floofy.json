@@ -1,13 +1,14 @@
 {
   "image": "floofy.png",
   "cell": [
-    50,
-    60
+    100,
+    120
   ],
   "origin": [
-    25,
-    60
+    50,
+    120
   ],
+  "density": 2,
   "anims": {
     "idle": {
       "row": 0,

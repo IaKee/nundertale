@@ -23,6 +23,7 @@ struct SpriteSheetDef {
     int cellH = 0;
     int originX = 0;
     int originY = 0;
+    int density = 1;  // texels per native pixel: 2 = a finer sheet drawn at half the usual scale (Floofy's battle art)
     std::map<std::string, SpriteAnim> anims;
 };
 
@@ -65,6 +66,8 @@ public:
                 } else if (key == "origin") {
                     if (!parsePair(parsed.originX, parsed.originY)) return false;
                     hasOrigin = true;
+                } else if (key == "density") {
+                    if (!parseInteger(parsed.density) || parsed.density < 1) return false;
                 } else if (key == "anims") {
                     if (!parseAnimations(parsed.anims)) return false;
                     hasAnims = true;

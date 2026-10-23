@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -60,7 +61,7 @@ inline void drawSprite(Texture2D texture, const SpriteSheetDef& sheet,
                        const std::string& animation, float time, Vector2 position,
                        float scale = 2.0f, Color tint = WHITE) {
     const FrameRect frame = frameRect(sheet, animation, time);
-    const float drawScale = scale > 0.0f ? scale : 1.0f;
+    const float drawScale = (scale > 0.0f ? scale : 1.0f) / static_cast<float>(std::max(1, sheet.density));
     const Rectangle source = {
         static_cast<float>(frame.x),
         static_cast<float>(frame.y),
