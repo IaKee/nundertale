@@ -1,0 +1,380 @@
+Apontamentos que encontrei para o jogo, melhorias possiveis e necessidade de correção:
+
+1. INTRODUÇÃO / CARDS DE LORE (LoreScene)
+  1.1. Card 2 (assets/img/lore/card02.png | card02_tall.png): O persona/personagem principal em destaque à esquerda (lobo furry gigante segurando um osso não esta com um design muito legal, recomendo gerar novamente essa cena. O gamer representado esta usando uma armadura tambem, o que ficou um pouco estranho e desconexo
+  1.2. Card 6 (assets/img/lore/card06.png | card06_tall.png): O texto do Card 6 aparece estático de uma vez só, sem o efeito de digitação (typewriter) presente nos demais cards da introdução. Esse card em especifico pode ter um estilo diferente de typewriter exclusivo.
+  1.3. Card 9 (assets/img/lore/card09.png | card09_tall.png — Ref: i2_lorecard.png): A perna e a panturrilha de Grub estao musculosas demais, esse personagem deveria ser mais magrinho, depravado de sol. Esse sprite precisa ser re-gerado. Deve ficar claro que o personagem está escorregando em um tide pod. Como o que aparece na primeira sala (item 2.1.4)
+
+2. REVISÃO SALA A SALA (RUÍNAS: R1 ATÉ R5)
+  2.1. SALA R1 — THE LANDING (assets/rooms/ruins_fall.json | 640x480 px)
+    2.1.0) Ao inves do personagem principal já aparecer acordando encima do Floofy, poderiamos implementar uma cena pequena do que acontece antes disso: Floofy acordada, personagem principal cai encima dela, deixando ela desacordada, e ficando stunado com a queda em si, a cena acaba com fade para preto, aguarda uns 2 segundos e revela a continuaçao com fade in. Vi que sprites para usarmos dessa forma chegaram a ser criados, mas nunca os utilizamos
+
+    2.1.1) Paleta e Saturação Geral: A sala está saturada demais (roxo vibrante no chão e amarelo/verde muito vivos no canteiro central), perdendo a atmosfera de fundo de abismo subterrâneo. A representaçao da cama de flores ficou legal, mas o restante está vivo demais
+
+    2.1.2) Hierarquia Visual: Objetos Interagíveis vs. Lixo Decorativo de Cenário: Os lixos pintados diretamente no background (pacote marrom à esquerda em x~160, y~240; papel branco amassado à direita em x~490, y~245; detritos nas bordas) possuem o mesmo nível de brilho, saturação e contorno escuro que os objetos interagíveis reais (tide_pod, can_decal). Isso confunde a leitura do jogador sobre o que pode ou não ser examinado.
+    
+    2.1.3) Colisão de Objetos na Sala R1: O jogador atualmente atravessa por cima da Floofy e dos itens do chão como se fossem tapetes sem colisão.
+    
+    2.1.4) Reposicionamento do Tide Pod: Está posicionado em (x: 404, y: 272), sobrepondo a borda direita do canteiro de flores (flower_bed vai de x: 224 até x: 416, y: 212..300). Esse objeto poderia estar mais para perto da porta, em direçao a proxima sala, como se tivesse caido um pouco mais distante do que o jogador em si.
+    
+    2.1.5) Mensagem no Chão (floor_message):"Usa a caixa de texto comum com digitação padrão do jogo mas com um estilo próprio de exibição quando o jogador lê uma floor_message (ex.: texto surgindo em fade-in lento com brilho âmbar/alaranjado e som etéreo/metálico, em vez do typewriter letra-a-letra padrão), reforçando a paródia de mensagens de chão de Dark Souls / Elden Ring. Seria interessante mover mais para perto do canto inferior esquero ou direito da caverna, meio que como um segreso/descoberta de exploraçao
+
+    2.1.6) Incentivo para Retornar da Segunda Sala isso permitiria ao player perceber o sumiço da Floofy da cama de flores - Ao se aproximar da porta norte de R1a ou da caixa de Achados e Perdidos, ouvir um barulho vindo da sala anterior ("* (A muffled thud and a squeaky pawstep echo from the cave behind you...)") ou precisar pegar um item/crachá caído perto do canteiro em R1 para liberar a catraca/porta de R1a, visto que é para ser uma convençao furry, só que em ruinas
+  
+  2.2. SALA R1b — PANEL HALL (assets/rooms/ruins_panelhall.json | 640x480 px)
+    
+    2.2.1) Correção da Trilha de Pétalas (petal_trail): Atualmente a trilha de flores não leva até a sala em que há o encontro com a Floofy, esta só uma linha horizontal de pétalas - Arquivo: assets/props/petal_trail.png (atualmente 96x16 px horizontal). Seria interessante se em futuras apariçoes desse personagem, usassemos a mesma trilha de petalas, mostrando que ela pode ter passado por ali
+  
+  2.3. SALA R2 — HEADLESS LOUNGE (assets/rooms/ruins_floofy.json | 640x480 px) E REESTRUTURAÇÃO DO ENCONTRO INICIAL COM FLOOFY
+    
+    2.3.1) Separação entre o Encontro Inicial (R2) e o Encontro Tardio (Boss / Bass Shake): Atualmente a sala R2 já apresenta uma tentativa de covil completo, mas esta com elementos dispostos de forma estranha, tive uma ideia de versao diferente desse primeiro encontro. A sala R2 inicial deve ter uma composição mais enxuta e focada na armadilha de recepção ("falso tutorial"), preparando o susto inicial, a luta com bass shake em si é movida para outro momento do jogo, esses sprites do lair em si podem ser usados nesse segundo encontro, ao inves de ser logo nesse primeiro.
+    
+    2.3.2) Novo Roteiro do Encontro Inicial de Batalha com Floofy em R2 (Falso Tutorial): A luta em R2 deve ser curta, roteirizada e seguir estritamente esta progressão 
+      
+      2.3.2.1) Floofy recebe o jogador com entusiasmo exagerado zesty ("Here, we're all about good vibes~") e apresenta as "pétalas da amizade" (claramente sex toys temáticos de flores) 
+      
+      2.3.2.2) 1 Projétil: Floofy lança inicialmente APENAS 1 projétil vibratório lento em direção à SOUL do jogador, pedindo para ele "pegar as good vibes", ou algo parecido
+      
+      2.3.2.3) Escalada ao Desviar: Se o jogador desviar do projétil, Floofy demonstra impaciência passivo-agressiva, insiste para que ele pegue, e nas tentativas seguintes AUMENTA progressivamente o número de projéteis vibratórios lançados.
+      
+      2.3.2.4) Projetil enorme, com melhor definiçao de um sex toy de flor em si, do tamanho da caixa de batalha em si, é revelado dramaticamente com fade in, e começa a se mover ~LENTAMENTE~ da esquerda para a direita, claramente inescapavel em direçao a caixa de luta, para nao levar dano o jogador precisa ir para a extremidade direita (Isso precisa de um planejamento melhor, o reveal disso pode ser bem engraçado na entrega da narrativa).
+      
+      2.3.2.5) Antes do projetil enorme vibratorio tomar a caixa de batalha completa, a luta é INTERROMPIDA pela Furiell, a personagem aparece não de forma clara, mas com uma versao alternativa do portrait, em que nao é possivel ver os detalhes faciais, com um borrifador de agua em maos (ver `*spritz* *spritz*` `assets/ui/water_burst.png`) diretamente na Floofy, que fica encharcada, assustada e foge da luta, soltando "EEP!!" ou algo similar. A batalha se encerra e Furiell se apresenta ao jogador do overworld, conduzindo-o para nivel mais interno da convençao.
+    
+  2.4) Refação Obrigatória dos Sprites do Floofy: Overworld — Visão de Costas (`assets/sprites/ow/floofy.png`, linha 7) ficou super ruim, acredito que isso é um sprite que o Gemini fez, e ficou super estranho, nada a ver com a personagem em si, esse personagem de modo geral tem sprites que sairam errados (os que consegui encontrar até agora: os sprites de batalha estao "HD" demais, acredito que foram gerados ou pela ferramenta errada ou com especificaçao errada, não que tenham ficado feios, mas precisam ser refeitos; floofy close, a sheet inteira precisa ser excluida e refeita, ficou completamente fora da especificaçao; floofy wide ficou com baixa qualidade demais, precisa ser excluida e refeita). Alguns foram gerados antes da gente acertar o melhor procedimento para essa geraçao, e acabaram nunca sendo consertados. 
+
+  2.5) Refação dos sprites da furriel em si, o design que foi escolhido para a personagem atualmente esta quase 1:1 com a Toriel do undertale, acredito que essa não é uma boa direçao para deixarmos essa personagem nessa sátira
+
+
+  2.6) SALA R3 — ENTRANCE (assets/rooms/ruins_entrance.json | 880x560 px)
+    
+    2.6.1) Novo Conceito Visual: Convenção Furry Abandonada / Espaço Liminal (Estilo Portal 2) A disposição atual da sala R3 não faz sentido arquitetônico nem conta uma história visual. Essa sala poderia ser o hall principal de um **evento furry que deu errado / convenção abandonada há anos (FurNation Con '14)**, com estética de **espaço liminal degradado pelo tempo** — referência direta às câmaras de teste tomadas pela decadência e abandono no início de **Portal 2**. Recomendo utilizar perda de coloração e baixa saturação, iluminação fria/empoeirada de lâmpadas fluorescentes falhando, queimadas, ou feixes de luz entrando por rachaduras no teto, tapete rasgado, sujeira e vestigios do evento em si.
+    
+    2.6.2) Os sprites que estao sendo usados atualmente não ficaram ruins, e podem ser reutilizados em outros pontos da historia. Mas não aqui nesse ponto em particular
+
+
+  2.7) SALA R4 — SWITCH ROOM (assets/rooms/ruins_switches.json | 640x480 px): Sala R4 Switch room, o puzzle ficou feio, os sprites nao receberam muito carinho, eles poderiam ser teclas que pressionadas alteram a cor do vizinho, esse puzzle pode ser refeito para as teclas ficarem mais parecidas com switches mecanicos de um teclado, os fios melhores desenhados, e a resoluçao do puzzle abre uma porta de deslizar, de baixo para cima, recomendo excluir e refazer os sprites dessa. Contextualmente o puzzle tem que fazer algum sentido de estar ali.
+ 
+3. ALTERAÇÕES SISTÊMICAS, LORE E PERSONAGENS
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1. SISTEMA DUPLO DE BARRAS: BARRA DE VIDA (HP) vs. BARRA DE SANIDADE (SANITY)
+--------------------------------------------------------------------------------
+A) Barra de Vida (HP)
+  - Função: Mede a integridade física/resistência imediata de Grub durante os
+    combates e armadilhas.
+  - Condição de Derrota: Se a Barra de Vida chegar a **0 HP**, o jogador
+    **morre** (Game Over — tela de conversão total / `"WELCOME HOME"`).
+
+B) Barra de Sanidade (São <---> Furry)
+  - Função: Segunda barra persistente visível na HUD/Menu que representa o
+    estado mental e identitário de Grub em um espectro contínuo entre
+    **100% São (Gamer)** em uma ponta e **100% Furry** na outra.
+  - Como varia:
+    * Avança em direção a **Furry** (perda de sanidade / aumento de FUR) de
+      acordo com as ações tomadas na gameplay: aceitar abraços/boops, usar ACTs
+      de submissão/afeto furry, equipar adereços furries, comer comida furry ou
+      ser atingido por ataques de conversão emocional.
+    * Retorna em direção a **São** (recuperação de sanidade) ao usar itens de
+      ancoragem gamer (Duct Tape, Mtn Dew, tocar grama, tomar banho na pia,
+      recusar interações cringe).
+  - Efeitos Diretos da Barra de Sanidade no Jogo:
+    1. **Mutação Visual Progressiva dos Sprites do Jogador (Adereços Furries):**
+       - Conforme a barra se desloca de "São" para "Furry", o sprite de Grub no
+         overworld e nos retratos ganha progressivamente adereços furries:
+         * Estágio 0 (São): Grub humano normal (cobertor laranja + headset).
+         * Estágio 1: Surgimento de **orelhas furries** por cima do headset.
+         * Estágio 2: Orelhas + **luvas de patinhas (paw mitts)** nas mãos.
+         * Estágio 3: Orelhas + patas + **cauda felpuda** saindo sob o cobertor.
+         * Estágio 4 (Quase Furry): Orelhas + patas + cauda + **focinho/máscara
+           de lobo** cobrindo o rosto.
+       - Nota técnica: Conectar imediatamente o spritesheet já existente em
+         `assets/sprites/ow/grub_fur.png` (que contém esses 4 estágios de
+         caminhada) ao valor atual da Barra de Sanidade no código de renderização
+         do player.
+    2. **Controle do Comportamento Padrão dos NPCs:**
+       - Cada NPC do jogo lê o nível atual da Barra de Sanidade para definir seu
+         comportamento padrão, saudação, linhas de diálogo e agressividade:
+         * Se Grub estiver **São**: NPCs furries o tratam como "calouro tímido /
+           no armário" e tentam ativamente convertê-lo; NPCs gamers/céticos
+           confiam nele.
+         * Se Grub estiver **parcialmente Furry**: NPCs furries ficam mais
+           receptivos, elogiam as orelhas/cauda, oferecem descontos ou mudam
+           padrões de ataque em batalha; placas e espelhos mudam suas mensagens
+           ("* Despite everything, it's still you." -> "* Is that a tail?").
+         * Se Grub estiver **muito Furry**: NPCs tratam Grub como um membro
+           veterano da con, desbloqueando interações exclusivas, mas alterando
+           o tom das cenas e o desfecho da rota.
+
+
+--------------------------------------------------------------------------------
+3.2. CONSOLIDAÇÃO DE PERSONAGENS NA DOCUMENTAÇÃO (FLOOFY E FURIELL)
+--------------------------------------------------------------------------------
+A) Floofy (A Raposa Rosa de Fursuit — Falso Tutor & The Mascot)
+  - Papel em R1 / R2 (Introdução):
+    * Aparenta ser uma raposa de pelúcia fofa e acolhedora no canteiro de R1.
+    * Atrai o jogador com uma trilha de pétalas até o Lounge (R2), onde conduz
+      o falso tutorial das "good vibes" (1 projétil vibratório -> mais
+      projéteis se o jogador desviar -> cerco inescapável de projéteis).
+    * É humilhantemente interrompido por uma borrifada de água da Furiell no
+      clímax do tutorial e foge.
+  - Papel mais tarde na história:
+    * Retorna em um encontro posterior em seu verdadeiro território/covil, onde
+      acontece a luta completa com a mecânica **Bass Shake (`floofy_bass`)**,
+      revelando sua faceta mais agressiva e psicodélica.
+    * No clímax da rota neutra/final, atua como o antagonista recorrente que
+      absorve os recursos da convenção (**The Mascot**).
+
+B) Furiell (Guardiã das Ruínas / Coordenadora de Hospitalidade da Con)
+  - Papel em R2 a R22:
+    * Cabra antropomórfica maternal, extremamente acolhedora (love-bombing
+      sufocante), vestindo avental com patinha e carregando um **borrifador de
+      água azul** preso à cintura.
+    * Salva o jogador de Floofy no final da luta de R2 borrifando água no
+      focinho da raposa.
+    * Guia o jogador pelas salas das Ruínas (R3 Entrance, R4 Switch Room, R5
+      Training Room com o Fursuit Dummy, até seu apartamento no final do Ato I),
+      tentando protegê-lo — e ao mesmo tempo convencê-lo a nunca sair da
+      convenção.
+
+
+--------------------------------------------------------------------------------
+3.3. NOVA REFERÊNCIA / EASTER EGG: MERIDIA'S BEACON (SKYRIM)
+--------------------------------------------------------------------------------
+  - Conceito: Inserir uma referência direta à famosa quest/meme de *The Elder
+    Scrolls V: Skyrim* — **Meridia's Beacon** (`"A NEW HAND TOUCHES THE BEACON.
+    LISTEN. HEAR ME AND OBEY..."`).
+  - Sugestão de Implementação:
+    * Local 1 (R1a Registration — `lost_and_found` em x: 480, y: 200) ou em um
+      baú/caixa vasculhável das Ruínas:
+      - Ao interagir uma segunda vez ou vasculhar o fundo da caixa, o jogador
+        encontra um misterioso poliedro branco facetado (parecido com um dado
+        gigante de RPG / d20 branco brilhante).
+      - Assim que o jogador escolhe tocar/pegar o objeto, a tela dá um flash
+        branco rápido, o volume do efeito sonoro sobe propositalmente e a caixa
+        de texto exibe em caixa alta tremendo:
+        `"* A NEW PAW TOUCHES THE BEACON."` (ou `"* A NEW HAND TOUCHES THE
+        BEACON. HEAR ME, GAMER, AND OBEY."`)
+      - O item fica grudado no inventário como `"Strange Beacon"` (ou o jogador
+        o larga imediatamente no chão com `"* (You put it back immediately. Not
+        doing that quest again.)"`, recuperando +2 de Sanidade por recusar a
+        sidequest irritante).
+
+
+================================================================================
+4. AUDITORIA COMPLETA DE SPRITES (O QUE FICOU BOM vs. O QUE PRECISA SER REFEITO)
+================================================================================
+Análise baseada na inspeção visual direta de todos os arquivos PNG ativos do
+projeto e nos relatórios `2026-10-30_round7_art_updates.pdf` e
+`2026-10-30_ruins_intro_to_dummy_map.pdf`.
+
+--------------------------------------------------------------------------------
+4.1. SPRITES QUE PRECISAM SER REFEITOS OU AJUSTADOS (PRIORIDADE ALTA)
+--------------------------------------------------------------------------------
+[CARDS DE LORE]
+1. `assets/img/lore/card02.png` (e `card02_tall.png`)
+   - Motivo: Refazer o persona/personagem furry principal à esquerda conforme
+     definido na Seção 1.1.
+2. `assets/img/lore/card09.png` (e `card09_tall.png`)
+   - Motivo: A perna de Grub está musculosa demais e escura; refazer mais fina/
+     fraca e com tom mais claro (Seção 1.3).
+
+[OVERWORLD — PERSONAGENS]
+3. `assets/sprites/ow/floofy.png` (192x336 px)
+   - Motivo: Os quadros de caminhada de costas (linha 7 da folha) ficaram
+     deformados (parecem uma almofada rosa retangular sem anatomia de raposa).
+     As linhas de frente e perfil (linhas 1 a 5) são aproveitáveis, mas a visão
+     de costas precisa ser totalmente redesenhada.
+4. `assets/sprites/ow/grub_wakeup.png` (192x48 px) — CRÍTICO (RESQUÍCIO LEGADO!)
+   - Motivo: Na inspeção visual, este arquivo ainda mostra o **Goblin verde de
+     orelhas pontudas** da versão antiga (v3.0), enquanto `grub.png` já é o
+     humano NEET de cobertor laranja! Além disso, `ruins_fall.json` e
+     `r1_wake.json` ainda referenciam `pepe_wakeup.png`.
+   - Ação: Atualizar `grub_wakeup.png` para usar os quadros humanos de
+     despertar (que já existem nas linhas 6 e 7 de `assets/sprites/ow/grub.png`)
+     e remover de vez o goblin verde e os arquivos `pepe_*.png`.
+5. `assets/sprites/ow/grub_pawsome.png` (192x192 px) — CRÍTICO (RESQUÍCIO LEGADO!)
+   - Motivo: Na inspeção visual, `grub_pawsome.png` também ainda é um **Goblin
+     verde com armadura**, e não a fursona canônica "Pawsome" (lobo verde-menta
+     antropomórfico com capa-cobertor e headset descrita na LORE.md §10.1).
+   - Ação: Refazer `grub_pawsome.png` como o lobo verde-menta de fursuit para o
+     final de conversão / Game Over.
+
+[BATALHA — PERSONAGENS]
+6. `assets/sprites/battle/floofy.png` e `assets/sprites/battle/floofy_wide.png`
+   - Motivo: O sprite de batalha do Floofy ficou ruim — traço pesado demais
+     (density 2 com contorno duplo grosseiro), proporções que mudam de tamanho
+     entre as linhas da spritesheet e baixa clareza na caixa de combate. Refazer
+     com linha limpa e silhueta expressiva.
+
+[CENÁRIOS E PROPS — SALAS R1 A R4]
+7. `assets/tiles/landing_bg.png` e `assets/props/ruins_landing_flowerbed.png` (R1)
+   - Motivo: Saturação alta demais para a caverna inicial e lixos pintados no
+     chão (`landing_bg.png`) com o mesmo destaque/contorno que objetos
+     interagíveis. Reduzir saturação para quase monocromático e apagar o
+     destaque dos detritos de fundo.
+8. `assets/props/petal_trail.png` (R1a / R1b)
+   - Motivo: Só existe na horizontal (96x16 px), ficando atravessado de lado no
+     corredor vertical de R1b. Criar versão vertical que guie até a porta norte.
+9. `assets/props/ruins_banner_deodorant.png` (R3)
+   - Motivo: Enquanto `ruins_banner_welcome.png` tem texto legível ("WELCOME!")
+     e correntes, `ruins_banner_deodorant.png` é apenas uma faixa lilás borrada
+     sem nenhum texto ou ícone de desodorante legível. Precisa ser refeito
+     dentro da nova estética de convenção abandonada da R3.
+10. `assets/props/ruins_wrapper_pile.png` (R3)
+    - Motivo: O texto diz `"* A pile of Dorito bags. *crunch*"`, mas o sprite
+      atual parece blocos de plástico roxo, azul e verde-limão. Redesenhar como
+      embalagens triangulares/pacotes de Doritos amassados e empoeirados no chão
+      da R3 reformulada.
+11. `assets/props/ruins_rgb_keyboard.png`, `assets/props/ruins_rgb_keys.png` e
+    `assets/props/ruins_cables.png` (R4)
+    - Motivo: Ficaram feios e planos. Refazer como switches mecânicos de
+      teclado com profundidade tátil, fios conectados pelo chão e criar o novo
+      sprite da porta deslizante vertical (`ruins_switch_door.png`).
+
+
+--------------------------------------------------------------------------------
+4.2. SPRITES QUE FICARAM BONS, MAS ESTÃO DESCONECTADOS DO MOTOR (CONECTAR!)
+--------------------------------------------------------------------------------
+Estes sprites já foram desenhados com boa qualidade no Round 7 / Re-check, mas
+o relatório técnico apontou que o jogo ainda não os exibe:
+
+1. `assets/sprites/ow/grub_fur.png` (192x768 px)
+   - Avaliação visual: Ficou ótimo (mostra Grub humano ganhando progressivamente
+     orelhas, patinhas, cauda e máscara de lobo nos 4 estágios).
+   - Pendência: Conectar diretamente à nova **Barra de Sanidade** no código do
+     player.
+2. `assets/portraits/*.png` (26 retratos: `furiell_*`, `floofy_*`, `barky_*`)
+   - Avaliação visual: Os retratos 64x64 (`floofy_happy`, `floofy_soaked`,
+     `floofy_evil`, `furiell_warm`, `furiell_worried`, `barky_smirk`, etc.)
+     ficaram muito expressivos e bem finalizados.
+   - Pendência: A caixa de diálogo (`dialogue.c`) ainda não renderiza retratos;
+     basta conectar o campo de portrait nos diálogos de R2/R3/R5.
+3. Projéteis específicos já desenhados mas sem hook no ataque:
+   - `assets/sprites/bullets/petal_bullet.png`
+   - `assets/bullets/neurotoxin_cloud.png`, `assets/bullets/portal.png`,
+     `assets/bullets/turret.png`
+
+
+--------------------------------------------------------------------------------
+4.3. SPRITES QUE FICARAM BONS (MANTER E REAPROVEITAR)
+--------------------------------------------------------------------------------
+Estes assets estão bem resolvidos visualmente, seguem a LORE v3.3/v3.4 e podem
+ser mantidos como estão (ou reposicionados nas salas reformuladas):
+
+[CARDS DE LORE APROVADOS]
+  - `card01.png` (Dois povos: Gamers e Furries)
+  - `card03.png` (Gamers vitoriosos erguendo teclado e vassoura)
+  - `card04.png` ("BEGONE!" — silhueta limpa após o re-check, sem rosto meme)
+  - `card05.png` (Os Sete Moderadores erguendo teclados/controles no monte)
+  - `card06.png` (Montanha MTn. DEW — arte boa; só falta o efeito typewriter no texto)
+  - `card07.png` (A Fenda / The Rift no chão da caverna)
+  - `card08.png` (Grub re-check com cobertor nos ombros, headset, sacola e celular)
+  - `card10_tall.png` (Panorama vertical da queda de Grub em cima do Floofy)
+
+[OVERWORLD — PERSONAGENS APROVADOS]
+  - `assets/sprites/ow/grub.png` (Grub humano NEET com cobertor laranja, camisa
+    escura, headset com microfone e animações de caminhada/queda nas 7 linhas)
+  - `assets/sprites/ow/furiell.png` (Excelente leitura em 4 direções: óculos,
+    avental com patinha rosa, borrifador azul na cintura e zíper prateado da
+    fursuit visível nas costas)
+  - `assets/sprites/ow/barky.png` (Lobo cinza edgy com mecha verde, jaqueta
+    escura com coleira de spikes e cicatrizes de giz de cera)
+  - `assets/sprites/ow/fursuit_dummy.png` (Manequim de madeira com fursuit
+    branca/rosa montada)
+
+[BATALHA, UI E PROJÉTEIS APROVADOS]
+  - `assets/sprites/battle/furiell.png` (Boas expressões nas 4 linhas: maternal,
+    preocupada, severa com borrifador e ferida)
+  - `assets/sprites/battle/barky.png` (Ótima transição da pose "edgy" para a
+    pose abanando o rabo empolgado quando recebe elogio)
+  - `assets/sprites/battle/fursuit_dummy.png` (Idle, aceno, desabando e pilha de
+    espuma)
+  - `assets/sprites/battle/reply_guy.png` e `assets/sprites/battle/shysona.png`
+    (Inimigos comuns das Ruínas bem caracterizados)
+  - `assets/sprites/battle/floofy_close.png` (Os 4 quadros de close-up em si
+    estão bem desenhados — guardar junto com a luta Bass Shake para o encontro
+    mais tardio com o Floofy)
+  - `assets/ui/buttons.png`, `assets/ui/souls.png`, `assets/ui/slash.png`,
+    `assets/ui/water_burst.png` (Efeito de borrifada de água da Furiell)
+  - Projéteis (`assets/bullets/*.png`): `colon_three.png` (`:3`),
+    `companion_cube.png`, `fluff_ball.png`, `fly.png`, `gel_hammer.png`,
+    `glitter_hand.png`, `grass_blade.png`, `paw_print.png`, `seen_eye.png`,
+    `tear.png`, `petal.png`, `pollen.png`, `rose_vine.png`, `thorn_petal.png`
+
+[PROPS DE CENÁRIO APROVADOS (PARA MANTER OU REAPROVEITAR)]
+  - R1: `props/save_point.png` (Garrafa de Mtn Dew com estrela giratória),
+    `props/tide_pod.png` (bom sprite, apenas afastar da cama de flores e ativar
+    colisão), `props/ruins_con_doors.png`, `props/floor_message.png`.
+  - R1a (Registration): `props/ruins_reg_desk.png`, `props/ruins_reg_badges.png`,
+    `props/ruins_reg_escalator.png` (versão re-check com placa "OUT OF ORDER"
+    limpa), `props/ruins_reg_lostfound.png`, `props/ruins_reg_rules.png`.
+  - R1b (Panel Hall): `props/ruins_panel_door_1.png`, `ruins_panel_door_2.png`,
+    `ruins_panel_door_3.png` (versões re-check com tipografia limpa),
+    `props/ruins_panel_lounge_door.png`.
+  - R2 (Lounge / Encontro Tardio): `props/ruins_lounge_beanbag.png`,
+    `props/ruins_lounge_headrack.png`, `props/ruins_lounge_neon.png`,
+    `props/ruins_lounge_rope.png`, `props/ruins_lounge_throne.png`,
+    `props/ruins_lounge_vanity.png`, `props/ruins_lounge_flowerwall.png`,
+    `props/ruins_lounge_lights.png` (muito bem feitos; separar parte deles para
+    o encontro tardio com o Floofy conforme Seção 2.3).
+  - R3 a R22 (Demais salas das Ruínas): `props/ruins_banner_welcome.png`,
+    `props/ruins_booth.png`, `props/ruins_curtain_18.png`, `props/ruins_crt.png`,
+    `props/ruins_dorito_bowl.png`, `props/ruins_notice_board.png`,
+    `props/ruins_banner_bad_dragon.png`, `props/ruins_apurrture_host.png`,
+    `props/ruins_apurrture_cube.png`, `props/ruins_apurrture_incinerator.png`,
+    `props/ruins_apurrture_panel.png`, `props/ruins_fireplace.png`,
+    `props/ruins_armchair.png`, `props/ruins_bed.png`, `props/ruins_closet.png`,
+    `props/ruins_bookshelf.png`, `props/ruins_mirror.png`,
+    `props/ruins_package.png`.
+
+
+================================================================================
+5. RESUMO DE PRIORIDADES DE EXECUÇÃO (CHECKLIST)
+================================================================================
+[ ] 1. Intro / Lore Cards:
+       - Refazer persona do Card 2 (`card02.png`).
+       - Ativar efeito typewriter no texto do Card 6 (`card06.png`).
+       - Refazer perna do Grub no Card 9 (`card09.png` — mais magra/fraca e clara).
+[ ] 2. Sala R1 (The Landing):
+       - Reduzir saturação geral (`landing_bg.png`, `ruins_landing_flowerbed.png`).
+       - Desbotar e tirar contorno dos lixos não-interagíveis pintados no chão.
+       - Ativar colisão sólida em `floofy`, `tide_pod` e `can_decal`.
+       - Afastar `tide_pod` da cama de flores.
+       - Mover `floor_message` mais para o canto e criar animação de reveal
+         própria para mensagens de chão.
+       - Criar gatilho/incentivo em R1a para o jogador voltar a R1 e notar que
+         Floofy sumiu do canteiro (`flower_dent`).
+[ ] 3. Sala R1b (Panel Hall):
+       - Redesenhar/orientar `petal_trail.png` na vertical levando até a porta
+         norte do Lounge.
+[ ] 4. Sala R2 (Headless Lounge) & Floofy:
+       - Enxugar props de R2 (guardar parte para encontro tardio com Floofy).
+       - Mover luta `floofy_bass` (Bass Shake) para encontro mais tardio na
+         história.
+       - Implementar falso tutorial curto em R2: 1 projétil vibratório -> mais
+         projéteis ao desviar -> anel cercando o player -> interrupção da
+         Furiell com borrifador de água (`*spritz*`) e fuga do Floofy.
+       - Refazer sprite do Floofy de costas no overworld (`sprites/ow/floofy.png`
+         linha 7) e sprite de dentro da luta (`sprites/battle/floofy.png`).
+[ ] 5. Sala R3 (Entrance):
+       - Redesenhar layout e ambientação como convenção furry abandonada /
+         espaço liminal estilo *Portal 2* (baixa saturação, tapete rasgado,
+         sujeira, adereços furries largados pelo chão).
+       - Refazer `ruins_banner_deodorant.png` e `ruins_wrapper_pile.png`.
+[ ] 6. Sala R4 (Switch Room):
+       - Redesenhar teclas RGB como switches mecânicos de teclado gamer que
+         mudam a própria cor e a dos vizinhos.
+       - Redesenhar fios conectando os switches à porta e criar porta deslizante
+         que abre de baixo para cima.
+[ ] 7. Sistemas, Lore e Easter Eggs:
+       - Implementar Barra de Sanidade (São <-> Furry) separada da Barra de Vida
+         (HP = 0 continua matando o player).
+       - Conectar a Barra de Sanidade ao spritesheet `sprites/ow/grub_fur.png`
+         (adição progressiva de adereços furries) e às reações/comportamentos
+         padrão de cada NPC.
+       - Corrigir sprites legados de goblin verde ainda presentes em
+         `grub_wakeup.png` e `grub_pawsome.png`.
+       - Adicionar referência à **Meridia's Beacon** (Skyrim).
+================================================================================
