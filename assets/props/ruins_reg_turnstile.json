@@ -1,0 +1,21 @@
+{
+  "image": "ruins_reg_turnstile.png",
+  "cell": [
+    32,
+    40
+  ],
+  "origin": [
+    16,
+    39
+  ],
+  "anims": {
+    "locked": {
+      "row": 0,
+      "frames": 1
+    },
+    "open": {
+      "row": 1,
+      "frames": 1
+    }
+  }
+}

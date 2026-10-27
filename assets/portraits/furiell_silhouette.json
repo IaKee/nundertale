@@ -1,0 +1,7 @@
+{
+  "image": "furiell_silhouette.png",
+  "cell": [100, 100],
+  "origin": [50, 100],
+  "density": 2,
+  "anims": {"idle": {"row": 0, "frames": 1}}
+}

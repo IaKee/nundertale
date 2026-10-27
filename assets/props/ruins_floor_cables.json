@@ -1,0 +1,33 @@
+{
+  "image": "ruins_floor_cables.png",
+  "cell": [
+    20,
+    20
+  ],
+  "origin": [
+    10,
+    19
+  ],
+  "anims": {
+    "straight_h": {
+      "row": 0,
+      "frames": 1
+    },
+    "straight_v": {
+      "row": 1,
+      "frames": 1
+    },
+    "corner": {
+      "row": 2,
+      "frames": 1
+    },
+    "tee": {
+      "row": 3,
+      "frames": 1
+    },
+    "lit_h": {
+      "row": 4,
+      "frames": 1
+    }
+  }
+}

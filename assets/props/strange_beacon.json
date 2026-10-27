@@ -1,0 +1,18 @@
+{
+  "image": "strange_beacon.png",
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    15
+  ],
+  "anims": {
+    "glow": {
+      "row": 0,
+      "frames": 2,
+      "fps": 3
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "image": "petal_trail_pieces.png",
+  "cell": [
+    16,
+    16
+  ],
+  "origin": [
+    8,
+    8
+  ],
+  "anims": {
+    "p0": {
+      "row": 0,
+      "frames": 1
+    },
+    "p1": {
+      "row": 1,
+      "frames": 1
+    },
+    "p2": {
+      "row": 2,
+      "frames": 1
+    },
+    "p3": {
+      "row": 3,
+      "frames": 1
+    },
+    "p4": {
+      "row": 4,
+      "frames": 1
+    },
+    "p5": {
+      "row": 5,
+      "frames": 1
+    },
+    "p6": {
+      "row": 6,
+      "frames": 1
+    },
+    "p7": {
+      "row": 7,
+      "frames": 1
+    },
+    "p8": {
+      "row": 8,
+      "frames": 1
+    },
+    "p9": {
+      "row": 9,
+      "frames": 1
+    },
+    "p10": {
+      "row": 10,
+      "frames": 1
+    },
+    "p11": {
+      "row": 11,
+      "frames": 1
+    }
+  }
+}

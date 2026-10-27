@@ -66,6 +66,15 @@
       "row": 10,
       "frames": 2,
       "fps": 3
+    },
+    "landing_idle": {
+      "row": 11,
+      "frames": 2,
+      "fps": 2
+    },
+    "landing_impact": {
+      "row": 12,
+      "frames": 1
     }
   }
 }

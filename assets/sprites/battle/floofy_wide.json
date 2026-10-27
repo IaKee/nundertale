@@ -1,12 +1,12 @@
 {
   "image": "floofy_wide.png",
   "cell": [
-    48,
-    64
+    60,
+    80
   ],
   "origin": [
-    24,
-    64
+    30,
+    80
   ],
   "anims": {
     "idle": {

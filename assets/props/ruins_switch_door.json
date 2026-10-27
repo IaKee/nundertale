@@ -1,0 +1,27 @@
+{
+  "image": "ruins_switch_door.png",
+  "cell": [
+    40,
+    60
+  ],
+  "origin": [
+    20,
+    59
+  ],
+  "anims": {
+    "closed": {
+      "row": 0,
+      "frames": 1
+    },
+    "opening": {
+      "row": 0,
+      "frames": 5,
+      "fps": 8,
+      "loop": false
+    },
+    "open": {
+      "row": 1,
+      "frames": 1
+    }
+  }
+}

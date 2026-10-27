@@ -1,9 +1,21 @@
 {
   "image": "ruins_wrapper_pile.png",
-  "cell": [40, 20],
-  "origin": [20, 19],
+  "cell": [
+    55,
+    20
+  ],
+  "origin": [
+    27,
+    19
+  ],
   "anims": {
-    "pile": { "row": 0, "frames": 1 },
-    "bed": { "row": 1, "frames": 1 }
+    "pile": {
+      "row": 0,
+      "frames": 1
+    },
+    "bed": {
+      "row": 1,
+      "frames": 1
+    }
   }
 }

@@ -1,0 +1,18 @@
+{
+  "image": "giant_petal.png",
+  "cell": [
+    80,
+    72
+  ],
+  "origin": [
+    40,
+    36
+  ],
+  "anims": {
+    "buzz": {
+      "row": 0,
+      "frames": 2,
+      "fps": 12
+    }
+  }
+}
