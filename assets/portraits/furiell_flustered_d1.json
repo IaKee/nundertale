@@ -1,0 +1,17 @@
+{
+  "image": "furiell_flustered_d1.png",
+  "cell": [
+    50,
+    50
+  ],
+  "origin": [
+    25,
+    50
+  ],
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1
+    }
+  }
+}
