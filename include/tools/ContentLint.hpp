@@ -3,9 +3,12 @@
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "core/Portraits.hpp"
 
 namespace nundertale {
 
@@ -683,6 +686,36 @@ inline std::vector<LintFinding> lintJson(const std::string& text) {
         return {error};
     }
     return {};
+}
+
+inline std::vector<LintFinding> lintUnknownPortraits(
+    const std::string& text, const std::filesystem::path& repositoryRoot = ".") {
+    std::vector<LintFinding> findings;
+    std::size_t position = 0U;
+    while ((position = text.find("\"portrait\"", position)) != std::string::npos) {
+        const std::size_t colon = text.find(':', position + 10U);
+        const std::size_t quote = colon == std::string::npos
+            ? std::string::npos : text.find('"', colon + 1U);
+        const std::size_t end = quote == std::string::npos
+            ? std::string::npos : text.find('"', quote + 1U);
+        if (end == std::string::npos) break;
+        const std::string id = text.substr(quote + 1U, end - quote - 1U);
+        if (!resolvePortrait(id, repositoryRoot).has_value()) {
+            int line = 1;
+            int col = 1;
+            for (std::size_t index = 0U; index < position; ++index) {
+                if (text[index] == '\n') {
+                    ++line;
+                    col = 1;
+                } else {
+                    ++col;
+                }
+            }
+            findings.push_back({line, col, "unknown-portrait", id});
+        }
+        position = end + 1U;
+    }
+    return findings;
 }
 
 } // namespace nundertale

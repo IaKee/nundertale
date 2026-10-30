@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Aww, what a wonderful hug, pup! uwu~",
         "You're gonna make so many fwiends down here!"
@@ -16,6 +17,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Come along, pup! Follow me to the next room, uwu~"
       ]

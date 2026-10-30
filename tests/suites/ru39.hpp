@@ -54,41 +54,57 @@ inline void suite_ru39() {
     assert(!rgbKeyboardTintIsPink(rgbKeyboardTint(RGB_KEY_START_MASK)));
     assert(rgbKeyboardTintIsPink(rgbKeyboardTint(RGB_KEY_TARGET_MASK)));
 
-    // The generated room contains the five colored keys, their frame, and only the solved barrier contract.
+    // The generated room contains the mechanical keys, mechanical keyboard frame, floor cables, and shutter door.
     TiledMap room;
     assert(loadTiledMapFromFile("data/maps/ruins_switches.json", room));
     std::array<bool, RGB_KEY_COUNT> foundKeys{};
     bool foundFrame = false;
+    bool foundShutter = false;
     int barrierPieces = 0;
+    int floorCables = 0;
     for (const TiledLayer& layer : room.layers) {
         if (layer.type != TiledLayerType::Objects) continue;
         for (const TiledObject& object : layer.objects) {
             assert(object.name != "sw1" && object.name != "sw2" && object.name != "sw3");
+            const std::string sprite = tiledStringProperty(object.properties, "sprite");
+            assert(sprite.find("ruins_rgb_") == std::string::npos);
+            assert(sprite.find("ruins_cables.png") == std::string::npos);
+
             const int key = tiledIntProperty(object.properties, "rgbKey", -1);
             if (key >= 0) {
                 assert(key < RGB_KEY_COUNT);
                 foundKeys[static_cast<std::size_t>(key)] = true;
-                assert(tiledStringProperty(object.properties, "sprite") ==
-                       "assets/props/ruins_rgb_keys.png");
+                assert(sprite == "assets/props/ruins_mech_keys.png");
                 assert(tiledStringProperty(object.properties, "cutscene") == "r4_keys");
                 assert(tiledStringProperty(object.properties, "altAnimIf") ==
                        "ruins.r4.key" + std::to_string(key) + " >= 1");
             }
             if (object.name == "rgb_keyboard_frame") {
                 foundFrame = true;
-                assert(tiledStringProperty(object.properties, "sprite") ==
-                       "assets/props/ruins_rgb_keyboard.png");
+                assert(sprite == "assets/props/ruins_mech_keyboard.png");
             }
-            if (object.name.rfind("gate_", 0) == 0) {
+            if (object.name == "shutter_door") {
+                foundShutter = true;
+                assert(sprite == "assets/props/ruins_switch_door.png");
+                assert(tiledStringProperty(object.properties, "anim") == "closed");
+                assert(tiledStringProperty(object.properties, "altAnim") == "opening");
+                assert(tiledStringProperty(object.properties, "altAnimIf") == "ruins.r4.solved >= 1");
+            }
+            if (object.name == "shutter_door_barrier") {
                 ++barrierPieces;
                 assert(tiledBoolProperty(object.properties, "solid", false));
                 assert(tiledStringProperty(object.properties, "hideIf") == "ruins.r4.solved >= 1");
+            }
+            if (sprite == "assets/props/ruins_floor_cables.png") {
+                ++floorCables;
             }
         }
     }
     for (bool found : foundKeys) assert(found);
     assert(foundFrame);
-    assert(barrierPieces == 4);
+    assert(foundShutter);
+    assert(barrierPieces == 1);
+    assert(floorCables >= 4);
 
     const Cutscene hint = ru39_detail::loadCutscene("r4_hint");
     assert(hint.steps.size() == 1U);
@@ -104,6 +120,6 @@ inline void suite_ru39() {
     assert(thought.steps[1].key == "ruins.r4.keys_thought" && thought.steps[1].value == 1);
 
     std::cout << "[PASS] C1-004: five-key RGB Lights-Out toggles neighbors, starts two presses from pink, "
-                 "opens the solved barrier, and retires the old switches."
+                 "opens the shutter door, and retires the old switches."
               << std::endl;
 }

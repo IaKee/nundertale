@@ -18,6 +18,9 @@ inline std::string savePlaceLine(const std::string& roomId) {
     if (roomId == "ruins_hall") {
         return "* The distant hum of dial-up internet fills you with DETERMINATION.";
     }
+    if (roomId == "ruins_viplounge") {
+        return "* A bass line thumps through the wall. It fills you with DETERMINATION. Against your will.";
+    }
     if (roomId == "ruins_exit") {
         return "* The cold air and the faint smell of ozone fill you with DETERMINATION.";
     }
@@ -104,7 +107,8 @@ inline SaveHealResult saveHealResult(const GameState& state, const std::string& 
 // field-by-field loader. With no save, the selected identity survives but all story,
 // combat, room, HP and FUR state returns to a clean R1 game.
 inline bool isFloofyFight(const std::string& encounterOrEnemyId) {
-    return encounterOrEnemyId == "floofy" || encounterOrEnemyId == "floofy_bass";
+    return encounterOrEnemyId == "floofy" || encounterOrEnemyId == "floofy_bass" ||
+           encounterOrEnemyId == "floofy_lair";
 }
 
 inline std::string floofyWelcomeHomeLine(const std::string& playerName) {
@@ -123,12 +127,16 @@ inline GameState cleanWelcomeHomeRestart(const GameState& defeated) {
 
 inline void applyWelcomeHomeRetryState(GameState& state,
                                        const std::vector<std::string>& reArmFlags,
-                                       int floofyDeathsAfter = -1) {
+                                       int floofyDeathsAfter = -1,
+                                       int floofyLairDeathsAfter = -1) {
     for (const std::string& flag : reArmFlags) {
         if (!flag.empty()) state.flags.erase(flag);
     }
     if (floofyDeathsAfter >= 0) {
         state.setFlag("ruins.floofy.deaths", floofyDeathsAfter);
+    }
+    if (floofyLairDeathsAfter >= 0) {
+        state.setFlag("ruins.floofy.lair_deaths", floofyLairDeathsAfter);
     }
 }
 
@@ -138,13 +146,27 @@ inline GameState buildWelcomeHomeRetryState(const GameState& defeated,
                                             bool countFloofyDeath) {
     GameState retry = saved != nullptr ? *saved : cleanWelcomeHomeRestart(defeated);
     int deathsAfter = -1;
+    int lairDeathsAfter = -1;
     if (countFloofyDeath) {
+        const bool isLair = (defeated.currentRoom == "ruins_viplounge") ||
+                            (saved != nullptr && saved->currentRoom == "ruins_viplounge");
+        if (isLair) {
+            const int savedLairDeaths = saved != nullptr
+                ? saved->getFlag("ruins.floofy.lair_deaths", 0)
+                : 0;
+            lairDeathsAfter = std::max(defeated.getFlag("ruins.floofy.lair_deaths", 0), savedLairDeaths) + 1;
+            const int savedDeaths = saved != nullptr
+                ? saved->getFlag("ruins.floofy.deaths", 0)
+                : 0;
+            deathsAfter = std::max(defeated.getFlag("ruins.floofy.deaths", 0), savedDeaths);
+        } else {
         const int savedDeaths = saved != nullptr
             ? saved->getFlag("ruins.floofy.deaths", 0)
             : 0;
-        deathsAfter = std::max(defeated.getFlag("ruins.floofy.deaths", 0), savedDeaths) + 1;
+            deathsAfter = std::max(defeated.getFlag("ruins.floofy.deaths", 0), savedDeaths) + 1;
+        }
     }
-    applyWelcomeHomeRetryState(retry, reArmFlags, deathsAfter);
+    applyWelcomeHomeRetryState(retry, reArmFlags, deathsAfter, lairDeathsAfter);
     return retry;
 }
 

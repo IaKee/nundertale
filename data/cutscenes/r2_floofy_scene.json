@@ -1,23 +1,8 @@
 {
   "steps": [
-    {
-      "type": "facePlayer",
-      "key": "up"
-    },
-    {
-      "type": "movePlayer",
-      "x": 300,
-      "y": 345,
-      "speed": 110
-    },
-    {
-      "type": "cutscene",
-      "key": "r2_floofy_retry",
-      "if": "ruins.floofy.deaths >= 1"
-    },
-    {
-      "type": "cutscene",
-      "key": "r2_floofy_intro"
-    }
+    { "type": "facePlayer", "key": "up" },
+    { "type": "movePlayer", "x": 300, "y": 345, "speed": 110 },
+    { "type": "cutscene", "key": "r2_floofy_retry", "if": "ruins.floofy.deaths >= 1" },
+    { "type": "cutscene", "key": "r2_floofy_intro" }
   ]
 }

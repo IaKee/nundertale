@@ -1,0 +1,90 @@
+{
+  "id": "encounter_floofy_tutorial",
+  "enemies": ["floofy_tutorial"],
+  "introText": "* The petals are vibrating.",
+  "background": "black",
+  "music": "floofy_lounge",
+  "canFlee": false,
+  "furCap": 99,
+  "scriptedTutorial": {
+    "wave1Count": 1,
+    "wave2Count": 3,
+    "wave3Count": 6,
+    "wave1Speed": 30,
+    "wave2Speed": 38,
+    "wave3Speed": 48,
+    "spawnInterval": 0.72,
+    "hitDamage": 2,
+    "hitFur": 10,
+    "silenceSeconds": 1.0,
+    "fadeSeconds": 1.2,
+    "giantSpeed": 20,
+    "giantWidth": 160,
+    "safeWallWidth": 12,
+    "rescueProgress": 0.75,
+    "buzzShakeInterval": 0.45,
+    "giantSprite": "assets/sprites/bullets/giant_petal.png",
+    "silhouettePortrait": "furiell_silhouette",
+    "endCutscene": "r2_floofy_end"
+  },
+  "intro": {
+    "music": "floofy_lounge",
+    "skipFlag": "ruins.floofy.met",
+    "beats": [
+      { "type": "say", "beat": 8, "lines": [
+        "See that heart? That's your SOUL. The very culmination of your being!",
+        "It starts off weak. Pasty. Unloved. Very... basement."
+      ] },
+      { "type": "say", "beat": 9, "lines": [
+        "You want to make it stronger, right? Down here, we share our little... \"friendship petals\"~",
+        "Everyone has one. Some people have, like, nine."
+      ] },
+      { "type": "choice", "beat": 9, "flag": "ruins.floofy.choice2", "options": [
+        { "label": "...Okay.", "value": 1, "annoy": 0, "reply": [
+          { "type": "say", "lines": ["That's the spirit!"] }
+        ] },
+        { "label": "Those are NOT petals.", "value": 2, "annoy": 1, "reply": [
+          { "type": "say", "lines": ["...", "You KNOW what these are?"] },
+          { "type": "narrate", "lines": [
+            "* (You don't know what these are.)",
+            "* (...You know exactly what these are.)"
+          ] },
+          { "type": "say", "lines": ["Oh, you're FUN."] }
+        ] }
+      ] },
+      { "type": "show_petals", "beat": 10 },
+      { "type": "narrate", "beat": 10, "lines": [
+        "* The petals are vibrating.",
+        "* (Why are they vibrating.)"
+      ] },
+      { "type": "say", "beat": 11, "lines": [
+        "Here, we're all about good vibes~",
+        "Go on, catch the good vibes, sweetie!"
+      ] },
+      { "type": "petals", "beat": 11,
+        "pattern": "tutorial_petals", "forcedPattern": "tutorial_petals",
+        "count": 1, "speed": 30, "retrySpeedScale": 1.27, "fastSpeedScale": 1.6,
+        "annoySecondDodge": 1, "damagePct": 0, "fur": 0, "furCap": 99,
+        "onDodgeOnce": [], "onDodgeTwice": [], "afterHit": []
+      },
+      { "type": "stop_music", "beat": 12 },
+      { "type": "say", "beat": 12, "lines": ["You idiot."] },
+      { "type": "pause", "seconds": 1.0 },
+      { "type": "say", "beat": 12, "lines": [
+        "You really thought I'd share my petals for FREE?",
+        "In this world, it's YIFF or be YIFFED."
+      ] },
+      { "type": "say", "beat": 13, "lines": [
+        "But you know what? I saved the BEST for you."
+      ] },
+      { "type": "narrate", "beat": 13, "lines": [
+        "* Something enormous is vibrating.",
+        "* (That is not a petal.)"
+      ] },
+      { "type": "say", "beat": 13, "lines": ["This one's my FAVORITE~"] },
+      { "type": "say", "beat": 14, "lines": [
+        "Now hold still, darling~ you'd make a FABULOUS fox. Let's get you fluffy!"
+      ] }
+    ]
+  }
+}

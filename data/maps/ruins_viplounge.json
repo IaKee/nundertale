@@ -1,0 +1,1577 @@
+{
+  "compressionlevel": -1,
+  "height": 18,
+  "infinite": false,
+  "layers": [
+    {
+      "data": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        25,
+        26,
+        26,
+        27,
+        51,
+        51,
+        25,
+        26,
+        26,
+        27,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        28,
+        29,
+        32,
+        30,
+        52,
+        52,
+        28,
+        29,
+        31,
+        30,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        3,
+        1,
+        9,
+        10,
+        10,
+        11,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        1,
+        12,
+        13,
+        13,
+        14,
+        1,
+        3,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        2,
+        12,
+        13,
+        13,
+        14,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        5,
+        12,
+        13,
+        13,
+        14,
+        1,
+        3,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        2,
+        12,
+        13,
+        13,
+        14,
+        1,
+        6,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        1,
+        12,
+        13,
+        13,
+        14,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        2,
+        12,
+        13,
+        13,
+        14,
+        1,
+        3,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        1,
+        12,
+        13,
+        13,
+        14,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        2,
+        12,
+        13,
+        13,
+        14,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        1,
+        12,
+        13,
+        13,
+        14,
+        1,
+        3,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        2,
+        12,
+        13,
+        13,
+        14,
+        1,
+        1,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        2,
+        1,
+        12,
+        13,
+        13,
+        14,
+        1,
+        2,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        3,
+        1,
+        1,
+        17,
+        18,
+        18,
+        19,
+        1,
+        3,
+        1,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        39,
+        39,
+        39,
+        8,
+        8,
+        8,
+        8,
+        39,
+        39,
+        39,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "height": 18,
+      "id": 1,
+      "name": "ground",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 2,
+      "name": "collision",
+      "objects": [
+        {
+          "height": 120,
+          "id": 1,
+          "name": "top_wall_left",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 120,
+          "id": 2,
+          "name": "top_wall_right",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 360,
+          "y": 0
+        },
+        {
+          "height": 720,
+          "id": 3,
+          "name": "left_void",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 120,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 720,
+          "id": 4,
+          "name": "right_void",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 120,
+          "x": 520,
+          "y": 0
+        },
+        {
+          "height": 80,
+          "id": 5,
+          "name": "bottom_wall_left",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 0,
+          "y": 640
+        },
+        {
+          "height": 80,
+          "id": 6,
+          "name": "bottom_wall_right",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 280,
+          "x": 360,
+          "y": 640
+        },
+        {
+          "height": 52,
+          "id": 7,
+          "name": "col_headrack",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 180
+        },
+        {
+          "height": 28,
+          "id": 8,
+          "name": "col_rope",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 64,
+          "x": 120,
+          "y": 340
+        },
+        {
+          "height": 32,
+          "id": 9,
+          "name": "col_beanbag",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 340
+        },
+        {
+          "height": 46,
+          "id": 10,
+          "name": "col_throne",
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 240
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 3,
+      "name": "objects",
+      "objects": [
+        {
+          "height": 0,
+          "id": 11,
+          "name": "from_basement",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 620,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 12,
+          "name": "spawn",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 620,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 13,
+          "name": "from_exit",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 140,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 14,
+          "name": "door_to_basement",
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 680,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_basement"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_viplounge"
+            }
+          ],
+          "class": "door"
+        },
+        {
+          "height": 40,
+          "id": 15,
+          "name": "door_to_exit",
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 40,
+          "properties": [
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "ruins_exit"
+            },
+            {
+              "name": "targetSpawn",
+              "type": "string",
+              "value": "from_viplounge"
+            }
+          ],
+          "class": "door"
+        },
+        {
+          "height": 0,
+          "id": 16,
+          "name": "savepoint",
+          "rotation": 0,
+          "type": "savepoint",
+          "visible": true,
+          "width": 0,
+          "x": 200,
+          "y": 580,
+          "point": true,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A bass line thumps through the wall. It fills you with DETERMINATION. Against your will."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 17,
+          "name": "trigger_floofy_lair",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 320,
+          "x": 160,
+          "y": 380,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r12a_lair_opener"
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.floofy.lair >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 18,
+          "name": "floofy",
+          "rotation": 0,
+          "type": "npc",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 280,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/sprites/ow/floofy.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "idle"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.floofy.lair >= 1"
+            }
+          ]
+        },
+        {
+          "height": 14,
+          "id": 19,
+          "name": "prop_lights_left",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 160,
+          "y": 70,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_lights.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 14,
+          "id": 20,
+          "name": "prop_lights_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 400,
+          "y": 70,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_lights.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 21,
+          "name": "flowerwall_left",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 40,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_flowerwall.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 22,
+          "name": "flowerwall_right",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 440,
+          "y": 40,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_flowerwall.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 52,
+          "id": 23,
+          "name": "prop_headrack",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 180,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_headrack.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 28,
+          "id": 24,
+          "name": "prop_rope",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 64,
+          "x": 120,
+          "y": 340,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_rope.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 25,
+          "name": "prop_beanbag",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 340,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_beanbag.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 46,
+          "id": 26,
+          "name": "prop_throne",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 240,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_lounge_throne.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "height": 52,
+          "id": 27,
+          "name": "examine_headrack",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 180,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.headrack"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Fursuit heads. Dozens. All empty. All facing the door."
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 28,
+          "name": "examine_beanbag",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 480,
+          "y": 340,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.beanbag"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Heart-shaped. Still warm.\n* You decide not to sit on it."
+            }
+          ]
+        },
+        {
+          "height": 28,
+          "id": 29,
+          "name": "examine_rope",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 64,
+          "x": 120,
+          "y": 340,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.rope"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* VIP. Very Important Plushies."
+            }
+          ]
+        },
+        {
+          "height": 46,
+          "id": 30,
+          "name": "examine_throne",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 240,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.throne"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A throne of plushies. One of them wears a smaller crown."
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.floofy.lair >= 1"
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 31,
+          "name": "examine_flowerwall",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 40,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.flowerwall"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A wall of flowers. One spot is still shaking.\n* (You leave it alone.)"
+            }
+          ]
+        },
+        {
+          "height": 14,
+          "id": 32,
+          "name": "examine_lights",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 160,
+          "y": 70,
+          "properties": [
+            {
+              "name": "counter",
+              "type": "string",
+              "value": "ruins.r12a.lights"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Fairy lights. They pulse in time with the bass."
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 33,
+          "name": "petal_trail_00",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 588,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 34,
+          "name": "petal_trail_01",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 548,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 35,
+          "name": "petal_trail_02",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 508,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 36,
+          "name": "petal_trail_03",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 468,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 37,
+          "name": "petal_trail_04",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 428,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 38,
+          "name": "petal_trail_05",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 388,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 39,
+          "name": "petal_trail_06",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 348,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 40,
+          "name": "petal_trail_07",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 508,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p0"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 41,
+          "name": "petal_trail_08",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 364,
+          "y": 428,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 42,
+          "name": "petal_trail_09",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 348,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p2"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 18,
+      "id": 4,
+      "name": "above",
+      "opacity": 1,
+      "properties": [
+        {
+          "name": "above",
+          "type": "bool",
+          "value": true
+        }
+      ],
+      "type": "tilelayer",
+      "visible": true,
+      "width": 16,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 5,
+  "nextobjectid": 43,
+  "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "displayName",
+      "type": "string",
+      "value": "Ruins - VIP Lounge"
+    },
+    {
+      "name": "music",
+      "type": "string",
+      "value": "floofy_lounge"
+    },
+    {
+      "name": "savePlace",
+      "type": "string",
+      "value": "* A bass line thumps through the wall. It fills you with DETERMINATION. Against your will."
+    }
+  ],
+  "renderorder": "right-down",
+  "tiledversion": "1.11.2",
+  "tileheight": 40,
+  "tilesets": [
+    {
+      "columns": 8,
+      "firstgid": 1,
+      "image": "assets/tiles/ruins.png",
+      "imageheight": 160,
+      "imagewidth": 160,
+      "name": "ruins",
+      "tilecount": 64,
+      "tileheight": 20,
+      "tilewidth": 20
+    }
+  ],
+  "tilewidth": 40,
+  "type": "map",
+  "version": "1.10",
+  "width": 16
+}

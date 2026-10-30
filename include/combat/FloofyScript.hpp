@@ -81,4 +81,57 @@ inline int battleFurDelta(int currentFur,
     return std::min(scaled, std::max(0, furCap - currentFur));
 }
 
+// C1-002 v3.5: the fake tutorial escalates by attempts, not by menu turns.
+// Keeping these rules pure makes the authored timings/data independently testable.
+inline int r2TutorialWaveSize(int waveIndex) {
+    if (waveIndex <= 0) return 1;
+    if (waveIndex == 1) return 3;
+    return 6;
+}
+
+inline int r2TutorialHpAfterCatch(int hp, int damage) {
+    return std::max(1, hp - std::max(0, damage));
+}
+
+struct GiantPetalSweep {
+    float arenaLeft = 0.0f;
+    float arenaWidth = 0.0f;
+    float spriteWidth = 0.0f;
+    float speed = 20.0f;
+    float safeWallWidth = 12.0f;
+    float rescueProgress = 0.75f;
+};
+
+inline float giantPetalXAt(const GiantPetalSweep& sweep, float elapsedSeconds) {
+    return sweep.arenaLeft + std::max(0.0f, elapsedSeconds) * std::max(0.0f, sweep.speed);
+}
+
+inline float giantPetalProgress(const GiantPetalSweep& sweep, float centerX) {
+    if (sweep.arenaWidth <= 0.0f) return 1.0f;
+    return std::clamp((centerX - sweep.arenaLeft) / sweep.arenaWidth, 0.0f, 1.0f);
+}
+
+inline float giantPetalSafeZoneStart(const GiantPetalSweep& sweep) {
+    return sweep.arenaLeft + std::max(0.0f, sweep.arenaWidth - sweep.safeWallWidth);
+}
+
+inline bool giantPetalHitsSoul(const GiantPetalSweep& sweep, float petalCenterX,
+                               float soulCenterX, float soulRadius = 4.0f) {
+    if (soulCenterX >= giantPetalSafeZoneStart(sweep)) return false;
+    const float halfWidth = std::max(0.0f, sweep.spriteWidth * 0.5f);
+    return soulCenterX + soulRadius >= petalCenterX - halfWidth &&
+           soulCenterX - soulRadius <= petalCenterX + halfWidth;
+}
+
+inline bool giantPetalRescueTriggered(const GiantPetalSweep& sweep, float petalCenterX) {
+    return giantPetalProgress(sweep, petalCenterX) >=
+           std::clamp(sweep.rescueProgress, 0.0f, 1.0f);
+}
+
+inline bool giantPetalWouldFillBox(const GiantPetalSweep& sweep, float petalCenterX) {
+    // The sweep leaves danger behind its moving centre line; the box is only
+    // fully occupied when that line reaches the right edge.
+    return petalCenterX >= sweep.arenaLeft + sweep.arenaWidth;
+}
+
 } // namespace nundertale

@@ -1,0 +1,27 @@
+{
+  "id": "floofy_tutorial",
+  "name": "Floofy",
+  "hp": 1,
+  "maxHp": 1,
+  "atk": 1,
+  "def": 999,
+  "exp": 0,
+  "gold": 0,
+  "sprite": "floofy",
+  "check": "* FLOOFY - ATK 5 DEF ???\n* Floral. Zesty. Pure thorns.",
+  "invulnerable": true,
+  "canSpare": false,
+  "suppressFurMirror": true,
+  "furCap": 99,
+  "acts": [],
+  "flavor": { "default": ["* The petals are vibrating."], "lowHp": [], "spareable": [] },
+  "dialogue": { "default": ["Catch the good vibes, sweetie!"] },
+  "patterns": [
+    {
+      "id": "tutorial_petals",
+      "kind": "tutorial_petals",
+      "weight": 1,
+      "params": { "count": 1, "speed": 30, "damage": 2, "fur": 10 }
+    }
+  ]
+}

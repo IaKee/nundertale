@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
       "lines": [
         "...that is also a choice, pup.",
         "Running away can be pretty smart when you're not ready, uwu."
@@ -16,6 +17,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Come along, pup! Let's head to the next room, uwu~"
       ]

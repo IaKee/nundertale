@@ -33,6 +33,7 @@
 | **New items** | Playtest fixes `BUG-37`..`BUG-39` and `OVW-021` (§4.2); `NAR-032`, `ART-180`..`ART-182`, `BND-012`, `ITM-008`, `OVW-022`, `AUD-013`, `AUD-014`, `LOR-009`, `FLF-014`, `FLF-015`, `C1-014`, `C1-025`, `C1-026`, `C4-005`. |
 | **Needs rework** | Everything that still says Pepe or FURRY OVER (`NAR-032`, `BND-012`); `ART-001`/`ART-001b` (frog sheets → Grub, `ART-180`); `AUD-008` (slow-motion → slowed + reverb, `AUD-013`); `CORE-005` (integer scaling was marked done but isn't in the code, `BUG-39`). |
 | **Mockups** | Approved battle mockups in `docs/mockups/2026-10-18/`: `battle_neutral.png`, `battle_toxic.png` (keep the layout; the blood splatter and the crossed-swords hitmarker are wrong), `battle_furry_stage1.png`, `battle_furry_stage2.png`. |
+| **Round-8 run (2026-11-01)** | synergy-2 `s2-20261101-042934-c43db5` (weights 15/30/55), 17 tasks, all integrated and delivered to `synergy/round5`: every round-8 asset (ART-185) is wired. **Done:** BUG-55..57, BUG-59..64, TXT-005, C1-001..C1-004, C1-015, C1-016, C1-028. **Partial:** C1-029, C1-030, QA-020, NAR-005, LOR-008, OVW-022, ART-185. **New:** BUG-64 (fixed), BUG-65 (open). Playtest build: `../nundertale_r8b_build`. |
 | **Playtest notes (2026-10-31, LORE v3.5)** | The user's playtest notes in `docs/anotacoes.txt`: lines 1–57 are the user's own notes (canon, now in LORE v3.5), lines 58+ are suggestions from a review of the project (the user delegated the decisions on 2026-10-31 and the useful ones were accepted; some of their facts were wrong and are corrected in §4.5). **LORE v3.5:** an opening fall scene in R1 (`C1-001`), R2 becomes a short scripted fake tutorial ending in a box-sized petal and Furiell as a silhouette (`C1-002`, `NAR-036`), the lair and The Bass Shake move to a later encounter (`C1-028`, `D-23`), R3 becomes the Con's abandoned main hall (`C1-003`), R4 a mechanical-switch puzzle with a shutter door (`C1-004`), card 2 and card 9 changes, floor-message reveal (`OVW-022`). **Closed the same day** (delegated by the user): `D-23` (the lair fight is a new room, R12a, the VIP Lounge), `D-24` (Furiell's new look), `D-25` (the "sanity bar" is the FUR meter; NPC tiers and gamer anchors accepted); R2 can't kill; the badge turnstile (`C1-015`) and Meridia's Beacon (`C1-029`) accepted. **Amended:** `D-20` (one box-sized petal). **Playtest bugs:** `BUG-55`..`BUG-63` (§4.5). **New:** `ART-185` (art orders), `FUR-013` (gamer anchors), `C1-029` (Meridia's Beacon); `C1-027` retired into `C1-028`, which becomes the R12a lair fight. |
 | **Round-7 playtest (2026-10-30, LORE v3.4)** | Reviewed by the user after the synergy-2 round-7 run (`s2-20261029-024245-af9c01`, hard-stopped and closed on 2026-10-30; its integration branch was fast-forwarded into `synergy/round5` at `0553e1f`). **Closed:** `D-22` (sprite and audio/music generation stays out of synergy runs). **Playtest bugs:** `BUG-45`..`BUG-54` (§4.4; BUG-54 still open): low-quality sprites from the run, the Landing that makes no sense, the old frog lying sprite, Floofy "dancing" while knocked out, the window opening small, misplaced props. **LORE v3.4:** Grub falls onto Floofy **in a bed of flowers** (R1, card 10), the Fursuit Dummy gets **Try It On** (`C1-005`). **New:** `ART-184` (round-7 regeneration list). The run's five unfinished tasks were **discarded on 2026-11-01** (user) and folded back into their items: T53 → `NAR-005`/`LOR-008`, T55 → `BUG-63`, T59 → `C1-030`/`QA-020`, T60 → `D-04` (PLACEHOLDERS.md), T64 → `OVW-021`; their partial patches were not kept. |
 | **LORE v3.3 (2026-10-28, D-16 locked)** | The user locked **`D-16`**: Grub is a **human gamer NEET**, wrapped in his own fleece blanket worn as a hooded cape (the silhouette), headset over the hood. The Goblinization is cut: surface gamers are plain humans, "goblin mode" is their slang, and the furries took it literally (Hall of Posts mural, LORE §4.1). **Unblocked:** `ART-001`, `ART-101`, `ART-160`, `ART-180` (rewritten), `ART-182` cards 8–10, `ART-183` rows 27–29. **Updated:** `D-01` (headset soul), `ART-021`, `AUD-014` (plain human grunts instead of goblin sounds), `BUG-44` and `FRT-012` (`GRUB`, `GOBLIN`, new `NEET`). **New:** `NAR-038` (goblin-myth text pass). Docs only: no implementation started. |
@@ -373,15 +374,17 @@ Each decision has a **recommendation**. The ones closed by the LORE are kept her
 
 | ID | Where | Problem | What to do · Priority |
 | :--- | :--- | :--- | :--- |
-| **BUG-55** | `src/scenes/LoreScene.cpp`, card 6 | **Card 6's text appears all at once**, with no typewriter, unlike every other card. | Type it like the others, with the card's own style: the dotted fill of FRT-013 (dots ~100× faster than letters, the type sound on every character) is that style. Do it as part of FRT-013. **P1 · S** |
-| **BUG-56** | `ruins_fall` (R1) in `tools/maps/build_ruins_maps.py` | **No collision on R1's objects:** Grub walks over Floofy, the flower bed and the floor items as if they were rugs. | Solid footprints for Floofy (while he's there), the flower bed and the props that stand up (can, Tide Pod while not picked up); the floor message stays walkable. Edit the generator, not the JSON. **P0 · S** |
-| **BUG-57** | `ruins_fall`, Tide Pod at (404, 272) | **The Tide Pod overlaps the right edge of the flower bed** (the bed spans x 224..416, y 212..300). | Move it a few steps from the bed toward the Con doors, as if it bounced further than Grub (LORE v3.5 §12 R1). **P1 · S** |
+| **BUG-55** | `src/scenes/LoreScene.cpp`, card 6 | **Card 6's text appears all at once**, with no typewriter, unlike every other card. | Type it like the others, with the card's own style: the dotted fill of FRT-013 (dots ~100× faster than letters, the type sound on every character) is that style. Do it as part of FRT-013. **P1 · S** **Done (2026-11-01, round 8, T14):** card 6 types with its own dotted typewriter (`ru56`). |
+| **BUG-56** | `ruins_fall` (R1) in `tools/maps/build_ruins_maps.py` | **No collision on R1's objects:** Grub walks over Floofy, the flower bed and the floor items as if they were rugs. | Solid footprints for Floofy (while he's there), the flower bed and the props that stand up (can, Tide Pod while not picked up); the floor message stays walkable. Edit the generator, not the JSON. **P0 · S** **Done (2026-11-01, round 8, T03):** Floofy (while there), the can and the Tide Pod are solid; the bed is walkable, see BUG-64. |
+| **BUG-57** | `ruins_fall`, Tide Pod at (404, 272) | **The Tide Pod overlaps the right edge of the flower bed** (the bed spans x 224..416, y 212..300). | Move it a few steps from the bed toward the Con doors, as if it bounced further than Grub (LORE v3.5 §12 R1). **P1 · S** **Done (2026-11-01, round 8, T03):** the Tide Pod moved north-east, clear of the bed. |
 | **BUG-58** | `assets/tiles/landing_bg.png`, `props/ruins_landing_flowerbed.png` | **R1 is too saturated** (vivid purple floor, bright yellow and green in the bed) for the bottom of an abyss, and **the trash painted into the background** (brown package at ~(160, 240), white paper at ~(490, 245), debris on the edges) has the same brightness, saturation and dark outline as the real examinables (Tide Pod, can), so players can't tell what can be examined. | Desaturate the cave to nearly monochrome; only the flower bed keeps its color (the user liked the bed itself). Background trash dimmed, no outline, low contrast; real examinables keep the outline. New art in ART-185 (ChatGPT, D-22). **P0 · M** |
-| **BUG-59** | `assets/props/petal_trail.png` (96×16) in R1b | **The petal trail is one horizontal strip** that doesn't lead to the lounge door. | A trail that follows the corridor to the door (straight and corner pieces, or several placed decals), reusable in later rooms as Floofy's sign (LORE v3.5 §6.5). Art in ART-185. **P1 · S** |
-| **BUG-60** | `ruins_switches` (R4), `props/ruins_rgb_*`, `ruins_cables` | **R4's art is flat and unloved**, and a cable barrier stands where the shutter door should be. (Corrected 2026-11-01: the review said the old 3-switch puzzle was still in; it isn't, the five-key Lights Out keyboard is built and tested, suite C1-004.) New art exists (ART-185 row 16). | Rebuild per C1-004 (v3.5): mechanical-switch keys, Lights Out on neighbors, cables, a shutter door that slides up. **P1 · M** |
-| **BUG-61** | `sprites/ow/grub_pawsome.png`, `grub_wakeup.png`, `grub_goblin.*`, `grub_ears/paws/tail/snout.*`, `pepe_*` | **Legacy protagonist sheets still in `assets/`:** `grub_pawsome.png` and `grub_wakeup.png` still draw the v3 green goblin (checked 2026-10-31). None is referenced by a map or cutscene, but `grub_pawsome` is the file the conversion ending will look for. | Redraw Grub the Pawsome as the mint-green wolf with the blanket cape and headset (ART-101, ART-185). Delete the goblin and frog sheets once nothing refers to them (grep `data/`, `tools/`, `src/`). **P1 · S** (delete) / **M** (Pawsome) |
-| **BUG-62** | `props/ruins_banner_deodorant.png`, `props/ruins_wrapper_pile.png` (R3) | The deodorant banner is a blurred lilac strip with **no readable text**; the "pile of Dorito bags" (`* A pile of Dorito bags. *crunch*`) reads as **purple, blue and lime plastic blocks**. | Redraw both for the new R3 look (C1-003): the banner with readable `Deodorant is NOT optional` (lettering restored by hand, ART-181 rule), dusty crumpled triangle bags in Doritos red. ART-185. **P1 · S** |
-| **BUG-63** | `src/ui/DialogBox.cpp`, TXT-005 | **Dialogue portraits are never drawn.** TXT-005 is marked done, but no code in `src/` or `include/` mentions a portrait; the 15 files in `assets/portraits/` (Furiell, Floofy, Barky, the Pawsome reflection) are unused. Was synergy-2 task T55 (round 7, never started; discarded 2026-11-01, this row is the source of truth now). | A `portrait` field on dialogue lines and cutscene `say` steps, drawn on the left at 2× with the text shifted right (TXT-005's layout). Wire the R2/R3/R5 lines, including the R2 silhouette (C1-002). TXT-005 is reopened as `[~]`. **P0 · M** |
+| **BUG-59** | `assets/props/petal_trail.png` (96×16) in R1b | **The petal trail is one horizontal strip** that doesn't lead to the lounge door. | A trail that follows the corridor to the door (straight and corner pieces, or several placed decals), reusable in later rooms as Floofy's sign (LORE v3.5 §6.5). Art in ART-185. **P1 · S** **Done (2026-11-01, round 8, T06):** see C1-016. |
+| **BUG-60** | `ruins_switches` (R4), `props/ruins_rgb_*`, `ruins_cables` | **R4's art is flat and unloved**, and a cable barrier stands where the shutter door should be. (Corrected 2026-11-01: the review said the old 3-switch puzzle was still in; it isn't, the five-key Lights Out keyboard is built and tested, suite C1-004.) New art exists (ART-185 row 16). | Rebuild per C1-004 (v3.5): mechanical-switch keys, Lights Out on neighbors, cables, a shutter door that slides up. **P1 · M** **Done (2026-11-01, round 8, T08):** see C1-004. |
+| **BUG-61** | `sprites/ow/grub_pawsome.png`, `grub_wakeup.png`, `grub_goblin.*`, `grub_ears/paws/tail/snout.*`, `pepe_*` | **Legacy protagonist sheets still in `assets/`:** `grub_pawsome.png` and `grub_wakeup.png` still draw the v3 green goblin (checked 2026-10-31). None is referenced by a map or cutscene, but `grub_pawsome` is the file the conversion ending will look for. | Redraw Grub the Pawsome as the mint-green wolf with the blanket cape and headset (ART-101, ART-185). Delete the goblin and frog sheets once nothing refers to them (grep `data/`, `tools/`, `src/`). **P1 · S** (delete) / **M** (Pawsome) **Done (2026-11-01, round 8, T12/T13):** the player renders the `grub_fur` stage sheets and Grub the Pawsome; `grub_wakeup`, `grub_goblin`, `grub_ears/paws/tail/snout` deleted. `pepe_*` kept: tools still reference them. |
+| **BUG-62** | `props/ruins_banner_deodorant.png`, `props/ruins_wrapper_pile.png` (R3) | The deodorant banner is a blurred lilac strip with **no readable text**; the "pile of Dorito bags" (`* A pile of Dorito bags. *crunch*`) reads as **purple, blue and lime plastic blocks**. | Redraw both for the new R3 look (C1-003): the banner with readable `Deodorant is NOT optional` (lettering restored by hand, ART-181 rule), dusty crumpled triangle bags in Doritos red. ART-185. **P1 · S** **Done (2026-11-01, round 8, T07/T11):** the new banner and wrapper pile are wired in R3 and readable at 2×. |
+| **BUG-63** | `src/ui/DialogBox.cpp`, TXT-005 | **Dialogue portraits are never drawn.** TXT-005 is marked done, but no code in `src/` or `include/` mentions a portrait; the 15 files in `assets/portraits/` (Furiell, Floofy, Barky, the Pawsome reflection) are unused. Was synergy-2 task T55 (round 7, never started; discarded 2026-11-01, this row is the source of truth now). | A `portrait` field on dialogue lines and cutscene `say` steps, drawn on the left at 2× with the text shifted right (TXT-005's layout). Wire the R2/R3/R5 lines, including the R2 silhouette (C1-002). TXT-005 is reopened as `[~]`. **P0 · M** **Done (2026-11-01, round 8, T01):** see TXT-005. |
+| **BUG-64** | `ruins_fall` (R1), `src/entities/Player.cpp` | **Grub couldn't move after waking up** (found by T17 as BUG-R8-01/02): with the flower bed solid, the new-game spawn sits inside it and Floofy's footprint, and every move collided; the badge in the dent was out of reach too. | **Done (2026-11-01, sponsor fix after round 8):** the bed is walkable again (Floofy, the can and the Tide Pod stay solid) and the player is never blocked by an obstacle he already overlaps. Checked in game: Grub walks off the bed, the badge is picked up from the dent. **P0 · S** |
+| **BUG-65** | `tools/playtest/run_r8_playtest.js` (QA-020) | **The round-8 scripted run doesn't start a new game:** with a save present, SEG-01 continues into `ruins_panelhall`, and each segment passes in about 1 s, so the report's PASS results prove little. | Run the new-game segment with no save (a clean `config/` or a flag), and fail a segment when its trace lacks the expected events. **P1 · S** **Open.** |
 ---
 
 ## 5. Epics and items
@@ -594,8 +597,9 @@ P0 · S · TXT-001, CORE-001
 P0 · S · BUG-11
 - **What:** **X** (cancel) completes the current page instantly; **Z** only advances once the page is done. No blinking indicator (Undertale has no triangle; remove the yellow triangle from `DialogBox`).
 
-#### TXT-005 — Overworld dialogue box (position and portrait) `[~]`
+#### TXT-005 — Overworld dialogue box (position and portrait) `[x]`
 - **Reopened (2026-10-31, BUG-63):** the box position works, but portraits are not drawn anywhere in the code.
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** dialogue portraits drawn by `DialogBox` from the step's `portrait` field (file stem under `assets/portraits/`), density-aware (Furiell's 100×100 d2 set draws at 50×50); BUG-63 closed (T01).
 P0 · M · TXT-001
 - **What:** the box sits at the bottom by default and **at the top when the player is in the lower half of the screen**. Optional portrait on the left (2× sprite, e.g. Furiell, Senpai Sans) with the text shifted right. Measurements from an Undertale overworld screenshot (≈ x 32→608, y 320→470 at the bottom; y 10→160 at the top) (confirm).
 - **Remove:** the yellow "* SPEAKER:" line (Undertale never shows who's talking; that's conveyed by voice/portrait/font).
@@ -1184,6 +1188,7 @@ P1 · S · CORE-011
 
 #### OVW-022 — Floor messages and bloodstains `[~]`
 P1 · M · OVW-011, TXT-010
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R1's floor message moved to a dark corner with its own `reveal: fade_glow` dialog step (T03). Bloodstains still open.
 - **What (LORE §30.4):** a floor-message prop in the Dark Souls format (1st examine: the message; 2nd: the gamertag and the rating) and a bloodstain prop (a translucent ghost replays an ex-gamer's last seconds, accepting a hug, then `* (They said yes.)`). Content: the six messages of the LORE table, one per listed room. Toxic route: unsigned warnings about Grub; Furry route: `try hugging`, signed by Grub.
 - **Acceptance:** every message appears in its room with both examines; the route variants replace them.
 - **Playtest 2026-10-31 (LORE v3.5 §30.4):** floor messages get **their own reveal** in the normal dialog box instead of the letter-by-letter typewriter: a slow fade-in with an amber/orange glow and an ethereal, metallic chime (Dark Souls / Elden Ring). Needs a per-line display mode in the dialog box (`reveal: "fade_glow"`) and the chime SFX (made interactively, D-22). In R1, move the message to a dark corner near the bottom of the cave (lower left or lower right) so it's a find, not something in the path.
@@ -1856,8 +1861,9 @@ P3 · S · D-14
 P1 · S · OVW-011
 - **What:** every "suspicious" object (the 18+ curtain, the laptop tab, the `Homework` folder, the `study materials` box, Furiell's locked room, the 18+ server) **never opens**: examining again changes the reaction, never the contents (LORE §2.3). Test: none of these objects has an "open" state in the data.
 
-#### LOR-008 — Per-room density and tone review `[ ]`
+#### LOR-008 — Per-room density and tone review `[~]`
 P1 · S · NAR-005
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** density pass for R5–R12 (T16, with NAR-005). Tone review of the other rooms still open.
 - **What:** acceptance for every room: ≥ 1 funny examinable; a pace of ~1 laugh every 20 s; ~70% of the gross-out jokes on furries and ~30% on gamers (the gamers concentrated on the surface side: messages, Pepe's room, The Raid); every main character gets a moment of dignity (LORE §2.4). Jokes written in the native meme format (LORE §2.3, rule 6).
 - **From the round-7 run (2026-11-01):** synergy-2 task T53 (density pass for R3–R10, never started) was discarded; the pass is still open here and in NAR-005. Do it after R3 and R4 are rebuilt (C1-003, C1-004), since those rooms change.
 
@@ -1899,8 +1905,9 @@ P1 · M · NAR-003
 - **In LORE §21:** Furiell's 5 options (one line each), her voicemail, the forced calls, the automatic messages and Papyrus's 4 content tips.
 - **Missing:** per-room variants of `Say Hello` / `Puzzle Help` / `About Yourself` (R7–R12) and Alphys's hints outside the quiz.
 
-#### NAR-005 — Examinables for every room `[ ]`
+#### NAR-005 — Examinables for every room `[~]`
 P1 · L · C1..C5
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** examinable density pass for R5–R12 inline lines (T16). Other rooms still open.
 - **What:** complete the examinable tables in LORE §12–16 so that **every room** has ≥ 1 funny object (LOR-008), with 2nd/3rd-look variants where it makes sense (rule of three), and every save point text that's still missing.
 - **From the round-7 run (2026-11-01):** T53 discarded (see LOR-008). Acceptance for the Ruins part: every R3–R10 room has a funny examinable in view at any camera position, checked with a screenshot per room.
 
@@ -2090,8 +2097,9 @@ P2 · S · D-21, C3-*, C6-020
 | R5 Fursuit Dummy | 0:30 | C1-005 | R13 Exit | 0:30 | C1-013 |
 | R6 Cable Maze | 0:20 | C1-006 | R12a VIP Lounge, Floofy's lair (v3.5) | 2:00 | C1-028 |
 
-#### C1-001 — R1: The Fall Room `[~]`
+#### C1-001 — R1: The Fall Room `[x]`
 P0 · M · OVW-003, ART-120, RAD-001
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** the v3.5 opening: `r1_landing` (Grub falls on Floofy in the flower bed, Floofy pops up and retreats) chains into `r1_wake`; collision on Floofy, the can and the Tide Pod; Tide Pod moved clear of the bed (T02, T03). The bed itself stays walkable (BUG-64).
 - **What:** Pepe wakes up on a bed of snack wrappers under a beam of light (a 3–4 frame getting-up animation); thought `* (Ugh... where's my wireless mouse? And why does it smell like body spray and wet dog?)`; the phone buzzes with the raid message and the clock starts (RAD-003).
 - **Save:** `* The scent of lukewarm energy drinks and stale Doritos fills you with DETERMINATION.` (a save in the fall room is a script decision, unlike Undertale). **Examinable:** can `* Citrus Blast, 2014 edition. A vintage.` (sets up the Citrus Blast running gag).
 - **Partly done (2026-10-18):** `ruins_fall` (new games start here): the wrapper bed under the light beam, Pepe wakes up (`pepe_wakeup` lying → get up), the thought line, a phone buzz, the save text, the Citrus Blast can. Pending: a real phone-buzz SFX and tying the raid message to this moment (RAD-003).
@@ -2109,8 +2117,9 @@ P0 · M · OVW-003, ART-120, RAD-001
   - **Coming back** (the reason is in C1-015): once Grub has been in R1a, R1 shows the empty bed with the dent.
   - **Acceptance:** a new game plays the landing scene, then the wake-up; Grub can't walk through Floofy or the bed; the Tide Pod is clear of the bed; a playtester can tell the examinables from the background trash at a glance.
 
-#### C1-002 — R2: Floofy and the fake tutorial `[~]`
+#### C1-002 — R2: Floofy and the fake tutorial `[x]`
 P0 · L · BHL-004, BFL-001, ART-102
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R2 is the short scripted fake tutorial: `r2_tutorial`, encounter `floofy_tutorial` (dodge counter 1→3→6, giant petal, HP floor at 1), Furiell's silhouette portrait, spray rescue (T09).
 - **LORE v3.1:** the pellets become pink **friendship petals** and `HUG.` becomes `*pounces*`; Floofy's new look and lines in NAR-034.
 - **What:** the first "battle": Floofy introduces the "free hug pellets" (little hearts that deal damage and **+20 FUR** each); the **FUR bar shows up for the first time, trembling** (FUR-003); he surrounds Pepe with a ring of pellets: `HUG.`; Furiell shows up and drives him off with a **glitter spray** (SFX), heals Pepe and zeroes FUR ("my glitter is hypoallergenic"). Teaches soul movement. `ruins.floofy.met = 1`. The Mirror does **not** fire here.
 - **Art:** Floofy idle, talking, sinister (zipper open showing only darkness and two white eyes) and sinking into the ground.
@@ -2130,8 +2139,9 @@ P0 · L · BHL-004, BFL-001, ART-102
   - **Engine needs:** a scripted battle (no menu turns, or MERCY/FIGHT disabled), a dodge counter the script can branch on, a box-sized bullet with a pixel-accurate hitbox that moves in data, the dialog portrait (BUG-63) with a silhouette, `water_burst`, the spray SFX. Reuse `FloofyScript.hpp`, `invulnerable`, `suppressFurMirror`, the rescue flags and the FUR-003 tremble.
   - **Acceptance:** dodging all, catching all and a mix all reach the giant petal; a player on the right wall takes no damage from it; Furiell's silhouette shows before her face does; `ruins.floofy.met = 1` and `ruins.floofy.annoyed` saved for C1-028; every text box matches LORE v3.5 §19.0.
 
-#### C1-003 — R3: Ruins Entrance `[~]`
+#### C1-003 — R3: Ruins Entrance `[x]`
 P0 · M · OVW-003, ART-120
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R3 rebuilt as the Con's abandoned main hall with the round-8 hall tiles and props (welcome sign, scanner, schedule, bench, snacks, light, deodorant banner, wrapper pile) (T07).
 - **What:** Furiell introduces herself (NAR-003); double staircase; banners `FurNation Con '14 — Welcome!` and, underneath, `Deodorant is NOT optional`; a pile of Dorito bags with a *crunch* (OVW-014). From here on, the Mirror can fire.
 - **Save:** `* The distant hum of dial-up internet fills you with DETERMINATION.` (modem SFX).
 - **Partly done (2026-10-18):** `ruins_entrance`: the double staircase, the two banners (examinable), the Dorito-bag pile, the save point with the dial-up line, Furiell's intro cutscene. Pending: the crunch SFX (OVW-014) and a modem SFX on save.
@@ -2140,8 +2150,9 @@ P0 · M · OVW-003, ART-120
 - **Where:** `build_ruins_entrance` (new layout, regenerate the JSON), a new painted background or tile set for the hall (ART-185, ChatGPT, D-22).
 - **Acceptance:** a playtester can say what the room was without being told; examinables still one in view at any time (LORE §2.4); the hand-in-hand intro still plays.
 
-#### C1-004 — R4: RGB Switches `[~]` (LORE v3.1 rework)
+#### C1-004 — R4: RGB Switches `[x]` (LORE v3.1 rework)
 P1 · M · OVW-012
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R4 rebuilt with the mechanical keys, keyboard, floor cables and the shutter door (5-frame shutter + open row); BUG-60 closed (T08).
 - **LORE v3.1:** new design: a giant **RGB keyboard** on the wall with 5 keys in a row, each a color channel; pressing a key toggles it **and its two neighbors** (Lights Out); the room's color is the mix of lit keys and Furiell wants **pink** (`Make it pink, hun! Pink is for hugs! uwu`). Grub: `* (You've done this a thousand times. In the RGB app.)` Tuned to 2–3 presses, under 45 s, no flashing. Replaces the glitter-marked switches.
 - **What:** a tutorial puzzle; the right switches are marked with glitter; note `Not this one. — Ruins Administration (not Furiell)`. **Sign:** `* "Only the fearless may proceed. Brave ones, foolish ones. Both walk not the path of the noob."`
 - **Partly done (2026-10-18):** `ruins_switches` sits between R3 and R5: three `ruins_rgb_switch` switches (1 and 3 glitter-`marked` until pressed, counters `ruins.r4.sw1..3`), the wrong one gets a joke line, the `Not this one.` note and the noob sign; a solid cable barrier across the north exit disappears once both right switches are on; Furiell hint cutscene on entry (`r4_hint`, `ruins.r4.intro`). The sparking cable barrier stands in front of the north arch (examinable) and vanishes when solved. Pending: a click SFX on the switches.
@@ -2221,8 +2232,9 @@ P1 · L · C1-009, C1-025, CORE-011
 - **What (LORE §12 R9a, §19.10):** only if Barky was spared, he leads Grub into the booth. GLaDOwOS's test text, then the choice `Sacrifice` / `Refuse`. **Sacrifice:** Barky's kill (dust + red spark, `FIRST BLOOD` if it's the first, the Clean Run is lost), the narrator line, `* The cake was not a lie.` / `* That's the worst part.` and the `Apurrture Cake`. **Refuse:** the fight (C1-025). A save point at the entrance; examinables (`THE HUG IS A LIE` behind a loose panel, the cube display, the sign); a powered-down variant if Barky is dead; flag `ruins.booth.state`.
 - **Built (2026-10-28):** `ruins_booth` room, new cutscene `choice` step (`options`, `key`, 1..N), `r9a_booth_entry`, `r9a_panel`, `r9a_sacrifice`, `r9a_refuse` leading to the GLaDOwOS fight; powered-down variant if Barky is dead. Not playtested.
 
-#### C1-015 — R1a: Registration, the first quiet room (LORE v3.2) `[ ]`
+#### C1-015 — R1a: Registration, the first quiet room (LORE v3.2) `[x]`
 P0 · M · C1-001, ART-183
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R1a turnstile (`r1a_turnstile`), Floofy's badge in the bed dent (`r1_badge`, key item `floofy_badge`), empty bed on return, turnstile opens with the badge (T04).
 - **What (LORE §12 R1a):** the first room of the Ruins, the Con's abandoned badge pickup, between the Landing (C1-001) and R1b. **No NPCs, no encounters, no cutscene**: ambience only, quiet music. Examinables: badge box, rules board, dead escalator, lost-and-found bin (`Somebody's sense of shame.`), one warm pink petal by the far door (first of the trail).
 - **Where:** a new `build_ruins_registration` in `tools/maps/build_ruins_maps.py` (regenerate the JSON), props `props/ruins_reg_*.png`.
 - **Acceptance:** about 30 s at a normal pace, at least one funny examinable in view at any time (LORE §2.4), door chain R1 → R1a → R1b covered by the round-trip suite (ru41).
@@ -2232,8 +2244,9 @@ P0 · M · C1-001, ART-183
   - **Flags:** `ruins.r1a.turnstile_tried`, `ruins.floofy.left_landing` (exists), `hasItem.floofy_badge`. The badge can't be dropped; Floofy comments on it in R2 (`Is that MY badge?! ...Keep it. It suits you~`).
   - **Acceptance:** a first-time player can't miss the empty bed; the detour costs under 20 s.
 
-#### C1-016 — R1b: Panel Hall, the last quiet room (LORE v3.2) `[ ]`
+#### C1-016 — R1b: Panel Hall, the last quiet room (LORE v3.2) `[x]`
 P0 · M · C1-015, ART-183
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** R1b petal trail laid from the 12 `petal_trail_pieces` decals with the `lay_petal_trail` helper; BUG-59 closed (T06).
 - **What (LORE §12 R1b):** a hallway of closed panel rooms; **no NPCs, no encounters**. "Your Best Floof" leaks faintly from the door at the end (positional volume if cheap, otherwise a low-volume loop); the petals become a trail to it. Save point with its line (the last save before Floofy's fight, BUG-43). Examinables: the three panel doors, the petal trail (2 lines), the `HEADLESS LOUNGE` door with `FLOOFY'S` taped over it.
 - **Where:** `build_ruins_panelhall` in the map builder; props `props/ruins_panel_*.png`, `props/petal_trail.png`.
 - **Acceptance:** about 30 s; the save works (the last one before R2; R2 can't kill since v3.5).
@@ -2305,8 +2318,9 @@ P0 · L · C1-002, BHL-004, ART-183, LOR-010
 - **Data:** `data/enemies/floofy.json` (rework the round-6 version: `scriptedEndAfterTurns` 2 → 6 with an end hook instead of Victory text), `data/encounters/floofy.json`.
 - **Acceptance:** a careful first-time player survives with real damage taken; a careless one can die. Measured in playtest (QA-020): note the death rate and the turn where most damage lands.
 
-#### C1-028 — Floofy's Bass Shake fight, R12a lair (LORE v3.2 §19.0, v3.5 §19.0b) `[ ]`
+#### C1-028 — Floofy's Bass Shake fight, R12a lair (LORE v3.2 §19.0, v3.5 §19.0b) `[x]`
 P0 · M · C1-002, C1-005, ART-183
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** new room `ruins_viplounge` (R12a) between R12 and R13, `r12a_lair_opener` / `r12a_lair_end`, encounter `floofy_lair` (Bass Shake with `floofy_close` / `floofy_wide`), death counter `ruins.floofy.lair_deaths` with a shorter retry (T10).
 - **What:** the alternate version when `ruins.floofy.annoyed >= 2`: **The Bass Shake**, moved from the Fursuit Dummy (C1-005) with everything already built (the `bass_shake.ogg` loop, `BeatMap.hpp`, `data/beatmaps/bass_shake.json`, the 2026-10-20 timing work, the debug record mode). Same rules as C1-027 (invulnerable, no Spare, 6 turns, Furiell at the end), but the enemy turn is the meme loop ×3 with **one burst of thorny petals per accelerated part (3 per turn)** on the close-up of Floofy's shaking head, and the wide shot of him swaying with no bullets. Furiell's spray lands on a drop and a record scratch stops the track.
 - **Move:** rename `docs/fights/R5_fursuit_dummy_bass_shake.md` to an R2 Floofy spec (keep the measurements), point the beat map and the `Beat` pattern at `floofy`, drop `bass_fluff_*` tufts for `thorn_petal`, drop the dummy-only ACTs (`Shake to the Bass`, `Turn It Down`). Opener: `...DANCE.` then the scratch and the drop.
 - **Acceptance:** both shots and the bursts stay on the music (existing BSK tests, retargeted); the variant is picked only by the annoyance counter and reused on retry (`ruins.floofy.fight = 2`).
@@ -2318,14 +2332,16 @@ P0 · M · C1-002, C1-005, ART-183
   - **Death:** WELCOME HOME to the lair save (BUG-43), retry opener, from the 3rd death one enemy turn fewer per death (min 3; `ruins.floofy.lair_deaths`).
   - **Acceptance:** reachable from R12 on every route; a full fight and a death + retry without debug tools; the bursts stay on the music (BSK tests retargeted); R13 no longer plays a Floofy cutscene.
 
-#### C1-029 — Meridia's Beacon `[ ]`
+#### C1-029 — Meridia's Beacon `[~]`
 P3 · S · C1-015, ITM-008, D-18
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** the Strange Beacon in R1a's lost-and-found bin (`r1a_beacon`, key item `strange_beacon`, `ruins.beacon.state` 1 taken / 2 left) (T05). Open: the take/leave sequence was never played or checked at 2×; the post-take line is a placeholder wording; no loud sting (reuses `alert.ogg`).
 - **What (LORE v3.5 §30.3, accepted 2026-10-31):** a Skyrim reference (other games are allowed openly, D-18). R1a's lost-and-found bin, **second** examine: at the bottom, a glowing white faceted polyhedron (like a giant white d20). Choice `Take it` / `Leave it`. **Take:** a quick white flash, a deliberately loud sting, and shaking all-caps text `* A NEW PAW TOUCHES THE BEACON.` / `* HEAR ME, GAMER, AND OBEY.`; key item `Strange Beacon` that can't be dropped (`* It won't let go of you.`), with a rare line on later examines. **Leave:** `* (You put it back immediately. Not doing that quest again.)`.
 - **Decided:** the review proposed FUR −2 for leaving it, but FUR is always 0 in R1a (the first FUR comes in R2), so leaving it is a line only.
 - **Where:** a cutscene on the lost-and-found prop (`r1a_beacon`, flag `ruins.beacon.state`), item in `data/items/items.json`, a small sprite (ART-185). In LORE §30.3 and §20.4.
 
 #### C1-030 — The Ruins playable start to finish `[~]`
 P0 · XL · C1-001..C1-024
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** scripted segments under `tools/playtest/` (`run_r8_playtest.js`, six segments) and the report `docs/playtest/2026-11-01_r8.md` (T17). The segments run too fast to prove much: the new-game segment loads an existing save instead of starting a new game (BUG-65). A full manual run is still owed.
 - **Acceptance:** from a new game to R13 without debug tools, in ~8.5 min at average pace (v3.2: ~11 min, with R1a/R1b and Floofy's fight; v3.5: ~12 min, with the landing scene, the badge detour and the R12a lair); save/load at every save point; the in-area variations work (v3.5: the R2 fake tutorial dodging and catching, a death and retry in the R12a lair, spare everything, Accept Hug on Furiell, kill everything with "nobody logged in," the Mirror triggered and refused); FUR, the raid clock and flags persist in the save.
 - **Tooling (2026-10-28):** `--trace <file>` event log (debug builds), scripted walkthrough under `tools/playtest/` and first-fight repro inputs in `tools/record/first_fight/`; suite `ru41` loads every Ruins map and round-trips save/load at each save point. A full R1 to R13 scripted run is not done yet (the R3 to R5 input is a draft).
 - **Round-7 leftover (2026-11-01):** T59, the full scripted R1→R13 run, failed and was discarded; tracked in QA-020.
@@ -2938,6 +2954,7 @@ P0 · L · D-22, BUG-45, BUG-46, BUG-48, BUG-51
 
 #### ART-185 — Art orders from the 2026-10-31 playtest `[~]`
 P0→P3 · XL · D-20, D-22, D-24, LORE v3.5
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** every round-8 asset is wired and was checked in game at 2× (T11, plus T01–T13). Open: art the handoffs list as missing (no loud sting for the beacon; R3 tileset redo spec in T07's handoff).
 - **What:** everything the 2026-10-31 notes ask to redraw or add. Same rules as ART-183/184: ChatGPT image gen interactively (`chatgpt-imagegen`, macro-pixel for small sprites, D-22; never inside a synergy run), the sprite outline rules, sign lettering restored by hand, checked at 2× in the game before replacing. Some sheets were made before the generation procedure was settled and never fixed; **delete and redo** means start from a new brief, not an edit of the current file.
 
 | # | File | What | Order | Prio. |
@@ -3039,8 +3056,9 @@ P3 · S · —
 P1 · S · —
 - **What:** `docs/feel_checklist.md` with the items you can only verify by playing side by side with Undertale: soul speed, text pacing, encounter transition timing, the weight of the game over, menu responsiveness (no input lag), the sound of every action. Run it at every milestone.
 
-#### QA-020 — Timing and pacing playtest `[ ]`
+#### QA-020 — Timing and pacing playtest `[~]`
 P1 · M · QA-015
+- **Round 8 (2026-11-01, synergy-2 `s2-20261101-042934-c43db5`):** first pacing table in `docs/playtest/2026-11-01_r8.md` §2 (scripted times, not a human run) (T17); see BUG-65.
 - **What:** time each area against LORE §11.2 (front-end 2:30 · Ruins 8.5 · Snowdinha 6.5 · Wetfall 5 · Hotland 2 · Con Center 4 · ending 1.5 min) and the §11.1 rules (cutscenes ≤ ~6 boxes, puzzles < 45 s, 2–3 minute bosses / 4–6 turns with the right ACT, 2–3 encounters per area). Log it in `docs/playtest_log.md` and use it to tune the raid clock (D-12), the economy (SHP-007) and FUR (FUR-012).
 - **From the round-7 run (2026-11-01):** synergy-2 task T59 (a scripted new-game→R13 run for spare-all and kill-all, plus a per-room pacing report) failed 3× (no structured output, the run timed out) and was discarded. Still wanted: input scripts under `tools/playtest/` that reach R13, then the report. Wait for the v3.5 opening (C1-001, C1-002, C1-015) and R12a (C1-028), since the route changes.
 

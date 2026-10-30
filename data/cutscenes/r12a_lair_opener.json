@@ -1,0 +1,43 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Back already, darling? I KNEW you'd miss me~",
+        "Same SOUL. Same smell. Let's go again."
+      ],
+      "if": "ruins.floofy.lair_deaths >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "...",
+        "You think you're FUNNY?",
+        "I've been nice. I've been SO nice.",
+        "DANCE."
+      ],
+      "if": "ruins.floofy.lair_deaths == 0 && ruins.floofy.annoyed >= 2"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "There you are~ I fixed my blowout. Took FOREVER.",
+        "Now, where were we? Oh right.",
+        "DANCE."
+      ],
+      "if": "ruins.floofy.lair_deaths == 0 && ruins.floofy.annoyed < 2"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/record_scratch.ogg",
+      "volume": 0.9
+    },
+    {
+      "type": "startBattle",
+      "encounter": "floofy_lair"
+    }
+  ]
+}

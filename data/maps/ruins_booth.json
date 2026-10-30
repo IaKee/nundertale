@@ -638,6 +638,24 @@
               "value": "* (A small mound of gray fur and gamer dust.)||* (It is still warm.)"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 18,
+          "name": "test_waiver",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 300,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A waiver has one checkbox: \"I AM EMOTIONALLY REPLACEABLE.\"||* It is already checked."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -860,7 +878,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 18,
+  "nextobjectid": 19,
   "orientation": "orthogonal",
   "properties": [
     {

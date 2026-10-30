@@ -51,6 +51,8 @@ struct CutsceneStep {
     std::string typeName;
     float seconds = 0.0f;
     std::string speaker;
+    std::string portrait;
+    std::string reveal;
     std::vector<std::string> lines;
     std::string path;
     float volume = 1.0f;
@@ -74,6 +76,7 @@ struct CutsceneStep {
 };
 
 struct Cutscene {
+    std::string skipFlag;
     std::vector<CutsceneStep> steps;
 };
 
@@ -206,6 +209,8 @@ public:
                 if (key == "steps") {
                     if (!parseSteps(parsed.steps)) return false;
                     foundSteps = true;
+                } else if (key == "skipFlag") {
+                    if (!parseString(parsed.skipFlag)) return false;
                 } else if (!skipValue()) {
                     return false;
                 }
@@ -272,6 +277,8 @@ private:
     bool parseStepField(const std::string& key, CutsceneStep& step) {
         if (key == "type") return parseString(step.typeName);
         if (key == "speaker") return parseString(step.speaker);
+        if (key == "portrait") return parseString(step.portrait);
+        if (key == "reveal") return parseString(step.reveal);
         if (key == "lines") return parseStringArray(step.lines);
         if (key == "path") return parseString(step.path);
         if (key == "key") return parseString(step.key);
@@ -451,6 +458,14 @@ class CutsceneHost {
 public:
     virtual ~CutsceneHost() = default;
     virtual void dialog(const std::string& speaker, const std::vector<std::string>& lines) = 0;
+    virtual void dialog(const std::string& speaker, const std::vector<std::string>& lines,
+                        const std::string&) {
+        dialog(speaker, lines);
+    }
+    virtual void dialog(const std::string& speaker, const std::vector<std::string>& lines,
+                        const std::string& portrait, const std::string&) {
+        dialog(speaker, lines, portrait);
+    }
     virtual bool dialogOpen() const = 0;
     virtual void sound(const std::string& path, float volume) = 0;
     virtual void setFlag(const std::string& key, int value) = 0;
@@ -479,6 +494,10 @@ public:
     // 0-based pick or -1 while the player is still choosing (a host without UI picks the first).
     virtual void beginChoice(const std::string&, const std::vector<std::string>&,
                              const std::vector<std::string>&) {}
+    virtual void beginChoice(const std::string& speaker, const std::vector<std::string>& pages,
+                             const std::vector<std::string>& options, const std::string&) {
+        beginChoice(speaker, pages, options);
+    }
     virtual int choiceResult() { return 0; }
     // C1-014 "recordKill": the enemy id (step.encounter) dies outside a battle.
     virtual void recordKill(const std::string&) {}
@@ -490,6 +509,14 @@ public:
 
 class CutsceneRunner {
 public:
+    const std::string& skipFlag() const { return m_cutscene.skipFlag; }
+    void stop() {
+        m_running = false;
+        m_cutscene.steps.clear();
+        m_index = 0;
+        m_elapsed = 0.0f;
+    }
+
     void start(Cutscene cutscene) {
         m_cutscene = std::move(cutscene);
         m_index = 0;
@@ -530,7 +557,7 @@ public:
                 case CutsceneStepType::Dialog:
                     if (!m_stepStarted) {
                         m_stepStarted = true;
-                        host.dialog(step.speaker, step.lines);
+                        host.dialog(step.speaker, step.lines, step.portrait, step.reveal);
                         return;
                     }
                     if (host.dialogOpen()) return;
@@ -671,7 +698,8 @@ public:
                     }
                     if (!m_stepStarted) {
                         m_stepStarted = true;
-                        host.beginChoice(step.speaker, cutsceneChoicePages(step), step.options);
+                        host.beginChoice(step.speaker, cutsceneChoicePages(step), step.options,
+                                         step.portrait);
                     }
                     const int picked = host.choiceResult();
                     if (picked < 0) return;

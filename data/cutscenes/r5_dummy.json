@@ -3,9 +3,24 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
       "lines": [
-        "When exploring the Underground, monsters may approach you, pup~",
-        "Don't worry! We'll just practice sorting things out peacefully, uwu!",
+        "When exploring the Underground, monsters may approach you, pup~"
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_happy",
+      "lines": [
+        "Don't worry! We'll just practice sorting things out peacefully, uwu!"
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_happy",
+      "lines": [
         "You can always accept a hug, pup! It's the fastest way to make fwiends~"
       ]
     },

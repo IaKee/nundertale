@@ -433,6 +433,87 @@
         {
           "height": 40,
           "id": 10,
+          "name": "turnstile_locked",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 320,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_reg_turnstile.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "locked"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_open >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1a_turnstile"
+            },
+            {
+              "name": "bumpCutscene",
+              "type": "string",
+              "value": "r1a_turnstile"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* BADGE REQUIRED. NO BADGE, NO CON."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 11,
+          "name": "turnstile_open",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 320,
+          "y": 80,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_reg_turnstile.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "open"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_open >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 12,
           "name": "door_to_panelhall",
           "rotation": 0,
           "type": "door",
@@ -450,12 +531,17 @@
               "name": "targetSpawn",
               "type": "string",
               "value": "from_registration"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_open >= 1"
             }
           ]
         },
         {
           "height": 84,
-          "id": 11,
+          "id": 13,
           "name": "registration_desk",
           "rotation": 0,
           "type": "prop",
@@ -478,7 +564,7 @@
         },
         {
           "height": 60,
-          "id": 12,
+          "id": 14,
           "name": "badge_box",
           "rotation": 0,
           "type": "prop",
@@ -508,6 +594,11 @@
               "value": "r1a_items"
             },
             {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_tried >= 1"
+            },
+            {
               "name": "lines",
               "type": "string",
               "value": "* Unclaimed badges, 2014. Nobody came back for them."
@@ -515,8 +606,41 @@
           ]
         },
         {
+          "height": 60,
+          "id": 15,
+          "name": "badge_box_invalid",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 84,
+          "x": 88,
+          "y": 142,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_reg_badges.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_tried >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* \"INVALID: EVENT ENDED\""
+            }
+          ]
+        },
+        {
           "height": 88,
-          "id": 13,
+          "id": 16,
           "name": "rules_board",
           "rotation": 0,
           "type": "prop",
@@ -554,7 +678,7 @@
         },
         {
           "height": 108,
-          "id": 14,
+          "id": 17,
           "name": "escalator",
           "rotation": 0,
           "type": "prop",
@@ -592,7 +716,7 @@
         },
         {
           "height": 72,
-          "id": 15,
+          "id": 18,
           "name": "lost_and_found",
           "rotation": 0,
           "type": "prop",
@@ -622,6 +746,11 @@
               "value": "r1a_items"
             },
             {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r1a.lostfound_seen >= 1"
+            },
+            {
               "name": "lines",
               "type": "string",
               "value": "* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)"
@@ -629,8 +758,79 @@
           ]
         },
         {
+          "height": 72,
+          "id": 19,
+          "name": "lost_and_found_beacon",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 92,
+          "x": 540,
+          "y": 424,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_reg_lostfound.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1a_beacon"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.lostfound_seen >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)"
+            }
+          ]
+        },
+        {
+          "height": 24,
+          "id": 20,
+          "name": "strange_beacon",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 24,
+          "x": 574,
+          "y": 478,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/strange_beacon.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "glow"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.lostfound_seen >= 1 && ruins.beacon.state == 0"
+            }
+          ]
+        },
+        {
           "height": 16,
-          "id": 16,
+          "id": 21,
           "name": "petal",
           "rotation": 0,
           "type": "prop",
@@ -965,7 +1165,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 17,
+  "nextobjectid": 22,
   "orientation": "orthogonal",
   "properties": [
     {

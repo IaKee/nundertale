@@ -247,6 +247,17 @@ def build_ruins_dummy():
                 "showIf": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0",
             },
         },
+        {
+            "name": "personal_space_outline",
+            "type": "examine",
+            "x": 300,
+            "y": 260,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* A chalk outline on the carpet reads \"PERSONAL SPACE.\"||* Someone put a paw print inside it.",
+            },
+        },
     ]
 
     return make_tiled_map(

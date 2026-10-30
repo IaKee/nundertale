@@ -7,6 +7,7 @@
 #include "services/MusicTracks.hpp"
 #include "core/TiledMap.hpp"
 #include "core/Fur.hpp"
+#include "core/Portraits.hpp"
 #include "ui/SpriteDraw.hpp"
 #include "combat/Corruption.hpp"
 #include "combat/KillScaling.hpp"
@@ -119,6 +120,40 @@ bool BattleScene::loadEncounter(const std::string& encounterId, bool readIntro) 
 
     // C1-002: the optional scripted intro (data/encounters/<id>.json "intro")
     if (readIntro) {
+        m_r2Tutorial = R2TutorialDef{};
+        if (const auto* tutorial = root.field("scriptedTutorial"); tutorial != nullptr &&
+            tutorial->kind == tiled_detail::JsonValue::Kind::Object) {
+            m_r2Tutorial.enabled = true;
+            const auto number = [tutorial](const char* key, double fallback) {
+                const auto* value = tutorial->field(key);
+                return value != nullptr && value->kind == tiled_detail::JsonValue::Kind::Number
+                    ? value->number : fallback;
+            };
+            const auto text = [tutorial](const char* key, const std::string& fallback) {
+                const auto* value = tutorial->field(key);
+                return value != nullptr && value->kind == tiled_detail::JsonValue::Kind::String
+                    ? value->string : fallback;
+            };
+            for (std::size_t i = 0; i < m_r2Tutorial.waveCounts.size(); ++i) {
+                const std::string countKey = "wave" + std::to_string(i + 1U) + "Count";
+                const std::string speedKey = "wave" + std::to_string(i + 1U) + "Speed";
+                m_r2Tutorial.waveCounts[i] = static_cast<int>(number(countKey.c_str(), m_r2Tutorial.waveCounts[i]));
+                m_r2Tutorial.waveSpeeds[i] = static_cast<float>(number(speedKey.c_str(), m_r2Tutorial.waveSpeeds[i]));
+            }
+            m_r2Tutorial.spawnInterval = static_cast<float>(number("spawnInterval", m_r2Tutorial.spawnInterval));
+            m_r2Tutorial.hitDamage = static_cast<int>(number("hitDamage", m_r2Tutorial.hitDamage));
+            m_r2Tutorial.hitFur = static_cast<int>(number("hitFur", m_r2Tutorial.hitFur));
+            m_r2Tutorial.silenceSeconds = static_cast<float>(number("silenceSeconds", m_r2Tutorial.silenceSeconds));
+            m_r2Tutorial.fadeSeconds = static_cast<float>(number("fadeSeconds", m_r2Tutorial.fadeSeconds));
+            m_r2Tutorial.giantSpeed = static_cast<float>(number("giantSpeed", m_r2Tutorial.giantSpeed));
+            m_r2Tutorial.giantWidth = static_cast<float>(number("giantWidth", m_r2Tutorial.giantWidth));
+            m_r2Tutorial.safeWallWidth = static_cast<float>(number("safeWallWidth", m_r2Tutorial.safeWallWidth));
+            m_r2Tutorial.rescueProgress = static_cast<float>(number("rescueProgress", m_r2Tutorial.rescueProgress));
+            m_r2Tutorial.buzzShakeInterval = static_cast<float>(number("buzzShakeInterval", m_r2Tutorial.buzzShakeInterval));
+            m_r2Tutorial.giantSprite = text("giantSprite", m_r2Tutorial.giantSprite);
+            m_r2Tutorial.silhouettePortrait = text("silhouettePortrait", m_r2Tutorial.silhouettePortrait);
+            m_r2Tutorial.endCutscene = text("endCutscene", m_r2Tutorial.endCutscene);
+        }
         if (const auto* intro = root.field("intro"); intro != nullptr) {
             if (!parseIntroScript(*intro, m_introDef)) {
                 std::clog << "Encounter '" << encounterId << "' has a malformed intro block; intro skipped.\n";
@@ -468,6 +503,12 @@ void BattleScene::beginIntro(GameContext& context) {
     m_introFlash = 0.0f;
     m_introRoundActive = false;
     m_introPetals.clear();
+    m_tutorialWaveIndex = 0;
+    m_tutorialDodges = 0;
+    m_tutorialBranchActive = false;
+    m_tutorialBranchLines.clear();
+    m_giantPetalPhase = GiantPetalPhase::None;
+    context.state.setFlag("ruins.r2.dodges", 0);
 
     // The cute lounge music (falls back to the default battle track until the asset exists).
     const std::string musicId = m_introDef.music.empty() ? m_musicId : m_introDef.music;
@@ -524,6 +565,12 @@ void BattleScene::playIntroEffects(GameContext& context) {
 
 void BattleScene::startIntroRound() {
     m_introRound = m_intro->round();
+    if (m_r2Tutorial.enabled) {
+        const std::size_t index = static_cast<std::size_t>(std::clamp(m_tutorialWaveIndex, 0, 2));
+        m_introRound.count = m_r2Tutorial.waveCounts[index];
+        m_introRound.speed = m_r2Tutorial.waveSpeeds[index];
+        m_introRound.dodgeable = true;
+    }
     m_introRoundActive = true;
     m_introRoundTime = 0.0f;
     m_introSpawned = 0;
@@ -531,6 +578,23 @@ void BattleScene::startIntroRound() {
 }
 
 void BattleScene::hitIntroSoul(GameContext& context) {
+    if (m_r2Tutorial.enabled) {
+        const bool firstFur = context.state.furry.value <= 0 && m_r2Tutorial.hitFur > 0 &&
+            context.state.getFlag("fur_hud_seen", 0) == 0;
+        context.player.hp = r2TutorialHpAfterCatch(context.player.hp, m_r2Tutorial.hitDamage);
+        applyFurCapped(context.state.furry.value, context.state.furry.stageMax,
+                       m_r2Tutorial.hitFur, false);
+        if (firstFur) m_introFurTremble.start();
+        context.audio.playSound("assets/sfx/hurt.ogg", 0.7f);
+        context.audio.playSound("assets/sfx/grunt_hurt.ogg", 0.65f);
+        context.shake(4.0f, 0.18f);
+        context.flash({ 255, 0, 0, 255 }, 0.12f);
+        m_introPetals.clear();
+        m_introRoundActive = false;
+        m_introInvuln = 0.8f;
+        completeTutorialWave(context, true);
+        return;
+    }
     GameState& state = context.state;
     const IntroHitResult hit = m_intro->petalsHit(state.flags, context.player.maxHp, state.furry.value);
     context.player.hp = introHpAfterHit(context.player.hp, hit.damage);   // the tutorial can't kill
@@ -562,8 +626,9 @@ void BattleScene::updateIntroPetals(float dt, GameContext& context) {
                                m_introBox.y + m_introBox.height - INTRO_SOUL_PADDING);
 
     // spawn the petals from the top of the box, aimed at where the soul is now
+    const float petalInterval = m_r2Tutorial.enabled ? m_r2Tutorial.spawnInterval : INTRO_PETAL_INTERVAL;
     while (m_introSpawned < m_introRound.count &&
-           m_introRoundTime >= INTRO_PETAL_INTERVAL * static_cast<float>(m_introSpawned) + 0.4f) {
+           m_introRoundTime >= petalInterval * static_cast<float>(m_introSpawned) + 0.4f) {
         IntroPetal petal;
         const float span = std::max(10.0f, m_introBox.width - 50.0f);
         petal.pos = { m_introBox.x + 25.0f + static_cast<float>(GetRandomValue(0, static_cast<int>(span))),
@@ -611,7 +676,185 @@ void BattleScene::updateIntroPetals(float dt, GameContext& context) {
 
     if (m_introRound.dodgeable && m_introSpawned >= m_introRound.count && m_introPetals.empty()) {
         m_introRoundActive = false;
-        m_intro->petalsDodged(context.state.flags);
+        if (m_r2Tutorial.enabled) completeTutorialWave(context, false);
+        else m_intro->petalsDodged(context.state.flags);
+    }
+}
+
+void BattleScene::completeTutorialWave(GameContext& context, bool caught) {
+    if (!m_intro || m_tutorialWaveIndex >= 3) return;
+
+    const int annoyedBefore = context.state.getFlag("ruins.floofy.annoyed", 0);
+    if (!caught) {
+        ++m_tutorialDodges;
+        context.state.setFlag("ruins.r2.dodges", m_tutorialDodges);
+    }
+
+    if (m_tutorialWaveIndex < 2) {
+        m_intro->petalsDodged(context.state.flags); // advances the existing data-driven state machine
+        const int intendedAnnoyed = annoyedBefore + (!caught && m_tutorialDodges == 2 ? 1 : 0);
+        context.state.setFlag("ruins.floofy.annoyed", intendedAnnoyed);
+    } else {
+        // The old intro machine used a forced hit to leave its petals phase. v3.5 uses
+        // the same transition after the third authored wave, without applying that hit.
+        (void)m_intro->petalsHit(context.state.flags, 1, context.state.furry.value);
+    }
+
+    ++m_tutorialWaveIndex;
+    m_introPetals.clear();
+    m_introRoundActive = false;
+    if (m_tutorialWaveIndex >= 3) return;
+
+    if (caught) {
+        m_tutorialBranchLines = m_tutorialWaveIndex == 1
+            ? std::vector<std::string>{ "See? Doesn't that feel GOOD?", "You want MORE, don't you~" }
+            : std::vector<std::string>{ "There you go!", "Knew you wanted more~" };
+    } else if (m_tutorialDodges >= 2) {
+        m_introFlash = 0.12f;
+        m_tutorialBranchLines = {
+            "Is this a JOKE, darling? Are you ALLERGIC?",
+            "CATCH. THE. VIBES!!!"
+        };
+    } else {
+        m_tutorialBranchLines = { "Hey, buddy. You missed it.", "Let's try that again, okay?" };
+    }
+    m_tutorialBranchActive = true;
+    m_tutorialBranchPage = 0;
+    m_tutorialBranchTyped = 0.0f;
+}
+
+void BattleScene::updateTutorialBranch(float dt, GameContext& context) {
+    if (!m_tutorialBranchActive || m_tutorialBranchLines.empty()) return;
+    const std::string& line = m_tutorialBranchLines[m_tutorialBranchPage];
+    m_tutorialBranchTyped = std::min(static_cast<float>(line.size()),
+                                     m_tutorialBranchTyped + INTRO_TYPE_CPS * dt);
+    if (!context.input.isConfirmPressed()) return;
+    if (m_tutorialBranchTyped < static_cast<float>(line.size())) {
+        m_tutorialBranchTyped = static_cast<float>(line.size());
+        return;
+    }
+    ++m_tutorialBranchPage;
+    m_tutorialBranchTyped = 0.0f;
+    if (m_tutorialBranchPage >= m_tutorialBranchLines.size()) {
+        m_tutorialBranchActive = false;
+        m_tutorialBranchLines.clear();
+    }
+}
+
+void BattleScene::beginGiantPetal(GameContext& context) {
+    m_giantPetalPhase = GiantPetalPhase::Silence;
+    m_giantTimer = 0.0f;
+    m_giantSweepTime = 0.0f;
+    m_giantBuzzTimer = 0.0f;
+    m_giantAlpha = 0.0f;
+    m_giantX = m_introBox.x;
+    m_giantDialogLines.clear();
+    m_giantDialogPage = 0;
+    m_giantDialogTyped = 0.0f;
+    context.audio.stopMusic();
+}
+
+void BattleScene::finishR2Tutorial(GameContext& context) {
+    context.audio.stopAllSounds();
+    context.state.setFlag("ruins.r2.battle_rescue_seen", 1);
+    context.state.pendingCutscene = m_r2Tutorial.endCutscene;
+    m_introActive = false;
+    m_intro.reset();
+    m_giantPetalPhase = GiantPetalPhase::None;
+    context.scenes.popScene(context);
+}
+
+void BattleScene::updateGiantPetal(float dt, GameContext& context) {
+    m_giantTimer += dt;
+    m_introInvuln = std::max(0.0f, m_introInvuln - dt);
+
+    const auto updateDialog = [this, dt, &context]() -> bool {
+        if (m_giantDialogLines.empty()) return true;
+        const std::string& line = m_giantDialogLines[m_giantDialogPage];
+        m_giantDialogTyped = std::min(static_cast<float>(line.size()),
+                                      m_giantDialogTyped + INTRO_TYPE_CPS * dt);
+        if (!context.input.isConfirmPressed()) return false;
+        if (m_giantDialogTyped < static_cast<float>(line.size())) {
+            m_giantDialogTyped = static_cast<float>(line.size());
+            return false;
+        }
+        ++m_giantDialogPage;
+        m_giantDialogTyped = 0.0f;
+        return m_giantDialogPage >= m_giantDialogLines.size();
+    };
+
+    if (m_giantPetalPhase == GiantPetalPhase::Spritz) {
+        if (updateDialog()) {
+            m_giantPetalPhase = GiantPetalPhase::Eep;
+            m_giantDialogLines = { "EEP!!", "My BLOWOUT!", "This isn't over, gamer! I know where you SAVE~!" };
+            m_giantDialogPage = 0;
+            m_giantDialogTyped = 0.0f;
+        }
+        return;
+    }
+    if (m_giantPetalPhase == GiantPetalPhase::Eep) {
+        if (updateDialog()) finishR2Tutorial(context);
+        return;
+    }
+
+    if (m_giantPetalPhase == GiantPetalPhase::Silence) {
+        if (m_giantTimer >= m_r2Tutorial.silenceSeconds) {
+            m_giantPetalPhase = GiantPetalPhase::FadeIn;
+            m_giantTimer = 0.0f;
+            if (introSfxExists("petal_buzz")) context.audio.playSound("assets/sfx/petal_buzz.ogg", 0.75f);
+        }
+        return;
+    }
+
+    m_giantBuzzTimer += dt;
+    if (m_giantBuzzTimer >= m_r2Tutorial.buzzShakeInterval) {
+        m_giantBuzzTimer = 0.0f;
+        context.shake(2.5f, 0.12f);
+    }
+    if (m_giantPetalPhase == GiantPetalPhase::FadeIn) {
+        m_giantAlpha = std::clamp(m_giantTimer / std::max(0.01f, m_r2Tutorial.fadeSeconds), 0.0f, 1.0f);
+        if (m_giantAlpha >= 1.0f) {
+            m_giantPetalPhase = GiantPetalPhase::Sweep;
+            m_giantTimer = 0.0f;
+        }
+        return;
+    }
+
+    // The SOUL remains controllable during the slow sweep.
+    Vector2 move{ 0.0f, 0.0f };
+    if (context.input.isLeft()) move.x -= 1.0f;
+    if (context.input.isRight()) move.x += 1.0f;
+    if (context.input.isUp()) move.y -= 1.0f;
+    if (context.input.isDown()) move.y += 1.0f;
+    m_introSoul.x = std::clamp(m_introSoul.x + move.x * INTRO_SOUL_SPEED * dt,
+                               m_introBox.x + INTRO_SOUL_PADDING,
+                               m_introBox.x + m_introBox.width - INTRO_SOUL_PADDING);
+    m_introSoul.y = std::clamp(m_introSoul.y + move.y * INTRO_SOUL_SPEED * dt,
+                               m_introBox.y + INTRO_SOUL_PADDING,
+                               m_introBox.y + m_introBox.height - INTRO_SOUL_PADDING);
+
+    m_giantSweepTime += dt;
+    const GiantPetalSweep sweep{ m_introBox.x, m_introBox.width, m_r2Tutorial.giantWidth,
+                                 m_r2Tutorial.giantSpeed, m_r2Tutorial.safeWallWidth,
+                                 m_r2Tutorial.rescueProgress };
+    m_giantX = giantPetalXAt(sweep, m_giantSweepTime);
+    if (m_introInvuln <= 0.0f && giantPetalHitsSoul(sweep, m_giantX, m_introSoul.x)) {
+        context.player.hp = r2TutorialHpAfterCatch(context.player.hp, m_r2Tutorial.hitDamage);
+        applyFurCapped(context.state.furry.value, context.state.furry.stageMax,
+                       m_r2Tutorial.hitFur, false);
+        context.audio.playSound("assets/sfx/hurt.ogg", 0.65f);
+        context.flash({ 255, 0, 0, 255 }, 0.10f);
+        m_introInvuln = 0.8f;
+    }
+    if (giantPetalRescueTriggered(sweep, m_giantX)) {
+        m_giantPetalPhase = GiantPetalPhase::Spritz;
+        m_giantDialogLines = { "*SPRITZ*", "Bad flower! BAD!" };
+        m_giantDialogPage = 0;
+        m_giantDialogTyped = 0.0f;
+        context.audio.stopAllSounds();
+        context.audio.playSound("assets/sfx/glitter_spray.ogg", 0.9f);
+        context.flash({ 180, 225, 255, 255 }, 0.22f);
+        context.shake(4.0f, 0.25f);
     }
 }
 
@@ -640,6 +883,15 @@ void BattleScene::updateIntro(float dt, GameContext& context) {
     m_introFlash = std::max(0.0f, m_introFlash - dt);
     m_introInvuln = std::max(0.0f, m_introInvuln - dt);
     if (m_introFurTremble.update(dt)) context.state.setFlag("fur_hud_seen", 1);
+
+    if (m_giantPetalPhase != GiantPetalPhase::None) {
+        updateGiantPetal(dt, context);
+        return;
+    }
+    if (m_tutorialBranchActive) {
+        updateTutorialBranch(dt, context);
+        return;
+    }
 
     m_intro->tick(dt, flags);
 
@@ -675,7 +927,8 @@ void BattleScene::updateIntro(float dt, GameContext& context) {
     playIntroEffects(context);
 
     if (m_intro->finished()) {
-        endIntro(context);
+        if (m_r2Tutorial.enabled) beginGiantPetal(context);
+        else endIntro(context);
         return;
     }
 
@@ -776,11 +1029,16 @@ void BattleScene::drawIntroHud(GameContext& context) {
 
 void BattleScene::renderIntro(GameContext& context) {
     if (!m_intro) return;
+    if (m_giantPetalPhase != GiantPetalPhase::None) {
+        renderGiantPetal(context);
+        return;
+    }
     drawBattleBackground(backgroundFromId(m_backgroundId), m_introTime);
 
     const IntroPhase phase = m_intro->phase();
     const IntroView view = m_intro->view();
-    const bool floofyTalking = phase == IntroPhase::Text && view.speaker == IntroSpeaker::Floofy;
+    const bool floofyTalking = m_tutorialBranchActive ||
+        (phase == IntroPhase::Text && view.speaker == IntroSpeaker::Floofy);
     const int enemyX = VIRTUAL_WIDTH / 2;
     const int baselineY = ENEMY_BASELINE_Y;
 
@@ -817,7 +1075,9 @@ void BattleScene::renderIntro(GameContext& context) {
     DrawRectangleRec(m_introBox, BLACK);
     DrawRectangleLinesEx(m_introBox, 5.0f, WHITE);
 
-    if (phase == IntroPhase::Text && view.speaker == IntroSpeaker::Narrator) {
+    if (m_tutorialBranchActive) {
+        // The wave result is spoken above the dodge box; no menu is ever exposed.
+    } else if (phase == IntroPhase::Text && view.speaker == IntroSpeaker::Narrator) {
         drawIntroBoxText(context, view.text, static_cast<std::size_t>(m_introTyped));
     } else if (phase == IntroPhase::Choice) {
         Font font = context.resources.getFont8Bit(22);
@@ -845,7 +1105,91 @@ void BattleScene::renderIntro(GameContext& context) {
     }
 
     if (floofyTalking) {
-        drawIntroBubble(context, view.text, static_cast<std::size_t>(m_introTyped), enemyX);
+        if (m_tutorialBranchActive) {
+            drawIntroBubble(context, m_tutorialBranchLines[m_tutorialBranchPage],
+                            static_cast<std::size_t>(m_tutorialBranchTyped), enemyX);
+        } else {
+            drawIntroBubble(context, view.text, static_cast<std::size_t>(m_introTyped), enemyX);
+        }
+    }
+
+    drawIntroHud(context);
+    drawPkSkull(context);
+}
+
+void BattleScene::renderGiantPetal(GameContext& context) {
+    drawBattleBackground(backgroundFromId(m_backgroundId), m_introTime);
+
+    const int enemyX = VIRTUAL_WIDTH / 2;
+    const std::string spriteBase = "assets/sprites/battle/" + m_enemySprite;
+    const SpriteSheetDef* enemySheet = spriteSheetCache().load(spriteBase + ".png", spriteBase + ".json");
+    if (enemySheet != nullptr) {
+        Texture2D enemyTexture = context.resources.getTexture(spriteBase + ".png");
+        if (enemyTexture.id > 0) {
+            const std::string anim = enemySheet->anims.count("sinister") != 0U ? "sinister" : "idle";
+            SetTextureFilter(enemyTexture, TEXTURE_FILTER_POINT);
+            drawSprite(enemyTexture, *enemySheet, anim, m_introTime,
+                       { static_cast<float>(enemyX), static_cast<float>(ENEMY_BASELINE_Y) }, 2.0f, WHITE);
+        }
+    }
+
+    DrawRectangleRec(m_introBox, BLACK);
+    DrawRectangleLinesEx(m_introBox, 5.0f, WHITE);
+
+    if (m_giantPetalPhase != GiantPetalPhase::Silence) {
+        std::string sidecar = m_r2Tutorial.giantSprite;
+        const std::size_t dot = sidecar.rfind('.');
+        sidecar = (dot == std::string::npos ? sidecar : sidecar.substr(0, dot)) + ".json";
+        const SpriteSheetDef* giantSheet = spriteSheetCache().load(m_r2Tutorial.giantSprite, sidecar);
+        if (giantSheet != nullptr) {
+            Texture2D giantTexture = context.resources.getTexture(m_r2Tutorial.giantSprite);
+            if (giantTexture.id > 0) {
+                SetTextureFilter(giantTexture, TEXTURE_FILTER_POINT);
+                const float dropped = (m_giantPetalPhase == GiantPetalPhase::Spritz ||
+                                       m_giantPetalPhase == GiantPetalPhase::Eep) ? 14.0f : 0.0f;
+                const unsigned char alpha = static_cast<unsigned char>(
+                    std::lround(std::clamp(m_giantAlpha, 0.0f, 1.0f) * 255.0f));
+                BeginScissorMode(static_cast<int>(m_introBox.x) + 5, static_cast<int>(m_introBox.y) + 5,
+                                 std::max(1, static_cast<int>(m_introBox.width) - 10),
+                                 std::max(1, static_cast<int>(m_introBox.height) - 10));
+                drawSprite(giantTexture, *giantSheet, "buzz", m_introTime,
+                           { m_giantX, m_introBox.y + m_introBox.height * 0.5f + dropped },
+                           2.0f, Color{ 255, 255, 255, alpha });
+                EndScissorMode();
+            }
+        }
+    }
+
+    if (m_giantPetalPhase == GiantPetalPhase::Spritz) {
+        const std::optional<PortraitDef> portrait = resolvePortrait(m_r2Tutorial.silhouettePortrait);
+        if (portrait.has_value()) {
+            Texture2D texture = context.resources.getTexture(portrait->imagePath);
+            if (texture.id > 0) {
+                SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+                const float scale = portraitDrawScale(portrait->sheet.density);
+                const Vector2 topLeft{ m_introBox.x + 16.0f, m_introBox.y + 18.0f };
+                const Vector2 pivot{ topLeft.x + static_cast<float>(portrait->sheet.originX) * scale,
+                                     topLeft.y + static_cast<float>(portrait->sheet.originY) * scale };
+                drawSprite(texture, portrait->sheet, "idle", 0.0f, pivot, 2.0f, WHITE);
+            }
+        }
+        if (m_giantDialogPage < m_giantDialogLines.size()) {
+            Font font = context.resources.getFont8Bit(22);
+            const std::string visible = m_giantDialogLines[m_giantDialogPage].substr(
+                0, static_cast<std::size_t>(m_giantDialogTyped));
+            context.resources.drawText(font, visible,
+                                       { m_introBox.x + 132.0f, m_introBox.y + 45.0f },
+                                       20, WHITE, 1.0f);
+        }
+    } else if (m_giantPetalPhase == GiantPetalPhase::Eep) {
+        if (m_giantDialogPage < m_giantDialogLines.size()) {
+            drawIntroBubble(context, m_giantDialogLines[m_giantDialogPage],
+                            static_cast<std::size_t>(m_giantDialogTyped), enemyX);
+        }
+    } else {
+        if (m_introInvuln <= 0.0f || static_cast<int>(GetTime() * 15.0) % 2 == 0) {
+            drawIntroSoul(context, m_introSoul.x, m_introSoul.y, SOUL_RED);
+        }
     }
 
     drawIntroHud(context);

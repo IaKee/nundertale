@@ -41,6 +41,17 @@ enum class OverworldMenuState {
     Cell
 };
 
+struct PetalParticle {
+    float x = 0.0f;
+    float y = 0.0f;
+    float vx = 0.0f;
+    float vy = 0.0f;
+    float life = 0.0f;
+    float maxLife = 0.5f;
+    int size = 3;
+    Color color = { 255, 230, 90, 255 };
+};
+
 class OverworldScene : public IScene {
 public:
     OverworldScene();
@@ -157,6 +168,7 @@ private:
 
     // Ambient fluff particles (FUR-010)
     std::vector<FluffParticle> m_fluffParticles;
+    std::vector<PetalParticle> m_petalParticles;
     std::uint32_t m_fluffRng = 0x5F100Fu;
 
     CutsceneRunner m_cutscene;

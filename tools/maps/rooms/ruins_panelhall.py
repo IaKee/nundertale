@@ -180,21 +180,26 @@ def build_ruins_panelhall():
                 "lines": "* \"Gamers: Are They Real?\". 4 PM, 2014. The room is still booked.",
             },
         },
+        # BUG-59 / C1-016: the trail follows the corridor from the south door, jogs one tile
+        # right and runs up to the lounge door; the examine zone covers its walkable lane
         {
             "name": "petal_trail",
-            "type": "prop",
-            "x": 272,
-            "y": 360,
-            "w": 96,
-            "h": 16,
+            "type": "examine",
+            "x": 280,
+            "y": 160,
+            "w": 80,
+            "h": 440,
             "properties": {
-                "sprite": "assets/props/petal_trail.png",
-                "solid": False,
                 "counter": "ruins.r1b.petals",
                 "cutscene": "r1b_items",
                 "lines": "* The petals lead to the door at the end.\n* (You've played enough games to know what that means.)",
             },
         },
+        *lay_petal_trail(
+            [(7, 14), (7, 13), (7, 12), (7, 11), (7, 10), (8, 10)]
+            + [(8, r) for r in range(9, 1, -1)],
+            scatter_tiles=[(6, 12), (9, 8), (7, 6), (9, 4)],
+        ),
         {
             "name": "lounge_door",
             "type": "prop",

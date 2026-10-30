@@ -150,6 +150,17 @@ def build_ruins_house_pepe():
                 "fullLines": "* You're carrying too much.",
             },
         },
+        {
+            "name": "game_case_stack",
+            "type": "examine",
+            "x": 520,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* Three game cases: unopened, uninstalled, and \"maybe after one more match.\"||* All three are the same game.",
+            },
+        },
     ]
 
     return make_tiled_map(

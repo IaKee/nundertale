@@ -409,8 +409,31 @@
           ]
         },
         {
-          "height": 45,
+          "height": 300,
           "id": 13,
+          "name": "trigger_landing",
+          "rotation": 0,
+          "type": "trigger",
+          "visible": true,
+          "width": 100,
+          "x": 270,
+          "y": 0,
+          "properties": [
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1_landing"
+            },
+            {
+              "name": "once",
+              "type": "string",
+              "value": "ruins.r1.woke"
+            }
+          ]
+        },
+        {
+          "height": 45,
+          "id": 14,
           "name": "trigger_leave_landing",
           "rotation": 0,
           "type": "trigger",
@@ -428,12 +451,17 @@
               "name": "once",
               "type": "string",
               "value": "ruins.floofy.left_landing"
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_tried >= 1"
             }
           ]
         },
         {
           "height": 45,
-          "id": 14,
+          "id": 15,
           "name": "door_to_registration",
           "rotation": 0,
           "type": "",
@@ -457,7 +485,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 16,
           "name": "door_to_floofy",
           "rotation": 0,
           "type": "door",
@@ -485,7 +513,7 @@
         },
         {
           "height": 120,
-          "id": 16,
+          "id": 17,
           "name": "con_doors",
           "rotation": 0,
           "type": "prop",
@@ -517,8 +545,74 @@
           ]
         },
         {
+          "height": 32,
+          "id": 18,
+          "name": "badge_under_floofy",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 32,
+          "x": 368,
+          "y": 248,
+          "properties": [
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_tried >= 1"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1_badge"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* There's a badge under him. You're not reaching under him."
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 19,
+          "name": "floofy_badge",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 368,
+          "y": 248,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/floofy_badge.png"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "showIf",
+              "type": "string",
+              "value": "ruins.r1a.turnstile_tried >= 1 && item.floofy_badge.taken == 0"
+            },
+            {
+              "name": "cutscene",
+              "type": "string",
+              "value": "r1_badge"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A con badge, in the dent. \"FLOOFY — STAFF — WELCOME COMMITTEE\"."
+            }
+          ]
+        },
+        {
           "height": 36,
-          "id": 17,
+          "id": 20,
           "name": "floofy",
           "rotation": 0,
           "type": "npc",
@@ -545,7 +639,7 @@
             {
               "name": "solid",
               "type": "bool",
-              "value": false
+              "value": true
             },
             {
               "name": "hideIf",
@@ -566,7 +660,7 @@
         },
         {
           "height": 56,
-          "id": 18,
+          "id": 21,
           "name": "flower_dent",
           "rotation": 0,
           "type": "examine",
@@ -599,7 +693,7 @@
         },
         {
           "height": 88,
-          "id": 19,
+          "id": 22,
           "name": "flower_bed",
           "rotation": 0,
           "type": "prop",
@@ -662,7 +756,7 @@
         },
         {
           "height": 38,
-          "id": 20,
+          "id": 23,
           "name": "light_beam",
           "rotation": 0,
           "type": "examine",
@@ -680,7 +774,7 @@
         },
         {
           "height": 0,
-          "id": 21,
+          "id": 24,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -692,15 +786,20 @@
         },
         {
           "height": 40,
-          "id": 22,
+          "id": 25,
           "name": "can_decal",
           "rotation": 0,
-          "type": "examine",
+          "type": "prop",
           "visible": true,
           "width": 40,
           "x": 480,
           "y": 280,
           "properties": [
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
             {
               "name": "lines",
               "type": "string",
@@ -710,7 +809,7 @@
         },
         {
           "height": 90,
-          "id": 23,
+          "id": 26,
           "name": "trigger_wake",
           "rotation": 0,
           "type": "trigger",
@@ -733,14 +832,14 @@
         },
         {
           "height": 40,
-          "id": 24,
+          "id": 27,
           "name": "tide_pod",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 40,
-          "x": 404,
-          "y": 272,
+          "x": 440,
+          "y": 160,
           "properties": [
             {
               "name": "sprite",
@@ -750,7 +849,7 @@
             {
               "name": "solid",
               "type": "bool",
-              "value": false
+              "value": true
             },
             {
               "name": "hideIf",
@@ -771,13 +870,13 @@
         },
         {
           "height": 40,
-          "id": 25,
+          "id": 28,
           "name": "floor_message",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 40,
-          "x": 140,
+          "x": 92,
           "y": 360,
           "properties": [
             {
@@ -1023,7 +1122,7 @@
     }
   ],
   "nextlayerid": 6,
-  "nextobjectid": 26,
+  "nextobjectid": 29,
   "orientation": "orthogonal",
   "properties": [
     {

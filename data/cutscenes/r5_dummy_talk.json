@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "You're a natural, pup! uwu"
       ]
@@ -15,6 +16,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Come along, pup! Follow me to the next room, uwu~"
       ]

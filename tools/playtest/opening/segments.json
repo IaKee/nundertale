@@ -19,7 +19,12 @@
         {
           "type": "sound",
           "path": "assets/sfx/spray.ogg",
-          "min": 2
+          "min": 1
+        },
+        {
+          "type": "sound",
+          "path": "assets/sfx/glitter_spray.ogg",
+          "min": 1
         },
         {
           "type": "waterBurst",

@@ -1,0 +1,55 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* BADGE REQUIRED. NO BADGE, NO CON."],
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried >= 1 && ruins.r1a.turnstile_open == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* BADGE REQUIRED. NO BADGE, NO CON."],
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/enemy_hit.ogg",
+      "volume": 0.35,
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* (A muffled thud and a squeaky pawstep echo from the cave behind you...)"],
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floofy.left_landing",
+      "value": 1,
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r1a.turnstile_tried",
+      "value": 1,
+      "if": "hasItem.floofy_badge == 0 && ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* The turnstile beeps. \"WELCOME, FLOOFY!\"",
+        "* (Close enough.)"
+      ],
+      "if": "hasItem.floofy_badge >= 1 && ruins.r1a.turnstile_open == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r1a.turnstile_open",
+      "value": 1,
+      "if": "hasItem.floofy_badge >= 1 && ruins.r1a.turnstile_open == 0"
+    }
+  ]
+}

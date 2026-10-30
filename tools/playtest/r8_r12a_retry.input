@@ -1,0 +1,82 @@
+# Playtest Segment: r8_r12a_retry.input
+# Death and retry in Floofy's VIP Lounge (R12a).
+# Run from: --room ruins_viplounge --spawn from_basement --seconds 110
+# 1. Triggers floofy_lair battle.
+# 2. Stands still during enemy bullet pattern, taking damage until HP reaches 0.
+# 3. Game Over / WELCOME HOME reloads at R12a save star.
+# 4. Increments ruins.floofy.lair_deaths = 1.
+# 5. Re-enters battle -> Floofy delivers retry death dialogue:
+#    "Back already, darling? I KNEW you'd miss me~ Same SOUL. Same smell. Let's go again."
+# 6. Completes shortened encounter, triggers r12a_lair_end, reaches R13.
+
+# Step 1: Walk to trigger
+1-80 up
+
+# Advance opener dialog
+90 cancel
+95 confirm
+100 cancel
+105 confirm
+110 cancel
+115 confirm
+120 cancel
+125 confirm
+
+# Battle starts: stand still during enemy turns to take hits
+150 confirm
+160 confirm
+170 confirm
+
+# After death, GameOverScene appears, reload at R12a save star
+# Advance through game over text
+400 confirm
+450 confirm
+500 confirm
+550 confirm
+600 confirm
+650 confirm
+
+# Retried: walk back north to re-trigger battle
+700-780 up
+
+# Advance retry dialog
+790 cancel
+795 confirm
+800 cancel
+805 confirm
+810 cancel
+815 confirm
+820 cancel
+825 confirm
+
+# Second battle: play turns
+850 confirm
+860 confirm
+870 confirm
+880-960 left
+970-1050 right
+
+1070 confirm
+1080 confirm
+1090 confirm
+1100-1180 up
+1190-1270 down
+
+1290 confirm
+1300 confirm
+1310 confirm
+1320-1400 left
+1410-1490 right
+
+# Advance r12a_lair_end dialog
+1520 cancel
+1530 confirm
+1540 cancel
+1550 confirm
+1560 cancel
+1570 confirm
+1580 cancel
+1590 confirm
+
+# Walk north to R13 exit
+1620-1800 up

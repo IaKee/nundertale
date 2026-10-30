@@ -3,8 +3,16 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_angry",
       "lines": [
-        "Hey! That's my fwiend's suit!",
+        "Hey! That's my fwiend's suit!"
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_sad",
+      "lines": [
         "The dummy is for hugging, pup! No need to hurt our fluffy fwiends..."
       ]
     },
@@ -16,6 +24,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_sad",
       "lines": [
         "Come along, hun... let's head to the next room, uwu."
       ]

@@ -839,6 +839,24 @@
               "value": "right"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 28,
+          "name": "pack_roster",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 380,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* SHADOW FANG PACK ROSTER: BARKY.||* Attendance: unanimous."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1061,7 +1079,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 28,
+  "nextobjectid": 29,
   "orientation": "orthogonal",
   "properties": [
     {

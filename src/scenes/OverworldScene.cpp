@@ -1,4 +1,5 @@
 #include "scenes/OverworldScene.hpp"
+#include "core/PlayerSheet.hpp"
 #include "core/ToxicTrack.hpp"
 #include "scenes/BattleScene.hpp"
 #include "scenes/TitleScene.hpp"
@@ -80,6 +81,7 @@ void OverworldScene::loadRoomMap(const std::string& roomId) {
     m_saveLinesOverride.clear();
     m_roomEncounters.clear();
     m_waterBursts.clear();
+    m_petalParticles.clear();
     m_encounterBudget = 0;
     m_encounterStepsRemaining = 0;
     initObstacles();
@@ -178,6 +180,15 @@ void OverworldScene::initRoomObjects(GameContext& context) {
             ? RGB_KEY_TARGET_MASK : RGB_KEY_START_MASK;
         setRgbKeyboardMask(context.state, initialMask);
         context.state.setFlag("ruins.r4.rgb_initialized", 1);
+    }
+
+    if (context.state.currentRoom == "ruins_fall" &&
+        context.state.getFlag("ruins.r1.landing_seen", 0) == 0 &&
+        context.state.getFlag("ruins.r1.woke", 0) == 0) {
+        m_roomObjectAnimations["floofy"] = "landing_idle";
+        m_player.setPosition({ 323.0f, 30.0f });
+        context.state.playerPos = { 323.0f, 30.0f };
+        m_player.setOverrideAnimation("assets/sprites/ow/grub.png", "fall", 0.0f);
     }
 
     for (const TiledLayer& layer : m_tiledMap.layers) {
@@ -522,6 +533,11 @@ static float getRaidStartSeconds() {
 static float s_prevRaidTimeLeft = -1.0f;
 
 void OverworldScene::onEnter(GameContext& context) {
+    if (context.state.hasFlag("furry.value")) {
+        context.state.furry.value = context.state.getFlag("furry.value");
+    } else if (context.state.hasFlag("fur.value")) {
+        context.state.furry.value = context.state.getFlag("fur.value");
+    }
     const float raidStartSeconds = getRaidStartSeconds();
 
     loadRoomMap(context.state.currentRoom);
@@ -1055,6 +1071,16 @@ void OverworldScene::update(float dt, GameContext& context) {
         std::remove_if(m_waterBursts.begin(), m_waterBursts.end(),
                        [](const WaterBurst& burst) { return burst.isDone(); }),
         m_waterBursts.end());
+    for (PetalParticle& p : m_petalParticles) {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 180.0f * dt;
+        p.life += dt;
+    }
+    m_petalParticles.erase(
+        std::remove_if(m_petalParticles.begin(), m_petalParticles.end(),
+                       [](const PetalParticle& p) { return p.life >= p.maxLife; }),
+        m_petalParticles.end());
     refreshDynamicObstacles(context);
 
     // RAD-003 / BUG-40: r1_wake sets the squad message flag at the buzz; that is when the clock starts.
@@ -1087,6 +1113,30 @@ void OverworldScene::update(float dt, GameContext& context) {
     }
 
     if (m_cutscene.running()) {
+        const std::string& skipFlag = m_cutscene.skipFlag();
+        if (!skipFlag.empty()) {
+            const bool canSkip = (context.state.getFlag(skipFlag, 0) >= 1) || (context.save.getMeta().resets > 0);
+            if (canSkip && context.input.isCancelPressed()) {
+                if (skipFlag == "ruins.r1.landing_seen") {
+                    context.state.setFlag(skipFlag, 1);
+                    m_player.setPosition({ 323.0f, 232.0f });
+                    context.state.playerPos = { 323.0f, 232.0f };
+                    m_player.setOverrideAnimation("assets/sprites/ow/grub.png", "lying", 0.0f);
+                    m_roomObjectAnimations["floofy"] = "knocked_out";
+                    m_cutsceneFadeAlpha = 0.0f;
+                    m_cutsceneFadeActive = false;
+                    m_autoFadeIn = false;
+                    m_petalParticles.clear();
+                    Cutscene wake;
+                    if (loadCutsceneFile("r1_wake", wake)) {
+                        m_cutscene.start(std::move(wake));
+                    } else {
+                        m_cutscene.stop();
+                    }
+                    return;
+                }
+            }
+        }
         class OverworldCutsceneHost final : public CutsceneHost {
         public:
             OverworldCutsceneHost(DialogBox& dialogBox, Player& player, GameContext& context,
@@ -1094,13 +1144,14 @@ void OverworldScene::update(float dt, GameContext& context) {
                                   std::unordered_set<std::string>& hidden,
                                   std::unordered_map<std::string, std::string>& animations,
                                   std::vector<WaterBurst>& waterBursts,
+                                  std::vector<PetalParticle>& petalParticles,
                                   std::unordered_set<std::string>& logged,
                                   float& controlsLockedRemaining, float& fadeAlphaValue,
                                   float& fadeStart, float& fadeTarget, float& fadeElapsed,
                                   bool& fadeActive, bool& battleStarted, int& choice)
                 : m_dialogBox(dialogBox), m_player(player), m_context(context),
                   m_roomObjects(roomObjects), m_hidden(hidden), m_animations(animations),
-                  m_waterBursts(waterBursts), m_logged(logged),
+                  m_waterBursts(waterBursts), m_petalParticles(petalParticles), m_logged(logged),
                   m_controlsLockedRemaining(controlsLockedRemaining),
                   m_fadeAlpha(fadeAlphaValue), m_fadeStart(fadeStart),
                   m_fadeTarget(fadeTarget), m_fadeElapsed(fadeElapsed),
@@ -1108,6 +1159,16 @@ void OverworldScene::update(float dt, GameContext& context) {
 
             void dialog(const std::string& speaker, const std::vector<std::string>& lines) override {
                 m_dialogBox.startDialog(lines, speaker);
+            }
+
+            void dialog(const std::string& speaker, const std::vector<std::string>& lines,
+                        const std::string& portrait) override {
+                m_dialogBox.startDialog(lines, speaker, nullptr, "", -1, portrait);
+            }
+
+            void dialog(const std::string& speaker, const std::vector<std::string>& lines,
+                        const std::string& portrait, const std::string& reveal) override {
+                m_dialogBox.startDialog(lines, speaker, nullptr, "", -1, portrait, reveal);
             }
 
             bool dialogOpen() const override {
@@ -1283,6 +1344,16 @@ void OverworldScene::update(float dt, GameContext& context) {
                 m_dialogBox.setOnChoice([&choice](int index, const std::string&) { choice = index; });
             }
 
+            void beginChoice(const std::string& speaker, const std::vector<std::string>& pages,
+                             const std::vector<std::string>& options,
+                             const std::string& portrait) override {
+                (void)options;
+                m_choice = -1;
+                m_dialogBox.startDialog(pages, speaker, nullptr, "", -1, portrait);
+                int& choice = m_choice;
+                m_dialogBox.setOnChoice([&choice](int index, const std::string&) { choice = index; });
+            }
+
             int choiceResult() override {
                 return m_choice;
             }
@@ -1306,9 +1377,46 @@ void OverworldScene::update(float dt, GameContext& context) {
                         break;
                     }
                 }
-                m_waterBursts.emplace_back(
-                    position.x, position.y, WaterBurstVariant::Overworld,
-                    0x508172u + static_cast<std::uint32_t>(m_waterBursts.size()));
+                if (m_context.state.currentRoom == "ruins_fall" && target == "floofy") {
+                    petalBurst(target);
+                } else {
+                    m_waterBursts.emplace_back(
+                        position.x, position.y, WaterBurstVariant::Overworld,
+                        0x508172u + static_cast<std::uint32_t>(m_waterBursts.size()));
+                }
+            }
+
+            void petalBurst(const std::string& target) {
+                Vector2 position = m_player.getPosition();
+                if (!target.empty() && target != "player" && target != "grub") {
+                    for (const TiledObject& object : m_roomObjects) {
+                        if (object.name != target) continue;
+                        const TiledRect bounds = object.bounds();
+                        position = { bounds.x + bounds.width * 0.5f,
+                                     bounds.y + bounds.height * 0.5f };
+                        break;
+                    }
+                }
+                static const Color petalColors[] = {
+                    { 255, 230, 80, 255 },
+                    { 255, 245, 120, 255 },
+                    { 240, 180, 50, 255 },
+                    { 255, 215, 0, 255 }
+                };
+                for (int i = 0; i < 16; ++i) {
+                    float angle = (static_cast<float>(i) / 16.0f) * 6.2831853f;
+                    float speed = 60.0f + static_cast<float>((i * 37) % 50);
+                    PetalParticle p;
+                    p.x = position.x;
+                    p.y = position.y;
+                    p.vx = std::cos(angle) * speed;
+                    p.vy = std::sin(angle) * speed - 40.0f;
+                    p.life = 0.0f;
+                    p.maxLife = 0.45f + static_cast<float>((i * 13) % 20) * 0.01f;
+                    p.size = (i % 2 == 0) ? 3 : 2;
+                    p.color = petalColors[i % 4];
+                    m_petalParticles.push_back(p);
+                }
             }
 
         private:
@@ -1333,6 +1441,7 @@ void OverworldScene::update(float dt, GameContext& context) {
             std::unordered_set<std::string>& m_hidden;
             std::unordered_map<std::string, std::string>& m_animations;
             std::vector<WaterBurst>& m_waterBursts;
+            std::vector<PetalParticle>& m_petalParticles;
             std::unordered_set<std::string>& m_logged;
             float& m_controlsLockedRemaining;
             float& m_fadeAlpha;
@@ -1343,7 +1452,7 @@ void OverworldScene::update(float dt, GameContext& context) {
             bool& m_battleStarted;
             int& m_choice;
         } host(m_dialogBox, m_player, context, m_roomObjects, m_hiddenRoomObjects,
-               m_roomObjectAnimations, m_waterBursts, m_loggedConditions, m_controlsLockedRemaining,
+               m_roomObjectAnimations, m_waterBursts, m_petalParticles, m_loggedConditions, m_controlsLockedRemaining,
                m_cutsceneFadeAlpha, m_cutsceneFadeStart, m_cutsceneFadeTarget,
                m_cutsceneFadeElapsed, m_cutsceneFadeActive, m_cutsceneBattleStarted, m_cutsceneChoice);
 
@@ -1683,33 +1792,54 @@ void OverworldScene::drawRoomObject(const TiledObject& object, GameContext& cont
 }
 
 void OverworldScene::drawPlayer(GameContext& context) {
+    if (context.state.hasFlag("furry.value")) {
+        context.state.furry.value = context.state.getFlag("furry.value");
+    } else if (context.state.hasFlag("fur.value")) {
+        context.state.furry.value = context.state.getFlag("fur.value");
+    }
+
     if (m_player.hasOverrideAnimation()) {
         const std::string& path = m_player.getOverridePath();
+        std::string animation = m_player.getOverrideKey();
+
+        if (path == "assets/sprites/ow/grub.png" || path == "sprites/ow/grub.png" || path.empty()) {
+            const PlayerRenderDef renderDef = resolvePlayerRender(context.state.furry.value, animation);
+            const SpriteSheetDef* sheet = spriteSheetCache().load(renderDef.sheet, renderDef.json);
+            if (sheet != nullptr) {
+                Texture2D texture = context.resources.getTexture(renderDef.sheet);
+                SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+                std::string animKey = renderDef.anim;
+                if (animKey.empty() && !sheet->anims.empty()) animKey = sheet->anims.begin()->first;
+                drawSprite(texture, *sheet, animKey, m_player.getOverrideAnimationTime(), m_player.getSpritePivot());
+                return;
+            }
+        }
+
         const SpriteSheetDef* sheet = spriteSheetCache().load(path, spriteJsonPath(path));
         if (sheet != nullptr) {
             Texture2D texture = context.resources.getTexture(path);
             SetTextureFilter(texture, TEXTURE_FILTER_POINT);
-            std::string animation = m_player.getOverrideKey();
             if (animation.empty() && !sheet->anims.empty()) animation = sheet->anims.begin()->first;
             drawSprite(texture, *sheet, animation, m_player.getOverrideAnimationTime(), m_player.getSpritePivot());
             return;
         }
     }
 
-    const SpriteSheetDef* grubSheet = spriteSheetCache().load(
-        "assets/sprites/ow/grub.png", "assets/sprites/ow/grub.json");
+    std::string direction;
+    switch (m_player.getDirection()) {
+        case Direction::Up: direction = "up"; break;
+        case Direction::Down: direction = "down"; break;
+        case Direction::Left: direction = "left"; break;
+        case Direction::Right: direction = "right"; break;
+    }
+    const std::string baseAnimation = (m_player.isMoving() ? "walk_" : "stand_") + direction;
+    const PlayerRenderDef renderDef = resolvePlayerRender(context.state.furry.value, baseAnimation);
+
+    const SpriteSheetDef* grubSheet = spriteSheetCache().load(renderDef.sheet, renderDef.json);
     if (grubSheet != nullptr) {
-        std::string direction;
-        switch (m_player.getDirection()) {
-            case Direction::Up: direction = "up"; break;
-            case Direction::Down: direction = "down"; break;
-            case Direction::Left: direction = "left"; break;
-            case Direction::Right: direction = "right"; break;
-        }
-        const std::string animation = (m_player.isMoving() ? "walk_" : "stand_") + direction;
-        Texture2D grubTexture = context.resources.getTexture("assets/sprites/ow/grub.png");
+        Texture2D grubTexture = context.resources.getTexture(renderDef.sheet);
         SetTextureFilter(grubTexture, TEXTURE_FILTER_POINT);
-        drawSprite(grubTexture, *grubSheet, animation,
+        drawSprite(grubTexture, *grubSheet, renderDef.anim,
                    m_player.getSpriteAnimationTime(), m_player.getSpritePivot());
     } else {
         Texture2D pepeTexture = context.resources.getMaskedTexture(
@@ -1833,6 +1963,14 @@ void OverworldScene::render(GameContext& context) {
                 std::max(1, static_cast<int>(droplet.size)),
                 Color{ droplet.color.r, droplet.color.g, droplet.color.b,
                        static_cast<unsigned char>(static_cast<float>(droplet.color.a) * alpha) });
+        }
+    }
+
+    for (const PetalParticle& p : m_petalParticles) {
+        if (p.life < p.maxLife) {
+            float alphaFactor = std::clamp(1.0f - (p.life / p.maxLife), 0.0f, 1.0f);
+            DrawRectangle(static_cast<int>(p.x), static_cast<int>(p.y), p.size, p.size,
+                          Fade(p.color, alphaFactor));
         }
     }
 

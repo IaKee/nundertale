@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* Fursuit heads. Dozens. All empty. All facing the door."],
+      "if": "ruins.r12a.headrack >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* Heart-shaped. Still warm.",
+        "* You decide not to sit on it."
+      ],
+      "if": "ruins.r12a.beanbag >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* VIP. Very Important Plushies."],
+      "if": "ruins.r12a.rope >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* A throne of plushies. One of them wears a smaller crown."],
+      "if": "ruins.r12a.throne >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* A wall of flowers. One spot is still shaking.",
+        "* (You leave it alone.)"
+      ],
+      "if": "ruins.r12a.flowerwall >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* Fairy lights hum quietly along the walls."],
+      "if": "ruins.r12a.lights >= 1"
+    },
+    {"type": "setFlag", "key": "ruins.r12a.headrack", "value": 0},
+    {"type": "setFlag", "key": "ruins.r12a.beanbag", "value": 0},
+    {"type": "setFlag", "key": "ruins.r12a.rope", "value": 0},
+    {"type": "setFlag", "key": "ruins.r12a.throne", "value": 0},
+    {"type": "setFlag", "key": "ruins.r12a.flowerwall", "value": 0},
+    {"type": "setFlag", "key": "ruins.r12a.lights", "value": 0}
+  ]
+}

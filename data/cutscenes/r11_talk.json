@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
       "lines": [
         "Is this candy, pup? It smells like a laundromat. uwu"
       ],
@@ -17,6 +18,7 @@
     {
       "type": "choice",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "What's on your mind, pup? Speak freely~ uwu"
       ],

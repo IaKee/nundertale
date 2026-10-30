@@ -1,0 +1,70 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Is it HOT in here? It's so hot in here.",
+        "My suit is OVERHEATING~"
+      ]
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Still smell like lavender. Gross.",
+        "She hugged you and you LET her? ...Ooh, you smell like lavender now. Very on-brand for a fox, darling.",
+        "No shame! ...Okay, a LITTLE jealousy. Ready to go full furry yet?"
+      ],
+      "if": "ruins.furiell.hugged >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Still smell like lavender. Gross.",
+        "You spared her? Wow. No shame. ...I respect that.",
+        "Come on, sweetie, say it with me: YIFF or be YIFFED. Pick a species, I'll braid the flowers~"
+      ],
+      "if": "ruins.furiell.hugged == 0 && ruins.furiell.spared >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Still smell like lavender. Gross.",
+        "So you CAN press the button. *gasp* Sassy!",
+        "...Golly. Up there, they're gonna LOVE you. Imagine you with a flower crown, though~ OwO"
+      ],
+      "if": "ruins.furiell.killed >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FLOOFY",
+      "lines": [
+        "Still smell like lavender. Gross.",
+        "You spared her? Wow. No shame. ...I respect that.",
+        "Come on, sweetie, say it with me: YIFF or be YIFFED. Pick a species, I'll braid the flowers~"
+      ],
+      "if": "ruins.furiell.hugged == 0 && ruins.furiell.spared == 0 && ruins.furiell.killed == 0"
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "sink"
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "hideNpc",
+      "npc": "floofy"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floofy.lair",
+      "value": 1
+    }
+  ]
+}

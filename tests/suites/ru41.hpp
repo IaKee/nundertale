@@ -217,6 +217,7 @@ inline void suite_ru41() {
         "ruins_house_hallway",
         "ruins_house_pepe",
         "ruins_basement",
+        "ruins_viplounge",
         "ruins_exit"
     };
 
@@ -270,7 +271,7 @@ inline void suite_ru41() {
 
     // Exactly 6 save points exist in the canonical Ruins sequence:
     // R1 Landing, R1b Panel Hall, R3 Entrance, R9 Barky, R10 Bake Sale, R13 Exit
-    assert(foundSavePoints.size() == 6U && "Ruins must contain exactly 6 canonical save points");
+    assert(foundSavePoints.size() == 7U && "Ruins must contain exactly 7 canonical save points");
 
     // Validate expected save point locations and savePlace strings
     {
@@ -311,6 +312,13 @@ inline void suite_ru41() {
         assert(itExit != foundSavePoints.end());
         assert(std::abs(itExit->x - 180.0f) < 0.01f);
         assert(std::abs(itExit->y - 200.0f) < 0.01f);
+
+        const auto itVip = std::find_if(foundSavePoints.begin(), foundSavePoints.end(),
+            [](const SavePointInfo& s) { return s.roomId == "ruins_viplounge"; });
+        assert(itVip != foundSavePoints.end());
+        assert(std::abs(itVip->x - 200.0f) < 0.01f);
+        assert(std::abs(itVip->y - 580.0f) < 0.01f);
+        assert(itVip->customLines == "* A bass line thumps through the wall. It fills you with DETERMINATION. Against your will.");
     }
 
     // -------------------------------------------------------------------------
@@ -626,6 +634,7 @@ inline void suite_ru41() {
             "ruins_house_hallway",
             "ruins_house_pepe",
             "ruins_basement",
+        "ruins_viplounge",
             "ruins_exit"
         };
 
@@ -660,7 +669,7 @@ inline void suite_ru41() {
         }
 
         // Exactly 36 doors exist across the 18 Ruins maps (including 35 canonical + 1 legacy alias)
-        assert(totalDoorsChecked == 36U && "Must walk and verify exactly 36 doors across all Ruins maps");
+        assert(totalDoorsChecked == 38U && "Must walk and verify exactly 38 doors across all Ruins maps");
     }
 
     // -------------------------------------------------------------------------

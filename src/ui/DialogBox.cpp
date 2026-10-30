@@ -1,6 +1,8 @@
 #include "ui/DialogBox.hpp"
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
+#include "ui/SpriteDraw.hpp"
+#include <algorithm>
 #include <sstream>
 
 namespace nundertale {
@@ -23,33 +25,43 @@ void DialogBox::update(float dt, GameContext& context) {
     bool hasChoices = !currentOptions.empty();
 
     if (!m_isPageComplete) {
-        m_charTimer += dt;
-        if (m_charTimer >= m_charDelay) {
-            m_charTimer = 0.0f;
-            if (m_visibleChars < currentText.size()) {
-                char c = currentText[m_visibleChars];
-                m_visibleChars++;
-
-                // Voice SFX on non-whitespace
-                if (c != ' ' && c != '\n' && c != '\t') {
-                    context.audio.playSound(m_voiceSfx, 0.45f);
-                }
-
-                // TXT-003: Punctuation pauses
-                if (c == ',' || c == ':') {
-                    m_charTimer = -0.12f;
-                } else if (c == '.' || c == '!' || c == '?') {
-                    m_charTimer = -0.28f;
-                }
-            } else {
+        if (m_reveal == "fade_glow") {
+            m_revealAlpha = std::min(1.0f, m_revealAlpha + std::max(0.0f, dt) / FADE_GLOW_SECONDS);
+            m_visibleChars = currentText.size();
+            if (m_revealAlpha >= 1.0f) m_isPageComplete = true;
+            if (context.input.isCancelPressed()) {
+                m_revealAlpha = 1.0f;
                 m_isPageComplete = true;
             }
-        }
+        } else {
+            m_charTimer += dt;
+            if (m_charTimer >= m_charDelay) {
+                m_charTimer = 0.0f;
+                if (m_visibleChars < currentText.size()) {
+                    char c = currentText[m_visibleChars];
+                    m_visibleChars++;
 
-        // BUG-11 / TXT-004: Only X (Cancel) skips typing instantly; Z waits for page completion
-        if (context.input.isCancelPressed()) {
-            m_visibleChars = currentText.size();
-            m_isPageComplete = true;
+                    // Voice SFX on non-whitespace
+                    if (c != ' ' && c != '\n' && c != '\t') {
+                        context.audio.playSound(m_voiceSfx, 0.45f);
+                    }
+
+                    // TXT-003: Punctuation pauses
+                    if (c == ',' || c == ':') {
+                        m_charTimer = -0.12f;
+                    } else if (c == '.' || c == '!' || c == '?') {
+                        m_charTimer = -0.28f;
+                    }
+                } else {
+                    m_isPageComplete = true;
+                }
+            }
+
+            // BUG-11 / TXT-004: Only X (Cancel) skips typing instantly; Z waits for page completion
+            if (context.input.isCancelPressed()) {
+                m_visibleChars = currentText.size();
+                m_isPageComplete = true;
+            }
         }
     } else {
         if (hasChoices) {
@@ -77,7 +89,8 @@ void DialogBox::update(float dt, GameContext& context) {
                 }
                 m_currentPage++;
                 if (m_currentPage < m_pages.size()) {
-                    m_visibleChars = 0;
+                    m_revealAlpha = m_reveal == "fade_glow" ? 0.0f : 1.0f;
+                    m_visibleChars = m_reveal == "fade_glow" ? m_pages[m_currentPage].size() : 0;
                     m_charTimer = 0.0f;
                     m_isPageComplete = false;
                     m_selectedChoice = 0;
@@ -90,7 +103,8 @@ void DialogBox::update(float dt, GameContext& context) {
             if (context.input.isConfirmPressed()) {
                 m_currentPage++;
                 if (m_currentPage < m_pages.size()) {
-                    m_visibleChars = 0;
+                    m_revealAlpha = m_reveal == "fade_glow" ? 0.0f : 1.0f;
+                    m_visibleChars = m_reveal == "fade_glow" ? m_pages[m_currentPage].size() : 0;
                     m_charTimer = 0.0f;
                     m_isPageComplete = false;
                     m_selectedChoice = 0;
@@ -111,12 +125,35 @@ void DialogBox::render(GameContext& context) {
     DrawRectangleRec(m_boxRect, BLACK);
     DrawRectangleLinesEx(m_boxRect, 5.0f, WHITE);
 
+    bool portraitDrawn = false;
+    if (m_portrait.has_value()) {
+        Texture2D texture = context.resources.getTexture(m_portrait->imagePath);
+        if (texture.id > 0) {
+            SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+            SpriteSheetDef sheet = m_portrait->sheet;
+            if (sheet.cellW <= 0 || sheet.cellH <= 0) {
+                sheet.cellW = texture.width;
+                sheet.cellH = texture.height;
+                sheet.originX = 0;
+                sheet.originY = 0;
+            }
+            const float drawScale = portraitDrawScale(sheet.density);
+            const Vector2 topLeft = { m_boxRect.x + 18.0f, m_boxRect.y + 25.0f };
+            const Vector2 pivot = {
+                topLeft.x + static_cast<float>(sheet.originX) * drawScale,
+                topLeft.y + static_cast<float>(sheet.originY) * drawScale
+            };
+            drawSprite(texture, sheet, "idle", 0.0f, pivot, 2.0f);
+            portraitDrawn = true;
+        }
+    }
+
     // Undertale 1:1: No yellow "* SPEAKER:" header (TXT-005)
     // Draw text with word wrapping and hanging indent (TXT-002)
     const std::string& fullText = m_pages[m_currentPage];
     std::string text = fullText.substr(0, m_visibleChars);
 
-    float startX = m_boxRect.x + 25.0f;
+    float startX = m_boxRect.x + 25.0f + (portraitDrawn ? 112.0f : 0.0f);
     float startY = m_boxRect.y + 22.0f;
     float lineH = 32.0f;
     float indentX = startX + 24.0f;
@@ -144,7 +181,15 @@ void DialogBox::render(GameContext& context) {
 
             float testW = context.resources.measureTextWidth(font8Bit, testLine, 22, 1.0f);
             if (testW > availableW && !currentLine.empty()) {
-                context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, WHITE, 1.0f);
+                if (m_reveal == "fade_glow") {
+                    const unsigned char alpha = static_cast<unsigned char>(m_revealAlpha * 255.0f);
+                    const Color glow = { 255, 176, 48, static_cast<unsigned char>(alpha / 3) };
+                    context.resources.drawText(font8Bit, currentLine, { effectiveX - 1.0f, currentY }, 22, glow, 1.0f);
+                    context.resources.drawText(font8Bit, currentLine, { effectiveX + 1.0f, currentY }, 22, glow, 1.0f);
+                    context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, Color{ 255, 202, 96, alpha }, 1.0f);
+                } else {
+                    context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, WHITE, 1.0f);
+                }
                 currentY += lineH;
                 firstLineOfPara = false;
                 currentLine = word;
@@ -155,7 +200,15 @@ void DialogBox::render(GameContext& context) {
 
         if (!currentLine.empty()) {
             float effectiveX = (firstLineOfPara || !hasAsterisk) ? startX : indentX;
-            context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, WHITE, 1.0f);
+            if (m_reveal == "fade_glow") {
+                const unsigned char alpha = static_cast<unsigned char>(m_revealAlpha * 255.0f);
+                const Color glow = { 255, 176, 48, static_cast<unsigned char>(alpha / 3) };
+                context.resources.drawText(font8Bit, currentLine, { effectiveX - 1.0f, currentY }, 22, glow, 1.0f);
+                context.resources.drawText(font8Bit, currentLine, { effectiveX + 1.0f, currentY }, 22, glow, 1.0f);
+                context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, Color{ 255, 202, 96, alpha }, 1.0f);
+            } else {
+                context.resources.drawText(font8Bit, currentLine, { effectiveX, currentY }, 22, WHITE, 1.0f);
+            }
             currentY += lineH;
         }
     }

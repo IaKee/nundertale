@@ -255,6 +255,17 @@ def build_ruins_notices():
                 "showIf": "ruins.r8.soul_on == 1",
             },
         },
+        {
+            "name": "shedding_complaint_form",
+            "type": "examine",
+            "x": 360,
+            "y": 120,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A complaint form asks how much you shed.||* NONE. SOME. ATMOSPHERIC.",
+            },
+        },
     ]
 
     return make_tiled_map(

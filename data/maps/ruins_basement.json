@@ -771,9 +771,9 @@
         {
           "height": 40,
           "id": 10,
-          "name": "door_to_exit",
+          "name": "door_to_viplounge",
           "rotation": 0,
-          "type": "door",
+          "type": "",
           "visible": true,
           "width": 80,
           "x": 280,
@@ -782,18 +782,38 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_exit"
+              "value": "ruins_viplounge"
             },
             {
               "name": "targetSpawn",
               "type": "string",
               "value": "from_basement"
             }
-          ]
+          ],
+          "class": "door"
         },
         {
           "height": 0,
           "id": 11,
+          "name": "from_viplounge",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 120,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 12,
           "name": "from_exit",
           "rotation": 0,
           "type": "spawn",
@@ -812,7 +832,7 @@
         },
         {
           "height": 80,
-          "id": 12,
+          "id": 13,
           "name": "furiell",
           "rotation": 0,
           "type": "npc",
@@ -845,7 +865,7 @@
         },
         {
           "height": 40,
-          "id": 13,
+          "id": 14,
           "name": "trigger_r12_entry",
           "rotation": 0,
           "type": "trigger",
@@ -873,7 +893,7 @@
         },
         {
           "height": 40,
-          "id": 14,
+          "id": 15,
           "name": "trigger_r12_stop1",
           "rotation": 0,
           "type": "trigger",
@@ -901,7 +921,7 @@
         },
         {
           "height": 40,
-          "id": 15,
+          "id": 16,
           "name": "trigger_r12_stop2",
           "rotation": 0,
           "type": "trigger",
@@ -929,7 +949,7 @@
         },
         {
           "height": 40,
-          "id": 16,
+          "id": 17,
           "name": "trigger_r12_stop3",
           "rotation": 0,
           "type": "trigger",
@@ -957,7 +977,7 @@
         },
         {
           "height": 40,
-          "id": 17,
+          "id": 18,
           "name": "trigger_r12_boss",
           "rotation": 0,
           "type": "trigger",
@@ -975,6 +995,78 @@
               "name": "showIf",
               "type": "string",
               "value": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 19,
+          "name": "staff_only_notice",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 200,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A wall notice reads \"STAFF ONLY.\"||* Someone added \"emotionally.\""
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 20,
+          "name": "lanyard_dust_bunny",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 600,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A dust bunny has a STAFF lanyard.||* It outranks you."
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 21,
+          "name": "nice_tally",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 1000,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* The tally marks stop at sixty-nine.||* A second hand wrote \"nice.\""
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 22,
+          "name": "almost_home_sticker",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 1360,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A paw-print sticker says \"YOU ARE ALMOST HOME.\"||* It points both ways."
             }
           ]
         }
@@ -1615,7 +1707,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 18,
+  "nextobjectid": 23,
   "orientation": "orthogonal",
   "properties": [
     {

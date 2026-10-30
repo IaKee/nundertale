@@ -2,6 +2,7 @@
 #include "core/GameContext.hpp"
 #include "core/Constants.hpp"
 #include "core/SceneManager.hpp"
+#include "core/PlayerSheet.hpp"
 #include "ui/SpriteDraw.hpp"
 
 namespace nundertale {
@@ -83,17 +84,25 @@ void EncounterTransitionScene::render(GameContext& context) {
     if (m_phase == Phase::Alert) {
         // Draw player character (Grub)
         Vector2 pPos = { m_startPos.x - 14.0f, m_startPos.y - 22.0f };
+        int fur = context.state.furry.value;
+        if (context.state.hasFlag("furry.value")) {
+            fur = context.state.getFlag("furry.value");
+        } else if (context.state.hasFlag("fur.value")) {
+            fur = context.state.getFlag("fur.value");
+        }
+
+        const PlayerRenderDef renderDef = resolvePlayerRender(fur, "stand_down");
         const SpriteSheetDef* grubSheet = spriteSheetCache().load(
-            "assets/sprites/ow/grub.png",
-            "assets/sprites/ow/grub.json"
+            renderDef.sheet,
+            renderDef.json
         );
         if (grubSheet != nullptr) {
-            Texture2D grubTexture = context.resources.getTexture("assets/sprites/ow/grub.png");
+            Texture2D grubTexture = context.resources.getTexture(renderDef.sheet);
             SetTextureFilter(grubTexture, TEXTURE_FILTER_POINT);
             drawSprite(
                 grubTexture,
                 *grubSheet,
-                "stand_down",
+                renderDef.anim,
                 0.0f,
                 { pPos.x + 19.0f, pPos.y + 58.0f }
             );

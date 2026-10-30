@@ -980,6 +980,60 @@
               "value": "ruins.r7.call"
             }
           ]
+        },
+        {
+          "height": 80,
+          "id": 21,
+          "name": "free_hugs_sticker",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 440,
+          "y": 160,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A sticker says \"FREE HUGS.\"||* Someone added \"NO REFUNDS\" in smaller letters."
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 22,
+          "name": "support_column_plaque",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 920,
+          "y": 160,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A plaque names this the Emotional Support Column.||* It is load-bearing. Emotionally, unclear."
+            }
+          ]
+        },
+        {
+          "height": 80,
+          "id": 23,
+          "name": "paw_direction_decals",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 1400,
+          "y": 160,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* One paw-print decal points north.||* Another points back to the exit. The committee disagreed."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1634,7 +1688,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 21,
+  "nextobjectid": 24,
   "orientation": "orthogonal",
   "properties": [
     {

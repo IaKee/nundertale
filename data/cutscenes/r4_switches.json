@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* A massive mechanical keyboard wired to the security shutter.",
+        "* The keys control the RGB channels in a Lights Out pattern."
+      ]
+    }
+  ]
+}

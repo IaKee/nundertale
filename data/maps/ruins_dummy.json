@@ -694,6 +694,24 @@
               "value": "battle.fursuit_dummy.spared >= 1 && ruins.dummy.hugged == 0 && battle.fursuit_dummy.killed == 0"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 23,
+          "name": "personal_space_outline",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 260,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A chalk outline on the carpet reads \"PERSONAL SPACE.\"||* Someone put a paw print inside it."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -916,7 +934,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 23,
+  "nextobjectid": 24,
   "orientation": "orthogonal",
   "properties": [
     {

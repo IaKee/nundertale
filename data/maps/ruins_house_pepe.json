@@ -514,6 +514,24 @@
               "value": "* You're carrying too much."
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 16,
+          "name": "game_case_stack",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 520,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* Three game cases: unopened, uninstalled, and \"maybe after one more match.\"||* All three are the same game."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -720,7 +738,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 16,
+  "nextobjectid": 17,
   "orientation": "orthogonal",
   "properties": [
     {

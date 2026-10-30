@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
       "lines": [
         "Is this candy, pup? It smells like a laundromat. uwu"
       ],
@@ -17,6 +18,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
       "lines": [
         "*tries to hug you* Hewwo, pup! Do you prefer glitter or MORE glitter? Stay as long as you like. Forever is a nice length~ uwu"
       ]

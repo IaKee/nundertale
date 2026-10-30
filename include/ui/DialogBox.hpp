@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <optional>
 #include <sstream>
 #include "core/FurReactions.hpp"
+#include "core/Portraits.hpp"
 
 namespace nundertale {
 
@@ -53,7 +55,7 @@ class DialogBox {
 public:
     DialogBox() = default;
 
-    void startDialog(const std::vector<std::string>& pages, const std::string& speaker = "", std::function<void()> onComplete = nullptr, const std::string& voiceSfx = "", int fur = -1);
+    void startDialog(const std::vector<std::string>& pages, const std::string& speaker = "", std::function<void()> onComplete = nullptr, const std::string& voiceSfx = "", int fur = -1, const std::string& portrait = "", const std::string& reveal = "");
     void update(float dt, GameContext& context);
     void render(GameContext& context);
 
@@ -72,6 +74,7 @@ private:
     std::vector<std::string> m_pages;
     std::vector<std::vector<std::string>> m_pageOptions;
     std::string m_speaker;
+    std::optional<PortraitDef> m_portrait;
     std::string m_voiceSfx = "assets/sfx/type.ogg";
     std::function<void()> m_onComplete;
     std::function<void(int index, const std::string& option)> m_onChoice;
@@ -80,6 +83,9 @@ private:
     size_t m_visibleChars = 0;
     float m_charTimer = 0.0f;
     float m_charDelay = 0.033f; // 30 cps
+    std::string m_reveal;
+    float m_revealAlpha = 1.0f;
+    static constexpr float FADE_GLOW_SECONDS = 1.6f;
 
     bool m_isActive = false;
     bool m_isPageComplete = false;
@@ -92,7 +98,7 @@ private:
     Rectangle m_boxRect{ 32, 315, 576, 150 };
 };
 
-inline void DialogBox::startDialog(const std::vector<std::string>& pages, const std::string& speaker, std::function<void()> onComplete, const std::string& voiceSfx, int fur) {
+inline void DialogBox::startDialog(const std::vector<std::string>& pages, const std::string& speaker, std::function<void()> onComplete, const std::string& voiceSfx, int fur, const std::string& portrait, const std::string& reveal) {
     m_pages.clear();
     m_pageOptions.clear();
     for (const auto& rawPage : pages) {
@@ -105,12 +111,16 @@ inline void DialogBox::startDialog(const std::vector<std::string>& pages, const 
     }
     applyFurToPages();
     m_speaker = speaker;
+    if (portrait.empty()) m_portrait.reset();
+    else m_portrait = resolvePortrait(portrait);
     m_onComplete = onComplete;
     m_onChoice = nullptr;
     m_lastChoice = -1;
     m_selectedChoice = 0;
     m_currentPage = 0;
-    m_visibleChars = 0;
+    m_reveal = reveal;
+    m_revealAlpha = reveal == "fade_glow" ? 0.0f : 1.0f;
+    m_visibleChars = reveal == "fade_glow" && !m_pages.empty() ? m_pages[0].size() : 0;
     m_charTimer = 0.0f;
     m_isActive = true;
     m_isPageComplete = false;

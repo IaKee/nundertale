@@ -3,9 +3,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
-        "The fur? Why, it's 100% premium faux-fur, pup! Hand-stitched with love and washable glitter! uwu",
-        "...A zipper? On my back? *gasps* What a scandalous accusation, hun! There is NO zipper! ...Unless you want to pull it? >w<",
+        "The fur? Why, it's 100% premium faux-fur, pup! Hand-stitched with love and washable glitter! uwu"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
+      "lines": [
+        "...A zipper? On my back? *gasps* What a scandalous accusation, hun! There is NO zipper! ...Unless you want to pull it? >w<"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
+      "lines": [
         "...Call me cringe again, pup. Slower. uwu"
       ],
       "if": "fur < 40"
@@ -13,9 +30,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
       "lines": [
-        "*nuzzles you gently* Asking about the fur, hun? You shouldn't be asking... you should be feeling it! uwu",
-        "And look at you! You're getting so soft and cuddly yourself! It suits you so much better than that stained blue shirt~",
+        "*nuzzles you gently* Asking about the fur, hun? You shouldn't be asking... you should be feeling it! uwu"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_happy",
+      "lines": [
+        "And look at you! You're getting so soft and cuddly yourself! It suits you so much better than that stained blue shirt~"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
+      "lines": [
         "Just imagine: matched sets! Double the fluff, double the hugs, forever and ever! >w<"
       ],
       "if": "fur >= 40"

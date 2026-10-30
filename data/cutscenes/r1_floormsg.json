@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "reveal": "fade_glow",
+      "lines": [
+        "* \"hole ahead\""
+      ],
+      "if": "ruins.floormsg.r1.read == 0"
+    },
+    {
+      "type": "dialog",
+      "lines": [
+        "* - xX_AFK_Xx. Rated: 47."
+      ],
+      "if": "ruins.floormsg.r1.read >= 1"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.floormsg.r1.read",
+      "value": 1,
+      "if": "ruins.floormsg.r1.read == 0"
+    }
+  ]
+}

@@ -48,7 +48,15 @@ def build_ruins_exit():
     ]
 
     objects = [
-        # South spawn (from Basement) & default spawn
+        # South spawn (from VIP Lounge / Basement) & default spawn
+        {
+            "name": "from_viplounge",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 380,
+            "properties": {"facing": "up"},
+        },
         {
             "name": "from_basement",
             "type": "spawn",
@@ -65,16 +73,17 @@ def build_ruins_exit():
             "y": 380,
             "properties": {"facing": "up"},
         },
-        # Door south back to ruins_basement
+        # Door south back to ruins_viplounge (R12a)
         {
-            "name": "door_to_basement",
-            "type": "door",
+            "name": "door_to_viplounge",
+            "type": "",
+            "class": "door",
             "x": 280,
             "y": 440,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_basement",
+                "targetRoom": "ruins_viplounge",
                 "targetSpawn": "from_exit",
             },
         },
@@ -114,37 +123,9 @@ def build_ruins_exit():
                 "lines": "* The cold air and the faint smell of ozone fill you with DETERMINATION.",
             },
         },
-        # Floofy NPC (appears on entry for cutscene, hides afterwards)
-        {
-            "name": "floofy",
-            "type": "npc",
-            "x": 300,
-            "y": 220,
-            "w": 40,
-            "h": 40,
-            "properties": {
-                "sprite": "assets/sprites/ow/floofy.png",
-                "anim": "idle",
-                "showIf": "ruins.r13.floofy_pop == 1",
-                "solid": True,
-            },
-        },
-        # Entry trigger for Floofy cutscene
-        {
-            "name": "trigger_r13_floofy",
-            "type": "trigger",
-            "x": 120,
-            "y": 360,
-            "w": 400,
-            "h": 80,
-            "properties": {
-                "cutscene": "r13_floofy",
-                "once": "ruins.r13.floofy",
-            },
-        },
     ]
 
-    return make_tiled_map(
+    tiled_map = make_tiled_map(
         room_id="ruins_exit",
         display_name="Ruins - Exit",
         width=width,
@@ -156,14 +137,10 @@ def build_ruins_exit():
         music="overworld.default",
         save_place="* The cold air and the faint smell of ozone fill you with DETERMINATION.",
     )
-
-
-# =============================================================================
-# Room R9a: the Apurrture booth (ruins_booth), C1-014
-# Size: 16x12 tiles (640x480 px).
-# Only reachable from R9 once Barky was spared (LORE §12 R9a, §19.10). GLaDOwOS hangs from the
-# ceiling over the test floor; the choice Sacrifice / Refuse happens when Grub walks up to it
-# (r9a_booth_entry). Save point at the entrance, panel / cube / sign examinables, and a
-# powered-down host when Barky is dead. Flag ruins.booth.state: 0 not entered, 1 entered
-# (refusing leaves it at 1), 2 Barky sacrificed.
-# =============================================================================
+    for layer in tiled_map["layers"]:
+        if layer["type"] == "objectgroup":
+            for obj in layer["objects"]:
+                if obj.get("name") == "door_to_viplounge":
+                    obj["type"] = ""
+                    obj["class"] = "door"
+    return tiled_map

@@ -1,8 +1,12 @@
 {
   "steps": [
-    {"type": "dialog", "speaker": "FURIELL", "lines": [
-      "This woom is a wittle tricky, pup. uwu",
-      "The convention staff never taped down these live network cables. Rude.",
+    {"type": "dialog", "speaker": "FURIELL", "portrait": "furiell_neutral", "lines": [
+      "This woom is a wittle tricky, pup. uwu"
+    ]},
+    {"type": "dialog", "speaker": "FURIELL", "portrait": "furiell_angry", "lines": [
+      "The convention staff never taped down these live network cables. Rude."
+    ]},
+    {"type": "dialog", "speaker": "FURIELL", "portrait": "furiell_flustered", "lines": [
       "*grabs your hand* Hold on tight, hun. I'm not letting go. Not even if you ask. >w<"
     ]},
     {"type": "movePlayer", "x": 120, "y": 330, "speed": 120},
@@ -25,8 +29,10 @@
     {"type": "movePlayer", "x": 500, "y": 100, "speed": 140},
     {"type": "movePlayer", "x": 580, "y": 100, "speed": 140},
     {"type": "npcAnim", "npc": "furiell", "key": "stand_down"},
-    {"type": "dialog", "speaker": "FURIELL", "lines": [
-      "See? Nothing to worry about, pup. You did so good~",
+    {"type": "dialog", "speaker": "FURIELL", "portrait": "furiell_happy", "lines": [
+      "See? Nothing to worry about, pup. You did so good~"
+    ]},
+    {"type": "dialog", "speaker": "FURIELL", "portrait": "furiell_flustered", "lines": [
       "*nuzzles* Call me a bad guide if you want. ...Okay, you didn't. Say it anyway? I'll go ahead and prepare the next room, hun!"
     ]},
     {"type": "moveNpc", "npc": "furiell", "x": 610, "y": 10, "speed": 140},

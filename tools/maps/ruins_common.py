@@ -125,6 +125,62 @@ def parse_grid(lines, char_map, width, height):
     return data
 
 
+# props/petal_trail_pieces sheet anims (16x16 cells, drawn at 2x = 32 px, centred on the pivot)
+PETAL_STRAIGHT_V = "p6"
+PETAL_STRAIGHT_H = "p7"
+PETAL_CORNERS = ("p3", "p4", "p5", "p8")
+PETAL_SCATTER = ("p0", "p1", "p2", "p9", "p10", "p11")
+PETAL_SHEET = "assets/props/petal_trail_pieces.png"
+
+
+def lay_petal_trail(tiles, name="petal_trail", scatter_tiles=(), tile_size=40):
+    """Turn a path of (col, row) tiles into petal decal props (Floofy's sign, LORE v3.5 §6.5).
+
+    Consecutive tiles must be 4-connected. A tile whose neighbours lie on one axis gets a
+    straight piece; a tile where the path turns gets a corner piece; scatter_tiles get loose
+    petals. Returns walkable, non-solid prop objects named <name>_00, <name>_01, ...; the
+    caller adds one examine object for the interaction text.
+    """
+    tiles = [tuple(t) for t in tiles]
+    objects = []
+
+    def decal(col, row, anim):
+        cx = col * tile_size + tile_size // 2
+        cy = row * tile_size + tile_size // 2
+        size = 32
+        objects.append({
+            "name": "%s_%02d" % (name, len(objects)),
+            "type": "prop",
+            "x": cx - size // 2,
+            "y": cy - size,
+            "w": size,
+            "h": size,
+            "properties": {"sprite": PETAL_SHEET, "anim": anim, "solid": False},
+        })
+
+    corner_index = 0
+    for i, (col, row) in enumerate(tiles):
+        prev_t = tiles[i - 1] if i > 0 else None
+        next_t = tiles[i + 1] if i + 1 < len(tiles) else None
+        for other in (prev_t, next_t):
+            if other and abs(other[0] - col) + abs(other[1] - row) != 1:
+                raise ValueError("petal trail tiles must be 4-connected: %r -> %r" % ((col, row), other))
+        neighbours = [t for t in (prev_t, next_t) if t]
+        horizontal = any(t[1] == row for t in neighbours)
+        vertical = any(t[0] == col for t in neighbours)
+        if horizontal and vertical:
+            anim = PETAL_CORNERS[corner_index % len(PETAL_CORNERS)]
+            corner_index += 1
+        elif horizontal:
+            anim = PETAL_STRAIGHT_H
+        else:
+            anim = PETAL_STRAIGHT_V
+        decal(col, row, anim)
+    for i, (col, row) in enumerate(scatter_tiles):
+        decal(col, row, PETAL_SCATTER[i % len(PETAL_SCATTER)])
+    return objects
+
+
 WALL_CAP_CHARS = "[=]"
 WALL_FRONT_CHARS = "{-}khvo"
 

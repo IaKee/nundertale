@@ -37,6 +37,7 @@ from rooms.ruins_house import build_ruins_house  # noqa: E402
 from rooms.ruins_house_hallway import build_ruins_house_hallway  # noqa: E402
 from rooms.ruins_house_pepe import build_ruins_house_pepe  # noqa: E402
 from rooms.ruins_basement import build_ruins_basement  # noqa: E402
+from rooms.ruins_viplounge import build_ruins_viplounge  # noqa: E402
 from rooms.ruins_exit import build_ruins_exit  # noqa: E402
 from rooms.ruins_booth import build_ruins_booth  # noqa: E402
 
@@ -65,6 +66,7 @@ def main():
         "ruins_house_hallway.json": build_ruins_house_hallway,
         "ruins_house_pepe.json": build_ruins_house_pepe,
         "ruins_basement.json": build_ruins_basement,
+        "ruins_viplounge.json": build_ruins_viplounge,
         "ruins_exit.json": build_ruins_exit,
     }
 
@@ -84,5 +86,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

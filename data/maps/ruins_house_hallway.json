@@ -446,6 +446,24 @@
               "value": "* It's you. ...With cat ears?||* (You touch your head. Nothing there.)"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 13,
+          "name": "boundaries_schedule",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 120,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A convention schedule has \"ADVANCED BOUNDARIES\" circled.||* The session is marked MISSED."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -668,7 +686,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 13,
+  "nextobjectid": 14,
   "orientation": "orthogonal",
   "properties": [
     {

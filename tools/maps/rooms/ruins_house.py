@@ -280,6 +280,17 @@ def build_ruins_house():
                 "cutscene": "r11_talk",
             },
         },
+        {
+            "name": "industrial_dryer_sheets",
+            "type": "examine",
+            "x": 300,
+            "y": 80,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* A stack of dryer sheets is labeled \"AIR FRESHENER: INDUSTRIAL.\"||* The top sheet has surrendered.",
+            },
+        },
     ]
 
     return make_tiled_map(

@@ -1,0 +1,24 @@
+# C1-001 (LORE v3.5 §12 R1): new game landing scene in R1.
+# Grub drops from light beam onto Floofy in flower bed, impact thud (pomf.ogg) + petals/shake,
+# Floofy knocked out, Grub lying on top, fade to black (~2s), fade in on the same picture,
+# then chains into r1_wake (buzz while lying -> get up -> thought).
+# Run: nundertale.exe --room ruins_fall --flag raid_msgs_shown=0 --record tmp/r1_landing --input tools/record/r1_landing/r1_landing.input --seconds 18
+# 30 ticks = 1 s. Landing takes ~5.2s (~156 ticks), then r1_wake dialogs are advanced by confirm taps.
+180 confirm
+200 confirm
+220 confirm
+240 confirm
+260 confirm
+280 confirm
+300 confirm
+320 confirm
+340 confirm
+360 confirm
+380 confirm
+400 confirm
+420 confirm
+440 confirm
+460 confirm
+480 confirm
+500 confirm
+520 confirm

@@ -625,26 +625,16 @@
           ]
         },
         {
-          "height": 16,
+          "height": 440,
           "id": 17,
           "name": "petal_trail",
           "rotation": 0,
-          "type": "prop",
+          "type": "examine",
           "visible": true,
-          "width": 96,
-          "x": 272,
-          "y": 360,
+          "width": 80,
+          "x": 280,
+          "y": 160,
           "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/petal_trail.png"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": false
-            },
             {
               "name": "counter",
               "type": "string",
@@ -663,8 +653,512 @@
           ]
         },
         {
-          "height": 66,
+          "height": 32,
           "id": 18,
+          "name": "petal_trail_00",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 548,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 19,
+          "name": "petal_trail_01",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 508,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 20,
+          "name": "petal_trail_02",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 468,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 21,
+          "name": "petal_trail_03",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 428,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 22,
+          "name": "petal_trail_04",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 388,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p3"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 23,
+          "name": "petal_trail_05",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 388,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p4"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 24,
+          "name": "petal_trail_06",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 348,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 25,
+          "name": "petal_trail_07",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 308,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 26,
+          "name": "petal_trail_08",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 268,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 27,
+          "name": "petal_trail_09",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 228,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 28,
+          "name": "petal_trail_10",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 188,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 29,
+          "name": "petal_trail_11",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 148,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 30,
+          "name": "petal_trail_12",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 108,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 31,
+          "name": "petal_trail_13",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 324,
+          "y": 68,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p6"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 32,
+          "name": "petal_trail_14",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 244,
+          "y": 468,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p0"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 33,
+          "name": "petal_trail_15",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 364,
+          "y": 308,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 34,
+          "name": "petal_trail_16",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 284,
+          "y": 228,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p2"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 32,
+          "id": 35,
+          "name": "petal_trail_17",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 32,
+          "x": 364,
+          "y": 148,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/petal_trail_pieces.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "p9"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 66,
+          "id": 36,
           "name": "lounge_door",
           "rotation": 0,
           "type": "prop",
@@ -702,7 +1196,7 @@
         },
         {
           "height": 0,
-          "id": 19,
+          "id": 37,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -1029,7 +1523,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 20,
+  "nextobjectid": 38,
   "orientation": "orthogonal",
   "properties": [
     {

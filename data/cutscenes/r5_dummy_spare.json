@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "uwu~ you spared it, pup! Even my fwiend's suit is smiling!",
         "Peaceful vibes are the best vibes!"
@@ -16,6 +17,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Come along, pup! Follow me to the next room, uwu~"
       ]

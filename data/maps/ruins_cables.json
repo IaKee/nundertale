@@ -1123,6 +1123,24 @@
               "value": "on"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 41,
+          "name": "support_server_label",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 680,
+          "y": 160,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A cable label reads \"DO NOT UNPLUG: EMOTIONAL SUPPORT SERVER.\"||* The handwriting gets shakier near \"server.\""
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1393,7 +1411,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 41,
+  "nextobjectid": 42,
   "orientation": "orthogonal",
   "properties": [
     {

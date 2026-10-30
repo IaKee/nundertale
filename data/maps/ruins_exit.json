@@ -305,7 +305,7 @@
         {
           "height": 0,
           "id": 8,
-          "name": "from_basement",
+          "name": "from_viplounge",
           "rotation": 0,
           "type": "spawn",
           "visible": true,
@@ -324,6 +324,25 @@
         {
           "height": 0,
           "id": 9,
+          "name": "from_basement",
+          "rotation": 0,
+          "type": "spawn",
+          "visible": true,
+          "width": 0,
+          "x": 320,
+          "y": 380,
+          "point": true,
+          "properties": [
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "height": 0,
+          "id": 10,
           "name": "spawn",
           "rotation": 0,
           "type": "spawn",
@@ -342,10 +361,10 @@
         },
         {
           "height": 40,
-          "id": 10,
-          "name": "door_to_basement",
+          "id": 11,
+          "name": "door_to_viplounge",
           "rotation": 0,
-          "type": "door",
+          "type": "",
           "visible": true,
           "width": 80,
           "x": 280,
@@ -354,18 +373,19 @@
             {
               "name": "targetRoom",
               "type": "string",
-              "value": "ruins_basement"
+              "value": "ruins_viplounge"
             },
             {
               "name": "targetSpawn",
               "type": "string",
               "value": "from_exit"
             }
-          ]
+          ],
+          "class": "door"
         },
         {
           "height": 80,
-          "id": 11,
+          "id": 12,
           "name": "prop_aurora_glimpse",
           "rotation": 0,
           "type": "prop",
@@ -388,7 +408,7 @@
         },
         {
           "height": 60,
-          "id": 12,
+          "id": 13,
           "name": "examine_iron_door",
           "rotation": 0,
           "type": "examine",
@@ -406,7 +426,7 @@
         },
         {
           "height": 0,
-          "id": 13,
+          "id": 14,
           "name": "savepoint",
           "rotation": 0,
           "type": "savepoint",
@@ -420,62 +440,6 @@
               "name": "lines",
               "type": "string",
               "value": "* The cold air and the faint smell of ozone fill you with DETERMINATION."
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 14,
-          "name": "floofy",
-          "rotation": 0,
-          "type": "npc",
-          "visible": true,
-          "width": 40,
-          "x": 300,
-          "y": 220,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/sprites/ow/floofy.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "idle"
-            },
-            {
-              "name": "showIf",
-              "type": "string",
-              "value": "ruins.r13.floofy_pop == 1"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "height": 80,
-          "id": 15,
-          "name": "trigger_r13_floofy",
-          "rotation": 0,
-          "type": "trigger",
-          "visible": true,
-          "width": 400,
-          "x": 120,
-          "y": 360,
-          "properties": [
-            {
-              "name": "cutscene",
-              "type": "string",
-              "value": "r13_floofy"
-            },
-            {
-              "name": "once",
-              "type": "string",
-              "value": "ruins.r13.floofy"
             }
           ]
         }
@@ -700,7 +664,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 16,
+  "nextobjectid": 15,
   "orientation": "orthogonal",
   "properties": [
     {

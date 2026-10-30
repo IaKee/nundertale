@@ -227,6 +227,17 @@ def build_ruins_booth():
                 "lines": "* (A small mound of gray fur and gamer dust.)||* (It is still warm.)",
             },
         },
+        {
+            "name": "test_waiver",
+            "type": "examine",
+            "x": 280,
+            "y": 300,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A waiver has one checkbox: \"I AM EMOTIONALLY REPLACEABLE.\"||* It is already checked.",
+            },
+        },
     ]
 
     return make_tiled_map(

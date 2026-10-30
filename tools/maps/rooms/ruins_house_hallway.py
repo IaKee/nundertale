@@ -112,6 +112,17 @@ def build_ruins_house_hallway():
                 "furLines": "* It's you. ...With cat ears?||* (You touch your head. Nothing there.)",
             },
         },
+        {
+            "name": "boundaries_schedule",
+            "type": "examine",
+            "x": 120,
+            "y": 80,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A convention schedule has \"ADVANCED BOUNDARIES\" circled.||* The session is marked MISSED.",
+            },
+        },
     ]
 
     return make_tiled_map(

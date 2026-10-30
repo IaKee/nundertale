@@ -1,0 +1,100 @@
+# Playtest Segment: r8_r12_to_r12a_win.input
+# Starts at R12 Basement: --room ruins_basement --spawn from_house
+# Walks north to door_to_viplounge -> enters R12a (ruins_viplounge).
+# Walks north to trigger_floofy_lair -> plays r12a_lair_opener.
+# Floofy Bass Shake encounter begins (floofy_lair).
+# Grub ACTs/checks each turn and dodges/survives 6 turns.
+# Fight ends via scriptedEnd -> plays r12a_lair_end -> ruins.floofy.lair = 1.
+# Walks north to door_to_exit -> enters R13 (ruins_exit).
+
+1-150 up
+
+# Advance dialog in r12a_lair_opener
+160 cancel
+170 confirm
+180 cancel
+190 confirm
+200 cancel
+210 confirm
+220 cancel
+230 confirm
+240 cancel
+250 confirm
+
+# Battle starts around tick 260
+# Turn 1: ACT -> Check
+280 confirm
+290 confirm
+300 confirm
+310 confirm
+320 confirm
+
+# Turn 1 enemy pattern: move soul
+340-420 left
+430-500 right
+
+# Turn 2:
+520 confirm
+530 confirm
+540 confirm
+550 confirm
+560 confirm
+580-660 up
+670-740 down
+
+# Turn 3:
+760 confirm
+770 confirm
+780 confirm
+790 confirm
+800 confirm
+820-900 left
+910-980 right
+
+# Turn 4:
+1000 confirm
+1010 confirm
+1020 confirm
+1030 confirm
+1040 confirm
+1060-1140 up
+1150-1220 down
+
+# Turn 5:
+1240 confirm
+1250 confirm
+1260 confirm
+1270 confirm
+1280 confirm
+1300-1380 left
+1390-1460 right
+
+# Turn 6:
+1480 confirm
+1490 confirm
+1500 confirm
+1510 confirm
+1520 confirm
+1540-1620 up
+1630-1700 down
+
+# Post-battle dialog (r12a_lair_end)
+1720 cancel
+1730 confirm
+1740 cancel
+1750 confirm
+1760 cancel
+1770 confirm
+1780 cancel
+1790 confirm
+1800 cancel
+1810 confirm
+1820 cancel
+1830 confirm
+1840 cancel
+1850 confirm
+1860 cancel
+1870 confirm
+
+# Walk north to R13 exit
+1900-2100 up

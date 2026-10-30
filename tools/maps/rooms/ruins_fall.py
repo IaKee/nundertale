@@ -97,6 +97,21 @@ def build_ruins_fall():
             "y": 140,
             "properties": {"facing": "down"},
         },
+        # Keep this before the north door: the new-game fall begins at y=30 inside
+        # both bounds, and trigger iteration is ordered. Starting the cutscene first
+        # prevents the door transition from stealing the opening frame.
+        {
+            "name": "trigger_landing",
+            "type": "trigger",
+            "x": 270,
+            "y": 0,
+            "w": 100,
+            "h": 300,
+            "properties": {
+                "cutscene": "r1_landing",
+                "once": "ruins.r1.woke",
+            },
+        },
         # Trigger on the north doorway exit: sets ruins.floofy.left_landing = 1 on leaving R1
         {
             "name": "trigger_leave_landing",
@@ -108,6 +123,8 @@ def build_ruins_fall():
             "properties": {
                 "cutscene": "r1_landing_items",
                 "once": "ruins.floofy.left_landing",
+                # C1-015: Floofy only leaves after the blocked turnstile sends Grub back.
+                "showIf": "ruins.r1a.turnstile_tried >= 1",
             },
         },
         # Door north -> ruins_registration (R1a)
@@ -154,6 +171,34 @@ def build_ruins_fall():
         },
         # Floofy knocked out in his flower bed (4 pokes, hidden once player leaves R1)
         {
+            "name": "badge_under_floofy",
+            "type": "examine",
+            "x": 368,
+            "y": 248,
+            "w": 32,
+            "h": 32,
+            "properties": {
+                "hideIf": "ruins.r1a.turnstile_tried >= 1",
+                "cutscene": "r1_badge",
+                "lines": "* There's a badge under him. You're not reaching under him.",
+            },
+        },
+        {
+            "name": "floofy_badge",
+            "type": "prop",
+            "x": 368,
+            "y": 248,
+            "w": 32,
+            "h": 32,
+            "properties": {
+                "sprite": "assets/props/floofy_badge.png",
+                "solid": True,
+                "showIf": "ruins.r1a.turnstile_tried >= 1 && item.floofy_badge.taken == 0",
+                "cutscene": "r1_badge",
+                "lines": "* A con badge, in the dent. \"FLOOFY — STAFF — WELCOME COMMITTEE\".",
+            },
+        },
+        {
             "name": "floofy",
             "type": "npc",
             "x": 296,
@@ -164,7 +209,7 @@ def build_ruins_fall():
                 "sprite": "assets/sprites/ow/floofy.png",
                 "anim": "knocked_out",
                 "noTurn": True,
-                "solid": False,
+                "solid": True,
                 "hideIf": "ruins.floofy.left_landing >= 1",
                 "cutscene": "r1_floofy_poke",
                 "lines": "* A fox fursuiter covered in flowers. You landed on him.\n* He's out cold. He's smiling anyway.",
@@ -199,6 +244,8 @@ def build_ruins_fall():
                 "anim": "floofy",
                 "altAnim": "dent",
                 "altAnimIf": "ruins.floofy.left_landing >= 1",
+                # BUG-R8-01/02: walkable, so Grub can climb off it and reach the badge in the dent; Floofy, the can
+                # and the Tide Pod keep their solid footprints (BUG-56).
                 "solid": False,
                 "counter": "ruins.r1.pile_check",
                 "cutscene": "r1_landing_items",
@@ -229,12 +276,13 @@ def build_ruins_fall():
         # Examinable crushed Citrus Blast can on floor (col 12, row 7 -> x: 480, y: 280)
         {
             "name": "can_decal",
-            "type": "examine",
+            "type": "prop",
             "x": 480,
             "y": 280,
             "w": 40,
             "h": 40,
             "properties": {
+                "solid": True,
                 "lines": "* Citrus Blast, 2014 edition. A vintage.",
             },
         },
@@ -255,13 +303,13 @@ def build_ruins_fall():
         {
             "name": "tide_pod",
             "type": "prop",
-            "x": 404,
-            "y": 272,
+            "x": 440,
+            "y": 160,
             "w": 40,
             "h": 40,
             "properties": {
                 "sprite": "assets/props/tide_pod.png",
-                "solid": False,
+                "solid": True,
                 "hideIf": "item.tide_pod.taken >= 1",
                 "cutscene": "r1_tide_pod",
                 "lines": "* The Tide Pod you slipped on. It fell in with you.\n* (Forbidden candy.)",
@@ -271,13 +319,14 @@ def build_ruins_fall():
         {
             "name": "floor_message",
             "type": "prop",
-            "x": 140,
+            "x": 92,
             "y": 360,
             "w": 40,
             "h": 40,
             "properties": {
                 "sprite": "assets/props/floor_message.png",
                 "solid": False,
+                # Compatibility id retained for existing saves/tests; its data mirrors r1_floormsg.
                 "cutscene": "floormsg_r1",
                 "lines": "* \"hole ahead\" - xX_AFK_Xx. Rated: 47.",
             },

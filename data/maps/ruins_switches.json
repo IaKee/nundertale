@@ -418,20 +418,20 @@
           ]
         },
         {
-          "height": 40,
+          "height": 56,
           "id": 13,
           "name": "rgb_keyboard_frame",
           "rotation": 0,
           "type": "decoration",
           "visible": true,
-          "width": 200,
-          "x": 220,
+          "width": 272,
+          "x": 184,
           "y": 160,
           "properties": [
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keyboard.png"
+              "value": "assets/props/ruins_mech_keyboard.png"
             },
             {
               "name": "solid",
@@ -477,15 +477,81 @@
           ]
         },
         {
-          "height": 50,
+          "height": 74,
           "id": 16,
+          "name": "shutter_door",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 60,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_switch_door.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "closed"
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "opening"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.solved >= 1"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 17,
+          "name": "shutter_door_barrier",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 80,
+          "x": 280,
+          "y": 80,
+          "properties": [
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "hideIf",
+              "type": "string",
+              "value": "ruins.r4.solved >= 1"
+            },
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A heavy security shutter blocks the exit.\n* The cables lead back to the RGB keyboard."
+            }
+          ]
+        },
+        {
+          "height": 48,
+          "id": 18,
           "name": "rgb_key_0",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 36,
-          "x": 224,
-          "y": 144,
+          "x": 230,
+          "y": 158,
           "properties": [
             {
               "name": "rgbKey",
@@ -495,7 +561,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keys.png"
+              "value": "assets/props/ruins_mech_keys.png"
             },
             {
               "name": "anim",
@@ -525,15 +591,15 @@
           ]
         },
         {
-          "height": 50,
-          "id": 17,
+          "height": 48,
+          "id": 19,
           "name": "rgb_key_1",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 36,
-          "x": 262,
-          "y": 144,
+          "x": 268,
+          "y": 158,
           "properties": [
             {
               "name": "rgbKey",
@@ -543,7 +609,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keys.png"
+              "value": "assets/props/ruins_mech_keys.png"
             },
             {
               "name": "anim",
@@ -573,15 +639,15 @@
           ]
         },
         {
-          "height": 50,
-          "id": 18,
+          "height": 48,
+          "id": 20,
           "name": "rgb_key_2",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 36,
-          "x": 300,
-          "y": 144,
+          "x": 304,
+          "y": 158,
           "properties": [
             {
               "name": "rgbKey",
@@ -591,7 +657,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keys.png"
+              "value": "assets/props/ruins_mech_keys.png"
             },
             {
               "name": "anim",
@@ -621,15 +687,15 @@
           ]
         },
         {
-          "height": 50,
-          "id": 19,
+          "height": 48,
+          "id": 21,
           "name": "rgb_key_3",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 36,
-          "x": 338,
-          "y": 144,
+          "x": 340,
+          "y": 158,
           "properties": [
             {
               "name": "rgbKey",
@@ -639,7 +705,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keys.png"
+              "value": "assets/props/ruins_mech_keys.png"
             },
             {
               "name": "anim",
@@ -669,15 +735,15 @@
           ]
         },
         {
-          "height": 50,
-          "id": 20,
+          "height": 48,
+          "id": 22,
           "name": "rgb_key_4",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 36,
-          "x": 376,
-          "y": 144,
+          "x": 378,
+          "y": 158,
           "properties": [
             {
               "name": "rgbKey",
@@ -687,7 +753,7 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_rgb_keys.png"
+              "value": "assets/props/ruins_mech_keys.png"
             },
             {
               "name": "anim",
@@ -718,112 +784,140 @@
         },
         {
           "height": 40,
-          "id": 21,
-          "name": "gate_cables_left",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 280,
-          "y": 80,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_cables.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "on"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "hideIf",
-              "type": "string",
-              "value": "ruins.r4.solved >= 1"
-            }
-          ]
-        },
-        {
-          "height": 40,
-          "id": 22,
-          "name": "gate_cables_right",
-          "rotation": 0,
-          "type": "prop",
-          "visible": true,
-          "width": 40,
-          "x": 320,
-          "y": 80,
-          "properties": [
-            {
-              "name": "sprite",
-              "type": "string",
-              "value": "assets/props/ruins_cables.png"
-            },
-            {
-              "name": "anim",
-              "type": "string",
-              "value": "on"
-            },
-            {
-              "name": "solid",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "hideIf",
-              "type": "string",
-              "value": "ruins.r4.solved >= 1"
-            }
-          ]
-        },
-        {
-          "height": 40,
           "id": 23,
-          "name": "gate_front_left",
+          "name": "cable_v",
           "rotation": 0,
           "type": "prop",
           "visible": true,
           "width": 40,
-          "x": 280,
-          "y": 120,
+          "x": 440,
+          "y": 160,
           "properties": [
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_cables.png"
+              "value": "assets/props/ruins_floor_cables.png"
             },
             {
               "name": "anim",
               "type": "string",
-              "value": "on"
+              "value": "straight_v"
             },
             {
               "name": "solid",
               "type": "bool",
-              "value": true
-            },
-            {
-              "name": "hideIf",
-              "type": "string",
-              "value": "ruins.r4.solved >= 1"
-            },
-            {
-              "name": "lines",
-              "type": "string",
-              "value": "* A tangle of live cables blocks the way.\n* Make the keyboard pink."
+              "value": false
             }
           ]
         },
         {
           "height": 40,
           "id": 24,
-          "name": "gate_front_right",
+          "name": "cable_corner",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 440,
+          "y": 120,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_floor_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "corner"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 25,
+          "name": "cable_h1",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 400,
+          "y": 120,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_floor_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "straight_h"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "lit_h"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.solved >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 26,
+          "name": "cable_h2",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 360,
+          "y": 120,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_floor_cables.png"
+            },
+            {
+              "name": "anim",
+              "type": "string",
+              "value": "straight_h"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "lit_h"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.solved >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 27,
+          "name": "cable_door",
           "rotation": 0,
           "type": "prop",
           "visible": true,
@@ -834,27 +928,65 @@
             {
               "name": "sprite",
               "type": "string",
-              "value": "assets/props/ruins_cables.png"
+              "value": "assets/props/ruins_floor_cables.png"
             },
             {
               "name": "anim",
               "type": "string",
-              "value": "on"
+              "value": "straight_h"
             },
             {
               "name": "solid",
               "type": "bool",
-              "value": true
+              "value": false
             },
             {
-              "name": "hideIf",
+              "name": "altAnim",
+              "type": "string",
+              "value": "lit_h"
+            },
+            {
+              "name": "altAnimIf",
               "type": "string",
               "value": "ruins.r4.solved >= 1"
+            }
+          ]
+        },
+        {
+          "height": 40,
+          "id": 28,
+          "name": "cable_door_left",
+          "rotation": 0,
+          "type": "prop",
+          "visible": true,
+          "width": 40,
+          "x": 280,
+          "y": 120,
+          "properties": [
+            {
+              "name": "sprite",
+              "type": "string",
+              "value": "assets/props/ruins_floor_cables.png"
             },
             {
-              "name": "lines",
+              "name": "anim",
               "type": "string",
-              "value": "* A tangle of live cables blocks the way.\n* Make the keyboard pink."
+              "value": "straight_h"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "altAnim",
+              "type": "string",
+              "value": "lit_h"
+            },
+            {
+              "name": "altAnimIf",
+              "type": "string",
+              "value": "ruins.r4.solved >= 1"
             }
           ]
         }
@@ -1079,7 +1211,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 25,
+  "nextobjectid": 29,
   "orientation": "orthogonal",
   "properties": [
     {

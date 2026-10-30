@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* \"Deodorant is NOT optional.\""],
+      "if": "ruins.r3.banner >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* A pile of Dorito bags. *crunch*"],
+      "if": "ruins.r3.doritos >= 1"
+    },
+    {"type": "setFlag", "key": "ruins.r3.banner", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.doritos", "value": 0}
+  ]
+}

@@ -6,6 +6,7 @@
 #include "core/SceneManager.hpp"
 #include "services/MusicTracks.hpp"
 #include <raylib.h>
+#include <algorithm>
 #include <cstdio>
 
 namespace nundertale {
@@ -129,6 +130,7 @@ void LoreScene::update(float dt, GameContext& context) {
                 m_cardFadingIn = true;
                 m_currentLine = 0;
                 m_charIndex = 0;
+                m_charTimer = 0.0f;
                 m_cardTextDone = false;
                 m_tallScrollTimer = 0.0f;
             } else if (m_usePanels) {
@@ -146,23 +148,21 @@ void LoreScene::update(float dt, GameContext& context) {
     // Card has text
     if (!m_cardTextDone) {
         m_charTimer += dt;
+        // BUG-55: every card, card 6 included, is typed through the same schedule (dots ~100x faster)
         while (m_currentLine < card.lines.size()) {
             const std::string& line = card.lines[m_currentLine];
-            if (m_charIndex >= line.size()) {
-                m_currentLine++;
-                m_charIndex = 0;
-                continue;
+            const size_t typed = loreCharsTyped(line, m_charTimer);
+            for (size_t i = m_charIndex; i < typed; ++i) {
+                context.audio.playSound("assets/sfx/voice_default.ogg", 0.35f);
             }
-
-            const char character = line[m_charIndex];
-            const float delay = loreCharacterDelay(character);
-            if (m_charTimer < delay) {
+            m_charIndex = typed;
+            if (typed < line.size()) {
                 break;
             }
-
-            m_charTimer -= delay;
-            m_charIndex++;
-            context.audio.playSound("assets/sfx/voice_default.ogg", 0.35f);
+            // line finished: the time it took is spent, the rest carries into the next line
+            m_charTimer = std::max(0.0f, m_charTimer - loreTypingTime(line, line.size()));
+            m_currentLine++;
+            m_charIndex = 0;
         }
         if (m_currentLine >= card.lines.size()) {
             m_cardTextDone = true;

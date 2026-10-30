@@ -820,6 +820,24 @@
               "value": "r11_talk"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 28,
+          "name": "industrial_dryer_sheets",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 300,
+          "y": 80,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A stack of dryer sheets is labeled \"AIR FRESHENER: INDUSTRIAL.\"||* The top sheet has surrendered."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1090,7 +1108,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 28,
+  "nextobjectid": 29,
   "orientation": "orthogonal",
   "properties": [
     {

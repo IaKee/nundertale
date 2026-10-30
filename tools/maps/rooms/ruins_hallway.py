@@ -171,6 +171,39 @@ def build_ruins_hallway():
                 "once": "ruins.r7.call",
             },
         },
+        {
+            "name": "free_hugs_sticker",
+            "type": "examine",
+            "x": 440,
+            "y": 160,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "lines": "* A sticker says \"FREE HUGS.\"||* Someone added \"NO REFUNDS\" in smaller letters.",
+            },
+        },
+        {
+            "name": "support_column_plaque",
+            "type": "examine",
+            "x": 920,
+            "y": 160,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "lines": "* A plaque names this the Emotional Support Column.||* It is load-bearing. Emotionally, unclear.",
+            },
+        },
+        {
+            "name": "paw_direction_decals",
+            "type": "examine",
+            "x": 1400,
+            "y": 160,
+            "w": 40,
+            "h": 80,
+            "properties": {
+                "lines": "* One paw-print decal points north.||* Another points back to the exit. The committee disagreed.",
+            },
+        },
     ]
 
     return make_tiled_map(

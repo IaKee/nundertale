@@ -294,6 +294,17 @@ def build_ruins_bakesale():
                 "targetSpawn": "from_bakesale",
             },
         },
+        {
+            "name": "tip_jar",
+            "type": "examine",
+            "x": 520,
+            "y": 160,
+            "w": 40,
+            "h": 40,
+            "properties": {
+                "lines": "* The tip jar accepts gold, exposure, and apologies.||* Exposure is crossed out twice.",
+            },
+        },
     ]
 
     return make_tiled_map(

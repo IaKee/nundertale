@@ -2,6 +2,7 @@
   "steps": [
     {
       "type": "dialog",
+      "reveal": "fade_glow",
       "lines": [
         "* \"hole ahead\""
       ],

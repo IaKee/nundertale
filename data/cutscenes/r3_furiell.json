@@ -3,6 +3,7 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
         "Welcome to your new home, pup! uwu ...Do you like bwankets? I have forty."
       ]

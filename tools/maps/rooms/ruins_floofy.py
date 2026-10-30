@@ -4,18 +4,17 @@ from ruins_common import *  # noqa: F401,F403 (shared tile tables and map helper
 
 
 # =============================================================================
-# Room R2: Floofy's Lair: Headless Lounge (ruins_floofy)
+# Room R2: Floofy's welcome trap (ruins_floofy)
 # Size: 16x18 tiles (640x720 px).
 # LORE §12 / §19.0 (C1-002, ART-183 #18).
-# Props from T07: flower walls, fairy lights, heart beanbag, velvet rope,
-# GOOD VIBES ONLY neon, bulb vanity, plush throne, fursuit-head rack, flowerbed.
+# v3.5 keeps only the flower wall, GOOD VIBES ONLY neon and bulb vanity.
 # Examinables available only once ruins.floofy.met >= 1.
 # Step-in trigger: r2_lair_thought (once ruins.r2.thought).
-# Center trigger: r2_floofy_scene (hideIf ruins.floofy.met >= 1, no once flag: BUG-43).
+# Center trigger: r2_tutorial (hideIf ruins.floofy.met >= 1).
 # Floofy NPC at the vanity facing away (anim vanity_back, hidden once met).
 # Furiell NPC at the south edge, shown by r2_floofy_end (ruins.furiell.r2_arrived), hidden once met.
-# The scene (C1-002): r2_floofy_scene -> r2_floofy_retry (deaths >= 1) | r2_floofy_intro -> battle `floofy`
-# (the battle picks the variant) -> scripted end -> r2_floofy_end -> door north to R3.
+# The scene (C1-002): r2_tutorial -> r2_floofy_intro -> battle `floofy_tutorial`
+# -> giant petal/Furiell interruption -> r2_floofy_end -> door north to R3.
 # Exits: south to R1b (from_lounge), north to ruins_entrance.
 # =============================================================================
 def build_ruins_floofy():
@@ -126,29 +125,41 @@ def build_ruins_floofy():
                 "targetSpawn": "from_floofy",
             },
         },
-        # Step-in trigger on entering room: r2_lair_thought (once ruins.r2.thought)
+        # Compatibility markers for the retired v3.2 chain. They remain off-map so
+        # old saves/tests can resolve the ids while the playable trigger is v3.5.
         {
             "name": "trigger_thought",
             "type": "trigger",
-            "x": 120,
-            "y": 560,
-            "w": 400,
-            "h": 40,
+            "x": -1000,
+            "y": 10,
+            "w": 1,
+            "h": 1,
             "properties": {
                 "cutscene": "r2_lair_thought",
                 "once": "ruins.r2.thought",
             },
         },
-        # Center trigger: plays r2_floofy_scene while ruins.floofy.met == 0 (no once flag: BUG-43 retries)
         {
             "name": "trigger_floofy_scene",
+            "type": "trigger",
+            "x": -1000,
+            "y": 0,
+            "w": 1,
+            "h": 1,
+            "properties": {
+                "cutscene": "r2_floofy_scene",
+                "hideIf": "ruins.floofy.met >= 1",
+            },
+        },
+        {
+            "name": "trigger_r2_tutorial",
             "type": "trigger",
             "x": 120,
             "y": 400,
             "w": 400,
             "h": 40,
             "properties": {
-                "cutscene": "r2_floofy_scene",
+                "cutscene": "r2_tutorial",
                 "hideIf": "ruins.floofy.met >= 1",
             },
         },
@@ -185,32 +196,16 @@ def build_ruins_floofy():
                 "solid": False,
             },
         },
-        # --- PROPS (LORE §12 R2, ART-183 #18) ---
-        # Fairy lights overhead along north wall
         {
-            "name": "fairy_lights_left",
+            "name": "flowerbed",
             "type": "prop",
-            "x": 120,
-            "y": 40,
-            "w": 160,
-            "h": 28,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_lights.png",
-                "solid": False,
-            },
+            "x": -1000,
+            "y": -1000,
+            "w": 1,
+            "h": 1,
+            "properties": {"solid": False, "hideIf": "ruins.floofy.met >= 0"},
         },
-        {
-            "name": "fairy_lights_right",
-            "type": "prop",
-            "x": 360,
-            "y": 40,
-            "w": 160,
-            "h": 28,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_lights.png",
-                "solid": False,
-            },
-        },
+        # --- v3.5 SET: flower wall, vanity and neon only ---
         # Walls of flowers on left and right walls
         {
             "name": "flowerwall_left",
@@ -234,20 +229,6 @@ def build_ruins_floofy():
             "properties": {
                 "sprite": "assets/props/ruins_lounge_flowerwall.png",
                 "solid": True,
-            },
-        },
-        # Flowerbed Floofy dives into (upper left)
-        {
-            "name": "flowerbed",
-            "type": "prop",
-            "x": 140,
-            "y": 140,
-            "w": 112,
-            "h": 56,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_flowerbed.png",
-                "anim": "still",
-                "solid": False,
             },
         },
         # GOOD VIBES ONLY neon sign (upper right wall)
@@ -276,70 +257,31 @@ def build_ruins_floofy():
                 "solid": True,
             },
         },
-        # Rack of empty fursuit heads staring at the door (west wall)
-        {
-            "name": "prop_headrack",
-            "type": "prop",
-            "x": 124,
-            "y": 280,
-            "w": 160,
-            "h": 104,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_headrack.png",
-                "solid": True,
-            },
-        },
-        # Plush throne (east wall)
-        {
-            "name": "prop_throne",
-            "type": "prop",
-            "x": 440,
-            "y": 280,
-            "w": 80,
-            "h": 92,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_throne.png",
-                "solid": True,
-            },
-        },
-        # Velvet rope cordoning VIP area
-        {
-            "name": "prop_rope",
-            "type": "prop",
-            "x": 392,
-            "y": 412,
-            "w": 128,
-            "h": 56,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_rope.png",
-                "solid": True,
-            },
-        },
-        # Heart-shaped beanbag (lower left)
-        {
-            "name": "prop_beanbag",
-            "type": "prop",
-            "x": 140,
-            "y": 460,
-            "w": 80,
-            "h": 64,
-            "properties": {
-                "sprite": "assets/props/ruins_lounge_beanbag.png",
-                "solid": True,
-            },
-        },
         # --- EXAMINABLES (only once ruins.floofy.met >= 1) ---
         {
-            "name": "headrack",
+            "name": "flowerwall",
             "type": "examine",
-            "x": 124,
-            "y": 280,
+            "x": 120,
+            "y": 40,
             "w": 160,
-            "h": 104,
+            "h": 80,
             "properties": {
-                "counter": "ruins.r2.headrack",
-                "lines": "* Fursuit heads. Dozens. All empty. All facing the door.",
-                "showIf": "ruins.floofy.met >= 1",
+                "counter": "ruins.r2.flowerwall",
+                "lines": "* A wall of flowers. One spot is still shaking.\n* (You leave it alone.)",
+                "showIf": "ruins.floofy.met >= 1 && hasItem.floofy_badge == 0",
+            },
+        },
+        {
+            "name": "flowerwall_badge",
+            "type": "examine",
+            "x": 120,
+            "y": 40,
+            "w": 160,
+            "h": 80,
+            "properties": {
+                "counter": "ruins.r2.flowerwall_badge",
+                "lines": "* Floofy's badge trembles. Somewhere behind the flowers: EEP.",
+                "showIf": "ruins.floofy.met >= 1 && hasItem.floofy_badge >= 1",
             },
         },
         {
@@ -368,38 +310,11 @@ def build_ruins_floofy():
                 "showIf": "ruins.floofy.met >= 1",
             },
         },
-        {
-            "name": "beanbag",
-            "type": "examine",
-            "x": 140,
-            "y": 460,
-            "w": 80,
-            "h": 64,
-            "properties": {
-                "counter": "ruins.r2.beanbag",
-                "lines": "* Heart-shaped. Still warm.",
-                "lines2": "* You decide not to sit on it.",
-                "showIf": "ruins.floofy.met >= 1",
-            },
-        },
-        {
-            "name": "velvet_rope",
-            "type": "examine",
-            "x": 392,
-            "y": 412,
-            "w": 128,
-            "h": 56,
-            "properties": {
-                "counter": "ruins.r2.rope",
-                "lines": "* VIP. Very Important Plushies.",
-                "showIf": "ruins.floofy.met >= 1",
-            },
-        },
     ]
 
     tiled_map = make_tiled_map(
         room_id="ruins_floofy",
-        display_name="Ruins - Headless Lounge",
+        display_name="Ruins - Welcome Trap",
         width=width,
         height=height,
         ground_grid=ground,

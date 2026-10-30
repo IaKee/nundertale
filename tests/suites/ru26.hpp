@@ -12,6 +12,7 @@ inline void suite_ru26() {
 
     assert(isFloofyFight("floofy"));
     assert(isFloofyFight("floofy_bass"));
+    assert(isFloofyFight("floofy_lair"));
     assert(!isFloofyFight("barky"));
     assert(floofyWelcomeHomeLine("GRUB") ==
            "Floofy? ...Oh dear. Stay determined, GRUB. And stay away from his petals.");

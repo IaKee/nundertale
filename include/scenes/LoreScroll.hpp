@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <algorithm>
+#include <cstddef>
+#include <string_view>
 
 namespace nundertale {
 
@@ -19,6 +21,33 @@ inline constexpr float loreCharacterDelay(char character) {
     return character == '.'
         ? LORE_CHARACTER_DELAY / LORE_DOT_SPEED_MULTIPLIER
         : LORE_CHARACTER_DELAY;
+}
+
+/** Seconds the typewriter needs to type the first `count` characters of a line. */
+inline float loreTypingTime(std::string_view line, std::size_t count) {
+    float total = 0.0f;
+    for (std::size_t i = 0; i < count && i < line.size(); ++i) {
+        total += loreCharacterDelay(line[i]);
+    }
+    return total;
+}
+
+/**
+ * Characters of `line` typed after `elapsed` seconds (one per loreCharacterDelay, so a dotted
+ * fill like card 6's flies by while the words keep the normal pace). The caller plays the
+ * type sound once for every character this count grows by.
+ */
+inline std::size_t loreCharsTyped(std::string_view line, float elapsed) {
+    std::size_t typed = 0;
+    float spent = 0.0f;
+    while (typed < line.size()) {
+        spent += loreCharacterDelay(line[typed]);
+        if (spent > elapsed) {
+            break;
+        }
+        ++typed;
+    }
+    return typed;
 }
 
 /**

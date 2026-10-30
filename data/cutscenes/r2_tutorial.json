@@ -1,0 +1,70 @@
+{
+  "steps": [
+    { "type": "facePlayer", "key": "up" },
+    { "type": "movePlayer", "x": 300, "y": 345, "speed": 110 },
+    {
+      "type": "dialog", "speaker": "NARRATOR",
+      "lines": ["* (Flowers. A mirror full of light bulbs. A neon sign that says GOOD VIBES ONLY. ...Sure.)"]
+    },
+    { "type": "setFlag", "key": "ruins.r2.thought", "value": 1 },
+    { "type": "npcAnim", "npc": "floofy", "key": "vanity_back" },
+    { "type": "dialog", "speaker": "FLOOFY", "lines": ["Forty-seven flowers.", "Hand-picked. Alphabetized."] },
+    { "type": "wait", "seconds": 0.55 },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": ["And then something fell out of the SKY and sat on ALL of them.", "Also? I felt the poking."],
+      "if": "ruins.floofy.pokes >= 3"
+    },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": ["And then something fell out of the SKY and sat on ALL of them."],
+      "if": "ruins.floofy.pokes < 3"
+    },
+    { "type": "addFlag", "key": "ruins.floofy.annoyed", "value": 1, "if": "ruins.floofy.pokes >= 3" },
+    { "type": "npcAnim", "npc": "floofy", "key": "turn", "seconds": 0.4 },
+    { "type": "wait", "seconds": 0.65 },
+    { "type": "sound", "path": "assets/sfx/sparkle.ogg", "volume": 0.8 },
+    { "type": "dialog", "speaker": "FLOOFY", "lines": ["...", "Oh. My. FLUFF."] },
+    { "type": "sound", "path": "assets/sfx/pounce.ogg", "volume": 0.9 },
+    { "type": "npcAnim", "npc": "floofy", "key": "pounce" },
+    { "type": "moveNpc", "npc": "floofy", "x": 300, "y": 302, "speed": 260 },
+    { "type": "npcAnim", "npc": "floofy", "key": "idle", "seconds": 0.2 },
+    { "type": "dialog", "speaker": "FLOOFY", "lines": ["*pounces on you* OwO what's this?"] },
+    { "type": "wait", "seconds": 0.35 },
+    { "type": "dialog", "speaker": "FLOOFY", "lines": ["Howdy~! I'm FLOOFY! Floofy the Floof!"] },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": ["Is that MY badge?! ...Keep it. It suits you~"],
+      "if": "hasItem.floofy_badge >= 1"
+    },
+    { "type": "wait", "seconds": 0.35 },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": ["I was waiting for someone to fall for me, sweetie.", "...Not ON me. But I'll allow it~"]
+    },
+    {
+      "type": "choice", "speaker": "FLOOFY", "lines": [""],
+      "options": ["Sorry.", "You broke my fall."], "key": "ruins.floofy.choice1"
+    },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": ["Aww~ manners! On a GAMER! I'm keeping you."],
+      "if": "ruins.floofy.choice1 == 1"
+    },
+    { "type": "addFlag", "key": "ruins.floofy.annoyed", "value": 1, "if": "ruins.floofy.choice1 == 2" },
+    {
+      "type": "dialog", "speaker": "FLOOFY", "lines": ["...", "Ha. Ha. Ha.", "Cute."],
+      "if": "ruins.floofy.choice1 == 2"
+    },
+    { "type": "wait", "seconds": 0.55 },
+    {
+      "type": "dialog", "speaker": "FLOOFY",
+      "lines": [
+        "You're SO new here. Golly, you must be so confused~",
+        "Someone ought to teach you how things work down here!",
+        "I guess little old me will have to do."
+      ]
+    },
+    { "type": "startBattle", "encounter": "floofy_tutorial" }
+  ]
+}

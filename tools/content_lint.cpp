@@ -317,6 +317,11 @@ int main(int argc, char* argv[]) {
             if (!nundertale::validateJson(contents, &jsonFinding)) {
                 baseFindings.push_back(jsonFinding);
             }
+            if (normPath.rfind("data/cutscenes/", 0) == 0) {
+                std::vector<nundertale::LintFinding> portraitFindings =
+                    nundertale::lintUnknownPortraits(contents, root);
+                baseFindings.insert(baseFindings.end(), portraitFindings.begin(), portraitFindings.end());
+            }
         }
 
         std::vector<Issue> issues;
@@ -324,6 +329,7 @@ int main(int argc, char* argv[]) {
         for (const auto& finding : baseFindings) {
             bool isWarn = false;
             if (finding.rule == "pepe-word" ||
+                finding.rule == "unknown-portrait" ||
                 finding.rule == "my-child-phrase" ||
                 finding.rule == "furry-over-phrase" ||
                 finding.rule == "raid-word" ||

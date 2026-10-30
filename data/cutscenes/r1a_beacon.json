@@ -1,0 +1,97 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* One fursuit paw. A phone charger. Somebody's sense of shame. (Unclaimed.)"
+      ],
+      "if": "ruins.beacon.state == 2"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* It hums. It wants you to clear out a temple."
+      ],
+      "if": "ruins.beacon.state == 1"
+    },
+    {
+      "type": "choice",
+      "speaker": "",
+      "lines": [
+        "* At the very bottom of the bin, something glows. A white, faceted polyhedron.",
+        "* (It looks like a giant white d20.)"
+      ],
+      "options": ["Take it", "Leave it"],
+      "key": "ruins.beacon.choice",
+      "if": "ruins.beacon.state == 0"
+    },
+    {
+      "type": "flash",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "seconds": 0.25,
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1"
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/alert.ogg",
+      "volume": 0.9,
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1"
+    },
+    {
+      "type": "shake",
+      "intensity": 5.0,
+      "seconds": 1.6,
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* A NEW PAW TOUCHES THE BEACON.",
+        "* HEAR ME, GAMER, AND OBEY."
+      ],
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1"
+    },
+    {
+      "type": "giveItem",
+      "item": "Strange Beacon",
+      "lines": [
+        "* The Strange Beacon is yours.",
+        "* (It won't let go of you.)"
+      ],
+      "fullLines": [
+        "* You can't carry any more. The beacon stays at the bottom of the bin."
+      ],
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.beacon.state",
+      "value": 1,
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 1 && hasItem.strange_beacon >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* (You put it back immediately. Not doing that quest again.)"
+      ],
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 2"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.beacon.state",
+      "value": 2,
+      "if": "ruins.beacon.state == 0 && ruins.beacon.choice == 2"
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.beacon.choice",
+      "value": 0
+    }
+  ]
+}

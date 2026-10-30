@@ -6,7 +6,7 @@ from ruins_common import *  # noqa: F401,F403 (shared tile tables and map helper
 # =============================================================================
 # Room R12: Basement Corridor (ruins_basement)
 # Size: 16x38 tiles (640x1520 px).
-# Long, dark, narrow corridor leading north to the iron door and ruins exit.
+# Long, dark, narrow corridor leading north to the iron door and ruins exit (via R12a VIP Lounge).
 # =============================================================================
 def build_ruins_basement():
     width = 16
@@ -95,20 +95,30 @@ def build_ruins_basement():
                 "targetSpawn": "from_basement",
             },
         },
-        # North door forward to ruins_exit
+        # North door forward to ruins_viplounge (R12a)
         {
-            "name": "door_to_exit",
-            "type": "door",
+            "name": "door_to_viplounge",
+            "type": "",
+            "class": "door",
             "x": 280,
             "y": 40,
             "w": 80,
             "h": 40,
             "properties": {
-                "targetRoom": "ruins_exit",
+                "targetRoom": "ruins_viplounge",
                 "targetSpawn": "from_basement",
             },
         },
-        # North spawn (returning from ruins_exit)
+        # North spawn (returning from ruins_viplounge)
+        {
+            "name": "from_viplounge",
+            "type": "spawn",
+            "point": True,
+            "x": 320,
+            "y": 120,
+            "properties": {"facing": "down"},
+        },
+        # Legacy/alias north spawn (from_exit)
         {
             "name": "from_exit",
             "type": "spawn",
@@ -201,9 +211,53 @@ def build_ruins_basement():
                 "showIf": "ruins.furiell.spared == 0 && ruins.furiell.killed == 0",
             },
         },
+        {
+            "name": "staff_only_notice",
+            "type": "examine",
+            "x": 280,
+            "y": 200,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A wall notice reads \"STAFF ONLY.\"||* Someone added \"emotionally.\"",
+            },
+        },
+        {
+            "name": "lanyard_dust_bunny",
+            "type": "examine",
+            "x": 280,
+            "y": 600,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A dust bunny has a STAFF lanyard.||* It outranks you.",
+            },
+        },
+        {
+            "name": "nice_tally",
+            "type": "examine",
+            "x": 280,
+            "y": 1000,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* The tally marks stop at sixty-nine.||* A second hand wrote \"nice.\"",
+            },
+        },
+        {
+            "name": "almost_home_sticker",
+            "type": "examine",
+            "x": 280,
+            "y": 1360,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* A paw-print sticker says \"YOU ARE ALMOST HOME.\"||* It points both ways.",
+            },
+        },
     ]
 
-    return make_tiled_map(
+    tiled_map = make_tiled_map(
         room_id="ruins_basement",
         display_name="Ruins - Basement",
         width=width,
@@ -214,9 +268,10 @@ def build_ruins_basement():
         above_grid=above,
         music="overworld.default",
     )
-
-
-# =============================================================================
-# Room R13: Ruins Exit (ruins_exit) - R10-C (T3)
-# Size: 16x18 tiles (640x720 px).
-# =============================================================================
+    for layer in tiled_map["layers"]:
+        if layer["type"] == "objectgroup":
+            for obj in layer["objects"]:
+                if obj.get("name") == "door_to_viplounge":
+                    obj["type"] = ""
+                    obj["class"] = "door"
+    return tiled_map

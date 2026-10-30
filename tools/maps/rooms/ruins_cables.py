@@ -262,6 +262,18 @@ def build_ruins_cables():
             },
         })
 
+    objects.append({
+        "name": "support_server_label",
+        "type": "examine",
+        "x": 680,
+        "y": 160,
+        "w": 40,
+        "h": 40,
+        "properties": {
+            "lines": "* A cable label reads \"DO NOT UNPLUG: EMOTIONAL SUPPORT SERVER.\"||* The handwriting gets shakier near \"server.\"",
+        },
+    })
+
     return make_tiled_map(
         room_id="ruins_cables",
         display_name="Ruins - Cable Maze",

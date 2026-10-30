@@ -50,11 +50,15 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         }
 
         // OVW-006: Do NOT normalize diagonal movement in Undertale
+        // BUG-R8-01: an obstacle Grub already stands in (a spawn on the bed, next to Floofy) never blocks him,
+        // so he can always walk out of it; it blocks normally once he's clear.
+        const Rectangle currentBox = { m_position.x + 5, m_position.y + 38, 28, 18 };
         // Move X with collision
         float newX = m_position.x + inputDir.x * PLAYER_SPEED * dt;
         Rectangle testBoxX = { newX + 5, m_position.y + 38, 28, 18 };
         bool collideX = false;
         for (const auto& obs : obstacles) {
+            if (CheckCollisionRecs(currentBox, obs)) continue;
             if (CheckCollisionRecs(testBoxX, obs)) {
                 collideX = true;
                 if (inputDir.x != 0.0f) m_blockingObstacles.push_back(obs);
@@ -70,6 +74,7 @@ void Player::update(float dt, Vector2 inputDir, const std::vector<Rectangle>& ob
         Rectangle testBoxY = { m_position.x + 5, newY + 38, 28, 18 };
         bool collideY = false;
         for (const auto& obs : obstacles) {
+            if (CheckCollisionRecs(currentBox, obs)) continue;
             if (CheckCollisionRecs(testBoxY, obs)) {
                 collideY = true;
                 if (inputDir.y != 0.0f) m_blockingObstacles.push_back(obs);

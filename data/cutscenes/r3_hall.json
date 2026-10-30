@@ -1,0 +1,61 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* \"FurNation Con '14 — Welcome!\"",
+        "* The sign is face-down. It saw enough."
+      ],
+      "if": "ruins.r3.welcome >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* A dead badge scanner. It still expects an attendee from 2014."],
+      "if": "ruins.r3.scanner >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* The schedule still says 2014.",
+        "* Every panel after noon is marked \"TBA\"."
+      ],
+      "if": "ruins.r3.schedule >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* A fursuit tail is curled under the bench.",
+        "* (You decide not to check whether it is attached.)"
+      ],
+      "if": "ruins.r3.bench >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* The snack table is cold.",
+        "* The cheese dip has developed boundaries."
+      ],
+      "if": "ruins.r3.snacks >= 1"
+    },
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": [
+        "* One fluorescent tube is still trying.",
+        "* The others established boundaries."
+      ],
+      "if": "ruins.r3.light >= 1"
+    },
+    {"type": "setFlag", "key": "ruins.r3.welcome", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.scanner", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.schedule", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.bench", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.snacks", "value": 0},
+    {"type": "setFlag", "key": "ruins.r3.light", "value": 0}
+  ]
+}

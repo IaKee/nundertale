@@ -1,0 +1,102 @@
+# C1-028 v3.5: R12a Floofy Lair death and retry recording
+# Run with: ./game.exe --room ruins_viplounge --spawn from_basement --input tools/record/r12a_lair/death_retry.input --record tmp/r12a_death --seconds 60
+# 30 ticks = 1 second.
+
+# 1. Walk up into the Floofy encounter trigger
+1-60 up
+
+# 2. Advance opener dialog and trigger battle
+70 confirm
+85 confirm
+100 confirm
+115 confirm
+130 confirm
+145 confirm
+
+# 3. Take hits in battle (stand still, do not dodge), HP reaches 0
+160 confirm
+175 confirm
+190 confirm
+205 confirm
+220 confirm
+235 confirm
+250 confirm
+265 confirm
+280 confirm
+295 confirm
+310 confirm
+325 confirm
+340 confirm
+355 confirm
+370 confirm
+385 confirm
+400 confirm
+415 confirm
+430 confirm
+445 confirm
+460 confirm
+475 confirm
+490 confirm
+505 confirm
+520 confirm
+535 confirm
+550 confirm
+565 confirm
+580 confirm
+595 confirm
+
+# 4. GameOverScene: WELCOME HOME voice lines and continue back to lair save
+610 confirm
+625 confirm
+640 confirm
+655 confirm
+670 confirm
+685 confirm
+700 confirm
+715 confirm
+730 confirm
+745 confirm
+760 confirm
+775 confirm
+790 confirm
+805 confirm
+820 confirm
+835 confirm
+850 confirm
+865 confirm
+880 confirm
+895 confirm
+
+# 5. Reloaded at VIP Lounge save point; walk up into trigger_floofy_lair again
+910-970 up
+
+# 6. Retry opener plays ("Back already, darling? I KNEW you'd miss me~")
+980 confirm
+995 confirm
+1010 confirm
+1025 confirm
+1040 confirm
+1055 confirm
+1070 confirm
+1085 confirm
+1100 confirm
+1115 confirm
+1130 confirm
+1145 confirm
+1160 confirm
+1175 confirm
+1190 confirm
+1205 confirm
+1220 confirm
+1235 confirm
+1250 confirm
+1265 confirm
+1280 confirm
+1295 confirm
+1310 confirm
+1325 confirm
+1340 confirm
+1355 confirm
+1370 confirm
+1385 confirm
+1400 confirm

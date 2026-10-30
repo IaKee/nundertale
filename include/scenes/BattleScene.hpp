@@ -9,6 +9,7 @@
 #include "combat/KillAnnouncer.hpp"
 #include "combat/Killfeed.hpp"
 #include <memory>
+#include <array>
 #include <string>
 #include <vector>
 
@@ -52,6 +53,33 @@ private:
     void drawIntroBubble(GameContext& context, const std::string& text, std::size_t shownChars, int enemyX);
     void drawIntroBoxText(GameContext& context, const std::string& text, std::size_t shownChars);
     void drawIntroHud(GameContext& context);
+    void completeTutorialWave(GameContext& context, bool caught);
+    void updateTutorialBranch(float dt, GameContext& context);
+    void beginGiantPetal(GameContext& context);
+    void updateGiantPetal(float dt, GameContext& context);
+    void renderGiantPetal(GameContext& context);
+    void finishR2Tutorial(GameContext& context);
+
+    struct R2TutorialDef {
+        bool enabled = false;
+        std::array<int, 3> waveCounts{ 1, 3, 6 };
+        std::array<float, 3> waveSpeeds{ 30.0f, 38.0f, 48.0f };
+        float spawnInterval = 0.85f;
+        int hitDamage = 2;
+        int hitFur = 10;
+        float silenceSeconds = 1.0f;
+        float fadeSeconds = 1.2f;
+        float giantSpeed = 20.0f;
+        float giantWidth = 160.0f;
+        float safeWallWidth = 12.0f;
+        float rescueProgress = 0.75f;
+        float buzzShakeInterval = 0.45f;
+        std::string giantSprite = "assets/sprites/bullets/giant_petal.png";
+        std::string silhouettePortrait = "furiell_silhouette";
+        std::string endCutscene = "r2_floofy_end";
+    };
+
+    enum class GiantPetalPhase { None, Silence, FadeIn, Sweep, Spritz, Eep };
 
     // TOX-002..008: the toxic track's overlays. Every one of them is gated on toxic.track == 1
     // (BattleScene only watches BattleSystem from outside; it never changes the battle rules).
@@ -100,6 +128,22 @@ private:
     std::vector<IntroPetal> m_introPetals;
     float m_introInvuln = 0.0f;
     FurHudTrembleClock m_introFurTremble;
+    R2TutorialDef m_r2Tutorial;
+    int m_tutorialWaveIndex = 0;
+    int m_tutorialDodges = 0;
+    bool m_tutorialBranchActive = false;
+    std::vector<std::string> m_tutorialBranchLines;
+    std::size_t m_tutorialBranchPage = 0;
+    float m_tutorialBranchTyped = 0.0f;
+    GiantPetalPhase m_giantPetalPhase = GiantPetalPhase::None;
+    float m_giantTimer = 0.0f;
+    float m_giantSweepTime = 0.0f;
+    float m_giantX = 0.0f;
+    float m_giantAlpha = 0.0f;
+    float m_giantBuzzTimer = 0.0f;
+    std::vector<std::string> m_giantDialogLines;
+    std::size_t m_giantDialogPage = 0;
+    float m_giantDialogTyped = 0.0f;
 
     HitmarkerState m_hitmarker;
     ToxicCombatFxManager m_toxicFx;

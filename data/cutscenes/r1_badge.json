@@ -1,0 +1,23 @@
+{
+  "steps": [
+    {
+      "type": "dialog",
+      "speaker": "",
+      "lines": ["* There's a badge under him. You're not reaching under him."],
+      "if": "ruins.r1a.turnstile_tried == 0"
+    },
+    {
+      "type": "giveItem",
+      "item": "Floofy's Badge",
+      "lines": ["* A con badge, in the dent. \"FLOOFY — STAFF — WELCOME COMMITTEE\"."],
+      "fullLines": ["* The badge is right there, but you're carrying too much."],
+      "if": "ruins.r1a.turnstile_tried >= 1 && item.floofy_badge.taken == 0 && hasItem.floofy_badge == 0"
+    },
+    {
+      "type": "setFlag",
+      "key": "item.floofy_badge.taken",
+      "value": 1,
+      "if": "ruins.r1a.turnstile_tried >= 1 && hasItem.floofy_badge >= 1"
+    }
+  ]
+}

@@ -3,9 +3,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
-        "Home? But pup... this IS your home now! uwu",
-        "The surface is full of meanies with cameras and bad Wi-Fi. Down here you have forty blankets and endless Pop-Tarts!",
+        "Home? But pup... this IS your home now! uwu"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
+      "lines": [
+        "The surface is full of meanies with cameras and bad Wi-Fi. Down here you have forty blankets and endless Pop-Tarts!"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_sad",
+      "lines": [
         "...You're weawwy serious? ...Excuse me, pup. I... I have to take care of something downstairs. Stay right here. >w<"
       ],
       "if": "fur < 40"
@@ -13,9 +30,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
-        "Home, hun? But look at your adorable fluff! You're already shedding on the armchair! uwu",
-        "You're becoming such a cozy pup... Nobody up there will appreciate your new ears like I do~",
+        "Home, hun? But look at your adorable fluff! You're already shedding on the armchair! uwu"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_sad",
+      "lines": [
+        "You're becoming such a cozy pup... Nobody up there will appreciate your new ears like I do~"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_angry",
+      "lines": [
         "...You still want to leave? ...No. No no no. I have to secure the basement door right now. Please... stay here, sweetie. >w<"
       ],
       "if": "fur >= 40"

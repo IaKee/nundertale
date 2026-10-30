@@ -857,6 +857,24 @@
               "value": "from_bakesale"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 26,
+          "name": "tip_jar",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 40,
+          "x": 520,
+          "y": 160,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* The tip jar accepts gold, exposure, and apologies.||* Exposure is crossed out twice."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1127,7 +1145,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 26,
+  "nextobjectid": 27,
   "orientation": "orthogonal",
   "properties": [
     {

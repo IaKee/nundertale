@@ -1,0 +1,47 @@
+# Playtest Segment: r8_r1a_badge_detour.input
+# Run with: --room ruins_registration --spawn from_landing --flag ruins.r1.woke=1
+# 1. Bumps locked turnstile in R1a (sets ruins.r1a.turnstile_tried = 1, ruins.floofy.left_landing = 1).
+# 2. Walks south back to R1 (door_to_landing).
+# 3. Arrives at R1 from_registration (300, 140).
+# 4. Walks to floofy_badge at (368, 248), picks it up (gives floofy_badge).
+# 5. Returns north to R1a (door_to_registration).
+# 6. Interacts with turnstile; badge unlocks gate (ruins.r1a.turnstile_open = 1).
+# 7. Walks north into door_to_panelhall -> enters R1b (ruins_panelhall).
+
+# Step 1: Bump locked turnstile in R1a
+1-80 up
+85 cancel
+90 confirm
+95 cancel
+100 confirm
+
+# Step 2: Walk south to R1 Landing door
+103-185 down
+
+# Step 3: In R1 (from_registration 300, 140): walk to badge at (368, 248)
+195-215 right
+220-242 down
+
+# Step 4: Interact with Floofy's Badge
+247 confirm
+252 cancel
+257 confirm
+262 cancel
+267 confirm
+
+# Step 5: Walk back north to door_to_registration
+275-298 up
+303-323 left
+328-360 up
+
+# Step 6: Back in R1a (from_landing 340, 500): walk up to turnstile
+380-465 up
+
+# Step 7: Clear unlock dialog
+470 cancel
+475 confirm
+480 cancel
+485 confirm
+
+# Step 8: Walk north through open turnstile into R1b
+495-560 up

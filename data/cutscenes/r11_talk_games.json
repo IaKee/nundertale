@@ -3,9 +3,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_neutral",
       "lines": [
-        "Games? Oh, I adore games, pup! Do you play that 'Fort-night' one? uwu",
-        "Is that the one where you build a cozy fort and wait for night so you can snuggle? ...It isn't? Well, it should be! >w<",
+        "Games? Oh, I adore games, pup! Do you play that 'Fort-night' one? uwu"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_happy",
+      "lines": [
+        "Is that the one where you build a cozy fort and wait for night so you can snuggle? ...It isn't? Well, it should be! >w<"
+      ],
+      "if": "fur < 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
+      "lines": [
         "Don't worry, hun. Down here, nobody will ever steal your loot. Or stream your losses. Forever safe~"
       ],
       "if": "fur < 40"
@@ -13,9 +30,26 @@
     {
       "type": "dialog",
       "speaker": "FURIELL",
+      "portrait": "furiell_happy",
       "lines": [
-        "Games, pup? *giggles and pats your head* You're so passionate when you talk about your little matches! uwu",
-        "Look at your ears twitch every time you mention a victory royale! So delightfully fluffy~",
+        "Games, pup? *giggles and pats your head* You're so passionate when you talk about your little matches! uwu"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_happy",
+      "lines": [
+        "Look at your ears twitch every time you mention a victory royale! So delightfully fluffy~"
+      ],
+      "if": "fur >= 40"
+    },
+    {
+      "type": "dialog",
+      "speaker": "FURIELL",
+      "portrait": "furiell_flustered",
+      "lines": [
         "Who needs competitive ladders when you could just cuddle on the rug all afternoon? You're a winner here every day, hun! >w<"
       ],
       "if": "fur >= 40"

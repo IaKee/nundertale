@@ -164,7 +164,7 @@ inline void suite_ru32() {
     assert(tiledStringProperty(floofy->properties, "sprite") == "assets/sprites/ow/floofy.png");
     assert(tiledStringProperty(floofy->properties, "anim") == "knocked_out");
     assert(tiledBoolProperty(floofy->properties, "noTurn", false));
-    assert(!tiledBoolProperty(floofy->properties, "solid", true));
+    assert(tiledBoolProperty(floofy->properties, "solid", false));
     assert(tiledStringProperty(floofy->properties, "hideIf") == "ruins.floofy.left_landing >= 1");
     assert(tiledStringProperty(floofy->properties, "cutscene") == "r1_floofy_poke");
 

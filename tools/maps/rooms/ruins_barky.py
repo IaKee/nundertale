@@ -329,6 +329,17 @@ def build_ruins_barky():
             "y": 300,
             "properties": {"facing": "right"},
         },
+        {
+            "name": "pack_roster",
+            "type": "examine",
+            "x": 380,
+            "y": 80,
+            "w": 80,
+            "h": 40,
+            "properties": {
+                "lines": "* SHADOW FANG PACK ROSTER: BARKY.||* Attendance: unanimous.",
+            },
+        },
     ]
 
     return make_tiled_map(

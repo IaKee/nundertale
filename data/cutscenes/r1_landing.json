@@ -1,0 +1,91 @@
+{
+  "skipFlag": "ruins.r1.landing_seen",
+  "steps": [
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "landing_idle"
+    },
+    {
+      "type": "playerAnim",
+      "path": "assets/sprites/ow/grub.png",
+      "key": "fall",
+      "seconds": 0.0
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "movePlayer",
+      "x": 323.0,
+      "y": 232.0,
+      "speed": 500.0
+    },
+    {
+      "type": "sound",
+      "path": "assets/sfx/pomf.ogg",
+      "volume": 1.0
+    },
+    {
+      "type": "shake",
+      "intensity": 6.0,
+      "seconds": 0.35
+    },
+    {
+      "type": "waterBurst",
+      "target": "floofy"
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "landing_impact"
+    },
+    {
+      "type": "playerAnim",
+      "path": "assets/sprites/ow/grub.png",
+      "key": "stunned",
+      "seconds": 0.35
+    },
+    {
+      "type": "npcAnim",
+      "npc": "floofy",
+      "key": "knocked_out"
+    },
+    {
+      "type": "playerAnim",
+      "path": "assets/sprites/ow/grub.png",
+      "key": "lying",
+      "seconds": 0.0
+    },
+    {
+      "type": "wait",
+      "seconds": 0.6
+    },
+    {
+      "type": "fadeOut",
+      "seconds": 0.5
+    },
+    {
+      "type": "wait",
+      "seconds": 2.0
+    },
+    {
+      "type": "fadeIn",
+      "seconds": 0.5
+    },
+    {
+      "type": "wait",
+      "seconds": 0.3
+    },
+    {
+      "type": "setFlag",
+      "key": "ruins.r1.landing_seen",
+      "value": 1
+    },
+    {
+      "type": "cutscene",
+      "key": "r1_wake"
+    }
+  ]
+}

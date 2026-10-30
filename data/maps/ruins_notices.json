@@ -801,6 +801,24 @@
               "value": "ruins.r8.soul_on == 1"
             }
           ]
+        },
+        {
+          "height": 40,
+          "id": 23,
+          "name": "shedding_complaint_form",
+          "rotation": 0,
+          "type": "examine",
+          "visible": true,
+          "width": 80,
+          "x": 360,
+          "y": 120,
+          "properties": [
+            {
+              "name": "lines",
+              "type": "string",
+              "value": "* A complaint form asks how much you shed.||* NONE. SOME. ATMOSPHERIC."
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1111,7 +1129,7 @@
     }
   ],
   "nextlayerid": 5,
-  "nextobjectid": 23,
+  "nextobjectid": 24,
   "orientation": "orthogonal",
   "properties": [
     {
